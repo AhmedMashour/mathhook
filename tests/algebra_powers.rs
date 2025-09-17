@@ -157,7 +157,7 @@ fn test_ultimate_power_mastery() {
     // Test fractional exponents
     let expr = Expression::pow(
         Expression::integer(8),
-        Expression::number(Number::rational(num_rational::BigRational::new(
+        Expression::number(CompactNumber::rational(num_rational::BigRational::new(
             num_bigint::BigInt::from(1),
             num_bigint::BigInt::from(3)
         )))
@@ -230,8 +230,8 @@ fn test_numeric_powers() {
     
     // Should calculate 2^3 = 8
     match result {
-        Expression::Number(Number::Integer(n)) if n == &num_bigint::BigInt::from(8) => {
-            assert_eq!(n, &num_bigint::BigInt::from(8));
+        Expression::Number(CompactNumber::SmallInt(n)) if *n == 8 => {
+            assert_eq!(*n, 8);
         },
         _ => {
             println!("Numeric power result: {}", result);

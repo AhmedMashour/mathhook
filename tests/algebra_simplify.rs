@@ -23,7 +23,7 @@ fn test_simplify_with_symbols() {
         Expression::integer(0)
     ]);
     let result = expr.simplify();
-    assert_eq!(result, Expression::symbol(x));
+    assert_eq!(result, Expression::symbol(x.clone()));
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn test_multiplication_simplification() {
         Expression::integer(1)
     ]);
     let result = expr.simplify();
-    assert_eq!(result, Expression::symbol(x));
+    assert_eq!(result, Expression::symbol(x.clone()));
     
     // Test x * 0 = 0
     let expr = Expression::mul(vec![
@@ -59,7 +59,7 @@ fn test_power_simplification() {
     // Test x^1 = x
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(1));
     let result = expr.simplify();
-    assert_eq!(result, Expression::symbol(x));
+    assert_eq!(result, Expression::symbol(x.clone()));
 }
 
 #[test]
