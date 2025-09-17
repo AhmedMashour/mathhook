@@ -1,7 +1,7 @@
 //! Factorization operations for expressions
 //! Handles polynomial factorization, common factor extraction, and algebraic factoring
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use crate::algebra::gcd::PolynomialGcd;
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
@@ -141,7 +141,7 @@ impl Expression {
     /// Extract factors from an expression
     fn extract_factors(&self, expr: &Expression) -> Vec<Expression> {
         match expr {
-            Expression::Number(Number::Integer(n)) => {
+            Expression::Number(CompactNumber::SmallInt(n)) => {
                 if !n.is_zero() && !n.is_one() {
                     vec![expr.clone()]
                 } else {
@@ -149,7 +149,7 @@ impl Expression {
                 }
             },
             Expression::Symbol(_) => vec![expr.clone()],
-            Expression::Mul(factors) => factors.clone(),
+            Expression::Mul(factors) => (**factors).clone(),
             Expression::Pow(base, _exp) => vec![(**base).clone()], // Simplified
             _ => vec![expr.clone()],
         }
@@ -182,7 +182,7 @@ impl Expression {
     /// Extract numeric factor from factor list
     fn extract_numeric_factor(&self, factors: &[Expression]) -> Option<BigInt> {
         for factor in factors {
-            if let Expression::Number(Number::Integer(n)) = factor {
+            if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
                 return Some(n.clone());
             }
         }
@@ -193,7 +193,7 @@ impl Expression {
     fn divide_by_factor(&self, expr: &Expression, factor: &Expression) -> Expression {
         match (expr, factor) {
             // Numeric division
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
+            (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
                 if !b.is_zero() && (a % b).is_zero() {
                     Expression::integer(a / b)
                 } else {
@@ -216,7 +216,7 @@ impl Expression {
                     } else if remaining_factors.len() == 1 {
                         remaining_factors[0].clone()
                     } else {
-                        Expression::mul(remaining_factors)
+                        Expression::mul((**remaining_factors).clone())
                     }
                 } else {
                     expr.clone()
@@ -257,16 +257,23 @@ impl Expression {
     /// Factor out numeric coefficients
     pub fn factor_numeric_coefficient(&self) -> (BigInt, Expression) {
         match self {
-            Expression::Number(Number::Integer(n)) => (n.clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
+            Expression::Number(CompactNumber::BigInteger(n)) => (n.as_ref().clone(), Expression::integer(1)),
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
                 let mut non_numeric_factors = Vec::new();
                 
-                for factor in factors {
-                    if let Expression::Number(Number::Integer(n)) = factor {
-                        coefficient *= n;
-                    } else {
-                        non_numeric_factors.push(factor.clone());
+                for factor in factors.iter() {
+                    match factor {
+                        Expression::Number(CompactNumber::SmallInt(n)) => {
+                            coefficient *= BigInt::from(*n);
+                        },
+                        Expression::Number(CompactNumber::BigInteger(n)) => {
+                            coefficient *= n.as_ref();
+                        },
+                        _ => {
+                            non_numeric_factors.push(factor.clone());
+                        }
                     }
                 }
                 

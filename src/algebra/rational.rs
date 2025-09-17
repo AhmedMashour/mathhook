@@ -1,7 +1,7 @@
 //! Rational expression operations and simplification
 //! Handles rational functions, fraction simplification, and rational arithmetic
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use crate::algebra::gcd::PolynomialGcd;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -26,8 +26,8 @@ impl RationalSimplify for Expression {
             // Handle fractions in other forms
             Expression::Pow(base, exp) => {
                 // Check for negative exponents (which represent division)
-                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
-                    if n < &BigInt::zero() {
+                if let Expression::Number(CompactNumber::SmallInt(n)) = exp.as_ref() {
+                    if *n < 0 {
                         // x^(-n) = 1/x^n
                         let positive_exp = Expression::integer(-n);
                         let denominator = Expression::pow(base.as_ref().clone(), positive_exp);
@@ -47,7 +47,7 @@ impl RationalSimplify for Expression {
     /// Convert to rational form (numerator/denominator)
     fn to_rational_form(&self) -> (Expression, Expression) {
         match self {
-            Expression::Number(Number::Rational(r)) => {
+            Expression::Number(CompactNumber::Rational(r)) => {
                 (
                     Expression::integer(r.numer().clone()),
                     Expression::integer(r.denom().clone())
@@ -73,8 +73,8 @@ impl RationalSimplify for Expression {
             },
             
             Expression::Pow(base, exp) => {
-                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
-                    if n < &BigInt::zero() {
+                if let Expression::Number(CompactNumber::SmallInt(n)) = exp.as_ref() {
+                    if *n < 0 {
                         // Negative exponent: move to denominator
                         let positive_exp = Expression::integer(-n);
                         let denominator = Expression::pow(base.as_ref().clone(), positive_exp);
@@ -115,8 +115,8 @@ impl Expression {
             match factor {
                 // Negative exponents go to denominator
                 Expression::Pow(base, exp) => {
-                    if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
-                        if n < &BigInt::zero() {
+                    if let Expression::Number(CompactNumber::SmallInt(n)) = exp.as_ref() {
+                        if *n < 0 {
                             let positive_exp = Expression::integer(-n);
                             denominator_factors.push(
                                 Expression::pow(base.as_ref().clone(), positive_exp)
@@ -193,13 +193,13 @@ impl Expression {
     fn divide_expressions(&self, dividend: &Expression, divisor: &Expression) -> Expression {
         match (dividend, divisor) {
             // Numeric division
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
+                (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
                 if !b.is_zero() {
                     let rational = BigRational::new(a.clone(), b.clone());
                     if rational.denom().is_one() {
                         Expression::integer(rational.numer().clone())
                     } else {
-                        Expression::number(Number::Rational(rational))
+                        Expression::number(CompactNumber::rational(rational))
                     }
                 } else {
                     dividend.clone() // Division by zero - return original
@@ -219,7 +219,7 @@ impl Expression {
                     } else if remaining_factors.len() == 1 {
                         remaining_factors[0].clone()
                     } else {
-                        Expression::mul(remaining_factors)
+                        Expression::mul((**remaining_factors).clone())
                     }
                 } else {
                     dividend.clone()
@@ -272,7 +272,7 @@ impl Expression {
                 let mut rational_parts = Vec::new();
                 let mut other_parts = Vec::new();
                 
-                for factor in factors {
+                for factor in factors.iter() {
                     if self.is_rational_expression(factor) {
                         rational_parts.push(factor.clone());
                     } else {
@@ -305,11 +305,11 @@ impl Expression {
     /// Check if an expression is a rational expression
     fn is_rational_expression(&self, expr: &Expression) -> bool {
         match expr {
-            Expression::Number(Number::Rational(_)) => true,
+            Expression::Number(CompactNumber::Rational(_)) => true,
             Expression::Pow(_, exp) => {
                 // Negative exponents indicate rational expressions
-                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
-                    n < &BigInt::zero()
+                if let Expression::Number(CompactNumber::SmallInt(n)) = exp.as_ref() {
+                    *n < 0
                 } else {
                     false
                 }
@@ -321,20 +321,20 @@ impl Expression {
     /// Extract rational coefficient from expression
     pub fn extract_rational_coefficient(&self) -> (BigRational, Expression) {
         match self {
-            Expression::Number(Number::Rational(r)) => (r.clone(), Expression::integer(1)),
-            Expression::Number(Number::Integer(n)) => {
+            Expression::Number(CompactNumber::Rational(r)) => ((**r).clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => {
                 (BigRational::from(n.clone()), Expression::integer(1))
             },
             Expression::Mul(factors) => {
                 let mut coefficient = BigRational::one();
                 let mut non_rational_factors = Vec::new();
                 
-                for factor in factors {
+                for factor in factors.iter() {
                     match factor {
-                        Expression::Number(Number::Rational(r)) => {
+                        Expression::Number(CompactNumber::Rational(r)) => {
                             coefficient *= r;
                         },
-                        Expression::Number(Number::Integer(n)) => {
+                        Expression::Number(CompactNumber::SmallInt(n)) => {
                             coefficient *= BigRational::from(n.clone());
                         },
                         _ => {
@@ -365,7 +365,7 @@ mod tests {
     #[test]
     fn test_rational_detection() {
         // Test basic rational number
-        let rational = Expression::number(Number::Rational(
+        let rational = Expression::number(CompactNumber::rational(
             BigRational::new(BigInt::from(3), BigInt::from(4))
         ));
         
@@ -378,10 +378,10 @@ mod tests {
     #[test]
     fn test_simple_rational_combination() {
         // Test 1/2 + 1/3 = 5/6
-        let half = Expression::number(Number::Rational(
+        let half = Expression::number(CompactNumber::rational(
             BigRational::new(BigInt::from(1), BigInt::from(2))
         ));
-        let third = Expression::number(Number::Rational(
+        let third = Expression::number(CompactNumber::rational(
             BigRational::new(BigInt::from(1), BigInt::from(3))
         ));
         
@@ -407,10 +407,10 @@ mod tests {
     #[test]
     fn test_rational_multiplication() {
         // Test (2/3) * (3/4) = 6/12 = 1/2
-        let frac1 = Expression::number(Number::Rational(
+        let frac1 = Expression::number(CompactNumber::rational(
             BigRational::new(BigInt::from(2), BigInt::from(3))
         ));
-        let frac2 = Expression::number(Number::Rational(
+        let frac2 = Expression::number(CompactNumber::rational(
             BigRational::new(BigInt::from(3), BigInt::from(4))
         ));
         
@@ -446,7 +446,7 @@ mod tests {
         let x = Symbol::new("x");
         
         let expr = Expression::mul(vec![
-            Expression::number(Number::Rational(
+            Expression::number(CompactNumber::rational(
                 BigRational::new(BigInt::from(3), BigInt::from(4))
             )),
             Expression::symbol(x.clone())
@@ -455,7 +455,7 @@ mod tests {
         let (coeff, remaining) = expr.extract_rational_coefficient();
         
         println!("Coefficient: {}, Remaining: {}", 
-                 Expression::number(Number::Rational(coeff)), remaining);
+                 Expression::number(CompactNumber::rational(coeff)), remaining);
         
         assert_eq!(remaining, Expression::symbol(x));
     }

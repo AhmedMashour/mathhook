@@ -1,7 +1,7 @@
 //! Advanced zero detection and algebraic simplification
 //! Handles complex expressions that should simplify to zero
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use crate::algebra::simplify::Simplify;
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
@@ -111,16 +111,16 @@ impl Expression {
     fn are_additive_inverses(&self, expr1: &Expression, expr2: &Expression) -> bool {
         match (expr1, expr2) {
             // Simple numeric case: 5 + (-5) = 0
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
-                a + b == BigInt::zero()
+            (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
+                *a + *b == 0
             },
             
             // Symbolic case: x + (-x) = 0
             (Expression::Symbol(s1), Expression::Mul(factors)) => {
                 if factors.len() == 2 {
-                    if let (Expression::Number(Number::Integer(n)), Expression::Symbol(s2)) = (&factors[0], &factors[1]) {
+                    if let (Expression::Number(CompactNumber::SmallInt(n)), Expression::Symbol(s2)) = (&factors[0], &factors[1]) {
                         n == &BigInt::from(-1) && s1 == s2
-                    } else if let (Expression::Symbol(s2), Expression::Number(Number::Integer(n))) = (&factors[0], &factors[1]) {
+                    } else if let (Expression::Symbol(s2), Expression::Number(CompactNumber::SmallInt(n))) = (&factors[0], &factors[1]) {
                         n == &BigInt::from(-1) && s1 == s2
                     } else {
                         false
@@ -157,7 +157,7 @@ impl Expression {
         
         // Remove the -1 factor and compare
         let neg_without_minus_one: Vec<Expression> = neg_factors.iter()
-            .filter(|f| !matches!(f, Expression::Number(Number::Integer(n)) if n == &BigInt::from(-1)))
+            .filter(|f| !matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if n == &BigInt::from(-1)))
             .cloned()
             .collect();
         
@@ -168,7 +168,7 @@ impl Expression {
     /// Check if factors contain -1
     fn has_negative_one_factor(&self, factors: &[Expression]) -> bool {
         factors.iter().any(|f| {
-            matches!(f, Expression::Number(Number::Integer(n)) if n == &BigInt::from(-1))
+            matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if n == &BigInt::from(-1))
         })
     }
     
@@ -205,14 +205,14 @@ impl Expression {
     /// Extract coefficient and base term
     fn extract_coefficient_and_base_term(&self, term: &Expression) -> (BigInt, Expression) {
         match term {
-            Expression::Number(Number::Integer(n)) => (n.clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(1)),
             Expression::Symbol(_) => (BigInt::one(), term.clone()),
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
                 let mut base_factors = Vec::new();
                 
-                for factor in factors {
-                    if let Expression::Number(Number::Integer(n)) = factor {
+                for factor in factors.iter() {
+                    if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
                         coefficient *= n;
                     } else {
                         base_factors.push(factor.clone());

@@ -34,8 +34,8 @@ impl Expression {
     
     /// Create a new integer expression (optimized)
     #[inline(always)]
-    pub fn integer<T: Into<i64>>(value: T) -> Self {
-        Self::Number(CompactNumber::SmallInt(value.into()))
+    pub fn integer<T: Into<num_bigint::BigInt>>(value: T) -> Self {
+        Self::Number(CompactNumber::integer(value.into()))
     }
     
     /// Create a new symbol expression

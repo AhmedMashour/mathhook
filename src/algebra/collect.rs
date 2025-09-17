@@ -1,7 +1,7 @@
 //! Term collection and combination operations
 //! Handles collecting like terms, combining coefficients, and organizing expressions
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
 use std::collections::HashMap;
@@ -103,7 +103,7 @@ impl Expression {
     fn extract_coefficient_and_power(&self, term: &Expression, var: &Symbol) -> (BigInt, Expression) {
         match term {
             // Pure number
-            Expression::Number(Number::Integer(n)) => (n.clone(), Expression::integer(0)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(0)),
             
             // Pure variable
             Expression::Symbol(s) if s == var => (BigInt::one(), Expression::integer(1)),
@@ -127,10 +127,10 @@ impl Expression {
                 let mut power = Expression::integer(0);
                 let mut has_var = false;
                 
-                for factor in factors {
+                for factor in factors.iter() {
                     match factor {
-                        Expression::Number(Number::Integer(n)) => {
-                            coefficient *= n;
+                        Expression::Number(CompactNumber::SmallInt(n)) => {
+                            coefficient *= BigInt::from(*n);
                         },
                         Expression::Symbol(s) if s == var => {
                             power = Expression::integer(1);
@@ -199,7 +199,7 @@ impl Expression {
     /// Extract coefficient and base term from any expression
     fn extract_coefficient_and_base(&self, expr: &Expression) -> (BigInt, Expression) {
         match expr {
-            Expression::Number(Number::Integer(n)) => (n.clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(1)),
             
             Expression::Symbol(_) => (BigInt::one(), expr.clone()),
             
@@ -207,9 +207,9 @@ impl Expression {
                 let mut coefficient = BigInt::one();
                 let mut non_numeric_factors = Vec::new();
                 
-                for factor in factors {
-                    if let Expression::Number(Number::Integer(n)) = factor {
-                        coefficient *= n;
+                for factor in factors.iter() {
+                    if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
+                        coefficient *= BigInt::from(*n);
                     } else {
                         non_numeric_factors.push(factor.clone());
                     }
@@ -238,8 +238,8 @@ impl Expression {
         
         for factor in factors {
             match factor {
-                Expression::Number(Number::Integer(n)) => {
-                    numeric_factor *= n;
+                Expression::Number(CompactNumber::SmallInt(n)) => {
+                    numeric_factor *= BigInt::from(*n);
                 },
                 Expression::Pow(base, exp) => {
                     base_powers.entry((**base).clone()).or_insert(Vec::new()).push((**exp).clone());
