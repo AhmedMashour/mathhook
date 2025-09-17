@@ -29,6 +29,14 @@ impl PolynomialGcd for Expression {
             return self.clone();
         }
         
+        // 🚀 ZERO CASES: Handle zero specially
+        if self.is_zero() {
+            return other.clone();
+        }
+        if other.is_zero() {
+            return self.clone();
+        }
+        
         // 🚀 OPTIMIZED: Polynomial GCD with advanced algorithms
         self.polynomial_gcd_euclidean(other)
     }
