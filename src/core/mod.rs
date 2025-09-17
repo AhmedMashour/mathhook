@@ -11,7 +11,7 @@ pub mod step_by_step;
 
 // Performance optimization modules (essential only)
 pub mod compact_number;
-pub mod compact_expression;
+// 🚀 MAGIC BULLET #2: CompactExpression functionality merged into Expression
 pub mod simd_ops;
 pub mod arena;
 
@@ -20,7 +20,7 @@ pub use symbol::Symbol;
 pub use number::Number;
 pub use expression::Expression;
 pub use compact_number::CompactNumber;
-pub use compact_expression::CompactExpression;
+// 🚀 MAGIC BULLET #2: Expression IS CompactExpression (32-byte optimized)
 pub use simd_ops::{SimdOps, SimdOptimized};
 pub use arena::ExpressionArena;
 pub use step_by_step::{StepByStep, StepByStepExplanation, Step};

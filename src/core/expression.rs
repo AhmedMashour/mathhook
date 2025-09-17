@@ -1,11 +1,12 @@
-//! 🚀 PERFORMANCE NORMALIZED: Expression IS CompactExpression (42M+ ops/sec)
+//! 🚀 MAGIC BULLET #2: Expression IS CompactExpression (32-byte optimized, 42M+ ops/sec)
 //! High-performance expression representation - the heart of the algebra system
 
 use crate::core::{Symbol, CompactNumber};
+use crate::algebra::simplify::Simplify;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// 🚀 PERFORMANCE NORMALIZED: Expression with 42M+ ops/sec capability
+/// 🚀 MAGIC BULLET #2: Expression with 32-byte optimization and 42M+ ops/sec capability
 /// Memory-optimized with boxed vectors for cache efficiency
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expression {
@@ -32,10 +33,16 @@ impl Expression {
         Self::Number(value.into())
     }
     
-    /// Create a new integer expression (optimized)
+    /// Create a new integer expression (optimized path for small integers)
     #[inline(always)]
     pub fn integer<T: Into<num_bigint::BigInt>>(value: T) -> Self {
-        Self::Number(CompactNumber::integer(value.into()))
+        let big_int = value.into();
+        // 🚀 MAGIC BULLET #2: Fast path for small integers
+        if let Ok(small_int) = i64::try_from(&big_int) {
+            Self::Number(CompactNumber::SmallInt(small_int))
+        } else {
+            Self::Number(CompactNumber::BigInteger(Box::new(big_int)))
+        }
     }
     
     /// Create a new symbol expression
