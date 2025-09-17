@@ -262,7 +262,7 @@ impl Expression {
                 Expression::Mul(factors) if factors.len() >= 2 => {
                     if let Some(expanded) = self.try_expand_multiplication(factors) {
                         if let Expression::Add(expanded_terms) = expanded {
-                            simplified_terms.extend(expanded_terms);
+                            simplified_terms.extend(expanded_terms.into_iter());
                         } else {
                             simplified_terms.push(expanded);
                         }
@@ -283,14 +283,14 @@ impl Expression {
         // Look for patterns like coefficient * (sum)
         if factors.len() == 2 {
             match (&factors[0], &factors[1]) {
-                (Expression::Number(Number::Integer(coeff)), Expression::Add(terms)) => {
+                (Expression::Number(CompactNumber::SmallInt(coeff)), Expression::Add(terms)) => {
                     // Distribute: coeff * (a + b) = coeff*a + coeff*b
                     let distributed_terms: Vec<Expression> = terms.iter()
                         .map(|term| Expression::mul(vec![Expression::integer(coeff.clone()), term.clone()]))
                         .collect();
                     Some(Expression::add(distributed_terms))
                 },
-                (Expression::Add(terms), Expression::Number(Number::Integer(coeff))) => {
+                (Expression::Add(terms), Expression::Number(CompactNumber::SmallInt(coeff))) => {
                     // Distribute: (a + b) * coeff = a*coeff + b*coeff
                     let distributed_terms: Vec<Expression> = terms.iter()
                         .map(|term| Expression::mul(vec![term.clone(), Expression::integer(coeff.clone())]))

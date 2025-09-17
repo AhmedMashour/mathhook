@@ -216,7 +216,7 @@ impl Expression {
                     } else if remaining_factors.len() == 1 {
                         remaining_factors[0].clone()
                     } else {
-                        Expression::mul((**remaining_factors).clone())
+                        Expression::mul(remaining_factors.as_ref().clone())
                     }
                 } else {
                     expr.clone()

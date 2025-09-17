@@ -46,7 +46,8 @@ impl Collect for Expression {
 impl Expression {
     /// Collect terms in an addition with respect to a variable
     fn collect_addition_terms(&self, terms: &[Expression], var: &Symbol) -> Expression {
-        let mut coefficients: HashMap<Expression, BigInt> = HashMap::new();
+        // Use Vec instead of HashMap due to Expression not implementing Eq+Hash (contains f64)
+        let mut term_coefficients: Vec<(Expression, BigInt)> = Vec::new();
         let mut constant_term = BigInt::zero();
         
         for term in terms {
@@ -57,7 +58,18 @@ impl Expression {
                 constant_term += coeff;
             } else {
                 // Variable term
-                *coefficients.entry(power_expr).or_insert(BigInt::zero()) += coeff;
+                // Find existing entry or create new one
+            let mut found = false;
+            for (existing_expr, existing_coeff) in term_coefficients.iter_mut() {
+                if *existing_expr == power_expr {
+                    *existing_coeff += &coeff;
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                term_coefficients.push((power_expr, coeff));
+            }
             }
         }
         
@@ -70,7 +82,7 @@ impl Expression {
         }
         
         // Add variable terms
-        for (power_expr, coeff) in coefficients {
+        for (power_expr, coeff) in term_coefficients {
             if !coeff.is_zero() {
                 let term = if coeff.is_one() {
                     if power_expr == Expression::integer(1) {
@@ -103,7 +115,7 @@ impl Expression {
     fn extract_coefficient_and_power(&self, term: &Expression, var: &Symbol) -> (BigInt, Expression) {
         match term {
             // Pure number
-            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(0)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(0)),
             
             // Pure variable
             Expression::Symbol(s) if s == var => (BigInt::one(), Expression::integer(1)),
@@ -164,17 +176,29 @@ impl Expression {
     
     /// Collect all like terms regardless of variable
     fn collect_all_like_terms(&self, terms: &[Expression]) -> Expression {
-        let mut term_map: HashMap<Expression, BigInt> = HashMap::new();
+        // Use Vec instead of HashMap due to Expression not implementing Eq+Hash
+        let mut term_coefficients: Vec<(Expression, BigInt)> = Vec::new();
         
         for term in terms {
             let (coeff, base_term) = self.extract_coefficient_and_base(term);
-            *term_map.entry(base_term).or_insert(BigInt::zero()) += coeff;
+            // Find existing entry or create new one
+            let mut found = false;
+            for (existing_expr, existing_coeff) in term_coefficients.iter_mut() {
+                if *existing_expr == base_term {
+                    *existing_coeff += &coeff;
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                term_coefficients.push((base_term, coeff));
+            }
         }
         
         // Reconstruct expression
         let mut result_terms = Vec::new();
         
-        for (base_term, total_coeff) in term_map {
+        for (base_term, total_coeff) in term_coefficients {
             if !total_coeff.is_zero() {
                 let final_term = if total_coeff.is_one() {
                     base_term
@@ -199,7 +223,7 @@ impl Expression {
     /// Extract coefficient and base term from any expression
     fn extract_coefficient_and_base(&self, expr: &Expression) -> (BigInt, Expression) {
         match expr {
-            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
             
             Expression::Symbol(_) => (BigInt::one(), expr.clone()),
             
@@ -232,7 +256,8 @@ impl Expression {
     
     /// Collect terms in multiplication (combine powers of same base)
     fn collect_multiplication_terms(&self, factors: &[Expression]) -> Expression {
-        let mut base_powers: HashMap<Expression, Vec<Expression>> = HashMap::new();
+        // Use Vec instead of HashMap due to Expression not implementing Eq+Hash
+        let mut base_powers: Vec<(Expression, Vec<Expression>)> = Vec::new();
         let mut numeric_factor = BigInt::one();
         let mut other_factors = Vec::new();
         
@@ -242,10 +267,34 @@ impl Expression {
                     numeric_factor *= BigInt::from(*n);
                 },
                 Expression::Pow(base, exp) => {
-                    base_powers.entry((**base).clone()).or_insert(Vec::new()).push((**exp).clone());
+                    // Find existing base or create new entry
+                    let base_expr = (**base).clone();
+                    let exp_expr = (**exp).clone();
+                    let mut found = false;
+                    for (existing_base, powers) in base_powers.iter_mut() {
+                        if *existing_base == base_expr {
+                            powers.push(exp_expr);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if !found {
+                        base_powers.push((base_expr, vec![exp_expr]));
+                    }
                 },
                 Expression::Symbol(_) => {
-                    base_powers.entry(factor.clone()).or_insert(Vec::new()).push(Expression::integer(1));
+                    // Find existing base or create new entry
+                    let mut found = false;
+                    for (existing_base, powers) in base_powers.iter_mut() {
+                        if *existing_base == *factor {
+                            powers.push(Expression::integer(1));
+                            found = true;
+                            break;
+                        }
+                    }
+                    if !found {
+                        base_powers.push((factor.clone(), vec![Expression::integer(1)]));
+                    }
                 },
                 _ => {
                     other_factors.push(factor.clone());
@@ -299,7 +348,7 @@ impl Expression {
                 let mut constants = Vec::new();
                 let mut variables = Vec::new();
                 
-                for term in terms {
+                for term in terms.iter() {
                     if self.is_constant(term) {
                         constants.push(term.clone());
                     } else {

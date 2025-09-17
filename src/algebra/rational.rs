@@ -195,7 +195,7 @@ impl Expression {
             // Numeric division
                 (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
                 if !b.is_zero() {
-                    let rational = BigRational::new(a.clone(), b.clone());
+                    let rational = BigRational::new(BigInt::from(*a), BigInt::from(*b));
                     if rational.denom().is_one() {
                         Expression::integer(rational.numer().clone())
                     } else {
@@ -219,7 +219,7 @@ impl Expression {
                     } else if remaining_factors.len() == 1 {
                         remaining_factors[0].clone()
                     } else {
-                        Expression::mul((**remaining_factors).clone())
+                        Expression::mul(remaining_factors.as_ref().clone())
                     }
                 } else {
                     dividend.clone()
