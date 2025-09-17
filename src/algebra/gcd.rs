@@ -2,9 +2,9 @@
 //! Greatest Common Divisor operations for polynomials and expressions
 //! Mathematically correct and blazingly fast implementation
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use num_bigint::BigInt;
-use num_traits::{Zero, One, Signed};
+use num_traits::{Zero, One};
 use num_integer::Integer; // For GCD on BigInt
 
 /// Trait for GCD operations on expressions
@@ -20,7 +20,7 @@ impl PolynomialGcd for Expression {
     #[inline(always)]
     fn gcd(&self, other: &Self) -> Self {
         // 🚀 HOT PATH: Numeric GCD (most common case)
-        if let (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) = (self, other) {
+        if let (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) = (self, other) {
             return Expression::integer(a.gcd(b));
         }
         
@@ -143,11 +143,14 @@ impl Expression {
     /// Extract numeric coefficient from expression
     fn extract_numeric_coefficient(&self) -> BigInt {
         match self {
-            Expression::Number(Number::Integer(n)) => n.clone(),
+            Expression::Number(CompactNumber::SmallInt(n)) => BigInt::from(*n),
+            Expression::Number(CompactNumber::BigInteger(n)) => n.as_ref().clone(),
             Expression::Mul(factors) => {
-                for factor in factors {
-                    if let Expression::Number(Number::Integer(n)) = factor {
-                        return n.clone();
+                for factor in factors.iter() {
+                    match factor {
+                        Expression::Number(CompactNumber::SmallInt(n)) => return BigInt::from(*n),
+                        Expression::Number(CompactNumber::BigInteger(n)) => return n.as_ref().clone(),
+                        _ => {}
                     }
                 }
                 BigInt::one()
@@ -212,8 +215,8 @@ impl Expression {
     fn is_multiple_of(&self, other: &Self) -> bool {
         match (self, other) {
             (Expression::Mul(factors), single) => factors.contains(single),
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
-                !b.is_zero() && (a % b).is_zero()
+            (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
+                *b != 0 && (a % b) == 0
             }
             _ => false,
         }

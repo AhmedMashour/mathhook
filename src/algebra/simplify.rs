@@ -1,9 +1,8 @@
 //! High-performance simplification engine with normalized performance
 //! Achieves 14.27M ops/sec through advanced optimization techniques
 
-use crate::core::{Expression, Number, Symbol};
-use num_traits::{Zero, One, Signed};
-use num_bigint::BigInt;
+use crate::core::{Expression, CompactNumber, Symbol};
+use num_traits::{Zero, One};
 
 /// Trait for simplifying expressions
 pub trait Simplify {
@@ -49,29 +48,33 @@ impl Expression {
         }
         
         // Hot path: numeric combination with branch prediction optimization
-        let mut numeric_sum = BigInt::zero();
+        let mut numeric_sum = 0i64;
         let mut has_numeric = false;
         let mut non_numeric_terms = Vec::new();
         
         for term in terms {
-            // 🚀 BRANCH PREDICTION: Most likely case first (numbers are common)
-            if let Expression::Number(Number::Integer(n)) = term {
-                numeric_sum += n;
-                has_numeric = true;
+            // 🚀 BRANCH PREDICTION: Most likely case first (small integers are common)
+            if let Expression::Number(CompactNumber::SmallInt(n)) = term {
+                if let Some(new_sum) = numeric_sum.checked_add(*n) {
+                    numeric_sum = new_sum;
+                    has_numeric = true;
+                } else {
+                    non_numeric_terms.push(term.clone());
+                }
             } else {
                 non_numeric_terms.push(term.clone());
             }
         }
         
         // Combine results efficiently
-        if has_numeric && !numeric_sum.is_zero() {
+        if has_numeric && numeric_sum != 0 {
             non_numeric_terms.insert(0, Expression::integer(numeric_sum));
         }
         
         match non_numeric_terms.len() {
             0 => Expression::integer(0),
             1 => non_numeric_terms.into_iter().next().unwrap(),
-            _ => Expression::Add(non_numeric_terms),
+            _ => Expression::Add(Box::new(non_numeric_terms)),
         }
     }
     
@@ -86,32 +89,36 @@ impl Expression {
         }
         
         // Hot path: numeric combination with zero detection
-        let mut numeric_product = BigInt::one();
+        let mut numeric_product = 1i64;
         let mut has_numeric = false;
         let mut non_numeric_factors = Vec::new();
         
         for factor in factors {
             // 🚀 BRANCH PREDICTION: Check for zero first (early termination)
-            if let Expression::Number(Number::Integer(n)) = factor {
-                if n.is_zero() {
+            if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
+                if *n == 0 {
                     return Expression::integer(0);
                 }
-                numeric_product *= n;
-                has_numeric = true;
+                if let Some(new_product) = numeric_product.checked_mul(*n) {
+                    numeric_product = new_product;
+                    has_numeric = true;
+                } else {
+                    non_numeric_factors.push(factor.clone());
+                }
             } else {
                 non_numeric_factors.push(factor.clone());
             }
         }
         
         // Combine results efficiently
-        if has_numeric && !numeric_product.is_one() {
+        if has_numeric && numeric_product != 1 {
             non_numeric_factors.insert(0, Expression::integer(numeric_product));
         }
         
         match non_numeric_factors.len() {
             0 => Expression::integer(1),
             1 => non_numeric_factors.into_iter().next().unwrap(),
-            _ => Expression::Mul(non_numeric_factors),
+            _ => Expression::Mul(Box::new(non_numeric_factors)),
         }
     }
     
@@ -119,20 +126,20 @@ impl Expression {
     #[inline(always)]
     fn simplify_power_optimized(&self, base: &Expression, exp: &Expression) -> Self {
         // Fast paths for common cases
-        if let Expression::Number(Number::Integer(exp_val)) = exp {
-            if exp_val.is_zero() {
+        if let Expression::Number(CompactNumber::SmallInt(exp_val)) = exp {
+            if *exp_val == 0 {
                 return Expression::integer(1);
             }
-            if exp_val.is_one() {
+            if *exp_val == 1 {
                 return base.clone();
             }
         }
         
-        if let Expression::Number(Number::Integer(base_val)) = base {
-            if base_val.is_zero() {
+        if let Expression::Number(CompactNumber::SmallInt(base_val)) = base {
+            if *base_val == 0 {
                 return Expression::integer(0);
             }
-            if base_val.is_one() {
+            if *base_val == 1 {
                 return Expression::integer(1);
             }
         }
@@ -144,10 +151,12 @@ impl Expression {
     /// 🚀 HOT PATH: Simplify two terms efficiently
     #[inline(always)]
     fn simplify_two_terms_hot_path(&self, term1: &Expression, term2: &Expression) -> Expression {
-        // 🚀 BRANCH PREDICTION: Most likely case first (integers are most common)
-        if let (Expression::Number(Number::Integer(n1)), Expression::Number(Number::Integer(n2))) = (term1, term2) {
-            // Hot path: both integers (90% of numeric cases)
-            return Expression::integer(n1 + n2);
+        // 🚀 BRANCH PREDICTION: Most likely case first (small integers are most common)
+        if let (Expression::Number(CompactNumber::SmallInt(n1)), Expression::Number(CompactNumber::SmallInt(n2))) = (term1, term2) {
+            // Hot path: both small integers (90% of numeric cases)
+            if let Some(sum) = n1.checked_add(*n2) {
+                return Expression::integer(sum);
+            }
         }
         
         // Less common cases
