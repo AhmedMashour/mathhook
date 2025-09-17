@@ -1,0 +1,18 @@
+[
+    {
+        "id": "sin_latex",
+        "language": "latex",
+        "category": "trigonometric",
+        "input": "2*\\cos(x)",
+        "expected_expr": "Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })])}",
+        "description": "Simple sin function"
+    },
+    {
+        "id": "sin_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric",
+        "input": "Sin[x]",
+        "expected_expr": "Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })])}",
+        "description": "Simple sin function"
+    }
+]

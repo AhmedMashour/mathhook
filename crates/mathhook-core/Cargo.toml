@@ -1,0 +1,43 @@
+[package]
+name = "mathhook-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
+
+[build-dependencies]
+lalrpop = "0.22.2"
+
+[dependencies]
+# Procedural macros (expr!, etc.)
+mathhook-macros = { path = "../mathhook-macros" }
+
+# Parser dependencies
+lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
+
+
+# Core math dependencies
+num-bigint = { workspace = true, features = ["serde"] }
+num-rational = { workspace = true, features = ["serde"] }
+num-traits.workspace = true
+num-integer.workspace = true
+
+# Utilities
+serde.workspace = true
+serde_json.workspace = true
+once_cell.workspace = true
+tempfile.workspace = true
+rayon.workspace = true
+dirs.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+proptest.workspace = true
+
+[features]
+# GPU acceleration features (optional, not implemented yet)
+cuda = []
+webgpu = []

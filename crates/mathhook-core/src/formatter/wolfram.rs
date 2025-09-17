@@ -1,0 +1,392 @@
+use super::{FormattingContext, FormattingError};
+use crate::core::expression::smart_display::SmartDisplayFormatter;
+use crate::core::expression::{CalculusData, RelationType};
+use crate::core::{Expression, Number};
+use crate::functions::intelligence::get_universal_registry;
+
+const MAX_RECURSION_DEPTH: usize = 1000;
+const MAX_TERMS_PER_OPERATION: usize = 10000;
+
+/// Wolfram formatting context
+#[derive(Debug, Default, Clone)]
+pub struct WolframContext {
+    pub needs_parentheses: bool,
+}
+
+impl FormattingContext for WolframContext {}
+
+/// Format the expression to Wolfram Language
+pub trait WolframFormatter {
+    /// Format an Expression as Wolfram Language notation
+    ///
+    /// Converts mathematical expressions into Wolfram Language format suitable for
+    /// use in Mathematica and other Wolfram products.
+    ///
+    /// # Arguments
+    /// * `context` - Wolfram formatting configuration
+    ///
+    /// # Context Options
+    /// * `needs_parentheses` - Whether to wrap the entire expression in parentheses
+    ///
+    /// # Examples
+    /// ```
+    /// use mathhook_core::{Expression, expr};
+    /// use mathhook_core::formatter::wolfram::{WolframFormatter, WolframContext};
+    ///
+    /// let expression = expr!(x ^ 2);
+    /// let context = WolframContext::default();
+    /// let result = expression.to_wolfram(&context).unwrap();
+    /// assert!(result.contains("Power"));
+    /// assert!(result.contains("x"));
+    /// ```
+    ///
+    /// # Error Handling
+    /// Returns error messages for expressions that exceed safety limits:
+    /// - Maximum recursion depth (1000 levels)
+    /// - Maximum terms per operation (10000 terms)
+    fn to_wolfram(&self, context: &WolframContext) -> Result<String, FormattingError> {
+        self.to_wolfram_with_depth(context, 0)
+    }
+
+    /// Format with explicit recursion depth tracking
+    ///
+    /// Internal method that provides stack overflow protection by tracking
+    /// recursion depth. This method returns a Result to allow proper error
+    /// propagation during recursive formatting.
+    ///
+    /// # Arguments
+    /// * `context` - Wolfram formatting configuration
+    /// * `depth` - Current recursion depth (starts at 0)
+    ///
+    /// # Returns
+    /// * `Ok(String)` - Successfully formatted Wolfram expression
+    /// * `Err(String)` - Error message if limits exceeded
+    ///
+    /// # Safety Limits
+    /// * Maximum recursion depth: 1000 levels
+    /// * Maximum terms per operation: 10000 terms/factors/arguments
+    fn to_wolfram_with_depth(
+        &self,
+        context: &WolframContext,
+        depth: usize,
+    ) -> Result<String, FormattingError>;
+
+    /// Convert function to Wolfram Language with depth tracking
+    fn format_function_with_depth(
+        &self,
+        name: &str,
+        args: &[Expression],
+        context: &WolframContext,
+        depth: usize,
+    ) -> Result<String, FormattingError>;
+}
+
+impl WolframFormatter for Expression {
+    fn to_wolfram_with_depth(
+        &self,
+        context: &WolframContext,
+        depth: usize,
+    ) -> Result<String, FormattingError> {
+        if depth > MAX_RECURSION_DEPTH {
+            return Err(FormattingError::RecursionLimitExceeded {
+                depth,
+                limit: MAX_RECURSION_DEPTH,
+            });
+        }
+
+        match self {
+            Expression::Number(Number::Integer(n)) => Ok(n.to_string()),
+            Expression::Number(Number::BigInteger(n)) => Ok(n.to_string()),
+            Expression::Number(Number::Rational(r)) => {
+                if r.denom() == &num_bigint::BigInt::from(1) {
+                    Ok(r.numer().to_string())
+                } else {
+                    // Use Power[denominator, -1] for proper Wolfram syntax
+                    Ok(format!("Times[{}, Power[{}, -1]]", r.numer(), r.denom()))
+                }
+            }
+            Expression::Number(Number::Float(f)) => Ok(f.to_string()),
+            Expression::Symbol(s) => Ok(s.name().to_owned()),
+            Expression::Add(terms) => {
+                if terms.len() > MAX_TERMS_PER_OPERATION {
+                    return Err(FormattingError::TooManyTerms {
+                        count: terms.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
+                }
+
+                if terms.len() == 1 {
+                    terms[0].to_wolfram_with_depth(context, depth + 1)
+                } else if terms.len() == 2
+                    && SmartDisplayFormatter::is_negated_expression(&terms[1])
+                {
+                    // Smart subtraction detection: x + (-1 * y) → Subtract[x, y]
+                    if let Some(positive_part) =
+                        SmartDisplayFormatter::extract_negated_expression(&terms[1])
+                    {
+                        Ok(format!(
+                            "Subtract[{}, {}]",
+                            terms[0].to_wolfram_with_depth(context, depth + 1)?,
+                            positive_part.to_wolfram_with_depth(context, depth + 1)?
+                        ))
+                    } else {
+                        let mut term_strs = Vec::with_capacity(terms.len());
+                        for term in terms.iter() {
+                            term_strs.push(term.to_wolfram_with_depth(context, depth + 1)?);
+                        }
+                        Ok(format!("Plus[{}]", term_strs.join(", ")))
+                    }
+                } else {
+                    let mut term_strs = Vec::with_capacity(terms.len());
+                    for term in terms.iter() {
+                        term_strs.push(term.to_wolfram_with_depth(context, depth + 1)?);
+                    }
+                    Ok(format!("Plus[{}]", term_strs.join(", ")))
+                }
+            }
+            Expression::Mul(factors) => {
+                if factors.len() > MAX_TERMS_PER_OPERATION {
+                    return Err(FormattingError::TooManyTerms {
+                        count: factors.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
+                }
+
+                if factors.len() == 1 {
+                    factors[0].to_wolfram_with_depth(context, depth + 1)
+                } else if let Some((dividend, divisor)) =
+                    SmartDisplayFormatter::extract_division_parts(factors)
+                {
+                    // Smart division detection: x * y^(-1) → Divide[x, y]
+                    Ok(format!(
+                        "Divide[{}, {}]",
+                        dividend.to_wolfram_with_depth(context, depth + 1)?,
+                        divisor.to_wolfram_with_depth(context, depth + 1)?
+                    ))
+                } else {
+                    let mut factor_strs = Vec::with_capacity(factors.len());
+                    for factor in factors.iter() {
+                        factor_strs.push(factor.to_wolfram_with_depth(context, depth + 1)?);
+                    }
+                    Ok(format!("Times[{}]", factor_strs.join(", ")))
+                }
+            }
+            Expression::Pow(base, exp) => Ok(format!(
+                "Power[{}, {}]",
+                base.to_wolfram_with_depth(context, depth + 1)?,
+                exp.to_wolfram_with_depth(context, depth + 1)?
+            )),
+            Expression::Function { name, args } => {
+                self.format_function_with_depth(name, args, context, depth + 1)
+            }
+            Expression::Complex(complex_data) => Ok(format!(
+                "Complex[{}, {}]",
+                complex_data
+                    .real
+                    .to_wolfram_with_depth(context, depth + 1)?,
+                complex_data
+                    .imag
+                    .to_wolfram_with_depth(context, depth + 1)?
+            )),
+            Expression::Matrix(_) => Ok("matrix".to_owned()),
+            Expression::Constant(c) => Ok(format!("{:?}", c)),
+            Expression::Relation(relation_data) => {
+                let left_wolfram = relation_data
+                    .left
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let right_wolfram = relation_data
+                    .right
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let operator = match relation_data.relation_type {
+                    RelationType::Equal => "Equal",
+                    RelationType::NotEqual => "Unequal",
+                    RelationType::Less => "Less",
+                    RelationType::LessEqual => "LessEqual",
+                    RelationType::Greater => "Greater",
+                    RelationType::GreaterEqual => "GreaterEqual",
+                    RelationType::Approximate => "TildeEqual",
+                    RelationType::Similar => "Tilde",
+                    RelationType::Proportional => "Proportional",
+                    RelationType::Congruent => "Congruent",
+                };
+                Ok(format!("{}[{}, {}]", operator, left_wolfram, right_wolfram))
+            }
+            Expression::Piecewise(piecewise_data) => {
+                let mut conditions = Vec::new();
+                let mut values = Vec::new();
+
+                for (condition, value) in &piecewise_data.pieces {
+                    conditions.push(condition.to_wolfram_with_depth(context, depth + 1)?);
+                    values.push(value.to_wolfram_with_depth(context, depth + 1)?);
+                }
+
+                if let Some(default_value) = &piecewise_data.default {
+                    conditions.push("True".to_owned());
+                    values.push(default_value.to_wolfram_with_depth(context, depth + 1)?);
+                }
+
+                let conditions_list = format!("{{{}}}", conditions.join(", "));
+                let values_list = format!("{{{}}}", values.join(", "));
+                Ok(format!("Piecewise[{}, {}]", values_list, conditions_list))
+            }
+            Expression::Set(elements) => {
+                if elements.len() > MAX_TERMS_PER_OPERATION {
+                    return Err(FormattingError::TooManyTerms {
+                        count: elements.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
+                }
+
+                if elements.is_empty() {
+                    Ok("{}".to_owned())
+                } else {
+                    let mut element_strs = Vec::with_capacity(elements.len());
+                    for elem in elements.iter() {
+                        element_strs.push(elem.to_wolfram_with_depth(context, depth + 1)?);
+                    }
+                    Ok(format!("{{{}}}", element_strs.join(", ")))
+                }
+            }
+            Expression::Interval(_) => Ok("interval".to_owned()),
+            Expression::Calculus(calculus_data) => {
+                Ok(match calculus_data.as_ref() {
+                    CalculusData::Derivative {
+                        expression,
+                        variable,
+                        order,
+                    } => {
+                        if *order == 1 {
+                            format!(
+                                "D[{}, {}]",
+                                expression.to_wolfram_with_depth(context, depth + 1)?,
+                                variable.name()
+                            )
+                        } else {
+                            format!(
+                                "D[{}, {{{}, {}}}]",
+                                expression.to_wolfram_with_depth(context, depth + 1)?,
+                                variable.name(),
+                                order
+                            )
+                        }
+                    }
+                    CalculusData::Integral {
+                        integrand,
+                        variable,
+                        bounds,
+                    } => match bounds {
+                        None => format!(
+                            "Integrate[{}, {}]",
+                            integrand.to_wolfram_with_depth(context, depth + 1)?,
+                            variable.name()
+                        ),
+                        Some((start, end)) => format!(
+                            "Integrate[{}, {{{}, {}, {}}}]",
+                            integrand.to_wolfram_with_depth(context, depth + 1)?,
+                            variable.name(),
+                            start.to_wolfram_with_depth(context, depth + 1)?,
+                            end.to_wolfram_with_depth(context, depth + 1)?
+                        ),
+                    },
+                    CalculusData::Limit {
+                        expression,
+                        variable,
+                        point,
+                        direction: _,
+                    } => {
+                        // Simplified Wolfram limit format for roundtrip consistency
+                        format!(
+                            "Limit[{}, {} -> {}]",
+                            expression.to_wolfram_with_depth(context, depth + 1)?,
+                            variable.name(),
+                            point.to_wolfram_with_depth(context, depth + 1)?
+                        )
+                    }
+                    CalculusData::Sum {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "Sum[{}, {{{}, {}, {}}}]",
+                            expression.to_wolfram_with_depth(context, depth + 1)?,
+                            variable.name(),
+                            start.to_wolfram_with_depth(context, depth + 1)?,
+                            end.to_wolfram_with_depth(context, depth + 1)?
+                        )
+                    }
+                    CalculusData::Product {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "Product[{}, {{{}, {}, {}}}]",
+                            expression.to_wolfram_with_depth(context, depth + 1)?,
+                            variable.name(),
+                            start.to_wolfram_with_depth(context, depth + 1)?,
+                            end.to_wolfram_with_depth(context, depth + 1)?
+                        )
+                    }
+                })
+            }
+            Expression::MethodCall(method_data) => {
+                let object_str = method_data
+                    .object
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let args_str = method_data
+                    .args
+                    .iter()
+                    .map(|arg| arg.to_wolfram_with_depth(context, depth + 1))
+                    .collect::<Result<Vec<_>, _>>()?
+                    .join(", ");
+                Ok(format!(
+                    "{}.{}[{}]",
+                    object_str, method_data.method_name, args_str
+                ))
+            }
+        }
+    }
+
+    /// Convert function to Wolfram Language with depth tracking
+    fn format_function_with_depth(
+        &self,
+        name: &str,
+        args: &[Expression],
+        context: &WolframContext,
+        depth: usize,
+    ) -> Result<String, FormattingError> {
+        if args.len() > MAX_TERMS_PER_OPERATION {
+            return Err(FormattingError::TooManyTerms {
+                count: args.len(),
+                limit: MAX_TERMS_PER_OPERATION,
+            });
+        }
+
+        let registry = get_universal_registry();
+        let wolfram_name = registry
+            .get_properties(name)
+            .and_then(|props| match props {
+                crate::functions::properties::FunctionProperties::Elementary(elem_props) => {
+                    elem_props.wolfram_name
+                }
+                crate::functions::properties::FunctionProperties::Special(spec_props) => {
+                    spec_props.wolfram_name
+                }
+                _ => None,
+            })
+            .unwrap_or(name);
+
+        if args.is_empty() {
+            Ok(wolfram_name.to_owned())
+        } else {
+            let mut arg_strs = Vec::with_capacity(args.len());
+            for arg in args.iter() {
+                arg_strs.push(arg.to_wolfram_with_depth(context, depth + 1)?);
+            }
+            Ok(format!("{}[{}]", wolfram_name, arg_strs.join(", ")))
+        }
+    }
+}

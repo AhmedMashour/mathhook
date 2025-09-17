@@ -1,0 +1,64 @@
+{
+  "name": "mathhook-node",
+  "version": "0.1.0",
+  "description": "Node.js bindings for MathHook mathematical engine",
+  "author": "Ahmed Mashhour <mpghknown@gmail.com>",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "binaryName": "mathhook-node",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "aarch64-apple-darwin",
+      "universal-apple-darwin",
+      "armv7-unknown-linux-gnueabihf",
+      "i686-pc-windows-msvc",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc"
+    ]
+  },
+  "license": "MIT OR Apache-2.0",
+  "devDependencies": {
+    "@napi-rs/cli": "^3.2.0",
+    "ava": "^6.4.1"
+  },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "keywords": [
+    "mathematics",
+    "symbolic",
+    "algebra",
+    "calculus",
+    "equation",
+    "solver",
+    "napi-rs"
+  ],
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AhmedMashour/mathhook.git"
+  },
+  "homepage": "https://github.com/AhmedMashour/mathhook",
+  "bugs": {
+    "url": "https://github.com/AhmedMashour/mathhook/issues"
+  }
+}

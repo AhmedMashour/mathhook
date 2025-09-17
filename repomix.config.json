@@ -1,0 +1,15 @@
+{
+    "output": {
+        "filePath": "repomix-output.xml",
+        "style": "xml"
+    },
+    "ignore": {
+        "customPatterns": [
+            "claudedocs/**",
+            "code-analysis/**",
+            "**/*.node",
+            "**/test_results_*.json",
+            "**/cases*.json"
+        ]
+    }
+}

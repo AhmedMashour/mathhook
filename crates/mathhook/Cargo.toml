@@ -1,0 +1,18 @@
+[package]
+name = "mathhook"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "High-performance educational computer algebra system with ergonomic Rust macros"
+
+[dependencies]
+mathhook-core = { path = "../mathhook-core" }
+num-bigint.workspace = true
+num-rational.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+

@@ -1,0 +1,29 @@
+{
+  "name": "mathhook-node-examples",
+  "version": "1.0.0",
+  "description": "TypeScript examples for MathHook Node.js bindings",
+  "private": true,
+  "scripts": {
+    "basic": "tsx basic-usage.ts",
+    "advanced": "tsx advanced-usage.ts",
+    "install-deps": "npm install",
+    "setup": "npm run install-deps && npm run build-binding",
+    "build-binding": "cd .. && napi build",
+    "clean": "cd .. && cargo clean"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "mathematics",
+    "symbolic",
+    "algebra",
+    "typescript",
+    "examples"
+  ]
+}

@@ -1,0 +1,45 @@
+[book]
+title = "MathHook CAS Documentation"
+authors = ["MathHook Contributors"]
+description = "High-performance educational computer algebra system in Rust"
+language = "en"
+src = "src"
+
+[output.html]
+mathjax-support = false
+git-repository-url = "https://github.com/AhmedMashour/mathhook"
+git-repository-icon = "fa-github"
+edit-url-template = "https://github.com/AhmedMashour/mathhook/edit/main/docs/{path}"
+
+[output.html.fold]
+enable = true
+level = 1
+
+[output.html.search]
+enable = true
+limit-results = 30
+teaser-word-count = 30
+use-boolean-and = true
+boost-title = 2
+boost-hierarchy = 1
+boost-paragraph = 1
+expand = true
+heading-split-level = 3
+
+[output.html.print]
+enable = true
+
+[preprocessor.katex]
+after = ["links"]
+
+[build]
+create-missing = false
+
+# Use cargo test instead of rustdoc for code examples
+# This gives us access to dependencies in Cargo.toml
+[rust]
+edition = "2021"
+
+[output.html.playground]
+runnable = true
+editable = true

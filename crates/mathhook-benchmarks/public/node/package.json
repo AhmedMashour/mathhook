@@ -1,0 +1,33 @@
+{
+  "name": "@mathhook/benchmarks-node",
+  "version": "0.1.0",
+  "description": "Node.js benchmark suite for MathHook CAS",
+  "main": "runAll.js",
+  "scripts": {
+    "bench": "node runAll.js",
+    "bench:core": "node corePerformance.js",
+    "bench:calculus": "node calculusBenchmarks.js",
+    "bench:solving": "node solvingBenchmarks.js",
+    "bench:simplification": "node simplificationBenchmarks.js",
+    "bench:functions": "node functionEvaluationBenchmarks.js",
+    "bench:polynomials": "node polynomialBenchmarks.js",
+    "bench:parsing": "node parsingBenchmarks.js",
+    "update-baseline": "node updateBaseline.js",
+    "compare": "node compareBaseline.js"
+  },
+  "keywords": [
+    "mathhook",
+    "benchmark",
+    "performance",
+    "cas",
+    "computer-algebra-system"
+  ],
+  "author": "MathHook Team",
+  "license": "MIT",
+  "dependencies": {
+    "mathhook-node": "file:../../../mathhook-node"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

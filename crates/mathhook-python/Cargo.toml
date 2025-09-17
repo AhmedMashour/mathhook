@@ -1,0 +1,22 @@
+[package]
+name = "mathhook-python"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Python bindings for MathHook mathematical engine"
+
+[lib]
+name = "mathhook_python"
+crate-type = ["cdylib"]
+
+[dependencies]
+mathhook-core = { path = "../mathhook-core" }
+mathhook-macros = { path = "../mathhook-macros" }
+pyo3 = { workspace = true, features = ["extension-module"] }
+serde.workspace = true
+serde_json.workspace = true
+
+[build-dependencies]
+pyo3-build-config = "0.26"

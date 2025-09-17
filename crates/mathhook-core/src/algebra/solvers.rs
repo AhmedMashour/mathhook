@@ -1,0 +1,299 @@
+//! Equation solvers module with modern Rust structure
+//!
+//! Comprehensive equation solving with step-by-step explanations.
+//! Follows modern Rust 2021+ conventions and test-driven development approach.
+
+use crate::core::{Expression, Number, Symbol};
+use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use serde::{Deserialize, Serialize};
+
+// Individual solver modules
+pub mod linear;
+pub mod matrix_equations;
+pub mod polynomial;
+pub mod quadratic;
+pub mod systems;
+
+// Re-exports for easy access
+pub use linear::LinearSolver;
+pub use matrix_equations::MatrixEquationSolver;
+pub use polynomial::PolynomialSolver;
+pub use quadratic::QuadraticSolver;
+pub use systems::SystemSolver;
+
+/// Unified result type for equation solvers
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum SolverResult {
+    /// Single solution found
+    Single(Expression),
+    /// Multiple solutions found
+    Multiple(Vec<Expression>),
+    /// No solution exists
+    NoSolution,
+    /// Infinite solutions exist
+    InfiniteSolutions,
+    /// Parametric solutions (for systems)
+    Parametric(Vec<Expression>),
+    /// Partial solutions found (some but not all roots)
+    /// Used when a solver can find some roots but not all expected roots.
+    /// For example, a cubic equation may have one real root found via rational root theorem,
+    /// but the remaining complex roots cannot be computed without implementing the full cubic formula.
+    Partial(Vec<Expression>),
+}
+
+/// Unified error handling for equation solvers
+#[derive(Debug, Clone, PartialEq)]
+pub enum SolverError {
+    /// Malformed equation
+    InvalidEquation(String),
+    /// Unsupported equation type
+    UnsupportedType(String),
+    /// Numerical instability
+    NumericalInstability(String),
+    /// Too complex to solve
+    ComplexityLimit(String),
+}
+
+/// Common interface for equation solvers
+pub trait EquationSolver {
+    /// Solve equation for given variable
+    fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult;
+
+    /// Solve with step-by-step explanation
+    fn solve_with_explanation(
+        &self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> (SolverResult, StepByStepExplanation);
+
+    /// Check if solver can handle this equation type
+    fn can_solve(&self, equation: &Expression) -> bool;
+}
+
+/// Trait for solving systems of equations
+pub trait SystemEquationSolver {
+    /// Solve system of equations
+    fn solve_system(&self, equations: &[Expression], variables: &[Symbol]) -> SolverResult;
+
+    /// Solve system with step-by-step explanation
+    fn solve_system_with_explanation(
+        &self,
+        equations: &[Expression],
+        variables: &[Symbol],
+    ) -> (SolverResult, StepByStepExplanation);
+}
+
+// Solver result utility methods
+
+impl SolverResult {
+    /// Check if result represents a valid solution
+    pub fn is_valid_solution(&self) -> bool {
+        match self {
+            SolverResult::NoSolution => true,
+            SolverResult::InfiniteSolutions => true,
+            SolverResult::Single(expr) => expr.is_valid_expression(),
+            SolverResult::Multiple(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
+            SolverResult::Parametric(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
+            SolverResult::Partial(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
+        }
+    }
+
+    /// Get number of solutions
+    pub fn solution_count(&self) -> Option<usize> {
+        match self {
+            SolverResult::Single(_) => Some(1),
+            SolverResult::Multiple(exprs) => Some(exprs.len()),
+            SolverResult::Parametric(exprs) => Some(exprs.len()),
+            SolverResult::Partial(exprs) => Some(exprs.len()),
+            SolverResult::NoSolution => Some(0),
+            SolverResult::InfiniteSolutions => None,
+        }
+    }
+}
+
+// Step-by-step integration for equation solvers
+
+/// Extension trait for Expression to add solver step-by-step support
+pub trait SolverStepByStep {
+    /// Solve with complete step-by-step explanation
+    fn solve_with_steps(&self, variable: &Symbol) -> (SolverResult, StepByStepExplanation);
+
+    /// Generate step-by-step explanation for solving process
+    fn explain_solving_steps(&self, variable: &Symbol) -> StepByStepExplanation;
+}
+
+impl SolverStepByStep for Expression {
+    fn solve_with_steps(&self, _variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
+        // Individual solver implementations override this method
+        let explanation = StepByStepExplanation::new(vec![
+            Step::new("Analysis", format!("Analyzing equation: {}", self)),
+            Step::new("Method", "Determining appropriate solving method"),
+            Step::new(
+                "Status",
+                "This equation type requires a specialized solver implementation",
+            ),
+        ]);
+
+        (SolverResult::NoSolution, explanation)
+    }
+
+    fn explain_solving_steps(&self, variable: &Symbol) -> StepByStepExplanation {
+        StepByStepExplanation::new(vec![
+            Step::new("Equation", format!("Given: {} = 0", self)),
+            Step::new("Variable", format!("Solve for: {}", variable.name)),
+            Step::new("Method", "Applying appropriate solving algorithm"),
+        ])
+    }
+}
+
+// Utility functions for expression validation
+
+impl Expression {
+    /// Check if expression is a valid mathematical expression
+    pub fn is_valid_expression(&self) -> bool {
+        // Basic validation - can be expanded
+        match self {
+            Expression::Number(_) | Expression::Symbol(_) => true,
+            Expression::Add(terms) | Expression::Mul(terms) => {
+                !terms.is_empty() && terms.iter().all(|t| t.is_valid_expression())
+            }
+            Expression::Pow(base, exp) => base.is_valid_expression() && exp.is_valid_expression(),
+            Expression::Function { args, .. } => args.iter().all(|a| a.is_valid_expression()),
+            // New expression types - basic validity checks
+            Expression::Complex(complex_data) => {
+                complex_data.real.is_valid_expression() && complex_data.imag.is_valid_expression()
+            }
+            Expression::Matrix(matrix) => {
+                // Validate matrix dimensions and all elements
+                let (rows, cols) = matrix.dimensions();
+                if rows == 0 || cols == 0 || rows > 1000 || cols > 1000 {
+                    return false;
+                }
+
+                // Validate each element recursively
+                for i in 0..rows {
+                    for j in 0..cols {
+                        if !matrix.get_element(i, j).is_valid_expression() {
+                            return false;
+                        }
+                    }
+                }
+                true
+            }
+            Expression::Constant(_) => true,
+            Expression::Relation(relation_data) => {
+                relation_data.left.is_valid_expression()
+                    && relation_data.right.is_valid_expression()
+            }
+            Expression::Piecewise(piecewise_data) => {
+                piecewise_data
+                    .pieces
+                    .iter()
+                    .all(|(cond, val)| cond.is_valid_expression() && val.is_valid_expression())
+                    && piecewise_data
+                        .default
+                        .as_ref()
+                        .is_none_or(|d| d.is_valid_expression())
+            }
+            Expression::Set(elements) => elements.iter().all(|e| e.is_valid_expression()),
+            Expression::Interval(interval_data) => {
+                interval_data.start.is_valid_expression() && interval_data.end.is_valid_expression()
+            }
+            // Calculus types - unified validation
+            Expression::Calculus(calculus_data) => {
+                use crate::core::expression::CalculusData;
+                match calculus_data.as_ref() {
+                    CalculusData::Derivative { expression, .. } => expression.is_valid_expression(),
+                    CalculusData::Integral { integrand, .. } => integrand.is_valid_expression(),
+                    CalculusData::Limit { expression, .. } => expression.is_valid_expression(),
+                    CalculusData::Sum {
+                        expression,
+                        start,
+                        end,
+                        ..
+                    } => {
+                        expression.is_valid_expression()
+                            && start.is_valid_expression()
+                            && end.is_valid_expression()
+                    }
+                    CalculusData::Product {
+                        expression,
+                        start,
+                        end,
+                        ..
+                    } => {
+                        expression.is_valid_expression()
+                            && start.is_valid_expression()
+                            && end.is_valid_expression()
+                    }
+                }
+            }
+            Expression::MethodCall(method_data) => {
+                method_data.object.is_valid_expression()
+                    && method_data.args.iter().all(|a| a.is_valid_expression())
+            }
+        }
+    }
+
+    /// Convert to LaTeX representation for solvers (avoid conflict)
+    pub fn solver_to_latex(&self) -> String {
+        match self {
+            Expression::Number(n) => format!("{}", n),
+            Expression::Symbol(s) => s.name.to_string(),
+            Expression::Add(terms) => {
+                let term_strs: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+                term_strs.join(" + ")
+            }
+            Expression::Mul(factors) => {
+                let factor_strs: Vec<String> = factors.iter().map(|f| format!("{}", f)).collect();
+                factor_strs.join(" \\cdot ")
+            }
+            Expression::Pow(base, exp) => {
+                format!("{}^{{{}}}", base, exp)
+            }
+            Expression::Function { name, args } => {
+                let arg_strs: Vec<String> = args.iter().map(|a| format!("{}", a)).collect();
+                format!("\\{}({})", name, arg_strs.join(", "))
+            }
+            // New expression types - implement later
+            _ => "\\text{unknown}".to_owned(),
+        }
+    }
+
+    pub fn flatten_add_terms(&self) -> Vec<Expression> {
+        match self {
+            Expression::Add(terms) => terms
+                .iter()
+                .flat_map(|term| term.flatten_add_terms())
+                .collect(),
+            _ => vec![self.clone()],
+        }
+    }
+
+    /// Negate an expression
+    pub fn negate(&self) -> Expression {
+        // Distribute negation for canonical form: -(a + b) = -a + -b
+        match self {
+            Expression::Add(terms) => {
+                let negated_terms: Vec<Expression> = terms.iter().map(|t| t.negate()).collect();
+                Expression::add(negated_terms)
+            }
+            Expression::Number(Number::Integer(n)) => Expression::integer(-n),
+            Expression::Number(Number::Rational(r)) => {
+                Expression::Number(Number::rational(-(**r).clone()))
+            }
+            Expression::Mul(factors) if factors.len() == 2 => {
+                if let [Expression::Number(Number::Integer(-1)), expr] = &factors[..] {
+                    // -(-expr) = expr (double negation)
+                    expr.clone()
+                } else if let [Expression::Number(Number::Integer(n)), rest] = &factors[..] {
+                    // -(n * rest) = (-n) * rest
+                    Expression::mul(vec![Expression::integer(-n), rest.clone()])
+                } else {
+                    Expression::mul(vec![Expression::integer(-1), self.clone()])
+                }
+            }
+            _ => Expression::mul(vec![Expression::integer(-1), self.clone()]),
+        }
+    }
+}

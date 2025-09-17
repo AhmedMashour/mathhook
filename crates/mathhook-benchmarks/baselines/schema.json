@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MathHook Benchmark Baseline",
+  "description": "Performance baseline for MathHook benchmarks across platforms",
+  "type": "object",
+  "required": ["metadata", "benchmarks"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["timestamp", "git_commit", "platform", "version"],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp when baseline was created"
+        },
+        "git_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$",
+          "description": "Git commit hash (short or full)"
+        },
+        "git_branch": {
+          "type": "string",
+          "description": "Git branch name"
+        },
+        "git_dirty": {
+          "type": "boolean",
+          "description": "Whether working directory had uncommitted changes"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["rust", "python", "node"],
+          "description": "Platform/binding type"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+",
+          "description": "MathHook version (semver)"
+        },
+        "system": {
+          "type": "object",
+          "properties": {
+            "os": {
+              "type": "string",
+              "description": "Operating system"
+            },
+            "arch": {
+              "type": "string",
+              "description": "CPU architecture (x86_64, arm64, etc.)"
+            },
+            "cpu": {
+              "type": "string",
+              "description": "CPU model"
+            },
+            "cores": {
+              "type": "integer",
+              "description": "Number of CPU cores"
+            }
+          }
+        }
+      }
+    },
+    "benchmarks": {
+      "type": "object",
+      "description": "Benchmark results keyed by operation name",
+      "patternProperties": {
+        "^[a-z_]+$": {
+          "type": "object",
+          "required": ["mean_ns", "median_ns", "iterations"],
+          "properties": {
+            "mean_ns": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Mean execution time in nanoseconds"
+            },
+            "stdev_ns": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Standard deviation in nanoseconds"
+            },
+            "median_ns": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Median execution time in nanoseconds"
+            },
+            "min_ns": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Minimum execution time in nanoseconds"
+            },
+            "max_ns": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Maximum execution time in nanoseconds"
+            },
+            "iterations": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of benchmark iterations"
+            }
+          }
+        }
+      }
+    }
+  }
+}

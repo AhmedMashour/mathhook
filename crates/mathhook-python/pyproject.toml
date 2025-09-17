@@ -1,0 +1,36 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "mathhook"
+version = "0.1.0"
+description = "High-performance educational computer algebra system"
+authors = [{name = "Ahmed Mashhour", email = "mpghknown@gmail.com"}]
+license = {text = "MIT OR Apache-2.0"}
+keywords = ["mathematics", "algebra", "symbolic", "education", "calculus"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+requires-python = ">=3.8"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/AhmedMashour/mathhook"
+Repository = "https://github.com/AhmedMashour/mathhook"
+Documentation = "https://docs.rs/mathhook"
+"Bug Tracker" = "https://github.com/AhmedMashour/mathhook/issues"
+
+[tool.maturin]
+module-name = "mathhook"
+strip = true
