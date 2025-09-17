@@ -1,0 +1,1402 @@
+use std::ops::Neg;
+use crate::core::{Expression, Symbol};
+use crate::parser::constants::{resolve_special_function, resolve_standard_function, resolve_wolfram_function, pascal_to_snake_case};
+use crate::parser::cache;
+use crate::core::expression::RelationType;
+grammar;
+
+match {
+    // ===== TIER 1: ULTRA-HIGH FREQUENCY (>10% of tokens) =====
+    "+" => PLUS,        // ~15% of all mathematical tokens
+    "-" => MINUS,       // ~12% of all tokens
+    "*" => MULTIPLY,    // ~10% of all tokens
+
+    // ===== TIER 2: HIGH FREQUENCY (5-10% of tokens) =====
+    "(" => LPAREN,      // ~8% of all tokens
+    ")" => RPAREN,      // ~8% of all tokens
+    "^" => POWER,       // ~6% of all tokens
+    "=" => EQUALS,      // ~5% of all tokens
+
+    // ===== TIER 3: MEDIUM FREQUENCY (1-5% of tokens) =====
+    "/" => DIVIDE,      // ~4% of all tokens
+    "," => COMMA,       // ~3% of all tokens
+    "{" => LBRACE,      // ~2% of all tokens
+    "}" => RBRACE,      // ~2% of all tokens
+    "[" => LBRACKET,    // ~1.5% of all tokens
+    "]" => RBRACKET,    // ~1.5% of all tokens
+    "!" => FACTORIAL,   // ~1% of all tokens
+    "|" => PIPE,        // ~1% of all tokens
+
+    // ===== TIER 4: RELATIONS AND OPERATORS (0.5-1% of tokens) =====
+    "==" => DOUBLE_EQUALS,
+    "!=" => NOT_EQUALS,
+    "<" => LESS,
+    "<=" => LESS_EQUAL,
+    ">" => GREATER,
+    ">=" => GREATER_EQUAL,
+
+    // ===== TIER 5: DELIMITERS AND SPECIAL TOKENS (0.1-0.5% of tokens) =====
+    "->" => ARROW,
+    "d" => DIFFERENTIAL,
+    "_" => SUBSCRIPT,
+    ";" => SEMICOLON,  // Phase 1: For continued fractions
+    "." => DOT,        // For method calls: matrix.det()
+
+    // ===== UNICODE MATHEMATICAL OPERATORS =====
+    // Basic operators
+    "×" => UNICODE_TIMES,
+    "÷" => UNICODE_DIVIDE,
+    "·" => UNICODE_CDOT,
+    "±" => UNICODE_PM,
+    "∓" => UNICODE_MP,
+    "∗" => UNICODE_AST,
+    "∘" => UNICODE_CIRC,
+    "∙" => UNICODE_BULLET,
+    "⊗" => UNICODE_OTIMES,
+    "⊘" => UNICODE_OSLASH,
+    "⊙" => UNICODE_ODOT,
+    "∧" => UNICODE_WEDGE,
+    "∨" => UNICODE_VEE,
+    "∩" => UNICODE_CAP,
+    "∪" => UNICODE_CUP,
+
+    // Relations
+    "≠" => UNICODE_NOT_EQUAL,
+    "≈" => UNICODE_APPROX,
+    "≡" => UNICODE_EQUIV,
+    "≤" => UNICODE_LEQ,
+    "≥" => UNICODE_GEQ,
+    "≪" => UNICODE_MUCH_LESS,
+    "≫" => UNICODE_MUCH_GREATER,
+    "∼" => UNICODE_SIMILAR,
+    "≅" => UNICODE_CONGRUENT,
+    "∝" => UNICODE_PROPORTIONAL,
+
+    // Set theory
+    "∈" => UNICODE_IN,
+    "∉" => UNICODE_NOTIN,
+    "⊂" => UNICODE_SUBSET,
+    "⊃" => UNICODE_SUPSET,
+    "⊆" => UNICODE_SUBSETEQ,
+    "⊇" => UNICODE_SUPSETEQ,
+    "∅" => UNICODE_EMPTY_SET,
+    "∀" => UNICODE_FORALL,
+    "∃" => UNICODE_EXISTS,
+    "∄" => UNICODE_NOT_EXISTS,
+
+    // Logic
+    "¬" => UNICODE_NOT,
+    "→" => UNICODE_IMPLIES,
+    "⇒" => UNICODE_DOUBLE_ARROW_RIGHT,
+    "⇐" => UNICODE_DOUBLE_ARROW_LEFT,
+    "⇔" => UNICODE_IFF,
+    "↔" => UNICODE_LEFTRIGHTARROW,
+    "←" => UNICODE_LEFT_ARROW,
+    "↑" => UNICODE_UP_ARROW,
+    "↓" => UNICODE_DOWN_ARROW,
+    "↦" => UNICODE_MAPS_TO,
+
+    // Calculus and analysis
+    "∞" => UNICODE_INFINITY,
+    "∂" => UNICODE_PARTIAL,
+    "∇" => UNICODE_NABLA,
+    "∫" => UNICODE_INTEGRAL,
+    "∬" => UNICODE_DOUBLE_INTEGRAL,
+    "∭" => UNICODE_TRIPLE_INTEGRAL,
+    "∮" => UNICODE_CONTOUR_INTEGRAL,
+    "∯" => UNICODE_SURFACE_INTEGRAL,
+    "∰" => UNICODE_VOLUME_INTEGRAL,
+    "∏" => UNICODE_PRODUCT,
+    "∐" => UNICODE_COPRODUCT,
+    "∑" => UNICODE_SUMMATION,
+
+    // Roots
+    "√" => UNICODE_SQRT,
+    "∛" => UNICODE_CBRT,
+    "∜" => UNICODE_FOURTH_ROOT,
+
+    // Misc operators
+    "⊕" => UNICODE_OPLUS,
+    "⊖" => UNICODE_OMINUS,
+    "⊞" => UNICODE_BOXPLUS,
+    "⊟" => UNICODE_BOXMINUS,
+    "⊠" => UNICODE_BOXTIMES,
+    "⊡" => UNICODE_BOXDOT,
+    "△" => UNICODE_TRIANGLE,
+    "▽" => UNICODE_NABLA_TRIANGLE,
+    "∆" => UNICODE_INCREMENT,
+    "□" => UNICODE_BOX,
+    "◊" => UNICODE_DIAMOND,
+    "⋅" => UNICODE_DOT_OPERATOR,
+    "⊢" => UNICODE_PROVES,
+    "⊣" => UNICODE_PROVABLE,
+    "⊤" => UNICODE_TOP,
+    "⊥" => UNICODE_BOTTOM,
+    "⊺" => UNICODE_TRANSPOSE,
+    "∎" => UNICODE_QED,
+    "∴" => UNICODE_THEREFORE,
+    "∵" => UNICODE_BECAUSE,
+    "∠" => UNICODE_ANGLE,
+    "∡" => UNICODE_MEASURED_ANGLE,
+    "∢" => UNICODE_SPHERICAL_ANGLE,
+    "⊿" => UNICODE_RIGHT_TRIANGLE,
+    "⌈" => UNICODE_CEIL_LEFT,
+    "⌉" => UNICODE_CEIL_RIGHT,
+    "⌊" => UNICODE_FLOOR_LEFT,
+    "⌋" => UNICODE_FLOOR_RIGHT,
+    "⟨" => UNICODE_LANGLE,
+    "⟩" => UNICODE_RANGLE,
+
+    // Additional arrows
+    "⇄" => UNICODE_RIGHTLEFT_ARROWS,
+    "⇆" => UNICODE_LEFTRIGHT_ARROWS,
+    "⇋" => UNICODE_LEFTRIGHT_HARPOON,
+    "⇌" => UNICODE_RIGHTLEFT_HARPOON,
+    "↣" => UNICODE_INJECTION,
+    "↠" => UNICODE_SURJECTION,
+    "⇀" => UNICODE_RIGHTHARPOON,
+    "↼" => UNICODE_LEFTHARPOON,
+    "⇁" => UNICODE_RIGHTHARPOON_OVER,
+    "↽" => UNICODE_LEFTHARPOON_OVER,
+
+    // Superscript digits (for exponents)
+    "⁰" => SUPER_ZERO,
+    "¹" => SUPER_ONE,
+    "²" => SUPER_TWO,
+    "³" => SUPER_THREE,
+    "⁴" => SUPER_FOUR,
+    "⁵" => SUPER_FIVE,
+    "⁶" => SUPER_SIX,
+    "⁷" => SUPER_SEVEN,
+    "⁸" => SUPER_EIGHT,
+    "⁹" => SUPER_NINE,
+    "⁺" => SUPER_PLUS,
+    "⁻" => SUPER_MINUS,
+    "⁼" => SUPER_EQUALS,
+    "⁽" => SUPER_LPAREN,
+    "⁾" => SUPER_RPAREN,
+    "ⁿ" => SUPER_N,
+    "ⁱ" => SUPER_I,
+
+    // Subscript digits
+    "₀" => SUB_ZERO,
+    "₁" => SUB_ONE,
+    "₂" => SUB_TWO,
+    "₃" => SUB_THREE,
+    "₄" => SUB_FOUR,
+    "₅" => SUB_FIVE,
+    "₆" => SUB_SIX,
+    "₇" => SUB_SEVEN,
+    "₈" => SUB_EIGHT,
+    "₉" => SUB_NINE,
+    "₊" => SUB_PLUS,
+    "₋" => SUB_MINUS,
+    "₌" => SUB_EQUALS,
+    "₍" => SUB_LPAREN,
+    "₎" => SUB_RPAREN,
+    "ₐ" => SUB_A,
+    "ₑ" => SUB_E,
+    "ₕ" => SUB_H,
+    "ᵢ" => SUB_I,
+    "ⱼ" => SUB_J,
+    "ₖ" => SUB_K,
+    "ₗ" => SUB_L,
+    "ₘ" => SUB_M,
+    "ₙ" => SUB_N,
+    "ₒ" => SUB_O,
+    "ₚ" => SUB_P,
+    "ᵣ" => SUB_R,
+    "ₛ" => SUB_S,
+    "ₜ" => SUB_T,
+    "ᵤ" => SUB_U,
+    "ᵥ" => SUB_V,
+    "ₓ" => SUB_X,
+
+    // ===== UNICODE GREEK LETTERS (LOWERCASE) =====
+    "α" => UNICODE_ALPHA,
+    "β" => UNICODE_BETA,
+    "γ" => UNICODE_GAMMA,
+    "δ" => UNICODE_DELTA,
+    "ε" => UNICODE_EPSILON,
+    "ζ" => UNICODE_ZETA,
+    "η" => UNICODE_ETA,
+    "θ" => UNICODE_THETA,
+    "ι" => UNICODE_IOTA,
+    "κ" => UNICODE_KAPPA,
+    "λ" => UNICODE_LAMBDA,
+    "μ" => UNICODE_MU,
+    "ν" => UNICODE_NU,
+    "ξ" => UNICODE_XI,
+    "ο" => UNICODE_OMICRON,
+    "π" => UNICODE_PI,
+    "ρ" => UNICODE_RHO,
+    "ς" => UNICODE_FINAL_SIGMA,
+    "σ" => UNICODE_SIGMA,
+    "τ" => UNICODE_TAU,
+    "υ" => UNICODE_UPSILON,
+    "φ" => UNICODE_PHI,
+    "χ" => UNICODE_CHI,
+    "ψ" => UNICODE_PSI,
+    "ω" => UNICODE_OMEGA,
+
+    // Greek variants
+    "ϑ" => UNICODE_THETA_SYMBOL,
+    "ϕ" => UNICODE_PHI_SYMBOL,
+    "ϖ" => UNICODE_PI_SYMBOL,
+    "ϰ" => UNICODE_KAPPA_SYMBOL,
+    "ϱ" => UNICODE_RHO_SYMBOL,
+    "ϵ" => UNICODE_EPSILON_SYMBOL,
+    "ϝ" => UNICODE_DIGAMMA,
+
+    // ===== UNICODE GREEK LETTERS (UPPERCASE) =====
+    "Α" => UNICODE_ALPHA_UPPER,
+    "Β" => UNICODE_BETA_UPPER,
+    "Γ" => UNICODE_GAMMA_UPPER,
+    "Δ" => UNICODE_DELTA_UPPER,
+    "Ε" => UNICODE_EPSILON_UPPER,
+    "Ζ" => UNICODE_ZETA_UPPER,
+    "Η" => UNICODE_ETA_UPPER,
+    "Θ" => UNICODE_THETA_UPPER,
+    "Ι" => UNICODE_IOTA_UPPER,
+    "Κ" => UNICODE_KAPPA_UPPER,
+    "Λ" => UNICODE_LAMBDA_UPPER,
+    "Μ" => UNICODE_MU_UPPER,
+    "Ν" => UNICODE_NU_UPPER,
+    "Ξ" => UNICODE_XI_UPPER,
+    "Ο" => UNICODE_OMICRON_UPPER,
+    "Π" => UNICODE_PI_UPPER,
+    "Ρ" => UNICODE_RHO_UPPER,
+    "Σ" => UNICODE_SIGMA_UPPER,
+    "Τ" => UNICODE_TAU_UPPER,
+    "Υ" => UNICODE_UPSILON_UPPER,
+    "Φ" => UNICODE_PHI_UPPER,
+    "Χ" => UNICODE_CHI_UPPER,
+    "Ψ" => UNICODE_PSI_UPPER,
+    "Ω" => UNICODE_OMEGA_UPPER,
+
+    // ===== SPECIAL UNICODE CONSTANTS =====
+    "ℯ" => UNICODE_E,          // Euler's number
+    "ℇ" => UNICODE_EULER_CONST, // Euler constant
+    "ℏ" => UNICODE_HBAR,       // Reduced Planck constant
+    "ℎ" => UNICODE_PLANCK,     // Planck constant
+    "ℓ" => UNICODE_ELL,        // Script small l
+    "℘" => UNICODE_WEIERSTRASS, // Weierstrass p
+    "ℜ" => UNICODE_REAL_PART,  // Real part
+    "ℑ" => UNICODE_IMAGINARY_PART, // Imaginary part
+    "ℵ" => UNICODE_ALEPH,      // Aleph
+    "ℶ" => UNICODE_BETH,       // Beth
+    "ℷ" => UNICODE_GIMEL,      // Gimel
+    "ℸ" => UNICODE_DALET,      // Dalet
+
+    // Double-struck letters (number sets)
+    "ℂ" => UNICODE_COMPLEX,    // Complex numbers
+    "ℍ" => UNICODE_QUATERNION, // Quaternions
+    "ℕ" => UNICODE_NATURAL,    // Natural numbers
+    "ℙ" => UNICODE_PRIME,      // Prime numbers
+    "ℚ" => UNICODE_RATIONAL,   // Rational numbers
+    "ℝ" => UNICODE_REAL,       // Real numbers
+    "ℤ" => UNICODE_INTEGER,    // Integers
+
+    // Imaginary unit variants
+    "ⅈ" => UNICODE_IMAGINARY_I, // Double-struck italic i
+    "ⅉ" => UNICODE_IMAGINARY_J, // Double-struck italic j
+
+    // Common indexed mathematical functions
+    "J_" => BESSEL_J_SUBSCRIPT,    // Bessel J functions: J_n(x)
+    "Y_" => BESSEL_Y_SUBSCRIPT,    // Bessel Y functions: Y_n(x)
+    "I_" => BESSEL_I_SUBSCRIPT,    // Modified Bessel I functions: I_n(x)
+    "K_" => BESSEL_K_SUBSCRIPT,    // Modified Bessel K functions: K_n(x)
+    "P_" => LEGENDRE_P_SUBSCRIPT,  // Legendre P functions: P_l(x)
+    "Q_" => LEGENDRE_Q_SUBSCRIPT,  // Legendre Q functions: Q_l(x)
+    "H_" => HERMITE_SUBSCRIPT,     // Hermite polynomials: H_n(x)
+    "L_" => LAGUERRE_SUBSCRIPT,    // Laguerre polynomials: L_n(x)
+
+    // ===== TIER 6: LaTeX commands (0.1-1% of tokens) =====
+    // Alphabetically organized LaTeX commands
+    "\\arccos" => LATEX_ARCCOS,
+    "\\arcsin" => LATEX_ARCSIN,
+    "\\arctan" => LATEX_ARCTAN,
+    "\\cdot" => LATEX_CDOT,
+    "\\cos" => LATEX_COS,
+    "\\cosh" => LATEX_COSH,
+    "\\cot" => LATEX_COT,
+    "\\csc" => LATEX_CSC,
+    "\\frac" => LATEX_FRAC,
+    "\\Gamma" => LATEX_GAMMA,
+    "\\gamma" => LATEX_EULER_GAMMA,
+    "\\infty" => LATEX_INFTY,
+    "\\int" => LATEX_INT,
+    "\\iint" => LATEX_IINT,
+    "\\iiint" => LATEX_IIINT,
+    "\\oint" => LATEX_OINT,
+    "\\lim" => LATEX_LIM,
+    "\\partial" => LATEX_PARTIAL,
+    "\\nabla" => LATEX_NABLA,
+    "\\prod" => LATEX_PROD,
+    "\\to" => LATEX_TO,
+    "\\rightarrow" => LATEX_RIGHTARROW,
+    "\\leftarrow" => LATEX_LEFTARROW,
+    "\\Rightarrow" => LATEX_DOUBLE_RIGHTARROW,
+    "\\Leftarrow" => LATEX_DOUBLE_LEFTARROW,
+    "\\leftrightarrow" => LATEX_LEFTRIGHTARROW,
+    "\\Leftrightarrow" => LATEX_DOUBLE_LEFTRIGHTARROW,
+    "\\ln" => LATEX_LN,
+    "\\log" => LATEX_LOG,
+    "\\phi" => LATEX_PHI,
+    "\\pi" => LATEX_PI,
+    "\\sec" => LATEX_SEC,
+    "\\sin" => LATEX_SIN,
+    "\\sinh" => LATEX_SINH,
+    "\\tan" => LATEX_TAN,
+    "\\tanh" => LATEX_TANH,
+    "\\sqrt" => LATEX_SQRT,
+    "\\sum" => LATEX_SUM,
+    "\\text" => LATEX_TEXT,
+    "\\varphi" => LATEX_VARPHI,
+    "\\{" => LATEX_LBRACE,
+    "\\}" => LATEX_RBRACE,
+
+    // Phase 3: More LaTeX constructs
+    "\\begin" => LATEX_BEGIN,
+    "\\end" => LATEX_END,
+    "\\left" => LATEX_LEFT,
+    "\\right" => LATEX_RIGHT,
+    "\\overline" => LATEX_OVERLINE,
+    "\\underline" => LATEX_UNDERLINE,
+    "\\hat" => LATEX_HAT,
+    "\\tilde" => LATEX_TILDE,
+    "\\vec" => LATEX_VEC,
+    "\\dot" => LATEX_DOT,
+    "\\ddot" => LATEX_DDOT,
+    "\\bar" => LATEX_BAR,
+    "\\prime" => LATEX_PRIME,
+    "\\binom" => LATEX_BINOM,
+    "\\choose" => LATEX_CHOOSE,
+    "\\mathcal" => LATEX_MATHCAL,
+    "\\mathbb" => LATEX_MATHBB,
+    "\\mathbf" => LATEX_MATHBF,
+    "\\det" => LATEX_DET,
+    "\\max" => LATEX_MAX,
+    "\\min" => LATEX_MIN,
+    "\\sup" => LATEX_SUP,
+    "\\inf" => LATEX_INF,
+    "\\gcd" => LATEX_GCD,
+    "\\lcm" => LATEX_LCM,
+    "\\bmod" => LATEX_BMOD,
+    "\\pmod" => LATEX_PMOD,
+
+    // Phase 3: More mathematical symbols
+    "\\leq" => LATEX_LEQ,
+    "\\geq" => LATEX_GEQ,
+    "\\neq" => LATEX_NEQ,
+    "\\equiv" => LATEX_EQUIV,
+    "\\approx" => LATEX_APPROX,
+    "\\sim" => LATEX_SIM,
+    "\\propto" => LATEX_PROPTO,
+    "\\in" => LATEX_IN,
+    "\\notin" => LATEX_NOTIN,
+    "\\subset" => LATEX_SUBSET,
+    "\\supset" => LATEX_SUPSET,
+    "\\subseteq" => LATEX_SUBSETEQ,
+    "\\supseteq" => LATEX_SUPSETEQ,
+    "\\cup" => LATEX_CUP,
+    "\\cap" => LATEX_CAP,
+    "\\emptyset" => LATEX_EMPTYSET,
+    "\\forall" => LATEX_FORALL,
+    "\\exists" => LATEX_EXISTS,
+    "\\nexists" => LATEX_NEXISTS,
+    "\\land" => LATEX_LAND,
+    "\\lor" => LATEX_LOR,
+    "\\lnot" => LATEX_LNOT,
+    "\\implies" => LATEX_IMPLIES,
+    "\\iff" => LATEX_IFF,
+
+    // Phase 3: Greek symbols (LaTeX)
+    "\\alpha" => LATEX_ALPHA,
+    "\\beta" => LATEX_BETA,
+    "\\delta" => LATEX_DELTA,
+    "\\epsilon" => LATEX_EPSILON,
+    "\\zeta" => LATEX_ZETA,
+    "\\eta" => LATEX_ETA,
+    "\\theta" => LATEX_THETA,
+    "\\iota" => LATEX_IOTA,
+    "\\kappa" => LATEX_KAPPA,
+    "\\lambda" => LATEX_LAMBDA,
+    "\\mu" => LATEX_MU,
+    "\\nu" => LATEX_NU,
+    "\\xi" => LATEX_XI,
+    "\\omicron" => LATEX_OMICRON,
+    "\\rho" => LATEX_RHO,
+    "\\sigma" => LATEX_SIGMA,
+    "\\tau" => LATEX_TAU,
+    "\\upsilon" => LATEX_UPSILON,
+    "\\chi" => LATEX_CHI,
+    "\\psi" => LATEX_PSI,
+    "\\omega" => LATEX_OMEGA,
+
+    // Wolfram greek symbols
+    "\\[Alpha]" => WOLFRAM_ALPHA,
+    "\\[Beta]" => WOLFRAM_BETA,
+    "\\[Delta]" => WOLFRAM_DELTA,
+    "\\[Epsilon]" => WOLFRAM_EPSILON,
+    "\\[Zeta]" => WOLFRAM_ZETA,
+    "\\[Eta]" => WOLFRAM_ETA,
+    "\\[Theta]" => WOLFRAM_THETA,
+    "\\[Iota]" => WOLFRAM_IOTA,
+    "\\[Kappa]" => WOLFRAM_KAPPA,
+    "\\[Lambda]" => WOLFRAM_LAMBDA,
+    "\\[Mu]" => WOLFRAM_MU,
+    "\\[Nu]" => WOLFRAM_NU,
+    "\\[Xi]" => WOLFRAM_XI,
+    "\\[Omicron]" => WOLFRAM_OMICRON,
+    "\\[Rho]" => WOLFRAM_RHO,
+    "\\[Sigma]" => WOLFRAM_SIGMA,
+    "\\[Tau]" => WOLFRAM_TAU,
+    "\\[Upsilon]" => WOLFRAM_UPSILON,
+    "\\[Chi]" => WOLFRAM_CHI,
+    "\\[Psi]" => WOLFRAM_PSI,
+    "\\[Omega]" => WOLFRAM_OMEGA,
+
+    // Phase 3: LaTeX environments
+    "pmatrix" => LATEX_PMATRIX,
+    "bmatrix" => LATEX_BMATRIX,
+    "vmatrix" => LATEX_VMATRIX,
+    "Vmatrix" => LATEX_VMATRIX_CAPS,
+    "cases" => LATEX_CASES,
+    "align" => LATEX_ALIGN,
+    "equation" => LATEX_EQUATION,
+    "array" => LATEX_ARRAY,
+
+    // Phase 3: More LaTeX symbols and delimiters
+    "\\&" => LATEX_AMPERSAND,
+    "\\\\" => LATEX_DOUBLE_BACKSLASH,
+    "\\cr" => LATEX_CR,
+    "\\hline" => LATEX_HLINE,
+    "\\cdots" => LATEX_CDOTS,
+    "\\ldots" => LATEX_LDOTS,
+    "\\vdots" => LATEX_VDOTS,
+    "\\ddots" => LATEX_DDOTS,
+    "\\dots" => LATEX_DOTS,
+    "\\pm" => LATEX_PM,
+    "\\mp" => LATEX_MP,
+    "\\times" => LATEX_TIMES,
+    "\\div" => LATEX_DIV,
+    "\\ast" => LATEX_AST,
+    "\\star" => LATEX_STAR,
+    "\\circ" => LATEX_CIRC,
+    "\\bullet" => LATEX_BULLET,
+    "\\otimes" => LATEX_OTIMES,
+    "\\oslash" => LATEX_OSLASH,
+    "\\odot" => LATEX_ODOT,
+    "\\wedge" => LATEX_WEDGE,
+    "\\vee" => LATEX_VEE,
+
+    // ===== TIER 7: Wolfram functions (0.1-0.5% of tokens) =====
+    "Cos" => WOLFRAM_COS,
+    "CyclotomicPolynomial" => WOLFRAM_CYCLOTOMIC,
+    "D" => WOLFRAM_D,
+    "Discriminant" => WOLFRAM_DISCRIMINANT,
+    "EulerPhi" => WOLFRAM_EULER_PHI,
+    "Exp" => WOLFRAM_EXP,
+    "Gamma" => WOLFRAM_GAMMA,
+    "GroebnerBasis" => WOLFRAM_GROEBNER,
+    "Integrate" => WOLFRAM_INTEGRATE,
+    "Limit" => WOLFRAM_LIMIT,
+    "Log" => WOLFRAM_LOG,
+    "MinimalPolynomial" => WOLFRAM_MINIMAL,
+    "MoebiusMu" => WOLFRAM_MOEBIUS,
+    "Piecewise" => WOLFRAM_PIECEWISE,
+    "PolynomialGCD" => WOLFRAM_POLY_GCD,
+    "PrimePi" => WOLFRAM_PRIME_PI,
+    "Resultant" => WOLFRAM_RESULTANT,
+    "RiemannSiegelTheta" => WOLFRAM_RIEMANN_SIEGEL,
+    "Sqrt" => WOLFRAM_SQRT,
+    "Sum" => WOLFRAM_SUM,
+    "Times" => WOLFRAM_TIMES,
+
+    // Phase 3: More Wolfram functions
+    "Abs" => WOLFRAM_ABS,
+    "Max" => WOLFRAM_MAX,
+    "Min" => WOLFRAM_MIN,
+    "Floor" => WOLFRAM_FLOOR,
+    "Ceiling" => WOLFRAM_CEILING,
+    "Round" => WOLFRAM_ROUND,
+    "Sign" => WOLFRAM_SIGN,
+    "Re" => WOLFRAM_RE,
+    "Im" => WOLFRAM_IM,
+    "Conjugate" => WOLFRAM_CONJUGATE,
+    "Arg" => WOLFRAM_ARG,
+    "Plus" => WOLFRAM_PLUS,
+    "Subtract" => WOLFRAM_SUBTRACT,
+    "Divide" => WOLFRAM_DIVIDE,
+    "Mod" => WOLFRAM_MOD,
+    "GCD" => WOLFRAM_GCD_CAPS,
+    "LCM" => WOLFRAM_LCM_CAPS,
+    "Factorial" => WOLFRAM_FACTORIAL,
+    "Binomial" => WOLFRAM_BINOMIAL,
+
+    // Phase 3: More advanced Wolfram functions
+    "Det" => WOLFRAM_DET,
+    "Tr" => WOLFRAM_TR,
+    "Inverse" => WOLFRAM_INVERSE,
+    "Transpose" => WOLFRAM_TRANSPOSE,
+    "Eigenvalues" => WOLFRAM_EIGENVALUES,
+    "Eigenvectors" => WOLFRAM_EIGENVECTORS,
+    "MatrixPower" => WOLFRAM_MATRIX_POWER,
+    "MatrixExp" => WOLFRAM_MATRIX_EXP,
+    "Norm" => WOLFRAM_NORM,
+    "Cross" => WOLFRAM_CROSS,
+    "Dot" => WOLFRAM_DOT,
+    "Inner" => WOLFRAM_INNER,
+    "Outer" => WOLFRAM_OUTER,
+    "KroneckerProduct" => WOLFRAM_KRONECKER,
+    "LinearSolve" => WOLFRAM_LINEAR_SOLVE,
+    "LeastSquares" => WOLFRAM_LEAST_SQUARES,
+    "QRDecomposition" => WOLFRAM_QR,
+    "SingularValueDecomposition" => WOLFRAM_SVD,
+    "LUDecomposition" => WOLFRAM_LU,
+    "CholeskyDecomposition" => WOLFRAM_CHOLESKY,
+
+    // ===== TIER 8: Constants and keywords (0.1-0.5% of tokens) =====
+    "e" => E_CONST,
+    "E" => WOLFRAM_E,
+    "euler_gamma" => EULER_GAMMA,
+    "gamma" => GAMMA_CONST,
+    "golden_ratio" => GOLDEN_RATIO,
+    "i" => I_CONST,
+    "I" => WOLFRAM_I,
+    "infinity" => INFINITY,
+    "Infinity" => WOLFRAM_INFINITY,
+    "phi" => PHI,
+    "pi" => PI,
+    "Pi" => WOLFRAM_PI,
+    "undefined" => UNDEFINED,
+
+    // ===== TIER 9: Regex patterns (processed last for performance) =====
+    r"[0-9]+\.[0-9]+" => FLOAT,
+    r"[0-9]+" => INTEGER,
+    r"[a-zA-Z][a-zA-Z0-9_]*" => IDENTIFIER,
+
+    // Skip whitespace
+    r"\s*" => { },
+}
+
+
+// 1. Public Entry Point
+pub Expression: Expression = {
+    Relation,
+};
+
+// 2. Relations (Non-associative)
+Relation: Expression = {
+    <l:Arrow> EQUALS <r:Arrow> => Expression::relation(l, r, RelationType::Equal),
+    <l:Arrow> DOUBLE_EQUALS <r:Arrow> => Expression::relation(l, r, RelationType::Equal),
+    <l:Arrow> NOT_EQUALS <r:Arrow> => Expression::relation(l, r, RelationType::NotEqual),
+    <l:Arrow> LESS <r:Arrow> => Expression::relation(l, r, RelationType::Less),
+    <l:Arrow> LESS_EQUAL <r:Arrow> => Expression::relation(l, r, RelationType::LessEqual),
+    <l:Arrow> GREATER <r:Arrow> => Expression::relation(l, r, RelationType::Greater),
+    <l:Arrow> GREATER_EQUAL <r:Arrow> => Expression::relation(l, r, RelationType::GreaterEqual),
+
+    // Unicode relations
+    <l:Arrow> UNICODE_NOT_EQUAL <r:Arrow> => Expression::relation(l, r, RelationType::NotEqual),
+    <l:Arrow> UNICODE_LEQ <r:Arrow> => Expression::relation(l, r, RelationType::LessEqual),
+    <l:Arrow> UNICODE_GEQ <r:Arrow> => Expression::relation(l, r, RelationType::GreaterEqual),
+    <l:Arrow> UNICODE_EQUIV <r:Arrow> => Expression::relation(l, r, RelationType::Equal),
+    <l:Arrow> UNICODE_APPROX <r:Arrow> => Expression::relation(l, r, RelationType::Approximate),
+    <l:Arrow> UNICODE_SIMILAR <r:Arrow> => Expression::relation(l, r, RelationType::Similar),
+    <l:Arrow> UNICODE_PROPORTIONAL <r:Arrow> => Expression::relation(l, r, RelationType::Proportional),
+    <l:Arrow> UNICODE_CONGRUENT <r:Arrow> => Expression::relation(l, r, RelationType::Congruent),
+
+    // LaTeX relations
+    <l:Arrow> LATEX_NEQ <r:Arrow> => Expression::relation(l, r, RelationType::NotEqual),
+    <l:Arrow> LATEX_LEQ <r:Arrow> => Expression::relation(l, r, RelationType::LessEqual),
+    <l:Arrow> LATEX_GEQ <r:Arrow> => Expression::relation(l, r, RelationType::GreaterEqual),
+    <l:Arrow> LATEX_EQUIV <r:Arrow> => Expression::relation(l, r, RelationType::Equal),
+    <l:Arrow> LATEX_APPROX <r:Arrow> => Expression::relation(l, r, RelationType::Approximate),
+    <l:Arrow> LATEX_SIM <r:Arrow> => Expression::relation(l, r, RelationType::Similar),
+    <l:Arrow> LATEX_PROPTO <r:Arrow> => Expression::relation(l, r, RelationType::Proportional),
+    Arrow,
+};
+
+// 2.5. Arrows (for limits: x → ∞)
+Arrow: Expression = {
+    <l:Arrow> ARROW <r:Addition> => Expression::function("approaches", vec![l, r]),
+    <l:Arrow> UNICODE_IMPLIES <r:Addition> => Expression::function("approaches", vec![l, r]),
+    <l:Arrow> UNICODE_MAPS_TO <r:Addition> => Expression::function("maps_to", vec![l, r]),
+    <l:Arrow> LATEX_TO <r:Addition> => Expression::function("approaches", vec![l, r]),
+    <l:Arrow> LATEX_RIGHTARROW <r:Addition> => Expression::function("approaches", vec![l, r]),
+    <l:Arrow> LATEX_LEFTARROW <r:Addition> => Expression::function("left_arrow", vec![l, r]),
+    <l:Arrow> LATEX_LEFTRIGHTARROW <r:Addition> => Expression::function("bidirectional", vec![l, r]),
+    <l:Arrow> UNICODE_LEFT_ARROW <r:Addition> => Expression::function("left_arrow", vec![l, r]),
+    <l:Arrow> UNICODE_LEFTRIGHTARROW <r:Addition> => Expression::function("bidirectional", vec![l, r]),
+    Addition,
+};
+
+// 3. Addition/Subtraction
+Addition: Expression = {
+    <l:Addition> PLUS <r:Multiplication> => Expression::add(vec![l, r]),
+    <l:Addition> MINUS <r:Multiplication> => Expression::add(vec![l, Expression::mul(vec![Expression::integer(-1), r])]),
+    <l:Addition> UNICODE_PM <r:Multiplication> => Expression::function("plus_minus", vec![l, r]),
+    <l:Addition> UNICODE_MP <r:Multiplication> => Expression::function("minus_plus", vec![l, r]),
+    <l:Addition> LATEX_PM <r:Multiplication> => Expression::function("plus_minus", vec![l, r]),
+    <l:Addition> LATEX_MP <r:Multiplication> => Expression::function("minus_plus", vec![l, r]),
+    Multiplication,
+};
+
+// 4. Multiplication/Division (EXPLICIT ONLY - no implicit multiplication)
+Multiplication: Expression = {
+    <l:Multiplication> MULTIPLY <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> DIVIDE <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
+
+    // Unicode operators
+    <l:Multiplication> UNICODE_TIMES <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> UNICODE_DIVIDE <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
+    <l:Multiplication> UNICODE_CDOT <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> UNICODE_DOT_OPERATOR <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> UNICODE_AST <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> UNICODE_CIRC <r:Power> => Expression::function("compose", vec![l, r]),
+    <l:Multiplication> UNICODE_BULLET <r:Power> => Expression::function("dot_product", vec![l, r]),
+    <l:Multiplication> UNICODE_OTIMES <r:Power> => Expression::function("tensor_product", vec![l, r]),
+    <l:Multiplication> UNICODE_OPLUS <r:Power> => Expression::function("direct_sum", vec![l, r]),
+    <l:Multiplication> UNICODE_OMINUS <r:Power> => Expression::function("symmetric_difference", vec![l, r]),
+    <l:Multiplication> UNICODE_OSLASH <r:Power> => Expression::function("oslash", vec![l, r]),
+    <l:Multiplication> UNICODE_ODOT <r:Power> => Expression::function("odot", vec![l, r]),
+    <l:Multiplication> UNICODE_WEDGE <r:Power> => Expression::function("wedge_product", vec![l, r]),
+    <l:Multiplication> UNICODE_VEE <r:Power> => Expression::function("join", vec![l, r]),
+    <l:Multiplication> UNICODE_CAP <r:Power> => Expression::function("intersection", vec![l, r]),
+    <l:Multiplication> UNICODE_CUP <r:Power> => Expression::function("union", vec![l, r]),
+
+    // LaTeX operators
+    <l:Multiplication> LATEX_CDOT <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_TIMES <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_DIV <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
+    <l:Multiplication> LATEX_AST <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_STAR <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_CIRC <r:Power> => Expression::function("compose", vec![l, r]),
+    <l:Multiplication> LATEX_BULLET <r:Power> => Expression::function("dot_product", vec![l, r]),
+    <l:Multiplication> LATEX_OTIMES <r:Power> => Expression::function("tensor_product", vec![l, r]),
+    <l:Multiplication> LATEX_OSLASH <r:Power> => Expression::function("oslash", vec![l, r]),
+    <l:Multiplication> LATEX_ODOT <r:Power> => Expression::function("odot", vec![l, r]),
+    <l:Multiplication> LATEX_WEDGE <r:Power> => Expression::function("wedge_product", vec![l, r]),
+    <l:Multiplication> LATEX_VEE <r:Power> => Expression::function("join", vec![l, r]),
+    <l:Multiplication> LATEX_CAP <r:Power> => Expression::function("intersection", vec![l, r]),
+    <l:Multiplication> LATEX_CUP <r:Power> => Expression::function("union", vec![l, r]),
+    <l:Multiplication> LATEX_BMOD <r:Power> => Expression::function("mod", vec![l, r]),
+    Power,
+};
+
+// 5. Exponentiation
+Power: Expression = {
+    <b:Factorial> POWER <e:Power> => Expression::pow(b, e),
+
+    // Unicode superscript support (e.g., x²)
+    <b:Factorial> <exp:SuperscriptExponent> => Expression::pow(b, exp),
+
+    Factorial,
+};
+
+// Helper rule for superscript exponents
+SuperscriptExponent: Expression = {
+    SUPER_ZERO => Expression::integer(0),
+    SUPER_ONE => Expression::integer(1),
+    SUPER_TWO => Expression::integer(2),
+    SUPER_THREE => Expression::integer(3),
+    SUPER_FOUR => Expression::integer(4),
+    SUPER_FIVE => Expression::integer(5),
+    SUPER_SIX => Expression::integer(6),
+    SUPER_SEVEN => Expression::integer(7),
+    SUPER_EIGHT => Expression::integer(8),
+    SUPER_NINE => Expression::integer(9),
+    SUPER_N => Expression::symbol(Symbol::new("n")),
+    SUPER_I => Expression::symbol(Symbol::new("i")),
+};
+
+// 6. Unary and Postfix Operators
+Factorial: Expression = {
+    MINUS <e:Factorial> => e.neg(),
+    UNICODE_NOT <e:Factorial> => Expression::function("not", vec![e]),
+    LATEX_LNOT <e:Factorial> => Expression::function("not", vec![e]),
+    <e:Atom> FACTORIAL FACTORIAL => Expression::function("double_factorial", vec![e]),
+    <e:Atom> FACTORIAL => Expression::function("factorial", vec![e]),
+    Atom,
+};
+
+// 7. Atoms
+Atom: Expression = {
+    FractionNotation,
+    NablaOperators,
+    VectorWrappers,
+    GreekSymbol,
+    Number,
+    Constant,
+    ParenExpression,
+    BraceExpression,
+    IdentifierOrFunction,
+    AbsoluteValue,
+    Set,
+    Interval,
+};
+
+// Simplified identifier handling
+IdentifierOrFunction: Expression = {
+    // ===== CALCULUS OPERATORS =====
+
+    // Integrals with bounds: ∫ₐᵇ expr dx or \int_a^b expr dx
+    UNICODE_INTEGRAL SUBSCRIPT LBRACE <lower:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("definite_integral", vec![integrand, Expression::symbol(Symbol::new(var)), lower, upper])
+    },
+    LATEX_INT SUBSCRIPT LBRACE <lower:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("definite_integral", vec![integrand, Expression::symbol(Symbol::new(var)), lower, upper])
+    },
+
+    // Indefinite integrals: ∫ expr dx
+    UNICODE_INTEGRAL <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("indefinite_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+    LATEX_INT <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("indefinite_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+
+    // Contour integrals
+    UNICODE_CONTOUR_INTEGRAL <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("contour_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+    LATEX_OINT <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("contour_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+
+    // Sums: ∑ᵢ₌₁ⁿ expr or \sum_{i=1}^n expr
+    UNICODE_SUMMATION SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <summand:Atom> => {
+        Expression::function("sum", vec![summand, index_expr, upper])
+    },
+    LATEX_SUM SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <summand:Atom> => {
+        Expression::function("sum", vec![summand, index_expr, upper])
+    },
+
+    // Products: ∏ᵢ₌₁ⁿ expr
+    UNICODE_PRODUCT SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <term:Atom> => {
+        Expression::function("product", vec![term, index_expr, upper])
+    },
+    LATEX_PROD SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <term:Atom> => {
+        Expression::function("product", vec![term, index_expr, upper])
+    },
+
+    // Limits
+    LATEX_LIM SUBSCRIPT LBRACE <limit_expr:Atom> RBRACE <expr:Atom> => {
+        Expression::function("limit", vec![expr, limit_expr])
+    },
+
+    // ===== INDEXED FUNCTIONS =====
+
+    // Indexed function tokens (highest priority)
+    <token:BESSEL_J_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("bessel_j", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:BESSEL_Y_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("bessel_y", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:BESSEL_I_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("bessel_i", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:BESSEL_K_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("bessel_k", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:LEGENDRE_P_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("legendre_p", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:LEGENDRE_Q_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("legendre_q", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:HERMITE_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("hermite", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    <token:LAGUERRE_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        let indexed_name = cache::get_cached_function_name("laguerre", "indexed");
+        let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+        all_args.extend(args);
+        Expression::function(&indexed_name, all_args)
+    },
+
+    // Indexed function with power: P_l^m(x)
+    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE POWER LBRACE <sup:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
+        match resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed_power");
+                let mut all_args = vec![sub, sup];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                cache::build_cached_function(base, "indexed_power", {
+                    let mut all_args = vec![sub, sup];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+
+    // Indexed function: J_n(x)
+    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
+        match resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed");
+                let mut all_args = vec![sub];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                cache::build_cached_function(base, "indexed", {
+                    let mut all_args = vec![sub];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+
+    // Simple indexed function: J_n(x) (without braces)
+    <base:IDENTIFIER> SUBSCRIPT <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        match resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed");
+                let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                cache::build_cached_function(base, "indexed", {
+                    let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+
+    // Simple function call: f(x)
+    <base:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        if base.contains('_') {
+            if let Some(underscore_pos) = base.find('_') {
+                let base_func = &base[..underscore_pos];
+                let subscript = &base[underscore_pos + 1..];
+
+                if let Some(func_name) = resolve_special_function(base_func) {
+                    let indexed_name = cache::get_cached_function_name(func_name, "indexed");
+                    let mut all_args = vec![Expression::symbol(Symbol::new(subscript))];
+                    all_args.extend(args);
+                    return Expression::function(&indexed_name, all_args);
+                }
+            }
+        }
+
+        match resolve_standard_function(base)
+            .or_else(|| resolve_special_function(base)) {
+            Some(func_name) => Expression::function(func_name, args),
+            None => Expression::function(base, args)
+        }
+    },
+
+    // Wolfram functions
+    <base:IDENTIFIER> LBRACKET <args:ExprList> RBRACKET => {
+        match resolve_wolfram_function(base) {
+            Some(func_name) => Expression::function(func_name, args),
+            None => {
+                let snake_case_name = pascal_to_snake_case(base);
+                Expression::function(&snake_case_name, args)
+            }
+        }
+    },
+
+    // Wolfram function tokens
+    WOLFRAM_ABS LBRACKET <args:ExprList> RBRACKET => Expression::function("abs", args),
+    WOLFRAM_COS LBRACKET <args:ExprList> RBRACKET => Expression::function("cos", args),
+    WOLFRAM_EXP LBRACKET <args:ExprList> RBRACKET => Expression::function("exp", args),
+    WOLFRAM_LOG LBRACKET <args:ExprList> RBRACKET => Expression::function("log", args),
+    WOLFRAM_SQRT LBRACKET <args:ExprList> RBRACKET => Expression::function("sqrt", args),
+    WOLFRAM_PLUS LBRACKET <args:ExprList> RBRACKET => Expression::add(args),
+    WOLFRAM_TIMES LBRACKET <args:ExprList> RBRACKET => Expression::mul(args),
+    WOLFRAM_SUBTRACT LBRACKET <args:ExprList> RBRACKET => {
+        if args.len() == 2 {
+            Expression::add(vec![args[0].clone(), Expression::mul(vec![Expression::integer(-1), args[1].clone()])])
+        } else {
+            Expression::function("subtract", args)
+        }
+    },
+    WOLFRAM_DIVIDE LBRACKET <args:ExprList> RBRACKET => {
+        if args.len() == 2 {
+            Expression::mul(vec![args[0].clone(), Expression::pow(args[1].clone(), Expression::integer(-1))])
+        } else {
+            Expression::function("divide", args)
+        }
+    },
+    WOLFRAM_D LBRACKET <args:ExprList> RBRACKET => Expression::function("derivative", args),
+    WOLFRAM_INTEGRATE LBRACKET <args:ExprList> RBRACKET => Expression::function("integrate", args),
+    WOLFRAM_LIMIT LBRACKET <args:ExprList> RBRACKET => Expression::function("limit", args),
+    WOLFRAM_SUM LBRACKET <args:ExprList> RBRACKET => Expression::function("sum", args),
+    WOLFRAM_GAMMA LBRACKET <args:ExprList> RBRACKET => Expression::function("gamma", args),
+    WOLFRAM_MAX LBRACKET <args:ExprList> RBRACKET => Expression::function("max", args),
+    WOLFRAM_MIN LBRACKET <args:ExprList> RBRACKET => Expression::function("min", args),
+    WOLFRAM_FLOOR LBRACKET <args:ExprList> RBRACKET => Expression::function("floor", args),
+    WOLFRAM_CEILING LBRACKET <args:ExprList> RBRACKET => Expression::function("ceiling", args),
+    WOLFRAM_ROUND LBRACKET <args:ExprList> RBRACKET => Expression::function("round", args),
+    WOLFRAM_SIGN LBRACKET <args:ExprList> RBRACKET => Expression::function("sign", args),
+    WOLFRAM_RE LBRACKET <args:ExprList> RBRACKET => Expression::function("real", args),
+    WOLFRAM_IM LBRACKET <args:ExprList> RBRACKET => Expression::function("imaginary", args),
+    WOLFRAM_CONJUGATE LBRACKET <args:ExprList> RBRACKET => Expression::function("conjugate", args),
+    WOLFRAM_ARG LBRACKET <args:ExprList> RBRACKET => Expression::function("arg", args),
+    WOLFRAM_MOD LBRACKET <args:ExprList> RBRACKET => Expression::function("mod", args),
+    WOLFRAM_GCD_CAPS LBRACKET <args:ExprList> RBRACKET => Expression::function("gcd", args),
+    WOLFRAM_LCM_CAPS LBRACKET <args:ExprList> RBRACKET => Expression::function("lcm", args),
+    WOLFRAM_FACTORIAL LBRACKET <args:ExprList> RBRACKET => Expression::function("factorial", args),
+    WOLFRAM_BINOMIAL LBRACKET <args:ExprList> RBRACKET => Expression::function("binomial", args),
+    WOLFRAM_EULER_PHI LBRACKET <args:ExprList> RBRACKET => Expression::function("euler_phi", args),
+    WOLFRAM_MOEBIUS LBRACKET <args:ExprList> RBRACKET => Expression::function("mobius", args),
+    WOLFRAM_PRIME_PI LBRACKET <args:ExprList> RBRACKET => Expression::function("prime_pi", args),
+    WOLFRAM_DET LBRACKET <args:ExprList> RBRACKET => Expression::function("determinant", args),
+    WOLFRAM_TR LBRACKET <args:ExprList> RBRACKET => Expression::function("trace", args),
+    WOLFRAM_INVERSE LBRACKET <args:ExprList> RBRACKET => Expression::function("inverse", args),
+    WOLFRAM_TRANSPOSE LBRACKET <args:ExprList> RBRACKET => Expression::function("transpose", args),
+    WOLFRAM_EIGENVALUES LBRACKET <args:ExprList> RBRACKET => Expression::function("eigenvalues", args),
+    WOLFRAM_EIGENVECTORS LBRACKET <args:ExprList> RBRACKET => Expression::function("eigenvectors", args),
+    WOLFRAM_MATRIX_POWER LBRACKET <args:ExprList> RBRACKET => Expression::function("matrix_power", args),
+    WOLFRAM_MATRIX_EXP LBRACKET <args:ExprList> RBRACKET => Expression::function("matrix_exp", args),
+    WOLFRAM_NORM LBRACKET <args:ExprList> RBRACKET => Expression::function("norm", args),
+    WOLFRAM_CROSS LBRACKET <args:ExprList> RBRACKET => Expression::function("cross", args),
+    WOLFRAM_DOT LBRACKET <args:ExprList> RBRACKET => Expression::function("dot", args),
+    WOLFRAM_INNER LBRACKET <args:ExprList> RBRACKET => Expression::function("inner", args),
+    WOLFRAM_OUTER LBRACKET <args:ExprList> RBRACKET => Expression::function("outer", args),
+    WOLFRAM_KRONECKER LBRACKET <args:ExprList> RBRACKET => Expression::function("kronecker_product", args),
+    WOLFRAM_LINEAR_SOLVE LBRACKET <args:ExprList> RBRACKET => Expression::function("linear_solve", args),
+    WOLFRAM_LEAST_SQUARES LBRACKET <args:ExprList> RBRACKET => Expression::function("least_squares", args),
+    WOLFRAM_QR LBRACKET <args:ExprList> RBRACKET => Expression::function("qr_decomposition", args),
+    WOLFRAM_SVD LBRACKET <args:ExprList> RBRACKET => Expression::function("svd", args),
+    WOLFRAM_LU LBRACKET <args:ExprList> RBRACKET => Expression::function("lu_decomposition", args),
+    WOLFRAM_CHOLESKY LBRACKET <args:ExprList> RBRACKET => Expression::function("cholesky_decomposition", args),
+    WOLFRAM_CYCLOTOMIC LBRACKET <args:ExprList> RBRACKET => Expression::function("cyclotomic_polynomial", args),
+    WOLFRAM_DISCRIMINANT LBRACKET <args:ExprList> RBRACKET => Expression::function("discriminant", args),
+    WOLFRAM_GROEBNER LBRACKET <args:ExprList> RBRACKET => Expression::function("groebner_basis", args),
+    WOLFRAM_MINIMAL LBRACKET <args:ExprList> RBRACKET => Expression::function("minimal_polynomial", args),
+    WOLFRAM_POLY_GCD LBRACKET <args:ExprList> RBRACKET => Expression::function("polynomial_gcd", args),
+    WOLFRAM_RESULTANT LBRACKET <args:ExprList> RBRACKET => Expression::function("resultant", args),
+    WOLFRAM_PIECEWISE LBRACKET <args:ExprList> RBRACKET => Expression::function("piecewise", args),
+    WOLFRAM_RIEMANN_SIEGEL LBRACKET <args:ExprList> RBRACKET => Expression::function("riemann_siegel_theta", args),
+
+    // Method calls: A.det()
+    <object:IDENTIFIER> DOT <method:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        Expression::method_call(Expression::symbol(Symbol::new(object)), method, args)
+    },
+
+    // Inverse trig/hyperbolic functions
+    LATEX_SIN POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arcsin", args),
+    LATEX_COS POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arccos", args),
+    LATEX_TAN POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arctan", args),
+    LATEX_SEC POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arcsec", args),
+    LATEX_CSC POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arccsc", args),
+    LATEX_COT POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arccot", args),
+    LATEX_SINH POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arcsinh", args),
+    LATEX_COSH POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arccosh", args),
+    LATEX_TANH POWER LBRACE MINUS INTEGER RBRACE LPAREN <args:ExprList> RPAREN => Expression::function("arctanh", args),
+
+    // LaTeX Functions with parentheses
+    LATEX_SIN LPAREN <args:ExprList> RPAREN => Expression::function("sin", args),
+    LATEX_COS LPAREN <args:ExprList> RPAREN => Expression::function("cos", args),
+    LATEX_TAN LPAREN <args:ExprList> RPAREN => Expression::function("tan", args),
+    LATEX_SEC LPAREN <args:ExprList> RPAREN => Expression::function("sec", args),
+    LATEX_CSC LPAREN <args:ExprList> RPAREN => Expression::function("csc", args),
+    LATEX_COT LPAREN <args:ExprList> RPAREN => Expression::function("cot", args),
+    LATEX_SINH LPAREN <args:ExprList> RPAREN => Expression::function("sinh", args),
+    LATEX_COSH LPAREN <args:ExprList> RPAREN => Expression::function("cosh", args),
+    LATEX_TANH LPAREN <args:ExprList> RPAREN => Expression::function("tanh", args),
+    LATEX_ARCSIN LPAREN <args:ExprList> RPAREN => Expression::function("arcsin", args),
+    LATEX_ARCCOS LPAREN <args:ExprList> RPAREN => Expression::function("arccos", args),
+    LATEX_ARCTAN LPAREN <args:ExprList> RPAREN => Expression::function("arctan", args),
+    LATEX_LN LPAREN <args:ExprList> RPAREN => Expression::function("ln", args),
+    LATEX_LOG LPAREN <args:ExprList> RPAREN => Expression::function("log", args),
+    LATEX_GCD LPAREN <args:ExprList> RPAREN => Expression::function("gcd", args),
+    LATEX_LCM LPAREN <args:ExprList> RPAREN => Expression::function("lcm", args),
+    LATEX_MAX LPAREN <args:ExprList> RPAREN => Expression::function("max", args),
+    LATEX_MIN LPAREN <args:ExprList> RPAREN => Expression::function("min", args),
+
+    // LaTeX Functions with braces
+    LATEX_SIN LBRACE <args:ExprList> RBRACE => Expression::function("sin", args),
+    LATEX_COS LBRACE <args:ExprList> RBRACE => Expression::function("cos", args),
+    LATEX_TAN LBRACE <args:ExprList> RBRACE => Expression::function("tan", args),
+    LATEX_LN LBRACE <args:ExprList> RBRACE => Expression::function("ln", args),
+    LATEX_LOG LBRACE <args:ExprList> RBRACE => Expression::function("log", args),
+
+    // Special case for sqrt
+    LATEX_SQRT LBRACE <arg:Expression> RBRACE => Expression::function("sqrt", vec![arg]),
+    UNICODE_SQRT LPAREN <arg:Expression> RPAREN => Expression::function("sqrt", vec![arg]),
+    UNICODE_CBRT LPAREN <arg:Expression> RPAREN => Expression::function("cbrt", vec![arg]),
+    UNICODE_FOURTH_ROOT LPAREN <arg:Expression> RPAREN => Expression::function("fourth_root", vec![arg]),
+
+    // Special functions
+    LATEX_GAMMA LPAREN <args:ExprList> RPAREN => Expression::function("gamma", args),
+    LATEX_PSI LPAREN <args:ExprList> RPAREN => Expression::function("digamma", args),
+    LATEX_ZETA LPAREN <args:ExprList> RPAREN => Expression::function("riemann_zeta", args),
+    LATEX_ETA LPAREN <args:ExprList> RPAREN => Expression::function("eta", args),
+
+    // Greek symbols as functions
+    LATEX_PHI LPAREN <args:ExprList> RPAREN => Expression::function("euler_phi", args),
+    LATEX_MU LPAREN <args:ExprList> RPAREN => Expression::function("mobius", args),
+    LATEX_TAU LPAREN <args:ExprList> RPAREN => Expression::function("ramanujan_tau", args),
+    LATEX_LAMBDA LPAREN <args:ExprList> RPAREN => Expression::function("reduced_totient", args),
+    LATEX_PI LPAREN <args:ExprList> RPAREN => Expression::function("prime_pi", args),
+    LATEX_NU LPAREN <args:ExprList> RPAREN => Expression::function("primenu", args),
+    LATEX_DELTA LPAREN <args:ExprList> RPAREN => Expression::function("dirac_delta", args),
+
+    // Unicode Greek as functions (when followed by parentheses)
+    UNICODE_PHI LPAREN <args:ExprList> RPAREN => Expression::function("euler_phi", args),
+    UNICODE_MU LPAREN <args:ExprList> RPAREN => Expression::function("mobius", args),
+    UNICODE_TAU LPAREN <args:ExprList> RPAREN => Expression::function("ramanujan_tau", args),
+    UNICODE_LAMBDA LPAREN <args:ExprList> RPAREN => Expression::function("reduced_totient", args),
+    UNICODE_PI LPAREN <args:ExprList> RPAREN => Expression::function("prime_pi", args),
+    UNICODE_NU LPAREN <args:ExprList> RPAREN => Expression::function("primenu", args),
+    UNICODE_DELTA LPAREN <args:ExprList> RPAREN => Expression::function("dirac_delta", args),
+
+    // Binomial coefficient
+    LATEX_BINOM LBRACE <n:Expression> RBRACE LBRACE <k:Expression> RBRACE => Expression::function("binomial", vec![n, k]),
+    LATEX_CHOOSE LBRACE <n:Expression> RBRACE LBRACE <k:Expression> RBRACE => Expression::function("binomial", vec![n, k]),
+
+    // Text functions
+    LATEX_TEXT LBRACE <name:IDENTIFIER> RBRACE LPAREN <args:ExprList> RPAREN => Expression::function(name, args),
+    LATEX_TEXT LBRACE <name:IDENTIFIER> RBRACE => Expression::symbol(Symbol::new(name)),
+
+    // Mathcal functions and symbols
+    LATEX_MATHCAL LBRACE <name:IDENTIFIER> RBRACE LPAREN <args:ExprList> RPAREN => {
+        Expression::function(format!("mathcal_{}", name.to_lowercase()), args)
+    },
+    LATEX_MATHCAL LBRACE <name:IDENTIFIER> RBRACE => {
+        Expression::symbol(Symbol::new(format!("mathcal_{}", name)))
+    },
+
+    // Mathbb functions and symbols
+    LATEX_MATHBB LBRACE <name:IDENTIFIER> RBRACE LPAREN <args:ExprList> RPAREN => {
+        Expression::function(format!("mathbb_{}", name.to_lowercase()), args)
+    },
+    LATEX_MATHBB LBRACE <name:IDENTIFIER> RBRACE => {
+        Expression::symbol(Symbol::new(format!("mathbb_{}", name)))
+    },
+
+    // Simple identifier
+    <v:IDENTIFIER> => Expression::symbol(Symbol::new(v)),
+};
+
+// Helper rules
+ParenExpression: Expression = {
+    LPAREN <e:Expression> RPAREN => e,
+    LATEX_LEFT LPAREN <e:Expression> LATEX_RIGHT RPAREN => e,
+    LATEX_LEFT LBRACKET <e:Expression> LATEX_RIGHT RBRACKET => e,
+    LATEX_LEFT LBRACE <e:Expression> LATEX_RIGHT RBRACE => e,
+    LATEX_LEFT PIPE <e:Expression> LATEX_RIGHT PIPE => Expression::function("abs", vec![e]),
+    UNICODE_LANGLE <e:Expression> UNICODE_RANGLE => Expression::function("inner_product", vec![e]),
+};
+
+BraceExpression: Expression = {
+    LBRACE <e:Expression> RBRACE => e,
+};
+
+AbsoluteValue: Expression = {
+    PIPE <e:Expression> PIPE => Expression::function("abs", vec![e]),
+};
+
+// Numbers
+Number: Expression = {
+    FLOAT => <>.parse::<f64>().map(Expression::number).unwrap_or_else(|_| Expression::number(f64::NAN)),
+    INTEGER => <>.parse::<i64>().map(Expression::integer).unwrap_or_else(|_| Expression::number(<>.parse::<f64>().unwrap_or(f64::INFINITY))),
+};
+
+// Greek symbols
+GreekSymbol: Expression = {
+    // Unicode Greek (lowercase)
+    UNICODE_ALPHA => Expression::symbol(crate::symbol!(alpha)),
+    UNICODE_BETA => Expression::symbol(crate::symbol!(beta)),
+    UNICODE_GAMMA => Expression::symbol(crate::symbol!(gamma)),
+    UNICODE_DELTA => Expression::symbol(crate::symbol!(delta)),
+    UNICODE_EPSILON => Expression::symbol(crate::symbol!(epsilon)),
+    UNICODE_ZETA => Expression::symbol(crate::symbol!(zeta)),
+    UNICODE_ETA => Expression::symbol(crate::symbol!(eta)),
+    UNICODE_THETA => Expression::symbol(crate::symbol!(theta)),
+    UNICODE_IOTA => Expression::symbol(crate::symbol!(iota)),
+    UNICODE_KAPPA => Expression::symbol(crate::symbol!(kappa)),
+    UNICODE_LAMBDA => Expression::symbol(crate::symbol!(lambda)),
+    UNICODE_MU => Expression::symbol(crate::symbol!(mu)),
+    UNICODE_NU => Expression::symbol(crate::symbol!(nu)),
+    UNICODE_XI => Expression::symbol(crate::symbol!(xi)),
+    UNICODE_OMICRON => Expression::symbol(crate::symbol!(omicron)),
+    UNICODE_RHO => Expression::symbol(crate::symbol!(rho)),
+    UNICODE_SIGMA => Expression::symbol(crate::symbol!(sigma)),
+    UNICODE_TAU => Expression::symbol(crate::symbol!(tau)),
+    UNICODE_UPSILON => Expression::symbol(crate::symbol!(upsilon)),
+    UNICODE_PHI => Expression::symbol(crate::symbol!(phi)),
+    UNICODE_CHI => Expression::symbol(crate::symbol!(chi)),
+    UNICODE_PSI => Expression::symbol(crate::symbol!(psi)),
+    UNICODE_OMEGA => Expression::symbol(crate::symbol!(omega)),
+
+    // Unicode Greek (uppercase)
+    UNICODE_GAMMA_UPPER => Expression::symbol(Symbol::new("Gamma")),
+    UNICODE_DELTA_UPPER => Expression::symbol(Symbol::new("Delta")),
+    UNICODE_THETA_UPPER => Expression::symbol(Symbol::new("Theta")),
+    UNICODE_LAMBDA_UPPER => Expression::symbol(Symbol::new("Lambda")),
+    UNICODE_XI_UPPER => Expression::symbol(Symbol::new("Xi")),
+    UNICODE_PI_UPPER => Expression::pi(),
+    UNICODE_SIGMA_UPPER => Expression::symbol(Symbol::new("Sigma")),
+    UNICODE_PHI_UPPER => Expression::symbol(Symbol::new("Phi")),
+    UNICODE_PSI_UPPER => Expression::symbol(Symbol::new("Psi")),
+    UNICODE_OMEGA_UPPER => Expression::symbol(Symbol::new("Omega")),
+
+    // LaTeX Greek
+    LATEX_ALPHA => Expression::symbol(crate::symbol!(alpha)),
+    LATEX_BETA => Expression::symbol(crate::symbol!(beta)),
+    LATEX_DELTA => Expression::symbol(crate::symbol!(delta)),
+    LATEX_EPSILON => Expression::symbol(crate::symbol!(epsilon)),
+    LATEX_ZETA => Expression::symbol(crate::symbol!(zeta)),
+    LATEX_ETA => Expression::symbol(crate::symbol!(eta)),
+    LATEX_THETA => Expression::symbol(crate::symbol!(theta)),
+    LATEX_IOTA => Expression::symbol(crate::symbol!(iota)),
+    LATEX_KAPPA => Expression::symbol(crate::symbol!(kappa)),
+    LATEX_LAMBDA => Expression::symbol(crate::symbol!(lambda)),
+    LATEX_MU => Expression::symbol(crate::symbol!(mu)),
+    LATEX_NU => Expression::symbol(crate::symbol!(nu)),
+    LATEX_XI => Expression::symbol(crate::symbol!(xi)),
+    LATEX_OMICRON => Expression::symbol(crate::symbol!(omicron)),
+    LATEX_RHO => Expression::symbol(crate::symbol!(rho)),
+    LATEX_SIGMA => Expression::symbol(crate::symbol!(sigma)),
+    LATEX_TAU => Expression::symbol(crate::symbol!(tau)),
+    LATEX_UPSILON => Expression::symbol(crate::symbol!(upsilon)),
+    LATEX_CHI => Expression::symbol(crate::symbol!(chi)),
+    LATEX_PSI => Expression::symbol(crate::symbol!(psi)),
+    LATEX_OMEGA => Expression::symbol(crate::symbol!(omega)),
+
+    // Wolfram Greek
+    WOLFRAM_ALPHA => Expression::symbol(crate::symbol!(alpha)),
+    WOLFRAM_BETA => Expression::symbol(crate::symbol!(beta)),
+    WOLFRAM_DELTA => Expression::symbol(crate::symbol!(delta)),
+    WOLFRAM_EPSILON => Expression::symbol(crate::symbol!(epsilon)),
+    WOLFRAM_ZETA => Expression::symbol(crate::symbol!(zeta)),
+    WOLFRAM_ETA => Expression::symbol(crate::symbol!(eta)),
+    WOLFRAM_THETA => Expression::symbol(crate::symbol!(theta)),
+    WOLFRAM_IOTA => Expression::symbol(crate::symbol!(iota)),
+    WOLFRAM_KAPPA => Expression::symbol(crate::symbol!(kappa)),
+    WOLFRAM_LAMBDA => Expression::symbol(crate::symbol!(lambda)),
+    WOLFRAM_MU => Expression::symbol(crate::symbol!(mu)),
+    WOLFRAM_NU => Expression::symbol(crate::symbol!(nu)),
+    WOLFRAM_XI => Expression::symbol(crate::symbol!(xi)),
+    WOLFRAM_OMICRON => Expression::symbol(crate::symbol!(omicron)),
+    WOLFRAM_RHO => Expression::symbol(crate::symbol!(rho)),
+    WOLFRAM_SIGMA => Expression::symbol(crate::symbol!(sigma)),
+    WOLFRAM_TAU => Expression::symbol(crate::symbol!(tau)),
+    WOLFRAM_UPSILON => Expression::symbol(crate::symbol!(upsilon)),
+    WOLFRAM_CHI => Expression::symbol(crate::symbol!(chi)),
+    WOLFRAM_PSI => Expression::symbol(crate::symbol!(psi)),
+    WOLFRAM_OMEGA => Expression::symbol(crate::symbol!(omega)),
+};
+
+// Mathematical constants
+Constant: Expression = {
+    // Pi
+    PI => Expression::pi(),
+    UNICODE_PI => Expression::pi(),
+    WOLFRAM_PI => Expression::pi(),
+    LATEX_PI => Expression::pi(),
+
+    // Euler's number
+    E_CONST => Expression::e(),
+    UNICODE_E => Expression::e(),
+    WOLFRAM_E => Expression::e(),
+
+    // Imaginary unit
+    I_CONST => Expression::i(),
+    UNICODE_IMAGINARY_I => Expression::i(),
+    WOLFRAM_I => Expression::i(),
+
+    // Infinity
+    INFINITY => Expression::infinity(),
+    UNICODE_INFINITY => Expression::infinity(),
+    WOLFRAM_INFINITY => Expression::infinity(),
+    LATEX_INFTY => Expression::infinity(),
+
+    // Golden ratio / Phi
+    PHI => Expression::golden_ratio(),
+    GOLDEN_RATIO => Expression::golden_ratio(),
+    LATEX_PHI => Expression::golden_ratio(),
+    LATEX_VARPHI => Expression::golden_ratio(),
+
+    // Euler-Mascheroni constant
+    GAMMA_CONST => Expression::euler_gamma(),
+    EULER_GAMMA => Expression::euler_gamma(),
+    LATEX_EULER_GAMMA => Expression::euler_gamma(),
+    UNICODE_EULER_CONST => Expression::euler_gamma(),
+
+    // Number sets (double-struck)
+    UNICODE_COMPLEX => Expression::symbol(Symbol::new("ℂ")),
+    UNICODE_QUATERNION => Expression::symbol(Symbol::new("ℍ")),
+    UNICODE_NATURAL => Expression::symbol(Symbol::new("ℕ")),
+    UNICODE_PRIME => Expression::symbol(Symbol::new("ℙ")),
+    UNICODE_RATIONAL => Expression::symbol(Symbol::new("ℚ")),
+    UNICODE_REAL => Expression::symbol(Symbol::new("ℝ")),
+    UNICODE_INTEGER => Expression::symbol(Symbol::new("ℤ")),
+
+    // Empty set
+    UNICODE_EMPTY_SET => Expression::symbol(Symbol::new("∅")),
+    LATEX_EMPTYSET => Expression::symbol(Symbol::new("∅")),
+
+    // Other constants
+    UNDEFINED => Expression::undefined(),
+};
+
+// Sets and Lists
+Set: Expression = {
+    // LaTeX sets: \{...\}
+    LATEX_LBRACE <elements:ExprList> LATEX_RBRACE => Expression::set(elements),
+
+    // Wolfram lists with multiple elements
+    LBRACE <first:Expression> COMMA <rest:(<Expression> COMMA)*> <last:Expression> RBRACE => {
+        let mut elements = vec![first];
+        elements.extend(rest);
+        elements.push(last);
+        Expression::set(elements)
+    },
+};
+
+// Intervals
+Interval: Expression = {
+    LBRACKET <start:Expression> COMMA <end:Expression> RBRACKET => Expression::interval(start, end, true, true),
+    LPAREN <start:Expression> COMMA <end:Expression> RPAREN => Expression::interval(start, end, false, false),
+    LBRACKET <start:Expression> COMMA <end:Expression> RPAREN => Expression::interval(start, end, true, false),
+    LPAREN <start:Expression> COMMA <end:Expression> RBRACKET => Expression::interval(start, end, false, true),
+};
+
+// ===== FRACTION NOTATION =====
+FractionNotation: Expression = {
+    LATEX_FRAC LBRACE <num:Expression> RBRACE LBRACE <den:Expression> RBRACE => {
+        Expression::mul(vec![num, Expression::pow(den, Expression::integer(-1))])
+    },
+};
+
+// ===== NABLA OPERATORS (Vector Calculus) =====
+NablaArgument: Expression = {
+    VectorWrappers,
+    FractionNotation,
+    GreekSymbol,
+    Number,
+    Constant,
+    ParenExpression,
+    IdentifierOrFunction,
+    AbsoluteValue,
+    Set,
+    Interval,
+};
+
+NablaOperators: Expression = {
+    // Laplacian: ∇² f
+    UNICODE_NABLA POWER LBRACE <n:INTEGER> RBRACE <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap_or(1);
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+    UNICODE_NABLA POWER <n:INTEGER> <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap_or(1);
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+    LATEX_NABLA POWER LBRACE <n:INTEGER> RBRACE <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap_or(1);
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+    LATEX_NABLA POWER <n:INTEGER> <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap_or(1);
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+
+    // Curl: ∇ × F
+    UNICODE_NABLA UNICODE_TIMES <expr:NablaArgument> => Expression::function("curl", vec![expr]),
+    LATEX_NABLA LATEX_TIMES <expr:NablaArgument> => Expression::function("curl", vec![expr]),
+
+    // Divergence: ∇ · F
+    UNICODE_NABLA UNICODE_CDOT <expr:NablaArgument> => Expression::function("divergence", vec![expr]),
+    UNICODE_NABLA UNICODE_DOT_OPERATOR <expr:NablaArgument> => Expression::function("divergence", vec![expr]),
+    LATEX_NABLA LATEX_CDOT <expr:NablaArgument> => Expression::function("divergence", vec![expr]),
+
+    // Gradient: ∇f (lowest priority)
+    UNICODE_NABLA <expr:NablaArgument> => Expression::function("gradient", vec![expr]),
+    LATEX_NABLA <expr:NablaArgument> => Expression::function("gradient", vec![expr]),
+};
+
+// ===== VECTOR AND OPERATOR WRAPPERS =====
+VectorWrappers: Expression = {
+    // Type inference
+    LATEX_MATHBF LBRACE <name:IDENTIFIER> RBRACE => Expression::symbol(Symbol::matrix(name)),
+    LATEX_HAT LBRACE <name:IDENTIFIER> RBRACE => Expression::symbol(Symbol::operator(name)),
+    LATEX_MATHBB LBRACE <type_hint:IDENTIFIER> RBRACE LBRACE <name:IDENTIFIER> RBRACE => {
+        if type_hint == "H" {
+            Expression::symbol(Symbol::quaternion(name))
+        } else {
+            Expression::function(format!("mathbb_{}", type_hint), vec![Expression::symbol(Symbol::new(name))])
+        }
+    },
+
+    // Legacy function wrappers
+    LATEX_VEC LBRACE <arg:Expression> RBRACE => Expression::function("vector", vec![arg]),
+    LATEX_BAR LBRACE <arg:Expression> RBRACE => Expression::function("bar", vec![arg]),
+    LATEX_TILDE LBRACE <arg:Expression> RBRACE => Expression::function("tilde", vec![arg]),
+    LATEX_DOT LBRACE <arg:Expression> RBRACE => Expression::function("dot", vec![arg]),
+    LATEX_DDOT LBRACE <arg:Expression> RBRACE => Expression::function("ddot", vec![arg]),
+    LATEX_OVERLINE LBRACE <arg:Expression> RBRACE => Expression::function("conjugate", vec![arg]),
+    LATEX_UNDERLINE LBRACE <arg:Expression> RBRACE => Expression::function("underline", vec![arg]),
+};
+
+// Expression lists
+ExprList: Vec<Expression> = {
+    <v:(<Expression> COMMA)*> <e:Expression?> => match e {
+        None => v,
+        Some(e) => {
+            let mut v = v;
+            v.push(e);
+            v
+        }
+    }
+};

@@ -1,0 +1,143 @@
+# Summary
+
+[Introduction](./introduction.md)
+
+# Getting Started
+
+- [Installation](./getting-started/installation.md)
+- [Quick Start](./getting-started/quick-start.md)
+- [Learning Paths](./getting-started/learning-paths.md)
+- [Basic Usage](./getting-started/basic-usage.md)
+- [Common Patterns](./getting-started/common-patterns.md)
+
+# Core Concepts
+
+- [Expressions](./core/expressions.md)
+- [Symbols and Numbers](./core/symbols-numbers.md)
+- [Functions](./core/functions.md)
+- [Constants](./core/constants.md)
+- [Pattern Matching](./core/pattern-matching.md)
+
+# Mathematical Operations
+
+- [Expression Evaluation](./operations/evaluation.md)
+- [Simplification](./operations/simplification.md)
+- [Expansion and Factoring](./operations/expansion-factoring.md)
+- [Substitution](./operations/substitution.md)
+- [Differentiation](./operations/differentiation.md)
+- [Integration](./operations/integration.md)
+- [Limits](./operations/limits.md)
+- [Summation and Products](./operations/summation.md)
+- [Series Expansion](./operations/series.md)
+- [Equation Solving](./operations/solving.md)
+
+# Function Evaluation
+
+- [Function Evaluation](./evaluation/function_evaluation.md)
+
+# Polynomial Module
+
+- [Overview](./polynomial/overview.md)
+- [GCD Algorithms](./polynomial/gcd.md)
+- [Division and Factorization](./polynomial/division.md)
+- [Groebner Bases](./polynomial/groebner.md)
+- [Special Polynomial Families](./polynomial/special-families.md)
+- [Finite Field Arithmetic](./polynomial/finite-field.md)
+
+# Advanced Features
+
+- [Complex Numbers](./advanced/complex-numbers.md)
+- [Matrix Operations](./advanced/matrices.md)
+- [Noncommutative Algebra](./advanced/noncommutative-algebra.md)
+  - [API Reference](./advanced/noncommutative-api-reference.md)
+  - [Examples](./advanced/noncommutative-examples.md)
+- [Ordinary Differential Equations](./advanced/differential-equations.md)
+  - [Separable ODEs](./ode/separable.md)
+- [Partial Differential Equations](./advanced/pde/overview.md)
+  - [Quick Start](./advanced/pde/quick-start.md)
+  - [User Guide](./advanced/pde/user-guide.md)
+  - [Technical Guide](./advanced/pde/technical-guide.md)
+  - [Quick Reference](./advanced/pde/quick-reference.md)
+  - [Method of Characteristics](./advanced/pde/method-of-characteristics.md)
+  - [Separation of Variables](./pde/separation_of_variables.md)
+  - [PDE Classification](./advanced/pde/classification.md)
+  - [Heat Equation](./advanced/pde/heat-equation.md)
+  - [Wave Equation](./advanced/pde/wave-equation.md)
+  - [Laplace Equation](./advanced/pde/laplace-equation.md)
+  - [Fourier Coefficients](./advanced/pde/fourier-coefficients.md)
+  - [Boundary Conditions](./advanced/pde/boundary-conditions.md)
+  - [Registry System](./advanced/pde/registry.md)
+  - [SymPy Validation](./advanced/pde/sympy-validation.md)
+  - [Performance](./advanced/pde/performance.md)
+  - [Complete Examples](./advanced/pde/examples.md)
+- [System Solving](./advanced/system-solving.md)
+- [Special Functions](./advanced/special-functions.md)
+- [Residue Calculus](./advanced/residue-calculus.md)
+- [Assumptions System](./advanced/assumptions.md)
+- [Piecewise Functions](./advanced/piecewise.md)
+
+# Parser and Formatting
+
+- [LaTeX Parsing](./parser/latex.md)
+- [Noncommutative Parser Design](./parser/noncommutative-design.md)
+- [Wolfram Language](./parser/wolfram.md)
+- [Expression Formatting](./parser/formatting.md)
+- [Custom Parsers](./parser/custom.md)
+
+# Educational Features
+
+- [Step-by-Step Explanations](./educational/step-by-step.md)
+- [Message Registry](./educational/messages.md)
+- [Educational API](./educational/api.md)
+
+# Performance
+
+- [Performance Comparison](./performance/comparison.md)
+- [Architecture Overview](./performance/architecture.md)
+- [SIMD Operations](./performance/simd.md)
+- [Parallel Processing](./performance/parallel.md)
+- [Caching Strategies](./performance/caching.md)
+- [Benchmarking](./performance/benchmarking.md)
+
+# Architecture
+
+- [Crate Structure](./architecture/crate-structure.md)
+- [Design Principles](./architecture/principles.md)
+- [Type System](./architecture/type-system.md)
+- [Function Intelligence System](./architecture/function-intelligence.md)
+- [Memory Layout](./architecture/memory-layout.md)
+- [Thread Safety](./architecture/thread-safety.md)
+
+# API Reference
+
+- [Core API](./api/core.md)
+- [Algebra API](./api/algebra.md)
+- [Calculus API](./api/calculus.md)
+- [Solver API](./api/solver.md)
+- [Matrix API](./api/matrix.md)
+- [Parser API](./api/parser.md)
+
+# Language Bindings
+
+- [Python](./bindings/python.md)
+- [Node.js/TypeScript](./bindings/nodejs.md)
+- [WebAssembly](./bindings/wasm.md)
+
+# Contributing
+
+- [Development Guide](./contributing/development.md)
+- [Architecture Reference](./contributing/architecture-reference.md)
+- [Testing Strategy](./contributing/testing.md)
+- [Code Style](./contributing/style.md)
+- [Documentation Standards](./contributing/documentation.md)
+- [Mathematical Correctness](./contributing/correctness.md)
+
+# Appendix
+
+- [Mathematical Notation](./appendix/notation.md)
+- [Risch Algorithm](./appendix/risch-algorithm.md)
+- [Error Messages](./appendix/errors.md)
+- [FAQ](./appendix/faq.md)
+- [Glossary](./appendix/glossary.md)
+<!-- - [SymPy Migration Guide](./appendix/sympy-migration.md) -->
+- [Changelog](./appendix/changelog.md)

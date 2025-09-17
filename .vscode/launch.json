@@ -1,0 +1,976 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'mathhook'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "mathhook",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'mathhook'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=mathhook",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "mathhook",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'mathhook'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=mathhook",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "mathhook",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_advanced_functions'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_advanced_functions",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_advanced_functions",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_arithmetic'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_arithmetic",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_arithmetic",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_calculus_operations'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_calculus_operations",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_calculus_operations",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_equation_solvers'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_equation_solvers",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_equation_solvers",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_expansion'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_expansion",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_expansion",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_factorization'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_factorization",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_factorization",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_gcd_core'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_gcd_core",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_gcd_core",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_matrix_operations'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_matrix_operations",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_matrix_operations",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_powers'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_powers",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_powers",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_rational'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_rational",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_rational",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_simplify'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_simplify",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_simplify",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'algebra_special_functions'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=algebra_special_functions",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "algebra_special_functions",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_binomial_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_binomial_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_binomial_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_binomial_debug2'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_binomial_debug2",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_binomial_debug2",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_debug_final'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_debug_final",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_debug_final",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_expansion_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_expansion_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_expansion_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_factor_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_factor_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_factor_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_ordering_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_ordering_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_ordering_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'debug_rational_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=debug_rational_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "debug_rational_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'factoring_steps'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=factoring_steps",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "factoring_steps",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'gcd_core'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=gcd_core",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "gcd_core",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'gcd_debug'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=gcd_debug",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "gcd_debug",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'gcd_benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=gcd_benchmark",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "gcd_benchmark",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'gcd_cases'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=gcd_cases",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "gcd_cases",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_api_choice'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_api_choice",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_api_choice",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_json_api'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_json_api",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_json_api",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_parsing'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_parsing",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_parsing",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_step_by_step'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_step_by_step",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_step_by_step",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_step_by_step_verification'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_step_by_step_verification",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_step_by_step_verification",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_ui_integration'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_ui_integration",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "integration_ui_integration",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'magic_bullet_2_verification'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=magic_bullet_2_verification",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "magic_bullet_2_verification",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'performance_expression_analysis'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=performance_expression_analysis",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "performance_expression_analysis",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'performance_memory_optimization'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=performance_memory_optimization",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "performance_memory_optimization",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'performance_ops_demonstration'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=performance_ops_demonstration",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "performance_ops_demonstration",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'performance_speed_target'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=performance_speed_target",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "performance_speed_target",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'power_cancellation'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=power_cancellation",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "power_cancellation",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'rational_pipeline'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=rational_pipeline",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "rational_pipeline",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'rational_simple'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=rational_simple",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "rational_simple",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'real_world_problems'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=real_world_problems",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "real_world_problems",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'simple_zero'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=simple_zero",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "simple_zero",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'step_by_step_simplify_steps'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=step_by_step_simplify_steps",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "step_by_step_simplify_steps",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'targeted_rational'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=targeted_rational",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "targeted_rational",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_gcd_quick'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_gcd_quick",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "test_gcd_quick",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'test_polynomial_gcd'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=test_polynomial_gcd",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "test_polynomial_gcd",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'zero_detection_steps'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=zero_detection_steps",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "zero_detection_steps",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'gcd_bench'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=gcd_bench",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "gcd_bench",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'optimization_bench'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=optimization_bench",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "optimization_bench",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'solver_bench'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=solver_bench",
+                    "--package=mathhook"
+                ],
+                "filter": {
+                    "name": "solver_bench",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

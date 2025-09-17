@@ -1,0 +1,309 @@
+//! Polynomial Reduction Modulo a Set
+//!
+//! Implements polynomial reduction, which is the division algorithm for multivariate
+//! polynomials. This is a key component of Gröbner basis algorithms.
+
+use super::monomial_order::{MonomialOrder, MonomialOrdering};
+use crate::core::{Expression, Number, Symbol};
+
+/// Reduce a polynomial modulo a set of polynomials (one step)
+///
+/// Performs one reduction step: if the leading term of poly is divisible
+/// by the leading term of some polynomial in the basis, subtract an appropriate
+/// multiple to eliminate that term.
+///
+/// # Arguments
+///
+/// * `poly` - Polynomial to reduce
+/// * `basis` - Set of polynomials to reduce against
+/// * `variables` - Ordered list of variables
+/// * `order` - Monomial ordering to use
+///
+/// # Returns
+///
+/// Tuple of (reduced polynomial, whether reduction occurred)
+pub fn poly_reduce(
+    poly: &Expression,
+    basis: &[&Expression],
+    variables: &[Symbol],
+    order: &MonomialOrder,
+) -> (Expression, bool) {
+    if poly.is_zero() {
+        return (Expression::integer(0), false);
+    }
+
+    let lt_poly = order.leading_monomial(poly, variables);
+    let lc_poly = order.leading_coefficient(poly, variables);
+
+    for &g in basis {
+        if g.is_zero() {
+            continue;
+        }
+
+        let lt_g = order.leading_monomial(g, variables);
+        let lc_g = order.leading_coefficient(g, variables);
+
+        if divides(&lt_g, &lt_poly, variables) {
+            // Compute quotient of monomials by subtracting exponents
+            let exp_poly = extract_exponents(&lt_poly, variables);
+            let exp_g = extract_exponents(&lt_g, variables);
+            let exp_diff: Vec<i64> = exp_poly
+                .iter()
+                .zip(exp_g.iter())
+                .map(|(e1, e2)| e1 - e2)
+                .collect();
+
+            // Build monomial from exponent differences
+            let mut mono_factors = Vec::new();
+            for (i, &exp) in exp_diff.iter().enumerate() {
+                if exp != 0 {
+                    if exp == 1 {
+                        mono_factors.push(Expression::symbol(variables[i].clone()));
+                    } else {
+                        mono_factors.push(Expression::pow(
+                            Expression::symbol(variables[i].clone()),
+                            Expression::integer(exp),
+                        ));
+                    }
+                }
+            }
+            let mono_quotient = if mono_factors.is_empty() {
+                Expression::integer(1)
+            } else if mono_factors.len() == 1 {
+                mono_factors[0].clone()
+            } else {
+                Expression::mul(mono_factors)
+            };
+
+            // Compute coefficient quotient
+            let coeff_quotient = Expression::div(lc_poly, lc_g);
+
+            // Combine: quotient_term = (lc_poly/lc_g) * mono_quotient
+            let quotient_term = Expression::mul(vec![coeff_quotient, mono_quotient]);
+
+            let subtrahend = Expression::mul(vec![quotient_term, g.clone()]);
+            // Use subtraction operator instead of Expression::sub
+            let reduced = poly.clone() - subtrahend;
+
+            return (reduced, true);
+        }
+    }
+
+    (poly.clone(), false)
+}
+
+/// Reduce a polynomial completely modulo a set of polynomials
+///
+/// Repeatedly applies reduction until no more reduction is possible.
+/// Returns the normal form (remainder) of the polynomial.
+///
+/// # Arguments
+///
+/// * `poly` - Polynomial to reduce
+/// * `basis` - Set of polynomials to reduce against
+/// * `variables` - Ordered list of variables
+/// * `order` - Monomial ordering to use
+///
+/// # Returns
+///
+/// The fully reduced polynomial (normal form)
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// use mathhook_core::{symbol, expr, Expression};
+/// use mathhook_core::algebra::groebner::{poly_reduce_completely, MonomialOrder};
+///
+/// let x = symbol!(x);
+/// let y = symbol!(y);
+/// let poly = Expression::add(vec![expr!(x^2), expr!(x*y), expr!(1)]);
+/// let basis = vec![Expression::add(vec![x.clone().into(), Expression::mul(vec![Expression::integer(-1), y.clone().into()])])];
+/// let basis_refs: Vec<&Expression> = basis.iter().collect();
+/// let reduced = poly_reduce_completely(
+///     &poly,
+///     &basis_refs,
+///     &vec![x, y],
+///     &MonomialOrder::Lex
+/// );
+/// ```
+pub fn poly_reduce_completely(
+    poly: &Expression,
+    basis: &[&Expression],
+    variables: &[Symbol],
+    order: &MonomialOrder,
+) -> Expression {
+    let mut current = poly.clone();
+    let max_iterations = 1000;
+    let mut iterations = 0;
+
+    loop {
+        if iterations >= max_iterations {
+            break;
+        }
+        iterations += 1;
+
+        let (reduced, changed) = poly_reduce(&current, basis, variables, order);
+
+        if !changed {
+            break;
+        }
+
+        current = reduced;
+
+        if current.is_zero() {
+            break;
+        }
+    }
+
+    current
+}
+
+/// Check if monomial m1 divides monomial m2
+///
+/// For monomials x^a1 y^a2 and x^b1 y^b2, m1 | m2 iff ai <= bi for all i
+///
+/// # Arguments
+///
+/// * `m1` - Divisor monomial
+/// * `m2` - Dividend monomial
+/// * `variables` - Ordered list of variables
+///
+/// # Returns
+///
+/// `true` if m1 divides m2
+fn divides(m1: &Expression, m2: &Expression, variables: &[Symbol]) -> bool {
+    let exp1 = extract_exponents(m1, variables);
+    let exp2 = extract_exponents(m2, variables);
+
+    exp1.iter().zip(exp2.iter()).all(|(e1, e2)| e1 <= e2)
+}
+
+/// Extract exponents of a monomial as a vector
+fn extract_exponents(mono: &Expression, variables: &[Symbol]) -> Vec<i64> {
+    let mut exponents = vec![0i64; variables.len()];
+
+    match mono {
+        Expression::Symbol(s) => {
+            if let Some(idx) = variables.iter().position(|v| v == s) {
+                exponents[idx] = 1;
+            }
+        }
+        Expression::Pow(base, exp) => {
+            if let Expression::Symbol(s) = base.as_ref() {
+                if let Some(idx) = variables.iter().position(|v| v == s) {
+                    // Extract integer from Number variant
+                    if let Expression::Number(Number::Integer(i)) = exp.as_ref() {
+                        exponents[idx] = *i;
+                    }
+                }
+            }
+        }
+        Expression::Mul(factors) => {
+            // Dereference Box<Vec<Expression>> to iterate
+            for factor in factors.iter() {
+                if !matches!(factor, Expression::Number(_)) {
+                    let factor_exp = extract_exponents(factor, variables);
+                    for (i, e) in factor_exp.iter().enumerate() {
+                        exponents[i] += e;
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
+
+    exponents
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{expr, symbol};
+
+    #[test]
+    fn test_divides_simple() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let vars = vec![x.clone(), y.clone()];
+
+        let m1 = expr!(x);
+        let m2 = expr!(x ^ 2);
+
+        assert!(divides(&m1, &m2, &vars));
+        assert!(!divides(&m2, &m1, &vars));
+    }
+
+    #[test]
+    fn test_divides_multivariate() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let vars = vec![x.clone(), y.clone()];
+
+        let m1 = expr!(x * y);
+        let m2 = expr!((x ^ 2) * (y ^ 2));
+
+        assert!(divides(&m1, &m2, &vars));
+    }
+
+    #[test]
+    fn test_poly_reduce_simple() {
+        let x = symbol!(x);
+        let vars = vec![x.clone()];
+
+        let poly = expr!((x ^ 2) + 1);
+        let g = expr!(x);
+        let basis = [g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
+
+        let (reduced, changed) = poly_reduce(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
+
+        assert!(changed, "Reduction should occur since x² is divisible by x");
+        assert!(!reduced.is_zero(), "Reduced form should be 1, not zero");
+    }
+
+    #[test]
+    fn test_poly_reduce_no_reduction() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let vars = vec![x.clone(), y.clone()];
+
+        let poly = expr!(y);
+        let g = expr!(x ^ 2);
+        let basis = [g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
+
+        let (reduced, changed) = poly_reduce(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
+
+        assert!(!changed);
+        assert_eq!(reduced, poly);
+    }
+
+    #[test]
+    fn test_poly_reduce_completely() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let vars = vec![x.clone(), y.clone()];
+
+        let poly = expr!((x ^ 2) + 1);
+        let g = expr!(x - y);
+        let basis = [g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
+
+        let reduced = poly_reduce_completely(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
+
+        assert!(!reduced.is_zero());
+    }
+
+    #[test]
+    fn test_reduce_to_zero() {
+        let x = symbol!(x);
+        let vars = [x];
+        let poly = expr!(x);
+        let basis = [poly.clone()];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
+
+        let reduced = poly_reduce_completely(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
+
+        assert!(reduced.is_zero());
+    }
+}

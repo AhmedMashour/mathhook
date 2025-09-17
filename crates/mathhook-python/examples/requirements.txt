@@ -1,0 +1,20 @@
+# Python dependencies for MathHook examples
+# 
+# These are the dependencies needed to run the examples
+# once the Python binding is implemented.
+
+# Build tool for Python-Rust bindings
+maturin>=1.0.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-benchmark>=4.0.0
+
+# Optional: For enhanced mathematical display
+sympy>=1.12  # For comparison and validation
+numpy>=1.24.0  # For numerical operations
+matplotlib>=3.7.0  # For plotting (if needed)
+
+# Optional: For Jupyter notebook examples (future)
+jupyter>=1.0.0
+ipykernel>=6.0.0

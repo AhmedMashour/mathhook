@@ -1,0 +1,23 @@
+[package]
+name = "mathhook-node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Node.js bindings for MathHook mathematical engine"
+publish = false  # Published to npm via napi-rs, not crates.io
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+mathhook-core = { path = "../mathhook-core" }
+mathhook-macros = { path = "../mathhook-macros" }
+napi = { workspace = true, features = ["napi4"] }
+napi-derive.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[build-dependencies]
+napi-build = "2.2"

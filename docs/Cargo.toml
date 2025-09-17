@@ -1,0 +1,19 @@
+[package]
+name = "mathhook-book"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# This tells Cargo this is NOT part of the workspace
+# mdbook will use this as a standalone test environment
+[workspace]
+
+[lib]
+name = "mathhook_book"
+path = "src-lib/lib.rs"
+
+[dependencies]
+mathhook = { path = "../crates/mathhook" }
+mathhook-core = { path = "../crates/mathhook-core" }
+num-bigint = "0.4"
+num-rational = "0.4"
