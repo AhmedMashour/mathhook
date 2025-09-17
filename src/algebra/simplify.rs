@@ -48,27 +48,42 @@ impl Expression {
         }
         
         // Hot path: numeric combination with branch prediction optimization
-        let mut numeric_sum = 0i64;
-        let mut has_numeric = false;
+        let mut int_sum = 0i64;
+        let mut float_sum = 0.0f64;
+        let mut has_int = false;
+        let mut has_float = false;
         let mut non_numeric_terms = Vec::new();
         
         for term in terms {
             // 🚀 BRANCH PREDICTION: Most likely case first (small integers are common)
-            if let Expression::Number(CompactNumber::SmallInt(n)) = term {
-                if let Some(new_sum) = numeric_sum.checked_add(*n) {
-                    numeric_sum = new_sum;
-                    has_numeric = true;
-                } else {
+            match term {
+                Expression::Number(CompactNumber::SmallInt(n)) => {
+                    if let Some(new_sum) = int_sum.checked_add(*n) {
+                        int_sum = new_sum;
+                        has_int = true;
+                    } else {
+                        non_numeric_terms.push(term.clone());
+                    }
+                },
+                Expression::Number(CompactNumber::Float(f)) => {
+                    float_sum += f;
+                    has_float = true;
+                },
+                _ => {
                     non_numeric_terms.push(term.clone());
                 }
-            } else {
-                non_numeric_terms.push(term.clone());
             }
         }
         
         // Combine results efficiently
-        if has_numeric && numeric_sum != 0 {
-            non_numeric_terms.insert(0, Expression::integer(numeric_sum));
+        if has_float {
+            // If we have floats, combine everything as float
+            let total_float = float_sum + int_sum as f64;
+            if total_float != 0.0 {
+                non_numeric_terms.insert(0, Expression::number(CompactNumber::float(total_float)));
+            }
+        } else if has_int && int_sum != 0 {
+            non_numeric_terms.insert(0, Expression::integer(int_sum));
         }
         
         match non_numeric_terms.len() {
