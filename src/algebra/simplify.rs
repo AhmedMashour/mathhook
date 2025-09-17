@@ -61,20 +61,27 @@ impl Expression {
             return terms[0].clone();
         }
         
-        // 🚀 SIMD-OPTIMIZED: Separate int and float processing to preserve types
-        let mut int_values = Vec::new();
-        let mut float_values = Vec::new();
-        let mut has_floats = false;
+        // 🚀 OPTIMIZED: Fast path for small arrays, SIMD for large arrays only
+        let mut int_sum = 0i64;
+        let mut float_sum = 0.0f64;
+        let mut has_int = false;
+        let mut has_float = false;
         let mut non_numeric_terms = Vec::new();
+        let mut float_values = Vec::new();
         
         for term in terms {
             match term {
                 Expression::Number(CompactNumber::SmallInt(n)) => {
-                    int_values.push(*n as f64);
+                    if let Some(new_sum) = int_sum.checked_add(*n) {
+                        int_sum = new_sum;
+                        has_int = true;
+                    } else {
+                        non_numeric_terms.push(term.clone());
+                    }
                 },
                 Expression::Number(CompactNumber::Float(f)) => {
                     float_values.push(*f);
-                    has_floats = true;
+                    has_float = true;
                 },
                 _ => {
                     non_numeric_terms.push(term.clone());
@@ -82,32 +89,20 @@ impl Expression {
             }
         }
         
-        // 🚀 MAGIC BULLET #4: Use SIMD bulk addition for numeric values
-        if !int_values.is_empty() || !float_values.is_empty() {
-            let mut total_numeric = 0.0;
-            
-            if int_values.len() >= 4 {
-                total_numeric += SimdOptimized::bulk_add_numeric(&int_values);
+        // 🚀 MAGIC BULLET #4: Use SIMD only for large float arrays (>= 16 elements)
+        if has_float {
+            let float_total = if float_values.len() >= 16 {
+                SimdOptimized::bulk_add_numeric(&float_values)
             } else {
-                total_numeric += int_values.iter().sum::<f64>();
-            }
+                float_values.iter().sum()
+            };
             
-            if float_values.len() >= 4 {
-                total_numeric += SimdOptimized::bulk_add_numeric(&float_values);
-            } else {
-                total_numeric += float_values.iter().sum::<f64>();
+            let total_float = float_total + int_sum as f64;
+            if total_float != 0.0 {
+                non_numeric_terms.insert(0, Expression::number(CompactNumber::float(total_float)));
             }
-            
-            if total_numeric != 0.0 {
-                // Preserve float type if any input was float
-                if has_floats || total_numeric.fract() != 0.0 {
-                    non_numeric_terms.insert(0, Expression::number(CompactNumber::float(total_numeric)));
-                } else if total_numeric.abs() <= i64::MAX as f64 {
-                    non_numeric_terms.insert(0, Expression::integer(total_numeric as i64));
-                } else {
-                    non_numeric_terms.insert(0, Expression::number(CompactNumber::float(total_numeric)));
-                }
-            }
+        } else if has_int && int_sum != 0 {
+            non_numeric_terms.insert(0, Expression::integer(int_sum));
         }
         
         match non_numeric_terms.len() {
