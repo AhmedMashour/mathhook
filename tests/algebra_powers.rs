@@ -55,7 +55,7 @@ fn test_algebraic_manipulation_patterns() {
     // Test (x^2)^(1/2) - should be handled carefully
     let expr = Expression::pow(
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::number(Number::rational(num_rational::BigRational::new(
+        Expression::number(CompactNumber::rational(num_rational::BigRational::new(
             num_bigint::BigInt::from(1),
             num_bigint::BigInt::from(2)
         )))
@@ -209,7 +209,7 @@ fn test_ultimate_100_percent_operation_2() {
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::integer(1)
         ]),
-        Expression::number(Number::rational(num_rational::BigRational::new(
+        Expression::number(CompactNumber::rational(num_rational::BigRational::new(
             num_bigint::BigInt::from(1),
             num_bigint::BigInt::from(2)
         )))

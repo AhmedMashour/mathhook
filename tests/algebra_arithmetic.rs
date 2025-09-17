@@ -9,21 +9,16 @@ fn test_simplify_basic_arithmetic() {
     let result1 = expr1.simplify();
     assert_eq!(result1, Expression::integer(5));
     
-    // Test division representation
-    let expr2 = Expression::integer(6) / Expression::integer(3);
+    // Test division representation (as multiplication by inverse)
+    let expr2 = Expression::mul(vec![
+        Expression::integer(6),
+        Expression::pow(Expression::integer(3), Expression::integer(-1))
+    ]);
     let result2 = expr2.simplify();
-    // Our system represents division as multiplication by inverse, check for mathematical correctness
-    match &result2 {
-        Expression::Number(Number::Integer(i)) if *i == num_bigint::BigInt::from(2) => {
-            assert_eq!(*i, num_bigint::BigInt::from(2));
-        },
-        _ => {
-            // Verify it contains 6 and 3 in some form (mathematically equivalent)
-            let result_str = result2.to_string();
-            assert!(result_str.contains("6") && result_str.contains("3"), 
-                   "Expected 6/3 structure, got: {}", result2);
-        }
-    }
+    // Our system represents division as multiplication by inverse
+    let result_str = result2.to_string();
+    assert!(result_str.contains("6") && result_str.contains("3"), 
+           "Expected 6*3^(-1) structure, got: {}", result2);
 }
 
 #[test]
@@ -116,17 +111,17 @@ fn test_edge_case_simplification() {
 #[test]
 fn test_simplify_float_vs_integer() {
     // Test that float and integer arithmetic work correctly
-    let expr1 = Expression::number(Number::Float(2.5)) + Expression::number(Number::Float(1.5));
+    let expr1 = Expression::number(CompactNumber::float(2.5)) + Expression::number(CompactNumber::float(1.5));
     let result1 = expr1.simplify();
     
     // Should combine floats
     match result1 {
-        Expression::Number(Number::Float(f)) => assert_eq!(f, 4.0),
+        Expression::Number(CompactNumber::Float(f)) => assert_eq!(f, 4.0),
         _ => panic!("Expected float result, got: {}", result1),
     }
     
     // Test mixed float and integer
-    let expr2 = Expression::integer(3) + Expression::number(Number::Float(2.5));
+    let expr2 = Expression::integer(3) + Expression::number(CompactNumber::float(2.5));
     let result2 = expr2.simplify();
     // This might not simplify automatically, but should maintain structure
     println!("Mixed arithmetic result: {}", result2);
@@ -166,7 +161,7 @@ fn test_issue_27380() {
     // Should simplify to just x
     match result {
         Expression::Symbol(s) if s.name() == "x" => assert_eq!(s.name(), "x"),
-        Expression::Add(terms) => {
+        Expression::Add(ref terms) => {
             // If not fully simplified, should at least combine the constants
             let has_zero = terms.iter().any(|t| t.is_zero());
             let has_x = terms.iter().any(|t| matches!(t, Expression::Symbol(s) if s.name() == "x"));
