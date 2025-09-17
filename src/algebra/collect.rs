@@ -4,7 +4,7 @@
 use crate::core::{Expression, CompactNumber, Symbol};
 use num_bigint::BigInt;
 use num_traits::{Zero, One};
-use std::collections::HashMap;
+// HashMap removed - using Vec-based approach for Expression compatibility
 
 /// Trait for collecting terms in expressions
 pub trait Collect {

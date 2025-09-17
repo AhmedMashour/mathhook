@@ -1,7 +1,7 @@
 //! Arena-based memory allocation for expressions to reduce heap fragmentation
 //! Improves cache performance and reduces allocation overhead
 
-use crate::core::{Expression, Symbol, Number};
+use crate::core::{Expression, Symbol};
 use std::cell::RefCell;
 use std::rc::Rc;
 

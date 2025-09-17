@@ -413,6 +413,7 @@ impl Expression {
     }
     
     /// Parse LaTeX fraction: \frac{numerator}{denominator}
+    #[allow(dead_code)]
     fn parse_latex_fraction(&self, latex: &str) -> Option<Expression> {
         // Simplified fraction parsing
         if let Some(start) = latex.find("\\frac{") {
@@ -437,6 +438,7 @@ impl Expression {
     }
     
     /// Parse LaTeX power: base^{exponent}
+    #[allow(dead_code)]
     fn parse_latex_power(&self, latex: &str) -> Option<Expression> {
         if let Some(caret_pos) = latex.find("^{") {
             let base_str = &latex[..caret_pos];
@@ -457,6 +459,7 @@ impl Expression {
     }
     
     /// Parse LaTeX function: \function_name(args)
+    #[allow(dead_code)]
     fn parse_latex_function(&self, latex: &str) -> Option<Expression> {
         if let Some(backslash_pos) = latex.find('\\') {
             let after_backslash = &latex[backslash_pos + 1..];

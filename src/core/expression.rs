@@ -2,7 +2,7 @@
 //! High-performance expression representation - the heart of the algebra system
 
 use crate::core::{Symbol, CompactNumber};
-use crate::algebra::simplify::Simplify;
+// Simplify trait not used in this module
 use serde::{Deserialize, Serialize};
 use std::fmt;
 

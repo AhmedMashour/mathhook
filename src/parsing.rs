@@ -2,9 +2,8 @@
 //! Handles conversion between string representations and Expression objects
 
 use crate::core::{Expression, CompactNumber, Symbol};
-use regex::Regex;
 use std::collections::HashMap;
-use num_traits::{Zero, One};
+use num_traits::One;
 
 /// Parser for mathematical expressions
 pub struct ExpressionParser {

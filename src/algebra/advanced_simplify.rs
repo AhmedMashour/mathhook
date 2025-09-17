@@ -160,7 +160,7 @@ impl Expression {
             // Factorial identities
             Expression::Add(terms) if terms.len() == 2 => {
                 // Check for n! where n = k - 1, so (k-1)! = factorial(k-1)
-                if let (Expression::Symbol(s), Expression::Number(CompactNumber::SmallInt(offset))) =
+                if let (Expression::Symbol(_s), Expression::Number(CompactNumber::SmallInt(offset))) =
                     (&terms[0], &terms[1])
                 {
                     if *offset == -1 {

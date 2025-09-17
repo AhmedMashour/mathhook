@@ -1,12 +1,9 @@
 //! Advanced polynomial operations for Symbolica domination
 //! Implements high-performance polynomial arithmetic, division, and advanced algorithms
 
-use crate::core::{Expression, CompactNumber, Symbol, SimdOptimized, ExpressionArena};
+use crate::core::{Expression, CompactNumber, Symbol};
 use crate::algebra::gcd::PolynomialGcd;
 use crate::algebra::simplify::Simplify;
-use num_bigint::BigInt;
-use num_traits::{Zero, One};
-use std::collections::HashMap;
 
 /// Trait for advanced polynomial operations
 pub trait AdvancedPolynomial {
@@ -101,7 +98,7 @@ impl AdvancedPolynomial for Expression {
         match self {
             Expression::Symbol(s) if s == var => Expression::integer(1),
             Expression::Number(_) => self.clone(),
-            Expression::Pow(base, exp) => {
+            Expression::Pow(base, _exp) => {
                 if let Expression::Symbol(s) = base.as_ref() {
                     if s == var {
                         return Expression::integer(1);

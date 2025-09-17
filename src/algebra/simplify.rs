@@ -1,8 +1,7 @@
 //! High-performance simplification engine with normalized performance
 //! Achieves 14.27M ops/sec through advanced optimization techniques
 
-use crate::core::{Expression, CompactNumber, Symbol, SimdOps, SimdOptimized, ExpressionArena};
-use num_traits::{Zero, One};
+use crate::core::{CompactNumber, Expression, ExpressionArena, SimdOptimized, Symbol};
 
 /// Trait for simplifying expressions
 pub trait Simplify {
@@ -41,16 +40,14 @@ impl Expression {
         match self {
             Expression::Add(terms) if terms.len() > 10 => {
                 // For large additions, use arena allocation
-                let simplified_terms: Vec<Expression> = terms.iter()
-                    .map(|t| t.simplify_with_arena(arena))
-                    .collect();
+                let simplified_terms: Vec<Expression> =
+                    terms.iter().map(|t| t.simplify_with_arena(arena)).collect();
                 Expression::add(simplified_terms)
-            },
-            _ => self.simplify()
+            }
+            _ => self.simplify(),
         }
     }
 
-    
     /// 🚀 BRANCH PREDICTION OPTIMIZED addition simplification
     #[inline(always)]
     fn simplify_addition_optimized(&self, terms: &[Expression]) -> Self {
@@ -60,15 +57,15 @@ impl Expression {
         if terms.len() == 1 {
             return terms[0].clone();
         }
-        
+
         // 🚀 OPTIMIZED: Fast path for small arrays, SIMD for large arrays only
         let mut int_sum = 0i64;
-        let mut float_sum = 0.0f64;
+        let _float_sum = 0.0f64;
         let mut has_int = false;
         let mut has_float = false;
         let mut non_numeric_terms = Vec::new();
         let mut float_values = Vec::new();
-        
+
         for term in terms {
             match term {
                 Expression::Number(CompactNumber::SmallInt(n)) => {
@@ -78,17 +75,17 @@ impl Expression {
                     } else {
                         non_numeric_terms.push(term.clone());
                     }
-                },
+                }
                 Expression::Number(CompactNumber::Float(f)) => {
                     float_values.push(*f);
                     has_float = true;
-                },
+                }
                 _ => {
                     non_numeric_terms.push(term.clone());
                 }
             }
         }
-        
+
         // 🚀 MAGIC BULLET #4: Use SIMD only for large float arrays (>= 16 elements)
         if has_float {
             let float_total = if float_values.len() >= 16 {
@@ -96,7 +93,7 @@ impl Expression {
             } else {
                 float_values.iter().sum()
             };
-            
+
             let total_float = float_total + int_sum as f64;
             if total_float != 0.0 {
                 non_numeric_terms.insert(0, Expression::number(CompactNumber::float(total_float)));
@@ -104,14 +101,14 @@ impl Expression {
         } else if has_int && int_sum != 0 {
             non_numeric_terms.insert(0, Expression::integer(int_sum));
         }
-        
+
         match non_numeric_terms.len() {
             0 => Expression::integer(0),
             1 => non_numeric_terms.into_iter().next().unwrap(),
             _ => Expression::Add(Box::new(non_numeric_terms)),
         }
     }
-    
+
     /// 🚀 BRANCH PREDICTION OPTIMIZED multiplication simplification
     #[inline(always)]
     fn simplify_multiplication_optimized(&self, factors: &[Expression]) -> Self {
@@ -121,12 +118,12 @@ impl Expression {
         if factors.len() == 1 {
             return factors[0].clone();
         }
-        
+
         // Hot path: numeric combination with zero detection
         let mut numeric_product = 1i64;
         let mut has_numeric = false;
         let mut non_numeric_factors = Vec::new();
-        
+
         for factor in factors {
             // 🚀 BRANCH PREDICTION: Check for zero first (early termination)
             if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
@@ -143,19 +140,19 @@ impl Expression {
                 non_numeric_factors.push(factor.clone());
             }
         }
-        
+
         // Combine results efficiently
         if has_numeric && numeric_product != 1 {
             non_numeric_factors.insert(0, Expression::integer(numeric_product));
         }
-        
+
         match non_numeric_factors.len() {
             0 => Expression::integer(1),
             1 => non_numeric_factors.into_iter().next().unwrap(),
             _ => Expression::Mul(Box::new(non_numeric_factors)),
         }
     }
-    
+
     /// 🚀 OPTIMIZED power simplification
     #[inline(always)]
     fn simplify_power_optimized(&self, base: &Expression, exp: &Expression) -> Self {
@@ -168,7 +165,7 @@ impl Expression {
                 return base.clone();
             }
         }
-        
+
         if let Expression::Number(CompactNumber::SmallInt(base_val)) = base {
             if *base_val == 0 {
                 return Expression::integer(0);
@@ -177,22 +174,27 @@ impl Expression {
                 return Expression::integer(1);
             }
         }
-        
+
         // For now, return as-is for complex cases
         Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
     }
-    
+
     /// 🚀 HOT PATH: Simplify two terms efficiently
     #[inline(always)]
+    #[allow(dead_code)]
     fn simplify_two_terms_hot_path(&self, term1: &Expression, term2: &Expression) -> Expression {
         // 🚀 BRANCH PREDICTION: Most likely case first (small integers are most common)
-        if let (Expression::Number(CompactNumber::SmallInt(n1)), Expression::Number(CompactNumber::SmallInt(n2))) = (term1, term2) {
+        if let (
+            Expression::Number(CompactNumber::SmallInt(n1)),
+            Expression::Number(CompactNumber::SmallInt(n2)),
+        ) = (term1, term2)
+        {
             // Hot path: both small integers (90% of numeric cases)
             if let Some(sum) = n1.checked_add(*n2) {
                 return Expression::integer(sum);
             }
         }
-        
+
         // Less common cases
         Expression::add(vec![term1.clone(), term2.clone()])
     }
@@ -204,14 +206,11 @@ mod tests {
 
     #[test]
     fn test_basic_simplification() {
-        let expr = Expression::add(vec![
-            Expression::integer(2),
-            Expression::integer(3)
-        ]);
+        let expr = Expression::add(vec![Expression::integer(2), Expression::integer(3)]);
         let result = expr.simplify();
         assert_eq!(result, Expression::integer(5));
     }
-    
+
     #[test]
     fn test_multiplication_with_zero() {
         let x = Expression::symbol(Symbol::new("x"));
@@ -219,28 +218,28 @@ mod tests {
         let result = expr.simplify();
         assert_eq!(result, Expression::integer(0));
     }
-    
+
     #[test]
     fn test_power_simplification() {
         let x = Expression::symbol(Symbol::new("x"));
-        
+
         // x^0 = 1
         let pow_zero = Expression::pow(x.clone(), Expression::integer(0));
         assert_eq!(pow_zero.simplify(), Expression::integer(1));
-        
+
         // x^1 = x
         let pow_one = Expression::pow(x.clone(), Expression::integer(1));
         assert_eq!(pow_one.simplify(), x);
-        
+
         // 0^n = 0 (for n > 0)
         let zero_pow = Expression::pow(Expression::integer(0), Expression::integer(5));
         assert_eq!(zero_pow.simplify(), Expression::integer(0));
-        
+
         // 1^n = 1
         let one_pow = Expression::pow(Expression::integer(1), Expression::integer(100));
         assert_eq!(one_pow.simplify(), Expression::integer(1));
     }
-    
+
     #[test]
     fn test_advanced_zero_detection() {
         // Test complex zero detection
@@ -254,41 +253,51 @@ mod tests {
                     Expression::integer(2),
                     Expression::add(vec![
                         Expression::integer(2),
-                        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())])
-                    ])
-                ])
-            ])
+                        Expression::mul(vec![
+                            Expression::integer(2),
+                            Expression::symbol(x.clone()),
+                        ]),
+                    ]),
+                ]),
+            ]),
         ]);
-        
+
         let result = expr.simplify();
         // This is a complex case that might not simplify to zero immediately
         // but should maintain the algebraic structure
         println!("Complex expression result: {}", result);
     }
-    
+
     #[test]
     fn test_performance_benchmark() {
         use std::time::Instant;
-        
+
         let start = Instant::now();
         let x = Expression::symbol(Symbol::new("x"));
-        
+
         // Perform many simplifications
         for i in 0..100_000 {
             let expr = Expression::add(vec![
                 x.clone(),
                 Expression::integer(i),
-                Expression::integer(-i)
+                Expression::integer(-i),
             ]);
             let _result = expr.simplify();
         }
-        
+
         let duration = start.elapsed();
         let ops_per_sec = 100_000.0 / duration.as_secs_f64();
-        
-        println!("Simplification performance: {:.2}M ops/sec", ops_per_sec / 1_000_000.0);
-        
+
+        println!(
+            "Simplification performance: {:.2}M ops/sec",
+            ops_per_sec / 1_000_000.0
+        );
+
         // Should achieve high performance
-        assert!(ops_per_sec > 1_000_000.0, "Expected >1M ops/sec, got {:.2}", ops_per_sec);
+        assert!(
+            ops_per_sec > 1_000_000.0,
+            "Expected >1M ops/sec, got {:.2}",
+            ops_per_sec
+        );
     }
 }

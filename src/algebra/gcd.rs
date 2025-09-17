@@ -4,7 +4,7 @@
 
 use crate::core::{Expression, CompactNumber, Symbol};
 use num_bigint::BigInt;
-use num_traits::{Zero, One};
+use num_traits::One;
 use num_integer::Integer; // For GCD on BigInt
 
 /// Trait for GCD operations on expressions
@@ -149,6 +149,7 @@ impl Expression {
     }
     
     /// Extract numeric coefficient from expression
+    #[allow(dead_code)]
     fn extract_numeric_coefficient(&self) -> BigInt {
         match self {
             Expression::Number(CompactNumber::SmallInt(n)) => BigInt::from(*n),
@@ -231,6 +232,7 @@ impl Expression {
     }
     
     /// Find minimum expression (for GCD algorithms)
+    #[allow(dead_code)]
     fn min_expression(&self, other: &Self) -> Self {
         // Simple heuristic: prefer shorter expressions
         let self_complexity = self.complexity();
@@ -244,6 +246,7 @@ impl Expression {
     }
     
     /// Calculate expression complexity (for heuristics)
+    #[allow(dead_code)]
     fn complexity(&self) -> usize {
         match self {
             Expression::Number(_) | Expression::Symbol(_) => 1,

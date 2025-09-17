@@ -2,7 +2,6 @@
 //! Handles polynomial expansion, distribution, and algebraic expansion
 
 use crate::core::{CompactNumber, Expression, Symbol};
-use num_traits::ToPrimitive;
 
 /// Trait for expanding expressions
 pub trait Expand {

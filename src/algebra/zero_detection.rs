@@ -131,7 +131,7 @@ impl Expression {
             },
             
             // Reverse case: (-x) + x = 0
-            (Expression::Mul(factors), Expression::Symbol(s1)) => {
+            (Expression::Mul(_factors), Expression::Symbol(_s1)) => {
                 self.are_additive_inverses(expr2, expr1)
             },
             
@@ -341,7 +341,7 @@ impl Expression {
     }
     
     /// Try factoring expressions to detect zeros
-    fn try_factor_for_zero_detection(&self, terms: &[Expression]) -> Option<Expression> {
+    fn try_factor_for_zero_detection(&self, _terms: &[Expression]) -> Option<Expression> {
         // This would implement more sophisticated factoring for zero detection
         // For now, return None to indicate no factoring was possible
         None
