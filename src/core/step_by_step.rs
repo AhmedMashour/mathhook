@@ -1,9 +1,10 @@
 //! Step-by-step explanation system for educational purposes
 //! Provides detailed explanations of simplification and algebraic operations
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, CompactNumber, Symbol};
 use crate::algebra::Simplify;
 use num_traits::{Zero, One};
+use num_bigint::BigInt;
 use serde::{Deserialize, Serialize};
 
 /// Represents a single step in a mathematical operation
@@ -223,9 +224,9 @@ impl Expression {
                 let mut non_numeric = Vec::new();
                 let mut has_numeric = false;
                 
-                for term in terms {
-                    if let Expression::Number(Number::Integer(n)) = term {
-                        numeric_sum += n;
+                for term in terms.iter() {
+                    if let Expression::Number(CompactNumber::SmallInt(n)) = term {
+                        numeric_sum += BigInt::from(*n);
                         has_numeric = true;
                     } else {
                         non_numeric.push(term.clone());
@@ -246,9 +247,9 @@ impl Expression {
                 let mut non_numeric = Vec::new();
                 let mut has_numeric = false;
                 
-                for factor in factors {
-                    if let Expression::Number(Number::Integer(n)) = factor {
-                        numeric_product *= n;
+                for factor in factors.iter() {
+                    if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
+                        numeric_product *= BigInt::from(*n);
                         has_numeric = true;
                     } else {
                         non_numeric.push(factor.clone());
@@ -336,15 +337,16 @@ impl Expression {
     /// Convert expression to LaTeX format
     pub fn to_latex(&self) -> String {
         match self {
-            Expression::Number(Number::Integer(n)) => n.to_string(),
-            Expression::Number(Number::Rational(r)) => {
+            Expression::Number(CompactNumber::SmallInt(n)) => n.to_string(),
+            Expression::Number(CompactNumber::Rational(r)) => {
                 if r.denom().is_one() {
                     r.numer().to_string()
                 } else {
                     format!("\\frac{{{}}}{{{}}}", r.numer(), r.denom())
                 }
             },
-            Expression::Number(Number::Float(f)) => f.to_string(),
+            Expression::Number(CompactNumber::Float(f)) => f.to_string(),
+            Expression::Number(CompactNumber::BigInteger(n)) => n.to_string(),
             Expression::Symbol(s) => s.name().to_string(),
             Expression::Add(terms) => {
                 if terms.is_empty() {
@@ -426,7 +428,7 @@ impl Expression {
                             num_bigint::BigInt::from(num),
                             num_bigint::BigInt::from(den)
                         );
-                        return Some(Expression::number(Number::Rational(rational)));
+                        return Some(Expression::number(CompactNumber::rational(rational)));
                     }
                 }
             }
@@ -578,7 +580,7 @@ mod tests {
         let latex = expr.to_latex();
         assert_eq!(latex, "x^{2}");
         
-        let rational = Expression::number(Number::Rational(
+        let rational = Expression::number(CompactNumber::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(3), num_bigint::BigInt::from(4))
         ));
         let latex = rational.to_latex();
@@ -597,7 +599,7 @@ mod tests {
         
         // Test fraction
         let expr = Expression::from_latex("\\frac{3}{4}").unwrap();
-        if let Expression::Number(Number::Rational(r)) = expr {
+        if let Expression::Number(CompactNumber::Rational(r)) = expr {
             assert_eq!(r.numer(), &num_bigint::BigInt::from(3));
             assert_eq!(r.denom(), &num_bigint::BigInt::from(4));
         } else {

@@ -1,9 +1,10 @@
 //! Parsing module for mathematical expressions and LaTeX input
 //! Handles conversion between string representations and Expression objects
 
-use crate::core::{Expression, Number, Symbol, CompactNumber};
+use crate::core::{Expression, CompactNumber, Symbol};
 use regex::Regex;
 use std::collections::HashMap;
+use num_traits::{Zero, One};
 
 /// Parser for mathematical expressions
 pub struct ExpressionParser {
@@ -255,7 +256,7 @@ impl ExpressionParser {
         
         // Try to parse as float
         if let Ok(f) = input.parse::<f64>() {
-            return Ok(Expression::number(Number::float(f)));
+            return Ok(Expression::number(CompactNumber::float(f)));
         }
         
         // Try to parse as fraction (a/b)
@@ -268,7 +269,7 @@ impl ExpressionParser {
                     num_bigint::BigInt::from(num),
                     num_bigint::BigInt::from(den)
                 );
-                return Ok(Expression::number(Number::rational(rational)));
+                return Ok(Expression::number(CompactNumber::rational(rational)));
             }
         }
         

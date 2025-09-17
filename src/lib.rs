@@ -5,6 +5,7 @@
 
 pub mod core;
 pub mod algebra;
+pub mod parsing;
 
 // Re-export the prelude for easy access
 pub mod prelude {

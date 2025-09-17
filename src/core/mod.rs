@@ -6,8 +6,8 @@ pub mod number;
 pub mod expression;
 pub mod operators;
 
-// Educational features (temporarily disabled for compilation)
-// pub mod step_by_step;
+// Educational features (restored with performance optimization)
+pub mod step_by_step;
 
 // Performance optimization modules (essential only)
 pub mod compact_number;
@@ -23,4 +23,4 @@ pub use compact_number::CompactNumber;
 pub use compact_expression::CompactExpression;
 pub use simd_ops::{SimdOps, SimdOptimized};
 pub use arena::ExpressionArena;
-// pub use step_by_step::{StepByStep, StepByStepExplanation, Step};
+pub use step_by_step::{StepByStep, StepByStepExplanation, Step};
