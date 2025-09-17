@@ -18,10 +18,13 @@ regex = "1.5"
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 
-# Benchmarks will be restored later
-# [[bench]]
-# name = "optimization_bench"
-# harness = false
+[[bench]]
+name = "optimization_bench"
+harness = false
+
+[[bench]]
+name = "symbolica_challenge_bench"
+harness = false
 
 [profile.release]
 lto = "fat"
