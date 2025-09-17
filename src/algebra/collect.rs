@@ -273,7 +273,7 @@ impl Expression {
                     let mut found = false;
                     for (existing_base, powers) in base_powers.iter_mut() {
                         if *existing_base == base_expr {
-                            powers.push(exp_expr);
+                            powers.push(exp_expr.clone());
                             found = true;
                             break;
                         }

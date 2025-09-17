@@ -323,7 +323,7 @@ impl Expression {
         match self {
             Expression::Number(CompactNumber::Rational(r)) => ((**r).clone(), Expression::integer(1)),
             Expression::Number(CompactNumber::SmallInt(n)) => {
-                (BigRational::from(n.clone()), Expression::integer(1))
+                (BigRational::from(BigInt::from(*n)), Expression::integer(1))
             },
             Expression::Mul(factors) => {
                 let mut coefficient = BigRational::one();
@@ -332,10 +332,10 @@ impl Expression {
                 for factor in factors.iter() {
                     match factor {
                         Expression::Number(CompactNumber::Rational(r)) => {
-                            coefficient *= r;
+                            coefficient *= r.as_ref();
                         },
                         Expression::Number(CompactNumber::SmallInt(n)) => {
-                            coefficient *= BigRational::from(n.clone());
+                            coefficient *= BigRational::from(BigInt::from(*n));
                         },
                         _ => {
                             non_rational_factors.push(factor.clone());

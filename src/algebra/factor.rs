@@ -183,7 +183,7 @@ impl Expression {
     fn extract_numeric_factor(&self, factors: &[Expression]) -> Option<BigInt> {
         for factor in factors {
             if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
-                return Some(n.clone());
+                return Some(BigInt::from(*n));
             }
         }
         None

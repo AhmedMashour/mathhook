@@ -119,9 +119,9 @@ impl Expression {
             (Expression::Symbol(s1), Expression::Mul(factors)) => {
                 if factors.len() == 2 {
                     if let (Expression::Number(CompactNumber::SmallInt(n)), Expression::Symbol(s2)) = (&factors[0], &factors[1]) {
-                        n == &BigInt::from(-1) && s1 == s2
+                        *n == -1 && s1 == s2
                     } else if let (Expression::Symbol(s2), Expression::Number(CompactNumber::SmallInt(n))) = (&factors[0], &factors[1]) {
-                        n == &BigInt::from(-1) && s1 == s2
+                        *n == -1 && s1 == s2
                     } else {
                         false
                     }
@@ -157,7 +157,7 @@ impl Expression {
         
         // Remove the -1 factor and compare
         let neg_without_minus_one: Vec<Expression> = neg_factors.iter()
-            .filter(|f| !matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if n == &BigInt::from(-1)))
+            .filter(|f| !matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if *n == -1))
             .cloned()
             .collect();
         
@@ -168,7 +168,7 @@ impl Expression {
     /// Check if factors contain -1
     fn has_negative_one_factor(&self, factors: &[Expression]) -> bool {
         factors.iter().any(|f| {
-            matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if n == &BigInt::from(-1))
+            matches!(f, Expression::Number(CompactNumber::SmallInt(n)) if *n == -1)
         })
     }
     
@@ -191,21 +191,33 @@ impl Expression {
     /// Check if terms cancel out when collected
     fn terms_cancel_out(&self, terms: &[Expression]) -> bool {
         // Group like terms and check if coefficients sum to zero
-        let mut term_coefficients = std::collections::HashMap::new();
+        // Use Vec instead of HashMap due to Expression not implementing Eq+Hash
+        let mut term_coefficients: Vec<(Expression, BigInt)> = Vec::new();
         
         for term in terms {
             let (coeff, base) = self.extract_coefficient_and_base_term(term);
-            *term_coefficients.entry(base).or_insert(BigInt::zero()) += coeff;
+            // Find existing entry or create new one
+            let mut found = false;
+            for (existing_expr, existing_coeff) in term_coefficients.iter_mut() {
+                if *existing_expr == base {
+                    *existing_coeff += &coeff;
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                term_coefficients.push((base, coeff));
+            }
         }
         
         // Check if all coefficients are zero
-        term_coefficients.values().all(|coeff| coeff.is_zero())
+        term_coefficients.iter().all(|(_, coeff)| coeff.is_zero())
     }
     
     /// Extract coefficient and base term
     fn extract_coefficient_and_base_term(&self, term: &Expression) -> (BigInt, Expression) {
         match term {
-            Expression::Number(CompactNumber::SmallInt(n)) => (n.clone(), Expression::integer(1)),
+            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
             Expression::Symbol(_) => (BigInt::one(), term.clone()),
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
@@ -213,7 +225,7 @@ impl Expression {
                 
                 for factor in factors.iter() {
                     if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
-                        coefficient *= n;
+                        coefficient *= BigInt::from(*n);
                     } else {
                         base_factors.push(factor.clone());
                     }
