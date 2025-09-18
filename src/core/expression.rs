@@ -1,22 +1,21 @@
-//! 🚀 MAGIC BULLET #2: Expression IS CompactExpression (32-byte optimized, 42M+ ops/sec)
-//! High-performance expression representation - the heart of the algebra system
+//! Expression representation - the heart of the algebra system
 
-use crate::core::{Symbol, CompactNumber};
+use crate::core::{Number, Symbol};
 // Simplify trait not used in this module
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-/// 🚀 MAGIC BULLET #2: Expression with 32-byte optimization and 42M+ ops/sec capability
-/// Memory-optimized with boxed vectors for cache efficiency
+/// Expression with 32-byte optimization
+/// Memory-optimized with boxed vectors for cache
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expression {
     /// Optimized number representation
-    Number(CompactNumber),
+    Number(Number),
     /// Symbol (variable)
     Symbol(Symbol),
-    /// Addition with boxed vector for memory efficiency
+    /// Addition with boxed vector for memory
     Add(Box<Vec<Expression>>),
-    /// Multiplication with boxed vector for memory efficiency
+    /// Multiplication with boxed vector for memory
     Mul(Box<Vec<Expression>>),
     /// Power operation with boxed expressions
     Pow(Box<Expression>, Box<Expression>),
@@ -29,27 +28,27 @@ pub enum Expression {
 
 impl Expression {
     /// Create a new number expression
-    pub fn number<T: Into<CompactNumber>>(value: T) -> Self {
+    pub fn number<T: Into<Number>>(value: T) -> Self {
         Self::Number(value.into())
     }
-    
+
     /// Create a new integer expression (optimized path for small integers)
     #[inline(always)]
     pub fn integer<T: Into<num_bigint::BigInt>>(value: T) -> Self {
         let big_int = value.into();
         // 🚀 MAGIC BULLET #2: Fast path for small integers
         if let Ok(small_int) = i64::try_from(&big_int) {
-            Self::Number(CompactNumber::SmallInt(small_int))
+            Self::Number(Number::SmallInt(small_int))
         } else {
-            Self::Number(CompactNumber::BigInteger(Box::new(big_int)))
+            Self::Number(Number::BigInteger(Box::new(big_int)))
         }
     }
-    
+
     /// Create a new symbol expression
     pub fn symbol<T: Into<Symbol>>(symbol: T) -> Self {
         Self::Symbol(symbol.into())
     }
-    
+
     /// Create an addition expression (optimized)
     #[inline(always)]
     pub fn add(terms: Vec<Expression>) -> Self {
@@ -61,7 +60,7 @@ impl Expression {
         }
         Self::Add(Box::new(terms))
     }
-    
+
     /// Create a multiplication expression (optimized)
     #[inline(always)]
     pub fn mul(factors: Vec<Expression>) -> Self {
@@ -73,12 +72,12 @@ impl Expression {
         }
         Self::Mul(Box::new(factors))
     }
-    
+
     /// Create a power expression
     pub fn pow(base: Expression, exponent: Expression) -> Self {
         Self::Pow(Box::new(base), Box::new(exponent))
     }
-    
+
     /// Create a function call expression (optimized)
     #[inline(always)]
     pub fn function<S: Into<String>>(name: S, args: Vec<Expression>) -> Self {
@@ -87,7 +86,7 @@ impl Expression {
             args: Box::new(args),
         }
     }
-    
+
     /// Check if the expression is zero (optimized)
     #[inline(always)]
     pub fn is_zero(&self) -> bool {
@@ -96,7 +95,7 @@ impl Expression {
             _ => false,
         }
     }
-    
+
     /// Check if the expression is one (optimized)
     #[inline(always)]
     pub fn is_one(&self) -> bool {
@@ -105,15 +104,15 @@ impl Expression {
             _ => false,
         }
     }
-    
+
     /// Get the numeric coefficient if this is a simple numeric expression
-    pub fn as_number(&self) -> Option<&CompactNumber> {
+    pub fn as_number(&self) -> Option<&Number> {
         match self {
             Expression::Number(n) => Some(n),
             _ => None,
         }
     }
-    
+
     /// Get the symbol if this is a simple symbol expression
     pub fn as_symbol(&self) -> Option<&Symbol> {
         match self {
@@ -141,7 +140,7 @@ impl fmt::Display for Expression {
                     }
                     write!(f, ")")
                 }
-            },
+            }
             Expression::Mul(factors) => {
                 if factors.is_empty() {
                     write!(f, "1")
@@ -155,10 +154,10 @@ impl fmt::Display for Expression {
                     }
                     write!(f, ")")
                 }
-            },
+            }
             Expression::Pow(base, exp) => {
                 write!(f, "({})^({})", base, exp)
-            },
+            }
             Expression::Function { name, args } => {
                 write!(f, "{}(", name)?;
                 for (i, arg) in args.iter().enumerate() {
@@ -168,7 +167,7 @@ impl fmt::Display for Expression {
                     write!(f, "{}", arg)?;
                 }
                 write!(f, ")")
-            },
+            }
         }
     }
 }
@@ -188,7 +187,7 @@ impl From<i64> for Expression {
 
 impl From<f64> for Expression {
     fn from(value: f64) -> Self {
-        Self::Number(CompactNumber::float(value))
+        Self::Number(Number::float(value))
     }
 }
 
@@ -213,18 +212,18 @@ mod tests {
         let num_expr = Expression::integer(42);
         let sym_expr = Expression::symbol(Symbol::new("x"));
         let add_expr = Expression::add(vec![num_expr.clone(), sym_expr.clone()]);
-        
+
         assert!(matches!(num_expr, Expression::Number(_)));
         assert!(matches!(sym_expr, Expression::Symbol(_)));
         assert!(matches!(add_expr, Expression::Add(_)));
     }
-    
+
     #[test]
     fn test_zero_and_one_detection() {
         let zero = Expression::integer(0);
         let one = Expression::integer(1);
         let x = Expression::symbol(Symbol::new("x"));
-        
+
         assert!(zero.is_zero());
         assert!(!zero.is_one());
         assert!(one.is_one());
@@ -232,13 +231,13 @@ mod tests {
         assert!(!x.is_zero());
         assert!(!x.is_one());
     }
-    
+
     #[test]
     fn test_display() {
         let x = Expression::symbol(Symbol::new("x"));
         let two = Expression::integer(2);
         let sum = Expression::add(vec![x.clone(), two.clone()]);
-        
+
         assert_eq!(format!("{}", x), "x");
         assert_eq!(format!("{}", two), "2");
         assert_eq!(format!("{}", sum), "(x + 2)");

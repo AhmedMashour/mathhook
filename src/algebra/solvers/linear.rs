@@ -1,17 +1,14 @@
-//! 🎯 LINEAR EQUATION SOLVER - TDD IMPLEMENTATION
 //! Solves equations of the form ax + b = 0
 //! Includes step-by-step explanations for educational value
 
-use crate::core::{CompactNumber, Expression, Symbol};
-use crate::educational::step_by_step::{Step, StepByStep, StepByStepExplanation};
+use crate::core::{Number, Expression, Symbol};
+use crate::educational::step_by_step::{Step, StepByStepExplanation};
 // Temporarily simplified for TDD success
 use crate::algebra::simplify::Simplify;
-use crate::algebra::solvers::{EquationSolver, SolverError, SolverResult};
+use crate::algebra::solvers::{EquationSolver, SolverResult};
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{One, Zero};
 
-/// 🎯 LINEAR EQUATION SOLVER
 /// Handles linear equations with step-by-step explanations
 #[derive(Debug, Clone)]
 pub struct LinearSolver {
@@ -36,11 +33,11 @@ impl EquationSolver for LinearSolver {
     #[inline(always)]
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
         // Handle simplified equations that lost structure
-        if let Expression::Number(CompactNumber::SmallInt(0)) = equation {
+        if let Expression::Number(Number::SmallInt(0)) = equation {
             // If equation simplified to just 0, it means 0 = 0 (infinite solutions)
             return SolverResult::InfiniteSolutions;
         }
-        if let Expression::Number(CompactNumber::SmallInt(n)) = equation {
+        if let Expression::Number(Number::SmallInt(n)) = equation {
             if *n != 0 {
                 // If equation simplified to non-zero constant, no solution
                 return SolverResult::NoSolution;
@@ -51,12 +48,12 @@ impl EquationSolver for LinearSolver {
         let (a, b) = self.extract_linear_coefficients(equation, variable);
 
         // 🧠 SMART SOLVER: Analyze original equation structure before simplification
-        
+
         // Check if original equation has patterns like 0*x + constant
         if let Some(special_result) = self.detect_special_linear_cases(equation, variable) {
             return special_result;
         }
-        
+
         // Extract coefficients for normal linear analysis
         let a_simplified = a.simplify();
         let b_simplified = b.simplify();
@@ -75,8 +72,8 @@ impl EquationSolver for LinearSolver {
         // Check if we can solve numerically
         match (&a_simplified, &b_simplified) {
             (
-                Expression::Number(CompactNumber::SmallInt(a_val)),
-                Expression::Number(CompactNumber::SmallInt(b_val)),
+                Expression::Number(Number::SmallInt(a_val)),
+                Expression::Number(Number::SmallInt(b_val)),
             ) => {
                 if *a_val != 0 {
                     // Simple case: ax + b = 0 → x = -b/a
@@ -85,7 +82,7 @@ impl EquationSolver for LinearSolver {
                         SolverResult::Single(Expression::integer(result))
                     } else {
                         // Create rational
-                        SolverResult::Single(Expression::Number(CompactNumber::rational(
+                        SolverResult::Single(Expression::Number(Number::rational(
                             BigRational::new(BigInt::from(-b_val), BigInt::from(*a_val)),
                         )))
                     }
@@ -164,14 +161,6 @@ impl LinearSolver {
         &self,
         b: &Expression,
     ) -> (SolverResult, StepByStepExplanation) {
-        let equation = Expression::add(vec![
-            Expression::mul(vec![
-                Expression::integer(0),
-                Expression::symbol(Symbol::new("x")),
-            ]),
-            b.clone(),
-        ]);
-
         if b.is_zero() {
             let steps = vec![
                 Step::new("Special Case", "0x + 0 = 0 is always true"),
@@ -267,19 +256,25 @@ impl LinearSolver {
 
     /// 🧠 SMART: Detect special linear cases before simplification
     #[inline(always)]
-    fn detect_special_linear_cases(&self, equation: &Expression, variable: &Symbol) -> Option<SolverResult> {
+    fn detect_special_linear_cases(
+        &self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> Option<SolverResult> {
         match equation {
             Expression::Add(terms) if terms.len() == 2 => {
                 // Check for patterns: 0*x + constant
                 if let [Expression::Mul(factors), constant] = &terms[..] {
                     if factors.len() == 2 {
-                        if let [Expression::Number(CompactNumber::SmallInt(0)), var] = &factors[..] {
+                        if let [Expression::Number(Number::SmallInt(0)), var] = &factors[..]
+                        {
                             if var == &Expression::symbol(variable.clone()) {
                                 // Found 0*x + constant pattern
                                 match constant {
-                                    Expression::Number(CompactNumber::SmallInt(0)) => {
-                                        return Some(SolverResult::InfiniteSolutions); // 0*x + 0 = 0
-                                    },
+                                    Expression::Number(Number::SmallInt(0)) => {
+                                        return Some(SolverResult::InfiniteSolutions);
+                                        // 0*x + 0 = 0
+                                    }
                                     _ => {
                                         return Some(SolverResult::NoSolution); // 0*x + nonzero = 0
                                     }
@@ -288,7 +283,7 @@ impl LinearSolver {
                         }
                     }
                 }
-            },
+            }
             _ => {}
         }
         None // No special case detected
@@ -305,7 +300,7 @@ impl LinearSolver {
         match expr {
             // Handle -1 * (complex expression)
             Expression::Mul(factors) if factors.len() == 2 => {
-                if let [Expression::Number(CompactNumber::SmallInt(-1)), complex_expr] =
+                if let [Expression::Number(Number::SmallInt(-1)), complex_expr] =
                     &factors[..]
                 {
                     // Evaluate the complex expression and negate it
@@ -331,7 +326,7 @@ impl LinearSolver {
                 let mut total = 0i64;
                 for term in terms.iter() {
                     match self.evaluate_expression(term) {
-                        Expression::Number(CompactNumber::SmallInt(n)) => total += n,
+                        Expression::Number(Number::SmallInt(n)) => total += n,
                         _ => return expr.clone(), // Can't evaluate
                     }
                 }
@@ -341,7 +336,7 @@ impl LinearSolver {
                 let mut product = 1i64;
                 for factor in factors.iter() {
                     match self.evaluate_expression(factor) {
-                        Expression::Number(CompactNumber::SmallInt(n)) => product *= n,
+                        Expression::Number(Number::SmallInt(n)) => product *= n,
                         _ => return expr.clone(), // Can't evaluate
                     }
                 }
@@ -355,29 +350,29 @@ impl LinearSolver {
 
                 match (&num_eval, &den_eval) {
                     (
-                        Expression::Number(CompactNumber::Float(num)),
-                        Expression::Number(CompactNumber::Float(den)),
+                        Expression::Number(Number::Float(num)),
+                        Expression::Number(Number::Float(den)),
                     ) => {
                         if *den != 0.0 {
                             let result = num / den;
                             if result.fract() == 0.0 {
                                 Expression::integer(result as i64)
                             } else {
-                                Expression::Number(CompactNumber::float(result))
+                                Expression::Number(Number::float(result))
                             }
                         } else {
                             expr.clone()
                         }
                     }
                     (
-                        Expression::Number(CompactNumber::SmallInt(num)),
-                        Expression::Number(CompactNumber::SmallInt(den)),
+                        Expression::Number(Number::SmallInt(num)),
+                        Expression::Number(Number::SmallInt(den)),
                     ) => {
                         if *den != 0 {
                             if num % den == 0 {
                                 Expression::integer(num / den)
                             } else {
-                                Expression::Number(CompactNumber::rational(BigRational::new(
+                                Expression::Number(Number::rational(BigRational::new(
                                     BigInt::from(*num),
                                     BigInt::from(*den),
                                 )))
@@ -404,15 +399,15 @@ impl LinearSolver {
         match (&num_simplified, &den_simplified) {
             // Simple integer division
             (
-                Expression::Number(CompactNumber::SmallInt(n)),
-                Expression::Number(CompactNumber::SmallInt(d)),
+                Expression::Number(Number::SmallInt(n)),
+                Expression::Number(Number::SmallInt(d)),
             ) => {
                 if *d != 0 {
                     if n % d == 0 {
                         Expression::integer(n / d)
                     } else {
                         // Create rational number
-                        Expression::Number(CompactNumber::rational(BigRational::new(
+                        Expression::Number(Number::rational(BigRational::new(
                             BigInt::from(*n),
                             BigInt::from(*d),
                         )))
@@ -423,10 +418,10 @@ impl LinearSolver {
                 }
             }
             // Try to simplify further - if denominator is 1, just return numerator
-            (num, Expression::Number(CompactNumber::SmallInt(1))) => num.clone(),
+            (num, Expression::Number(Number::SmallInt(1))) => num.clone(),
             // Handle multiplication by -1 and other simple cases
             (Expression::Mul(factors), den) if factors.len() == 2 => {
-                if let [Expression::Number(CompactNumber::SmallInt(-1)), expr] = &factors[..] {
+                if let [Expression::Number(Number::SmallInt(-1)), expr] = &factors[..] {
                     // -1 * expr / den = -(expr / den)
                     let inner_div = self.divide_expressions(expr, den);
                     Expression::mul(vec![Expression::integer(-1), inner_div]).simplify()

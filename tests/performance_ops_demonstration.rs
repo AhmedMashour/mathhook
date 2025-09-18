@@ -39,11 +39,11 @@ fn test_memory_efficiency_demonstration() {
     println!("🧠 MEMORY EFFICIENCY DEMONSTRATION");
     
     // Show memory sizes
-    println!("CompactNumber size: {} bytes", std::mem::size_of::<CompactNumber>());
+    println!("Number size: {} bytes", std::mem::size_of::<Number>());
     println!("Expression size: {} bytes", std::mem::size_of::<Expression>());
     
     // Verify optimized sizes
-    assert!(std::mem::size_of::<CompactNumber>() <= 16);
+    assert!(std::mem::size_of::<Number>() <= 16);
     assert!(std::mem::size_of::<Expression>() <= 64); // Reasonable for boxed vectors
     
     // Test memory efficiency with many expressions

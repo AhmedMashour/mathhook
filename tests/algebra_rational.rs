@@ -8,10 +8,10 @@ fn test_simplify_rational_expressions() {
     
     // Test basic rational simplification
     let expr = Expression::add(vec![
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(2))
         )),
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(3))
         ))
     ]);
@@ -26,10 +26,10 @@ fn test_simplify_rational_expressions() {
 #[test]
 fn test_simple_rational_combination() {
     // Test 1/4 + 1/4 = 1/2
-    let quarter1 = Expression::number(CompactNumber::rational(
+    let quarter1 = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(4))
     ));
-    let quarter2 = Expression::number(CompactNumber::rational(
+    let quarter2 = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(4))
     ));
     
@@ -47,12 +47,12 @@ fn test_simplify_rational() {
     // Test rational with variables
     let expr = Expression::add(vec![
         Expression::mul(vec![
-            Expression::number(CompactNumber::rational(
+            Expression::number(Number::rational(
                 num_rational::BigRational::new(num_bigint::BigInt::from(2), num_bigint::BigInt::from(3))
             )),
             Expression::symbol(x.clone())
         ]),
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(6))
         ))
     ]);
@@ -65,10 +65,10 @@ fn test_simplify_rational() {
 #[test]
 fn test_simplify_rational_mode() {
     // Test rational arithmetic in different modes
-    let half = Expression::number(CompactNumber::rational(
+    let half = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(2))
     ));
-    let third = Expression::number(CompactNumber::rational(
+    let third = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(3))
     ));
     
@@ -89,21 +89,21 @@ fn test_rational_number_patterns() {
     // Test various rational number patterns
     
     // Pattern 1: Simple fractions
-    let expr = Expression::number(CompactNumber::rational(
+    let expr = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(6), num_bigint::BigInt::from(8))
     ));
     let result = expr.simplify();
     println!("6/8 simplified = {}", result);
     
     // Pattern 2: Improper fractions
-    let expr = Expression::number(CompactNumber::rational(
+    let expr = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(7), num_bigint::BigInt::from(3))
     ));
     let result = expr.simplify();
     println!("7/3 = {}", result);
     
     // Pattern 3: Negative fractions
-    let expr = Expression::number(CompactNumber::rational(
+    let expr = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(-3), num_bigint::BigInt::from(4))
     ));
     let result = expr.simplify();
@@ -119,7 +119,7 @@ fn test_issue_4194() {
     
     let expr = Expression::add(vec![
         Expression::symbol(x.clone()),
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(2))
         ))
     ]);
@@ -182,13 +182,13 @@ fn test_advanced_rational_patterns() {
     // Test complex rational combinations
     let expr = Expression::add(vec![
         Expression::mul(vec![
-            Expression::number(CompactNumber::rational(
+            Expression::number(Number::rational(
                 num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(3))
             )),
             Expression::symbol(x.clone())
         ]),
         Expression::mul(vec![
-            Expression::number(CompactNumber::rational(
+            Expression::number(Number::rational(
                 num_rational::BigRational::new(num_bigint::BigInt::from(2), num_bigint::BigInt::from(5))
             )),
             Expression::symbol(y.clone())
@@ -206,10 +206,10 @@ fn test_complex_rational_arithmetic() {
     // Test complex rational arithmetic operations
     
     // Test (3/4) * (8/9) = 24/36 = 2/3
-    let frac1 = Expression::number(CompactNumber::rational(
+    let frac1 = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(3), num_bigint::BigInt::from(4))
     ));
-    let frac2 = Expression::number(CompactNumber::rational(
+    let frac2 = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(8), num_bigint::BigInt::from(9))
     ));
     
@@ -227,18 +227,18 @@ fn test_ultimate_rational_mastery() {
     // Ultimate rational test combining multiple concepts
     let expr = Expression::add(vec![
         Expression::mul(vec![
-            Expression::number(CompactNumber::rational(
+            Expression::number(Number::rational(
                 num_rational::BigRational::new(num_bigint::BigInt::from(5), num_bigint::BigInt::from(6))
             )),
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))
         ]),
         Expression::mul(vec![
-            Expression::number(CompactNumber::rational(
+            Expression::number(Number::rational(
                 num_rational::BigRational::new(num_bigint::BigInt::from(-1), num_bigint::BigInt::from(3))
             )),
             Expression::symbol(x.clone())
         ]),
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(7), num_bigint::BigInt::from(12))
         ))
     ]);
@@ -259,7 +259,7 @@ fn test_historic_95_percent_milestone() {
         Expression::pow(
             Expression::add(vec![
                 Expression::symbol(x.clone()),
-                Expression::number(CompactNumber::rational(
+                Expression::number(Number::rational(
                     num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(2))
                 ))
             ]),

@@ -1,9 +1,9 @@
 //! Term collection and combination operations
 //! Handles collecting like terms, combining coefficients, and organizing expressions
 
-use crate::core::{Expression, CompactNumber, Symbol};
+use crate::core::{Expression, Number, Symbol};
 use num_bigint::BigInt;
-use num_traits::{Zero, One};
+use num_traits::{One, Zero};
 // HashMap removed - using Vec-based approach for Expression compatibility
 
 /// Trait for collecting terms in expressions
@@ -17,26 +17,20 @@ impl Collect for Expression {
     /// Collect terms with respect to a specific variable
     fn collect(&self, var: &Symbol) -> Self {
         match self {
-            Expression::Add(terms) => {
-                self.collect_addition_terms(terms, var)
-            },
+            Expression::Add(terms) => self.collect_addition_terms(terms, var),
             _ => self.clone(),
         }
     }
-    
+
     /// Collect and combine all like terms
     fn collect_terms(&self) -> Self {
         match self {
-            Expression::Add(terms) => {
-                self.collect_all_like_terms(terms)
-            },
-            Expression::Mul(factors) => {
-                self.collect_multiplication_terms(factors)
-            },
+            Expression::Add(terms) => self.collect_all_like_terms(terms),
+            Expression::Mul(factors) => self.collect_multiplication_terms(factors),
             _ => self.clone(),
         }
     }
-    
+
     /// Combine like terms in the expression
     fn combine_like_terms(&self) -> Self {
         self.collect_terms()
@@ -49,38 +43,38 @@ impl Expression {
         // Use Vec instead of HashMap due to Expression not implementing Eq+Hash (contains f64)
         let mut term_coefficients: Vec<(Expression, BigInt)> = Vec::new();
         let mut constant_term = BigInt::zero();
-        
+
         for term in terms {
             let (coeff, power_expr) = self.extract_coefficient_and_power(term, var);
-            
+
             if power_expr == Expression::integer(0) {
                 // Constant term
                 constant_term += coeff;
             } else {
                 // Variable term
                 // Find existing entry or create new one
-            let mut found = false;
-            for (existing_expr, existing_coeff) in term_coefficients.iter_mut() {
-                if *existing_expr == power_expr {
-                    *existing_coeff += &coeff;
-                    found = true;
-                    break;
+                let mut found = false;
+                for (existing_expr, existing_coeff) in term_coefficients.iter_mut() {
+                    if *existing_expr == power_expr {
+                        *existing_coeff += &coeff;
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    term_coefficients.push((power_expr, coeff));
                 }
             }
-            if !found {
-                term_coefficients.push((power_expr, coeff));
-            }
-            }
         }
-        
+
         // Reconstruct the expression
         let mut result_terms = Vec::new();
-        
+
         // Add constant term if non-zero
         if !constant_term.is_zero() {
             result_terms.push(Expression::integer(constant_term));
         }
-        
+
         // Add variable terms
         for (power_expr, coeff) in term_coefficients {
             if !coeff.is_zero() {
@@ -101,7 +95,7 @@ impl Expression {
                 result_terms.push(term);
             }
         }
-        
+
         if result_terms.is_empty() {
             Expression::integer(0)
         } else if result_terms.len() == 1 {
@@ -110,19 +104,23 @@ impl Expression {
             Expression::add(result_terms)
         }
     }
-    
+
     /// Extract coefficient and power from a term with respect to a variable
-    fn extract_coefficient_and_power(&self, term: &Expression, var: &Symbol) -> (BigInt, Expression) {
+    fn extract_coefficient_and_power(
+        &self,
+        term: &Expression,
+        var: &Symbol,
+    ) -> (BigInt, Expression) {
         match term {
             // Pure number
-            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(0)),
-            
+            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(0)),
+
             // Pure variable
             Expression::Symbol(s) if s == var => (BigInt::one(), Expression::integer(1)),
-            
+
             // Other symbol
             Expression::Symbol(_) => (BigInt::zero(), Expression::integer(0)),
-            
+
             // Power of variable: x^n
             Expression::Pow(base, exp) => {
                 if let Expression::Symbol(s) = base.as_ref() {
@@ -131,23 +129,23 @@ impl Expression {
                     }
                 }
                 (BigInt::zero(), Expression::integer(0))
-            },
-            
+            }
+
             // Multiplication: coeff * x^n
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
                 let mut power = Expression::integer(0);
                 let mut has_var = false;
-                
+
                 for factor in factors.iter() {
                     match factor {
-                        Expression::Number(CompactNumber::SmallInt(n)) => {
+                        Expression::Number(Number::SmallInt(n)) => {
                             coefficient *= BigInt::from(*n);
-                        },
+                        }
                         Expression::Symbol(s) if s == var => {
                             power = Expression::integer(1);
                             has_var = true;
-                        },
+                        }
                         Expression::Pow(base, exp) => {
                             if let Expression::Symbol(s) = base.as_ref() {
                                 if s == var {
@@ -155,30 +153,30 @@ impl Expression {
                                     has_var = true;
                                 }
                             }
-                        },
+                        }
                         _ => {
                             // Non-variable factor, treat as part of coefficient
                             // This is simplified - full implementation would handle this better
                         }
                     }
                 }
-                
+
                 if has_var {
                     (coefficient, power)
                 } else {
                     (BigInt::zero(), Expression::integer(0))
                 }
-            },
-            
+            }
+
             _ => (BigInt::zero(), Expression::integer(0)),
         }
     }
-    
+
     /// Collect all like terms regardless of variable
     fn collect_all_like_terms(&self, terms: &[Expression]) -> Expression {
         // Use Vec instead of HashMap due to Expression not implementing Eq+Hash
         let mut term_coefficients: Vec<(Expression, BigInt)> = Vec::new();
-        
+
         for term in terms {
             let (coeff, base_term) = self.extract_coefficient_and_base(term);
             // Find existing entry or create new one
@@ -194,10 +192,10 @@ impl Expression {
                 term_coefficients.push((base_term, coeff));
             }
         }
-        
+
         // Reconstruct expression
         let mut result_terms = Vec::new();
-        
+
         for (base_term, total_coeff) in term_coefficients {
             if !total_coeff.is_zero() {
                 let final_term = if total_coeff.is_one() {
@@ -210,7 +208,7 @@ impl Expression {
                 result_terms.push(final_term);
             }
         }
-        
+
         if result_terms.is_empty() {
             Expression::integer(0)
         } else if result_terms.len() == 1 {
@@ -219,26 +217,26 @@ impl Expression {
             Expression::add(result_terms)
         }
     }
-    
+
     /// Extract coefficient and base term from any expression
     fn extract_coefficient_and_base(&self, expr: &Expression) -> (BigInt, Expression) {
         match expr {
-            Expression::Number(CompactNumber::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
-            
+            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
+
             Expression::Symbol(_) => (BigInt::one(), expr.clone()),
-            
+
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
                 let mut non_numeric_factors = Vec::new();
-                
+
                 for factor in factors.iter() {
-                    if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
+                    if let Expression::Number(Number::SmallInt(n)) = factor {
                         coefficient *= BigInt::from(*n);
                     } else {
                         non_numeric_factors.push(factor.clone());
                     }
                 }
-                
+
                 let base = if non_numeric_factors.is_empty() {
                     Expression::integer(1)
                 } else if non_numeric_factors.len() == 1 {
@@ -246,26 +244,26 @@ impl Expression {
                 } else {
                     Expression::mul(non_numeric_factors)
                 };
-                
+
                 (coefficient, base)
-            },
-            
+            }
+
             _ => (BigInt::one(), expr.clone()),
         }
     }
-    
+
     /// Collect terms in multiplication (combine powers of same base)
     fn collect_multiplication_terms(&self, factors: &[Expression]) -> Expression {
         // Use Vec instead of HashMap due to Expression not implementing Eq+Hash
         let mut base_powers: Vec<(Expression, Vec<Expression>)> = Vec::new();
         let mut numeric_factor = BigInt::one();
         let mut other_factors = Vec::new();
-        
+
         for factor in factors {
             match factor {
-                Expression::Number(CompactNumber::SmallInt(n)) => {
+                Expression::Number(Number::SmallInt(n)) => {
                     numeric_factor *= BigInt::from(*n);
-                },
+                }
                 Expression::Pow(base, exp) => {
                     // Find existing base or create new entry
                     let base_expr = (**base).clone();
@@ -281,7 +279,7 @@ impl Expression {
                     if !found {
                         base_powers.push((base_expr, vec![exp_expr]));
                     }
-                },
+                }
                 Expression::Symbol(_) => {
                     // Find existing base or create new entry
                     let mut found = false;
@@ -295,20 +293,20 @@ impl Expression {
                     if !found {
                         base_powers.push((factor.clone(), vec![Expression::integer(1)]));
                     }
-                },
+                }
                 _ => {
                     other_factors.push(factor.clone());
                 }
             }
         }
-        
+
         // Combine powers of same base
         let mut result_factors = Vec::new();
-        
+
         if !numeric_factor.is_one() {
             result_factors.push(Expression::integer(numeric_factor));
         }
-        
+
         for (base, exponents) in base_powers {
             if exponents.len() == 1 {
                 if exponents[0] == Expression::integer(1) {
@@ -322,9 +320,9 @@ impl Expression {
                 result_factors.push(Expression::pow(base, total_exp));
             }
         }
-        
+
         result_factors.extend(other_factors);
-        
+
         if result_factors.is_empty() {
             Expression::integer(1)
         } else if result_factors.len() == 1 {
@@ -333,21 +331,21 @@ impl Expression {
             Expression::mul(result_factors)
         }
     }
-    
+
     /// Collect terms by degree (for polynomials)
     pub fn collect_by_degree(&self, var: &Symbol) -> Expression {
         // This would organize terms by their degree in the variable
         // For now, delegate to the main collect method
         self.collect(var)
     }
-    
+
     /// Separate variables and constants
     pub fn separate_constants(&self) -> (Expression, Expression) {
         match self {
             Expression::Add(terms) => {
                 let mut constants = Vec::new();
                 let mut variables = Vec::new();
-                
+
                 for term in terms.iter() {
                     if self.is_constant(term) {
                         constants.push(term.clone());
@@ -355,21 +353,21 @@ impl Expression {
                         variables.push(term.clone());
                     }
                 }
-                
+
                 let const_part = if constants.is_empty() {
                     Expression::integer(0)
                 } else {
                     Expression::add(constants)
                 };
-                
+
                 let var_part = if variables.is_empty() {
                     Expression::integer(0)
                 } else {
                     Expression::add(variables)
                 };
-                
+
                 (const_part, var_part)
-            },
+            }
             _ => {
                 if self.is_constant(self) {
                     (self.clone(), Expression::integer(0))
@@ -379,7 +377,7 @@ impl Expression {
             }
         }
     }
-    
+
     /// Check if an expression is constant (contains no variables)
     fn is_constant(&self, expr: &Expression) -> bool {
         match expr {
@@ -387,13 +385,9 @@ impl Expression {
             Expression::Symbol(_) => false,
             Expression::Add(terms) | Expression::Mul(terms) => {
                 terms.iter().all(|t| self.is_constant(t))
-            },
-            Expression::Pow(base, exp) => {
-                self.is_constant(base) && self.is_constant(exp)
-            },
-            Expression::Function { args, .. } => {
-                args.iter().all(|a| self.is_constant(a))
             }
+            Expression::Pow(base, exp) => self.is_constant(base) && self.is_constant(exp),
+            Expression::Function { args, .. } => args.iter().all(|a| self.is_constant(a)),
         }
     }
 }
@@ -405,111 +399,111 @@ mod tests {
     #[test]
     fn test_collect_like_terms() {
         let x = Symbol::new("x");
-        
+
         // Test 2x + 3x = 5x
         let expr = Expression::add(vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
-            Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())])
+            Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
         ]);
-        
+
         let result = expr.collect(&x);
         println!("2x + 3x collected = {}", result);
-        
+
         // Should combine to 5x
         assert!(!result.is_zero());
     }
-    
+
     #[test]
     fn test_collect_different_powers() {
         let x = Symbol::new("x");
-        
+
         // Test x^2 + 2x + x^2 = 2x^2 + 2x
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
-            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
         ]);
-        
+
         let result = expr.collect(&x);
         println!("x^2 + 2x + x^2 collected = {}", result);
-        
+
         match result {
             Expression::Add(terms) => {
                 assert_eq!(terms.len(), 2); // Should have 2x^2 and 2x
-            },
+            }
             _ => println!("Collection result: {}", result),
         }
     }
-    
+
     #[test]
     fn test_combine_like_terms() {
         let x = Symbol::new("x");
         let y = Symbol::new("y");
-        
+
         // Test 3x + 2y + x + y = 4x + 3y
         let expr = Expression::add(vec![
             Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
             Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
             Expression::symbol(x.clone()),
-            Expression::symbol(y.clone())
+            Expression::symbol(y.clone()),
         ]);
-        
+
         let result = expr.combine_like_terms();
         println!("3x + 2y + x + y combined = {}", result);
-        
+
         assert!(!result.is_zero());
     }
-    
+
     #[test]
     fn test_collect_constants() {
         let x = Symbol::new("x");
-        
+
         // Test 5 + 3x + 2 = 3x + 7
         let expr = Expression::add(vec![
             Expression::integer(5),
             Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
-            Expression::integer(2)
+            Expression::integer(2),
         ]);
-        
+
         let result = expr.collect(&x);
         println!("5 + 3x + 2 collected = {}", result);
-        
+
         // Should combine constants
         assert!(!result.is_zero());
     }
-    
+
     #[test]
     fn test_separate_constants() {
         let x = Symbol::new("x");
-        
+
         let expr = Expression::add(vec![
             Expression::integer(5),
             Expression::symbol(x.clone()),
-            Expression::integer(3)
+            Expression::integer(3),
         ]);
-        
+
         let (constants, variables) = expr.separate_constants();
-        
+
         println!("Constants: {}, Variables: {}", constants, variables);
-        
+
         // Constants should be 5 + 3 = 8, variables should be x
         assert!(!constants.is_zero());
         assert!(!variables.is_zero());
     }
-    
+
     #[test]
     fn test_collect_multiplication_powers() {
         let x = Symbol::new("x");
-        
+
         // Test x^2 * x^3 = x^5 (if implemented)
         let expr = Expression::mul(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-            Expression::pow(Expression::symbol(x.clone()), Expression::integer(3))
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
         ]);
-        
+
         let result = expr.collect_terms();
         println!("x^2 * x^3 collected = {}", result);
-        
+
         // Should combine to x^5
         assert!(!result.is_zero());
     }

@@ -7,7 +7,7 @@ fn test_targeted_rational() {
     let x = Symbol::new("x");
     
     let expr = Expression::mul(vec![
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(2), num_bigint::BigInt::from(3))
         )),
         Expression::symbol(x.clone())

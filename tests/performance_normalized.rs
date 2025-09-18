@@ -37,7 +37,7 @@ fn test_memory_normalization() {
     // Verify memory optimization is the default
     let expr = Expression::integer(42);
     match expr {
-        Expression::Number(CompactNumber::SmallInt(n)) => {
+        Expression::Number(Number::SmallInt(n)) => {
             assert_eq!(n, 42);
             println!("✅ Small integers optimized by default");
         },

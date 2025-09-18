@@ -2,7 +2,7 @@
 //! Solves systems of linear equations using elimination/substitution
 //! Includes step-by-step explanations for educational value
 
-use crate::core::{Expression, Symbol, CompactNumber};
+use crate::core::{Expression, Symbol, Number};
 use crate::educational::step_by_step::{StepByStepExplanation, Step};
 use crate::algebra::solvers::{EquationSolver, SolverResult, SystemEquationSolver};
 use crate::algebra::Simplify;
@@ -128,12 +128,12 @@ impl SystemSolver {
         //         a2*x + b2*y = -c2
         
         match (&a1, &b1, &c1, &a2, &b2, &c2) {
-            (Expression::Number(CompactNumber::SmallInt(a1_val)),
-             Expression::Number(CompactNumber::SmallInt(b1_val)),
-             Expression::Number(CompactNumber::SmallInt(c1_val)),
-             Expression::Number(CompactNumber::SmallInt(a2_val)),
-             Expression::Number(CompactNumber::SmallInt(b2_val)),
-             Expression::Number(CompactNumber::SmallInt(c2_val))) => {
+            (Expression::Number(Number::SmallInt(a1_val)),
+             Expression::Number(Number::SmallInt(b1_val)),
+             Expression::Number(Number::SmallInt(c1_val)),
+             Expression::Number(Number::SmallInt(a2_val)),
+             Expression::Number(Number::SmallInt(b2_val)),
+             Expression::Number(Number::SmallInt(c2_val))) => {
                 
                 // Calculate determinant: det = a1*b2 - a2*b1
                 let det = a1_val * b2_val - a2_val * b1_val;
@@ -157,7 +157,7 @@ impl SystemSolver {
                     let x_sol = if x_num % det == 0 {
                         Expression::integer(x_num / det)
                     } else {
-                        Expression::Number(CompactNumber::rational(
+                        Expression::Number(Number::rational(
                             BigRational::new(BigInt::from(x_num), BigInt::from(det))
                         ))
                     };
@@ -165,7 +165,7 @@ impl SystemSolver {
                     let y_sol = if y_num % det == 0 {
                         Expression::integer(y_num / det)
                     } else {
-                        Expression::Number(CompactNumber::rational(
+                        Expression::Number(Number::rational(
                             BigRational::new(BigInt::from(y_num), BigInt::from(det))
                         ))
                     };

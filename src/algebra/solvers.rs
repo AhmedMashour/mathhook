@@ -3,20 +3,20 @@
 //! Following modern Rust 2021+ conventions and TDD approach
 
 use crate::core::{Expression, Symbol};
-use crate::educational::step_by_step::{StepByStepExplanation, Step};
+use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use serde::{Deserialize, Serialize};
 
 // Modern Rust: Individual solver modules
 pub mod linear;
-pub mod quadratic; 
-pub mod systems;
 pub mod polynomial;
+pub mod quadratic;
+pub mod systems;
 
 // Re-exports for easy access
 pub use linear::LinearSolver;
+pub use polynomial::PolynomialSolver;
 pub use quadratic::QuadraticSolver;
 pub use systems::SystemSolver;
-pub use polynomial::PolynomialSolver;
 
 /// 🎯 SOLVER RESULT - UNIFIED RESULT TYPE
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -50,10 +50,14 @@ pub enum SolverError {
 pub trait EquationSolver {
     /// Solve equation for given variable
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult;
-    
+
     /// Solve with step-by-step explanation (CRITICAL USER REQUIREMENT)
-    fn solve_with_explanation(&self, equation: &Expression, variable: &Symbol) -> (SolverResult, StepByStepExplanation);
-    
+    fn solve_with_explanation(
+        &self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> (SolverResult, StepByStepExplanation);
+
     /// Check if solver can handle this equation type
     fn can_solve(&self, equation: &Expression) -> bool;
 }
@@ -62,9 +66,13 @@ pub trait EquationSolver {
 pub trait SystemEquationSolver {
     /// Solve system of equations
     fn solve_system(&self, equations: &[Expression], variables: &[Symbol]) -> SolverResult;
-    
+
     /// Solve system with step-by-step explanation
-    fn solve_system_with_explanation(&self, equations: &[Expression], variables: &[Symbol]) -> (SolverResult, StepByStepExplanation);
+    fn solve_system_with_explanation(
+        &self,
+        equations: &[Expression],
+        variables: &[Symbol],
+    ) -> (SolverResult, StepByStepExplanation);
 }
 
 // ============================================================================
@@ -82,7 +90,7 @@ impl SolverResult {
             SolverResult::Parametric(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
         }
     }
-    
+
     /// Get number of solutions
     pub fn solution_count(&self) -> Option<usize> {
         match self {
@@ -103,13 +111,13 @@ impl SolverResult {
 pub trait SolverStepByStep {
     /// Solve with complete step-by-step explanation
     fn solve_with_steps(&self, variable: &Symbol) -> (SolverResult, StepByStepExplanation);
-    
+
     /// Generate step-by-step explanation for solving process
     fn explain_solving_steps(&self, variable: &Symbol) -> StepByStepExplanation;
 }
 
 impl SolverStepByStep for Expression {
-    fn solve_with_steps(&self, variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
+    fn solve_with_steps(&self, _variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
         // This will be implemented by individual solvers
         // For now, return placeholder
         let explanation = StepByStepExplanation::new(vec![
@@ -117,10 +125,10 @@ impl SolverStepByStep for Expression {
             Step::new("Method", "Determining appropriate solving method"),
             Step::new("Implementation", "Solver implementation in progress..."),
         ]);
-        
+
         (SolverResult::NoSolution, explanation)
     }
-    
+
     fn explain_solving_steps(&self, variable: &Symbol) -> StepByStepExplanation {
         StepByStepExplanation::new(vec![
             Step::new("Equation", format!("Given: {} = 0", self)),
@@ -142,16 +150,12 @@ impl Expression {
             Expression::Number(_) | Expression::Symbol(_) => true,
             Expression::Add(terms) | Expression::Mul(terms) => {
                 !terms.is_empty() && terms.iter().all(|t| t.is_valid_expression())
-            },
-            Expression::Pow(base, exp) => {
-                base.is_valid_expression() && exp.is_valid_expression()
-            },
-            Expression::Function { args, .. } => {
-                args.iter().all(|a| a.is_valid_expression())
-            },
+            }
+            Expression::Pow(base, exp) => base.is_valid_expression() && exp.is_valid_expression(),
+            Expression::Function { args, .. } => args.iter().all(|a| a.is_valid_expression()),
         }
     }
-    
+
     /// Convert to LaTeX representation for solvers (avoid conflict)
     pub fn solver_to_latex(&self) -> String {
         match self {
@@ -160,18 +164,18 @@ impl Expression {
             Expression::Add(terms) => {
                 let term_strs: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
                 term_strs.join(" + ")
-            },
+            }
             Expression::Mul(factors) => {
                 let factor_strs: Vec<String> = factors.iter().map(|f| format!("{}", f)).collect();
                 factor_strs.join(" \\cdot ")
-            },
+            }
             Expression::Pow(base, exp) => {
                 format!("{}^{{{}}}", base, exp)
-            },
+            }
             Expression::Function { name, args } => {
                 let arg_strs: Vec<String> = args.iter().map(|a| format!("{}", a)).collect();
                 format!("\\{}({})", name, arg_strs.join(", "))
-            },
+            }
         }
     }
 }

@@ -169,7 +169,7 @@ let result = solver.solve("(x + 1)^{2} = 9")?;
 ## ⚡ Performance
 
 **Magic Bullets Active:**
-- 🎯 **CompactNumber:** 16-byte optimized numbers
+- 🎯 **Number:** 16-byte optimized numbers
 - 🎯 **CompactExpression:** 32-byte optimized expressions  
 - 🎯 **SIMD Operations:** Vectorized arithmetic
 - 🎯 **Arena Allocation:** Reduced memory fragmentation
@@ -225,9 +225,8 @@ match result.difficulty_level {
 - LaTeX → Expression → Analysis → Solver → Result
 
 **Performance Layer:**
-- `CompactNumber` - Memory-optimized numbers
+- `Number` - Memory-optimized numbers
 - `ExpressionArena` - Bulk allocation
-- `SimdOps` - Vectorized operations
 
 ## 📖 Examples
 

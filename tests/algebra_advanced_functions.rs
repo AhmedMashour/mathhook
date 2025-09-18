@@ -14,7 +14,7 @@ fn test_logarithm_simplification() {
     
     // Should simplify to 0 when advanced simplification is implemented
     match result {
-        Expression::Number(CompactNumber::SmallInt(0)) => assert_eq!(0, 0),
+        Expression::Number(Number::SmallInt(0)) => assert_eq!(0, 0),
         _ => println!("ln(1) result: {}", result),
     }
 }
@@ -47,7 +47,7 @@ fn test_factorial_simplify() {
     
     // Should compute factorial when advanced simplification is implemented
     match result {
-        Expression::Number(CompactNumber::SmallInt(120)) => assert_eq!(120, 120),
+        Expression::Number(Number::SmallInt(120)) => assert_eq!(120, 120),
         _ => println!("5! result: {}", result),
     }
 }
@@ -55,7 +55,7 @@ fn test_factorial_simplify() {
 #[test]
 fn test_nsimplify() {
     // Test numeric simplification
-    let expr = Expression::number(CompactNumber::float(0.333333333));
+    let expr = Expression::number(Number::float(0.333333333));
     let result = expr.simplify();
     
     println!("0.333333333 simplified = {}", result);

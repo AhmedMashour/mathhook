@@ -4,11 +4,10 @@
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::algebra::Simplify;
-use crate::core::{CompactNumber, Expression, Symbol};
+use crate::core::{Number, Expression, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{One, Zero};
 
 /// Quadratic equation solver
 #[derive(Debug, Clone)]
@@ -97,7 +96,7 @@ impl QuadraticSolver {
                         Expression::Pow(base, exp)
                             if **base == Expression::symbol(variable.clone()) =>
                         {
-                            if let Expression::Number(CompactNumber::SmallInt(2)) = **exp {
+                            if let Expression::Number(Number::SmallInt(2)) = **exp {
                                 a_coeff = Expression::integer(1);
                             }
                         }
@@ -109,11 +108,11 @@ impl QuadraticSolver {
                             for factor in factors.iter() {
                                 if let Expression::Pow(base, exp) = factor {
                                     if **base == Expression::symbol(variable.clone()) {
-                                        if let Expression::Number(CompactNumber::SmallInt(2)) =
+                                        if let Expression::Number(Number::SmallInt(2)) =
                                             **exp
                                         {
                                             has_x_squared = true;
-                                        } else if let Expression::Number(CompactNumber::SmallInt(
+                                        } else if let Expression::Number(Number::SmallInt(
                                             1,
                                         )) = **exp
                                         {
@@ -148,7 +147,7 @@ impl QuadraticSolver {
             }
             // Single term cases
             Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
-                if let Expression::Number(CompactNumber::SmallInt(2)) = **exp {
+                if let Expression::Number(Number::SmallInt(2)) = **exp {
                     (
                         Expression::integer(1),
                         Expression::integer(0),
@@ -177,15 +176,15 @@ impl QuadraticSolver {
     fn solve_linear(&self, b: &Expression, c: &Expression) -> SolverResult {
         match (b, c) {
             (
-                Expression::Number(CompactNumber::SmallInt(b_val)),
-                Expression::Number(CompactNumber::SmallInt(c_val)),
+                Expression::Number(Number::SmallInt(b_val)),
+                Expression::Number(Number::SmallInt(c_val)),
             ) => {
                 if *b_val != 0 {
                     let result = -c_val / b_val;
                     if c_val % b_val == 0 {
                         SolverResult::Single(Expression::integer(result))
                     } else {
-                        SolverResult::Single(Expression::Number(CompactNumber::rational(
+                        SolverResult::Single(Expression::Number(Number::rational(
                             BigRational::new(BigInt::from(-c_val), BigInt::from(*b_val)),
                         )))
                     }
@@ -206,9 +205,9 @@ impl QuadraticSolver {
     ) -> SolverResult {
         match (a, b, c) {
             (
-                Expression::Number(CompactNumber::SmallInt(a_val)),
-                Expression::Number(CompactNumber::SmallInt(b_val)),
-                Expression::Number(CompactNumber::SmallInt(c_val)),
+                Expression::Number(Number::SmallInt(a_val)),
+                Expression::Number(Number::SmallInt(b_val)),
+                Expression::Number(Number::SmallInt(c_val)),
             ) => {
                 // Calculate discriminant: Δ = b² - 4ac
                 let discriminant = b_val * b_val - 4 * a_val * c_val;
@@ -223,12 +222,12 @@ impl QuadraticSolver {
                     let sol1 = if solution1.fract() == 0.0 {
                         Expression::integer(solution1 as i64)
                     } else {
-                        Expression::Number(CompactNumber::float(solution1))
+                        Expression::Number(Number::float(solution1))
                     };
                     let sol2 = if solution2.fract() == 0.0 {
                         Expression::integer(solution2 as i64)
                     } else {
-                        Expression::Number(CompactNumber::float(solution2))
+                        Expression::Number(Number::float(solution2))
                     };
 
                     SolverResult::Multiple(vec![sol1, sol2])
@@ -238,7 +237,7 @@ impl QuadraticSolver {
                     let sol = if solution.fract() == 0.0 {
                         Expression::integer(solution as i64)
                     } else {
-                        Expression::Number(CompactNumber::float(solution))
+                        Expression::Number(Number::float(solution))
                     };
                     SolverResult::Single(sol)
                 } else {
@@ -246,17 +245,23 @@ impl QuadraticSolver {
                     let sqrt_abs_discriminant = ((-discriminant) as f64).sqrt();
                     let real_part = -b_val as f64 / (2.0 * *a_val as f64);
                     let imag_part = sqrt_abs_discriminant / (2.0 * *a_val as f64);
-                    
+
                     // For now, represent as functions until we have complex number type
-                    let solution1 = Expression::function("complex", vec![
-                        Expression::Number(CompactNumber::float(real_part)),
-                        Expression::Number(CompactNumber::float(imag_part))
-                    ]);
-                    let solution2 = Expression::function("complex", vec![
-                        Expression::Number(CompactNumber::float(real_part)),
-                        Expression::Number(CompactNumber::float(-imag_part))
-                    ]);
-                    
+                    let solution1 = Expression::function(
+                        "complex",
+                        vec![
+                            Expression::Number(Number::float(real_part)),
+                            Expression::Number(Number::float(imag_part)),
+                        ],
+                    );
+                    let solution2 = Expression::function(
+                        "complex",
+                        vec![
+                            Expression::Number(Number::float(real_part)),
+                            Expression::Number(Number::float(-imag_part)),
+                        ],
+                    );
+
                     SolverResult::Multiple(vec![solution1, solution2])
                 }
             }

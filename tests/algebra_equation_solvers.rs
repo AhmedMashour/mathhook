@@ -2,7 +2,7 @@
 //! Following TDD methodology: ALL TESTS EXPECTED TO FAIL INITIALLY
 //! User requirement: "make all the module tests, expect they'll all fail"
 
-use mathhook::core::{Expression, Symbol, CompactNumber, ExpressionArena};
+use mathhook::core::{Expression, Symbol, Number, ExpressionArena};
 use mathhook::algebra::Simplify;
 use mathhook::algebra::solvers::{EquationSolver, SolverResult, LinearSolver, QuadraticSolver, SystemSolver, SystemEquationSolver};
 use mathhook::algebra::solvers::polynomial::PolynomialSolver;
@@ -109,10 +109,10 @@ fn test_linear_fractional_coefficient() {
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![
-            Expression::Number(CompactNumber::Float(0.5)), 
+            Expression::Number(Number::Float(0.5)), 
             Expression::symbol(x.clone())
         ]),
-        Expression::Number(CompactNumber::Float(1.5))
+        Expression::Number(Number::Float(1.5))
     ]);
     
     let solver = LinearSolver::new();
@@ -232,7 +232,7 @@ fn test_degenerate_quadratic() {
     
     match result {
         SolverResult::Single(solution) => {
-            assert_eq!(solution, Expression::Number(CompactNumber::rational(num_rational::BigRational::new((-1).into(), 2.into()))));
+            assert_eq!(solution, Expression::Number(Number::rational(num_rational::BigRational::new((-1).into(), 2.into()))));
         },
         _ => panic!("Expected single solution for degenerate quadratic"),
     }
@@ -396,7 +396,7 @@ fn test_linear_solver_step_by_step_integration() {
     // Verify solution correctness
     match result {
         SolverResult::Single(solution) => {
-            assert_eq!(solution, Expression::Number(CompactNumber::rational(
+            assert_eq!(solution, Expression::Number(Number::rational(
                 num_rational::BigRational::new((-3).into(), 2.into())
             )));
         },
@@ -570,8 +570,8 @@ fn test_solver_expression_integration() {
 fn test_solver_magic_bullets_preservation() {
     // CRITICAL: Verify all Magic Bullets still work after solver implementation
     
-    // Magic Bullet #1: CompactNumber still working
-    let num = CompactNumber::SmallInt(42);
+    // Magic Bullet #1: Number still working
+    let num = Number::SmallInt(42);
     assert!(!num.is_zero()); // Basic verification
     
     // Magic Bullet #2: Expression still 32 bytes

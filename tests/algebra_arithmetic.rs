@@ -111,17 +111,17 @@ fn test_edge_case_simplification() {
 #[test]
 fn test_simplify_float_vs_integer() {
     // Test that float and integer arithmetic work correctly
-    let expr1 = Expression::number(CompactNumber::float(2.5)) + Expression::number(CompactNumber::float(1.5));
+    let expr1 = Expression::number(Number::float(2.5)) + Expression::number(Number::float(1.5));
     let result1 = expr1.simplify();
     
     // Should combine floats
     match result1 {
-        Expression::Number(CompactNumber::Float(f)) => assert_eq!(f, 4.0),
+        Expression::Number(Number::Float(f)) => assert_eq!(f, 4.0),
         _ => panic!("Expected float result, got: {}", result1),
     }
     
     // Test mixed float and integer
-    let expr2 = Expression::integer(3) + Expression::number(CompactNumber::float(2.5));
+    let expr2 = Expression::integer(3) + Expression::number(Number::float(2.5));
     let result2 = expr2.simplify();
     // This might not simplify automatically, but should maintain structure
     println!("Mixed arithmetic result: {}", result2);

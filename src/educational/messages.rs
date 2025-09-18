@@ -2,7 +2,7 @@
 //! Clear, normal language explanations with good performance
 //! User requirement: "descriptive easy to understand" and "well organized"
 
-use crate::core::{Expression, Symbol, CompactNumber};
+use crate::core::{Expression, Symbol, Number};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use std::fmt;
 
@@ -394,7 +394,7 @@ impl Expression {
     pub fn hash_for_seed(&self) -> usize {
         // Simple hash based on expression structure for message variety
         match self {
-            Expression::Number(CompactNumber::SmallInt(n)) => *n as usize,
+            Expression::Number(Number::SmallInt(n)) => *n as usize,
             Expression::Symbol(s) => s.name.len(),
             Expression::Add(terms) => terms.len() * 7,
             Expression::Mul(factors) => factors.len() * 11,
@@ -437,13 +437,13 @@ impl CoolFormatter {
         
         // Add celebration based on solution type
         match solution {
-            Expression::Number(CompactNumber::SmallInt(n)) if *n > 0 => {
+            Expression::Number(Number::SmallInt(n)) if *n > 0 => {
                 format!("🎉 {} = {} (positive and proud!) 🌟", variable.name, solution_latex)
             },
-            Expression::Number(CompactNumber::SmallInt(n)) if *n < 0 => {
+            Expression::Number(Number::SmallInt(n)) if *n < 0 => {
                 format!("🎯 {} = {} (negative but still awesome!) ⭐", variable.name, solution_latex)
             },
-            Expression::Number(CompactNumber::SmallInt(0)) => {
+            Expression::Number(Number::SmallInt(0)) => {
                 format!("🎊 {} = {} (zero - the perfect balance!) ⚖️", variable.name, solution_latex)
             },
             _ => {

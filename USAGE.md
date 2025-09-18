@@ -154,7 +154,7 @@ let arena = ExpressionArena::new();
 ```
 
 ### Magic Bullets (Performance Optimizations)
-- **CompactNumber:** 16-byte optimized numbers ✅
+- **Number:** 16-byte optimized numbers ✅
 - **CompactExpression:** 32-byte optimized expressions ✅  
 - **SIMD Operations:** Vectorized arithmetic ✅
 - **Arena Allocation:** Reduced memory fragmentation ✅

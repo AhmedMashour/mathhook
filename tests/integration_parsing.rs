@@ -71,7 +71,7 @@ fn test_nested_parsing() {
 #[test]
 fn test_rational_parsing() {
     // Test rational number parsing
-    let expr = Expression::number(CompactNumber::rational(
+    let expr = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(22), num_bigint::BigInt::from(7))
     ));
     

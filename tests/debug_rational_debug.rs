@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_rational_debug() {
-    let rational = Expression::number(CompactNumber::rational(
+    let rational = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(5), num_bigint::BigInt::from(7))
     ));
     

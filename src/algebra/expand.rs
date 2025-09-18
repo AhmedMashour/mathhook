@@ -1,7 +1,7 @@
 //! Expression expansion operations
 //! Handles polynomial expansion, distribution, and algebraic expansion
 
-use crate::core::{CompactNumber, Expression, Symbol};
+use crate::core::{Expression, Number};
 
 /// Trait for expanding expressions
 pub trait Expand {
@@ -84,7 +84,7 @@ impl Expression {
     /// Expand power expressions
     fn expand_power(&self, base: &Expression, exp: &Expression) -> Expression {
         // For now, only handle simple integer exponents
-        if let Expression::Number(CompactNumber::SmallInt(n)) = exp {
+        if let Expression::Number(Number::SmallInt(n)) = exp {
             let exp_val = *n;
             if exp_val >= 0 && exp_val <= 10 {
                 // Reasonable limit
@@ -211,6 +211,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::Symbol;
 
     #[test]
     fn test_basic_expansion() {

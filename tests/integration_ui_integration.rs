@@ -53,7 +53,7 @@ fn test_ui_complex_display() {
 
 #[test]
 fn test_ui_rational_display() {
-    let rational = Expression::number(CompactNumber::rational(
+    let rational = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(22), num_bigint::BigInt::from(7))
     ));
     

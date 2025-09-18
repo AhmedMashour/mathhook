@@ -1,7 +1,7 @@
 //! Advanced simplification operations including special functions
 //! Handles factorial, trigonometric functions, logarithms, and complex simplifications
 
-use crate::core::{Expression, CompactNumber, Symbol};
+use crate::core::{Number, Expression};
 use num_bigint::BigInt;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 
@@ -142,7 +142,7 @@ impl Expression {
     /// Compute factorial for integer values
     fn compute_factorial(&self, arg: &Expression) -> Expression {
         match arg {
-            Expression::Number(CompactNumber::SmallInt(n)) => {
+            Expression::Number(Number::SmallInt(n)) => {
                 if let Some(val) = n.to_i64() {
                     if val >= 0 && val <= 20 {
                         // Reasonable limit to prevent overflow
@@ -160,8 +160,10 @@ impl Expression {
             // Factorial identities
             Expression::Add(terms) if terms.len() == 2 => {
                 // Check for n! where n = k - 1, so (k-1)! = factorial(k-1)
-                if let (Expression::Symbol(_s), Expression::Number(CompactNumber::SmallInt(offset))) =
-                    (&terms[0], &terms[1])
+                if let (
+                    Expression::Symbol(_s),
+                    Expression::Number(Number::SmallInt(offset)),
+                ) = (&terms[0], &terms[1])
                 {
                     if *offset == -1 {
                         // (n-1)! case - this is complex, return as function for now
@@ -192,12 +194,12 @@ impl Expression {
     fn simplify_log_function(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) if *n == 1 => {
+                Expression::Number(Number::SmallInt(n)) if *n == 1 => {
                     // log(1) = 0
                     Expression::integer(0)
                 }
 
-                Expression::Number(CompactNumber::SmallInt(n)) if *n == 10 => {
+                Expression::Number(Number::SmallInt(n)) if *n == 10 => {
                     // log(10) = 1 (assuming base 10)
                     Expression::integer(1)
                 }
@@ -242,7 +244,7 @@ impl Expression {
     fn simplify_ln_function(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) if *n == 1 => {
+                Expression::Number(Number::SmallInt(n)) if *n == 1 => {
                     // ln(1) = 0
                     Expression::integer(0)
                 }
@@ -328,7 +330,7 @@ impl Expression {
     fn simplify_sqrt(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) => {
+                Expression::Number(Number::SmallInt(n)) => {
                     if n.is_zero() {
                         Expression::integer(0) // sqrt(0) = 0
                     } else if n.is_one() {
@@ -363,8 +365,10 @@ impl Expression {
     fn simplify_abs(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) => Expression::integer(n.abs()),
-                Expression::Number(CompactNumber::Float(f)) => Expression::number(CompactNumber::float(f.abs())),
+                Expression::Number(Number::SmallInt(n)) => Expression::integer(n.abs()),
+                Expression::Number(Number::Float(f)) => {
+                    Expression::number(Number::float(f.abs()))
+                }
                 _ => Expression::function("abs", args.to_vec()),
             }
         } else {
@@ -376,7 +380,7 @@ impl Expression {
     fn simplify_exp(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) if n.is_zero() => {
+                Expression::Number(Number::SmallInt(n)) if n.is_zero() => {
                     Expression::integer(1) // exp(0) = 1
                 }
 
@@ -399,7 +403,7 @@ impl Expression {
     fn simplify_gamma(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
-                Expression::Number(CompactNumber::SmallInt(n)) => {
+                Expression::Number(Number::SmallInt(n)) => {
                     if let Some(val) = n.to_i64() {
                         if val > 0 && val <= 10 {
                             // Gamma(n) = (n-1)! for positive integers
@@ -458,6 +462,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::Symbol;
 
     #[test]
     fn test_factorial_computation() {

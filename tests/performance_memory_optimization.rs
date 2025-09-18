@@ -5,11 +5,11 @@ use mathhook::prelude::*;
 #[test]
 fn test_memory_usage() {
     println!("Memory optimization test");
-    println!("CompactNumber size: {} bytes", std::mem::size_of::<CompactNumber>());
+    println!("Number size: {} bytes", std::mem::size_of::<Number>());
     println!("Expression size: {} bytes", std::mem::size_of::<Expression>());
     
     // Verify optimized sizes
-    assert!(std::mem::size_of::<CompactNumber>() <= 16);
+    assert!(std::mem::size_of::<Number>() <= 16);
     assert!(std::mem::size_of::<Expression>() <= 64);
 }
 

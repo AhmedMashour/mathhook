@@ -257,7 +257,7 @@ fn test_symbolic_arithmetic() {
 #[test]
 fn test_rational_in_simplification() {
     // Test rational numbers in simplification
-    let rational = Expression::number(CompactNumber::rational(
+    let rational = Expression::number(Number::rational(
         num_rational::BigRational::new(num_bigint::BigInt::from(3), num_bigint::BigInt::from(4))
     ));
     
@@ -277,8 +277,8 @@ fn test_rational_in_simplification() {
 fn test_float_simplification() {
     // Test float arithmetic
     let expr = Expression::add(vec![
-        Expression::number(CompactNumber::float(2.5)),
-        Expression::number(CompactNumber::float(3.7))
+        Expression::number(Number::float(2.5)),
+        Expression::number(Number::float(3.7))
     ]);
     
     let result = expr.simplify();
@@ -293,8 +293,8 @@ fn test_mixed_number_types() {
     // Test mixing different number types
     let expr = Expression::add(vec![
         Expression::integer(5),
-        Expression::number(CompactNumber::float(2.5)),
-        Expression::number(CompactNumber::rational(
+        Expression::number(Number::float(2.5)),
+        Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(1), num_bigint::BigInt::from(2))
         ))
     ]);

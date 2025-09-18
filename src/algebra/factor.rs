@@ -2,7 +2,7 @@
 //! Handles polynomial factorization, common factor extraction, and algebraic factoring
 
 use crate::algebra::gcd::PolynomialGcd;
-use crate::core::{CompactNumber, Expression, Symbol};
+use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::{One, Zero};
@@ -130,7 +130,7 @@ impl Expression {
     /// Extract factors from an expression
     fn extract_factors(&self, expr: &Expression) -> Vec<Expression> {
         match expr {
-            Expression::Number(CompactNumber::SmallInt(n)) => {
+            Expression::Number(Number::SmallInt(n)) => {
                 if !n.is_zero() && !n.is_one() {
                     vec![expr.clone()]
                 } else {
@@ -175,7 +175,7 @@ impl Expression {
     /// Extract numeric factor from factor list
     fn extract_numeric_factor(&self, factors: &[Expression]) -> Option<BigInt> {
         for factor in factors {
-            if let Expression::Number(CompactNumber::SmallInt(n)) = factor {
+            if let Expression::Number(Number::SmallInt(n)) = factor {
                 return Some(BigInt::from(*n));
             }
         }
@@ -186,10 +186,7 @@ impl Expression {
     fn divide_by_factor(&self, expr: &Expression, factor: &Expression) -> Expression {
         match (expr, factor) {
             // Numeric division
-            (
-                Expression::Number(CompactNumber::SmallInt(a)),
-                Expression::Number(CompactNumber::SmallInt(b)),
-            ) => {
+            (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) => {
                 if !b.is_zero() && (a % b).is_zero() {
                     Expression::integer(a / b)
                 } else {
@@ -254,10 +251,8 @@ impl Expression {
     /// Factor out numeric coefficients
     pub fn factor_numeric_coefficient(&self) -> (BigInt, Expression) {
         match self {
-            Expression::Number(CompactNumber::SmallInt(n)) => {
-                (BigInt::from(*n), Expression::integer(1))
-            }
-            Expression::Number(CompactNumber::BigInteger(n)) => {
+            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
+            Expression::Number(Number::BigInteger(n)) => {
                 (n.as_ref().clone(), Expression::integer(1))
             }
             Expression::Mul(factors) => {
@@ -266,10 +261,10 @@ impl Expression {
 
                 for factor in factors.iter() {
                     match factor {
-                        Expression::Number(CompactNumber::SmallInt(n)) => {
+                        Expression::Number(Number::SmallInt(n)) => {
                             coefficient *= BigInt::from(*n);
                         }
-                        Expression::Number(CompactNumber::BigInteger(n)) => {
+                        Expression::Number(Number::BigInteger(n)) => {
                             coefficient *= n.as_ref();
                         }
                         _ => {
@@ -296,6 +291,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::Symbol;
 
     #[test]
     fn test_basic_factoring() {
