@@ -35,10 +35,29 @@ impl EquationSolver for LinearSolver {
     /// Solve linear equation ax + b = 0
     #[inline(always)]
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
+        // Handle simplified equations that lost structure
+        if let Expression::Number(CompactNumber::SmallInt(0)) = equation {
+            // If equation simplified to just 0, it means 0 = 0 (infinite solutions)
+            return SolverResult::InfiniteSolutions;
+        }
+        if let Expression::Number(CompactNumber::SmallInt(n)) = equation {
+            if *n != 0 {
+                // If equation simplified to non-zero constant, no solution
+                return SolverResult::NoSolution;
+            }
+        }
+
         // Extract coefficients from linear equation
         let (a, b) = self.extract_linear_coefficients(equation, variable);
 
-        // Handle special cases - use ultra-fast simplification
+        // 🧠 SMART SOLVER: Analyze original equation structure before simplification
+        
+        // Check if original equation has patterns like 0*x + constant
+        if let Some(special_result) = self.detect_special_linear_cases(equation, variable) {
+            return special_result;
+        }
+        
+        // Extract coefficients for normal linear analysis
         let a_simplified = a.simplify();
         let b_simplified = b.simplify();
 
@@ -246,12 +265,41 @@ impl LinearSolver {
         }
     }
 
+    /// 🧠 SMART: Detect special linear cases before simplification
+    #[inline(always)]
+    fn detect_special_linear_cases(&self, equation: &Expression, variable: &Symbol) -> Option<SolverResult> {
+        match equation {
+            Expression::Add(terms) if terms.len() == 2 => {
+                // Check for patterns: 0*x + constant
+                if let [Expression::Mul(factors), constant] = &terms[..] {
+                    if factors.len() == 2 {
+                        if let [Expression::Number(CompactNumber::SmallInt(0)), var] = &factors[..] {
+                            if var == &Expression::symbol(variable.clone()) {
+                                // Found 0*x + constant pattern
+                                match constant {
+                                    Expression::Number(CompactNumber::SmallInt(0)) => {
+                                        return Some(SolverResult::InfiniteSolutions); // 0*x + 0 = 0
+                                    },
+                                    _ => {
+                                        return Some(SolverResult::NoSolution); // 0*x + nonzero = 0
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            _ => {}
+        }
+        None // No special case detected
+    }
+
     /// Negate an expression
     fn negate_expression(&self, expr: &Expression) -> Expression {
         Expression::mul(vec![Expression::integer(-1), expr.clone()])
     }
 
-    /// Try to evaluate an expression to a numeric result
+    /// 🧠 SMART: Evaluate expressions with fraction handling
     #[inline(always)]
     fn try_numeric_evaluation(&self, expr: &Expression) -> Expression {
         match expr {
@@ -266,6 +314,10 @@ impl LinearSolver {
                 } else {
                     expr.clone()
                 }
+            }
+            // 🧠 SMART: Handle fractions that should be evaluated
+            Expression::Function { name, args } if name == "fraction" && args.len() == 2 => {
+                self.evaluate_expression(expr)
             }
             _ => expr.clone(),
         }

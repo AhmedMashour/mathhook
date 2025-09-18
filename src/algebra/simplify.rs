@@ -11,11 +11,9 @@ pub trait Simplify {
 impl Simplify for Expression {
     #[inline(always)]
     fn simplify(&self) -> Self {
+        // 🚀 ULTRA-FAST PATH: Maximum performance for general operations
         match self {
-            // 🚀 ULTRA-FAST PATH: Numbers and symbols are already simplified
             Expression::Number(_) | Expression::Symbol(_) => self.clone(),
-            
-            // 🚀 OPTIMIZED PATHS: Direct operations without overhead
             Expression::Add(terms) => self.simplify_addition_ultra_fast(terms),
             Expression::Mul(factors) => self.simplify_multiplication_ultra_fast(factors),
             Expression::Pow(base, exp) => self.simplify_power_ultra_fast(base, exp),
@@ -25,6 +23,7 @@ impl Simplify for Expression {
 }
 
 impl Expression {
+    // Keep simplify.rs minimal - smart solver handles edge cases
     /// 🚀 ULTRA-FAST addition - minimal overhead
     #[inline(always)]
     fn simplify_addition_ultra_fast(&self, terms: &[Expression]) -> Self {
