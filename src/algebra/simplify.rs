@@ -74,25 +74,33 @@ impl Expression {
             None
         };
         
-        match (numeric_result.as_ref(), non_numeric_count) {
-            (None, 0) => Expression::integer(0),
-            (Some(num), 0) => num.clone(),
-            (None, 1) => first_non_numeric.unwrap(),
-            (Some(num), 1) => Expression::add(vec![num.clone(), first_non_numeric.unwrap()]),
-            _ => {
-                // Multiple non-numeric terms - build result efficiently
-                let mut result_terms = Vec::with_capacity(non_numeric_count + 1);
-                if let Some(num) = numeric_result {
-                    result_terms.push(num);
-                }
-                for term in terms {
-                    if !matches!(term, Expression::Number(_)) {
-                        result_terms.push(term.clone());
-                    }
-                }
-                Expression::Add(Box::new(result_terms))
-            }
-        }
+               match (numeric_result.as_ref(), non_numeric_count) {
+                   (None, 0) => Expression::integer(0),
+                   (Some(num), 0) => num.clone(),
+                   (None, 1) => {
+                       // 🚀 RECURSIVE SIMPLIFY: Ensure single remaining term is fully simplified
+                       first_non_numeric.unwrap().simplify()
+                   },
+                   (Some(num), 1) => {
+                       // 🚀 RECURSIVE SIMPLIFY: Ensure non-numeric term is simplified
+                       let simplified_non_numeric = first_non_numeric.unwrap().simplify();
+                       Expression::add(vec![num.clone(), simplified_non_numeric])
+                   },
+                   _ => {
+                       // Multiple non-numeric terms - build result efficiently with recursive simplification
+                       let mut result_terms = Vec::with_capacity(non_numeric_count + 1);
+                       if let Some(num) = numeric_result {
+                           result_terms.push(num);
+                       }
+                       for term in terms {
+                           if !matches!(term, Expression::Number(_)) {
+                               // 🚀 RECURSIVE SIMPLIFY: Each non-numeric term
+                               result_terms.push(term.simplify());
+                           }
+                       }
+                       Expression::Add(Box::new(result_terms))
+                   }
+               }
     }
     
     /// 🚀 ULTRA-FAST multiplication - minimal overhead
@@ -103,6 +111,19 @@ impl Expression {
         }
         if factors.len() == 1 {
             return factors[0].clone();
+        }
+        
+        // 🚀 FAST PATH: Handle simple 2-factor numeric multiplication directly
+        if factors.len() == 2 {
+            match (&factors[0], &factors[1]) {
+                (Expression::Number(CompactNumber::SmallInt(a)), Expression::Number(CompactNumber::SmallInt(b))) => {
+                    return Expression::integer(a * b);
+                },
+                (Expression::Number(CompactNumber::Float(a)), Expression::Number(CompactNumber::Float(b))) => {
+                    return Expression::Number(CompactNumber::float(a * b));
+                },
+                _ => {} // Fall through to general case
+            }
         }
         
         // 🚀 ZERO DETECTION FIRST - early termination
@@ -155,19 +176,35 @@ impl Expression {
             (None, 0) => Expression::integer(1),
             (Some(num), 0) => num.clone(),
             (None, 1) => first_non_numeric.unwrap(),
-            (Some(num), 1) => Expression::mul(vec![num.clone(), first_non_numeric.unwrap()]),
+            (Some(num), 1) => {
+                // Only multiply if the numeric factor isn't 1
+                match num {
+                    Expression::Number(CompactNumber::SmallInt(1)) => first_non_numeric.unwrap(),
+                    Expression::Number(CompactNumber::Float(f)) if *f == 1.0 => first_non_numeric.unwrap(),
+                    _ => Expression::mul(vec![num.clone(), first_non_numeric.unwrap()]),
+                }
+            },
             _ => {
                 // Multiple factors - build result efficiently
                 let mut result_factors = Vec::with_capacity(non_numeric_count + 1);
                 if let Some(num) = numeric_result {
-                    result_factors.push(num);
+                    // Only include numeric factor if it's not 1
+                    match num {
+                        Expression::Number(CompactNumber::SmallInt(1)) => {},
+                        Expression::Number(CompactNumber::Float(f)) if f == 1.0 => {},
+                        _ => result_factors.push(num),
+                    }
                 }
                 for factor in factors {
                     if !matches!(factor, Expression::Number(_)) {
                         result_factors.push(factor.clone());
                     }
                 }
-                Expression::Mul(Box::new(result_factors))
+                match result_factors.len() {
+                    0 => Expression::integer(1),
+                    1 => result_factors.into_iter().next().unwrap(),
+                    _ => Expression::Mul(Box::new(result_factors)),
+                }
             }
         }
     }
