@@ -245,6 +245,7 @@ dependencies = [
  "num-integer",
  "num-rational",
  "num-traits",
+ "once_cell",
  "regex",
  "serde",
  "serde_json",

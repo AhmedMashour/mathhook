@@ -1,13 +1,11 @@
 //! Core module containing fundamental data structures and operations
+//! Modern Rust structure - educational features moved to dedicated module
 
 // Core data structures
 pub mod symbol;
 pub mod number;
 pub mod expression;
 pub mod operators;
-
-// Educational features (restored with performance optimization)
-pub mod step_by_step;
 
 // Performance optimization modules (essential only)
 pub mod compact_number;
@@ -23,4 +21,4 @@ pub use compact_number::CompactNumber;
 // 🚀 MAGIC BULLET #2: Expression IS CompactExpression (32-byte optimized)
 pub use simd_ops::{SimdOps, SimdOptimized};
 pub use arena::ExpressionArena;
-pub use step_by_step::{StepByStep, StepByStepExplanation, Step};
+// Educational features now in dedicated educational module
