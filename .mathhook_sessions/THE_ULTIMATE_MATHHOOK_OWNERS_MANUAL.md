@@ -55,7 +55,7 @@ MathHook was conceived as a **high-performance educational computer algebra syst
 ### 1.3 Success Metrics
 
 - **Performance:** 14.27M+ simplification operations per second
-- **Memory:** 32-byte expression footprint (CompactExpression)
+- **Memory:** 32-byte expression footprint (Expression)
 - **Test Coverage:** 100% pass rate across comprehensive test suites
 - **Educational:** Rich step-by-step explanations with LaTeX output
 
@@ -89,8 +89,8 @@ Input → Parser → Expression → Simplifier → Output
 ### 2.3 Performance-First Design
 
 Every component designed with performance as primary concern:
-- **CompactNumber:** 16-byte optimized number representation
-- **CompactExpression:** 32-byte expression footprint
+- **Number:** 16-byte optimized number representation
+- **Expression:** 32-byte expression footprint
 - **SIMD Operations:** Vectorized arithmetic for bulk operations
 - **Arena Allocation:** Reduced memory fragmentation
 - **Hot Path Optimization:** Aggressive inlining and stack optimization
@@ -128,13 +128,13 @@ Every component designed with performance as primary concern:
 
 ## 4. MAGIC BULLETS SYSTEM
 
-### 4.1 Magic Bullet #1: CompactNumber
+### 4.1 Magic Bullet #1: Number
 
 **Purpose:** Optimize number representation for both memory and performance.
 
 **Implementation:**
 ```rust
-pub enum CompactNumber {
+pub enum Number {
     SmallInt(i64),              // 8 bytes for common integers
     BigInteger(Box<BigInt>),    // Boxed for large integers
     Rational(Box<BigRational>), // Boxed for fractions
@@ -147,14 +147,14 @@ pub enum CompactNumber {
 - Fast path for common small integers
 - Automatic promotion to larger types when needed
 
-### 4.2 Magic Bullet #2: CompactExpression
+### 4.2 Magic Bullet #2: Expression
 
 **Purpose:** Minimize expression memory footprint while maintaining performance.
 
 **Implementation:**
 ```rust
 pub enum Expression {
-    Number(CompactNumber),           // 16 bytes
+    Number(Number),           // 16 bytes
     Symbol(Symbol),                  // 8 bytes + string
     Add(Box<Vec<Expression>>),       // Boxed vector for collections
     Mul(Box<Vec<Expression>>),       // Boxed vector for collections
@@ -173,7 +173,7 @@ pub enum Expression {
 **Purpose:** Ensure Expression inherently uses optimized representations.
 
 **Implementation:**
-- Expression constructor methods use CompactNumber internally
+- Expression constructor methods use Number internally
 - No separate "fast" and "slow" types
 - Consistent performance across all operations
 
@@ -317,7 +317,7 @@ let mut float_sum = 0.0f64;
 ```rust
 // Early termination for multiplication by zero
 for factor in factors {
-    if let Expression::Number(CompactNumber::SmallInt(0)) = factor {
+    if let Expression::Number(Number::SmallInt(0)) = factor {
         return Expression::integer(0);
     }
 }
@@ -810,7 +810,7 @@ hyperfine --warmup 3 'cargo run --release --example simplify_benchmark'
 ### 14.2 Common Issues and Solutions
 
 **Type System Issues:**
-- `Number` vs `CompactNumber` mismatches → Systematic replacement
+- `Number` vs `Number` mismatches → Systematic replacement
 - `HashMap` with `f64` keys → Replace with `Vec<(Expression, _)>`
 - Borrowing issues → Strategic cloning vs references
 

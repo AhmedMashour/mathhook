@@ -1,7 +1,8 @@
 //! Symbolica challenge benchmarks - proving MathHook superiority
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use mathhook::prelude::*;
+use std::hint::black_box;
 
 /// Benchmark against Symbolica's core operations
 fn bench_symbolica_challenge(c: &mut Criterion) {

@@ -28,6 +28,7 @@ pub enum Expression {
 
 impl Expression {
     /// Create a new number expression
+    #[inline(always)]
     pub fn number<T: Into<Number>>(value: T) -> Self {
         Self::Number(value.into())
     }
@@ -36,7 +37,7 @@ impl Expression {
     #[inline(always)]
     pub fn integer<T: Into<num_bigint::BigInt>>(value: T) -> Self {
         let big_int = value.into();
-        // 🚀 MAGIC BULLET #2: Fast path for small integers
+        // Fast path for small integers
         if let Ok(small_int) = i64::try_from(&big_int) {
             Self::Number(Number::SmallInt(small_int))
         } else {
@@ -45,6 +46,7 @@ impl Expression {
     }
 
     /// Create a new symbol expression
+    #[inline]
     pub fn symbol<T: Into<Symbol>>(symbol: T) -> Self {
         Self::Symbol(symbol.into())
     }
@@ -74,6 +76,7 @@ impl Expression {
     }
 
     /// Create a power expression
+    #[inline]
     pub fn pow(base: Expression, exponent: Expression) -> Self {
         Self::Pow(Box::new(base), Box::new(exponent))
     }
@@ -106,6 +109,7 @@ impl Expression {
     }
 
     /// Get the numeric coefficient if this is a simple numeric expression
+    #[inline]
     pub fn as_number(&self) -> Option<&Number> {
         match self {
             Expression::Number(n) => Some(n),
@@ -114,6 +118,7 @@ impl Expression {
     }
 
     /// Get the symbol if this is a simple symbol expression
+    #[inline]
     pub fn as_symbol(&self) -> Option<&Symbol> {
         match self {
             Expression::Symbol(s) => Some(s),

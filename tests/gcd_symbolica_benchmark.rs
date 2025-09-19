@@ -6,8 +6,6 @@ use mathhook::prelude::*;
 fn test_industry_gcd_benchmark() {
     use std::time::Instant;
 
-    println!("🚀 INDUSTRY GCD BENCHMARK - SYMBOLICA COMPARISON");
-
     let start = Instant::now();
 
     // Industry standard GCD benchmark
@@ -20,8 +18,8 @@ fn test_industry_gcd_benchmark() {
     let duration = start.elapsed();
     let ops_per_sec = 1000.0 / duration.as_secs_f64();
 
-    println!("🚀 MathHook GCD: {:.2}K ops/sec", ops_per_sec / 1000.0);
-    println!("🎯 Target: Beat Symbolica performance");
+    println!("GCD: {:.2}K ops/sec", ops_per_sec / 1000.0);
+    println!("Target: Beat Symbolica performance");
 
     // Should be extremely fast (targeting >100K ops/sec)
     assert!(
@@ -53,7 +51,7 @@ fn test_symbolica_challenge_benchmark() {
     let duration = start.elapsed();
     let ops_per_sec = 500.0 / duration.as_secs_f64();
 
-    println!("🚀 Polynomial GCD: {:.2}K ops/sec", ops_per_sec / 1000.0);
+    println!("Polynomial GCD: {:.2}K ops/sec", ops_per_sec / 1000.0);
 
     // Should outperform Symbolica
     assert!(ops_per_sec > 10_000.0);

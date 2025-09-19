@@ -27,6 +27,14 @@ harness = false
 name = "symbolica_challenge_bench"
 harness = false
 
+[[bench]]
+name = "solver_bench"
+harness = false
+
+[[bench]]
+name = "gcd_bench"
+harness = false
+
 [profile.release]
 lto = "fat"
 codegen-units = 1
