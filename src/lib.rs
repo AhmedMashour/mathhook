@@ -7,10 +7,11 @@ pub mod algebra;
 pub mod api;
 pub mod core;
 pub mod educational;
+pub mod macros;
 pub mod parsing;
 
 // Re-export macros at crate root for ergonomic usage
-pub use parsing::macros::*;
+pub use macros::*;
 
 // Re-export the prelude for easy access
 pub mod prelude {

@@ -15,7 +15,6 @@ pub mod universal;
 pub mod serialize;
 
 // Convenient macros for expression creation and parsing
-pub mod macros;
 
 use crate::core::{Expression, Number, Symbol};
 use num_traits::One;
