@@ -68,6 +68,11 @@ impl UniversalParser {
             .map(|&indicator| input.matches(indicator).count())
             .sum::<usize>();
 
+        // Special case: Wolfram set vs LaTeX set detection
+        if input.trim().starts_with('{') && !input.contains('\\') {
+            return MathLanguage::Wolfram; // Pure {1,2,3} is Wolfram
+        }
+
         if latex_score > 0 && latex_score > wolfram_score {
             MathLanguage::LaTeX
         } else if wolfram_score > 0 && wolfram_score > latex_score {
@@ -668,6 +673,15 @@ impl UniversalParser {
                 factor_strs.join(" \\cdot ")
             }
             Expression::Pow(base, exp) => {
+                // Check if this is a square root: x^(1/2) -> \sqrt{x}
+                if let Expression::Number(Number::Rational(r)) = exp.as_ref() {
+                    if r.numer() == &num_bigint::BigInt::from(1)
+                        && r.denom() == &num_bigint::BigInt::from(2)
+                    {
+                        return format!("\\sqrt{{{}}}", self.expression_to_latex(base, context));
+                    }
+                }
+
                 let base_str = match base.as_ref() {
                     Expression::Add(_) | Expression::Mul(_) => {
                         format!("\\left({}\\right)", self.expression_to_latex(base, context))
@@ -687,18 +701,117 @@ impl UniversalParser {
                 self.expression_to_latex(real, context),
                 self.expression_to_latex(imag, context)
             ),
-            Expression::Matrix(_) => "\\text{matrix}".to_string(),
+            Expression::Matrix(rows) => {
+                let row_strs: Vec<String> = rows
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|elem| self.expression_to_latex(elem, context))
+                            .collect::<Vec<_>>()
+                            .join(" & ")
+                    })
+                    .collect();
+                format!(
+                    "\\begin{{pmatrix}} {} \\end{{pmatrix}}",
+                    row_strs.join(" \\\\ ")
+                )
+            }
             Expression::Constant(c) => format!("{:?}", c),
             Expression::Relation { .. } => "\\text{relation}".to_string(),
             Expression::Piecewise { .. } => "\\text{piecewise}".to_string(),
-            Expression::Set(_) => "\\text{set}".to_string(),
+            Expression::Set(elements) => {
+                if elements.is_empty() {
+                    "\\{\\}".to_string()
+                } else {
+                    let element_strs: Vec<String> = elements
+                        .iter()
+                        .map(|elem| self.expression_to_latex(elem, context))
+                        .collect();
+                    format!("\\{{{}\\}}", element_strs.join(", "))
+                }
+            }
             Expression::Interval { .. } => "\\text{interval}".to_string(),
-            // New calculus types - implement proper LaTeX later
-            Expression::Derivative { .. } => "\\frac{d}{dx}".to_string(),
-            Expression::Integral { .. } => "\\int".to_string(),
-            Expression::Limit { .. } => "\\lim".to_string(),
-            Expression::Sum { .. } => "\\sum".to_string(),
-            Expression::Product { .. } => "\\prod".to_string(),
+            // Calculus expressions with proper LaTeX formatting
+            Expression::Derivative {
+                expression,
+                variable,
+                order,
+            } => {
+                if *order == 1 {
+                    format!(
+                        "\\frac{{d}}{{d{}}} {}",
+                        variable.name(),
+                        self.expression_to_latex(expression, context)
+                    )
+                } else {
+                    format!(
+                        "\\frac{{d^{}}}{{d{}^{}}} {}",
+                        order,
+                        variable.name(),
+                        order,
+                        self.expression_to_latex(expression, context)
+                    )
+                }
+            }
+            Expression::Integral {
+                integrand,
+                variable,
+                bounds,
+            } => match bounds {
+                None => format!(
+                    "\\int {} d{}",
+                    self.expression_to_latex(integrand, context),
+                    variable.name()
+                ),
+                Some((start, end)) => format!(
+                    "\\int_{{{}}}^{{{}}} {} d{}",
+                    self.expression_to_latex(start, context),
+                    self.expression_to_latex(end, context),
+                    self.expression_to_latex(integrand, context),
+                    variable.name()
+                ),
+            },
+            Expression::Limit {
+                expression,
+                variable,
+                approach,
+                ..
+            } => {
+                format!(
+                    "\\lim_{{{}\\to{}}} {}",
+                    variable.name(),
+                    self.expression_to_latex(approach, context),
+                    self.expression_to_latex(expression, context)
+                )
+            }
+            Expression::Sum {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                format!(
+                    "\\sum_{{{}={}}}^{{{}}} {}",
+                    variable.name(),
+                    self.expression_to_latex(start, context),
+                    self.expression_to_latex(end, context),
+                    self.expression_to_latex(expression, context)
+                )
+            }
+            Expression::Product {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                format!(
+                    "\\prod_{{{}={}}}^{{{}}} {}",
+                    variable.name(),
+                    self.expression_to_latex(start, context),
+                    self.expression_to_latex(end, context),
+                    self.expression_to_latex(expression, context)
+                )
+            }
         }
     }
 
@@ -708,7 +821,12 @@ impl UniversalParser {
             Expression::Number(Number::SmallInt(n)) => n.to_string(),
             Expression::Number(Number::BigInteger(n)) => n.to_string(),
             Expression::Number(Number::Rational(r)) => {
-                format!("Rational[{}, {}]", r.numer(), r.denom())
+                if r.denom() == &num_bigint::BigInt::from(1) {
+                    r.numer().to_string()
+                } else {
+                    // Use Power[denominator, -1] for proper Wolfram syntax
+                    format!("Times[{}, Power[{}, -1]]", r.numer(), r.denom())
+                }
             }
             Expression::Number(Number::Float(f)) => f.to_string(),
             Expression::Symbol(s) => s.name().to_string(),
@@ -752,14 +870,98 @@ impl UniversalParser {
             Expression::Constant(c) => format!("{:?}", c),
             Expression::Relation { .. } => "relation".to_string(),
             Expression::Piecewise { .. } => "piecewise".to_string(),
-            Expression::Set(_) => "set".to_string(),
+            Expression::Set(elements) => {
+                if elements.is_empty() {
+                    "{}".to_string()
+                } else {
+                    let element_strs: Vec<String> = elements
+                        .iter()
+                        .map(|elem| self.expression_to_wolfram(elem, context))
+                        .collect();
+                    format!("{{{}}}", element_strs.join(", "))
+                }
+            }
             Expression::Interval { .. } => "interval".to_string(),
-            // New calculus types - implement proper Wolfram later
-            Expression::Derivative { .. } => "D".to_string(),
-            Expression::Integral { .. } => "Integrate".to_string(),
-            Expression::Limit { .. } => "Limit".to_string(),
-            Expression::Sum { .. } => "Sum".to_string(),
-            Expression::Product { .. } => "Product".to_string(),
+            // Calculus expressions with proper Wolfram formatting
+            Expression::Derivative {
+                expression,
+                variable,
+                order,
+            } => {
+                if *order == 1 {
+                    format!(
+                        "D[{}, {}]",
+                        self.expression_to_wolfram(expression, context),
+                        variable.name()
+                    )
+                } else {
+                    format!(
+                        "D[{}, {{{}, {}}}]",
+                        self.expression_to_wolfram(expression, context),
+                        variable.name(),
+                        order
+                    )
+                }
+            }
+            Expression::Integral {
+                integrand,
+                variable,
+                bounds,
+            } => match bounds {
+                None => format!(
+                    "Integrate[{}, {}]",
+                    self.expression_to_wolfram(integrand, context),
+                    variable.name()
+                ),
+                Some((start, end)) => format!(
+                    "Integrate[{}, {{{}, {}, {}}}]",
+                    self.expression_to_wolfram(integrand, context),
+                    variable.name(),
+                    self.expression_to_wolfram(start, context),
+                    self.expression_to_wolfram(end, context)
+                ),
+            },
+            Expression::Limit {
+                expression,
+                variable,
+                approach,
+                ..
+            } => {
+                format!(
+                    "Limit[{}, {} -> {}]",
+                    self.expression_to_wolfram(expression, context),
+                    variable.name(),
+                    self.expression_to_wolfram(approach, context)
+                )
+            }
+            Expression::Sum {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                format!(
+                    "Sum[{}, {{{}, {}, {}}}]",
+                    self.expression_to_wolfram(expression, context),
+                    variable.name(),
+                    self.expression_to_wolfram(start, context),
+                    self.expression_to_wolfram(end, context)
+                )
+            }
+            Expression::Product {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                format!(
+                    "Product[{}, {{{}, {}, {}}}]",
+                    self.expression_to_wolfram(expression, context),
+                    variable.name(),
+                    self.expression_to_wolfram(start, context),
+                    self.expression_to_wolfram(end, context)
+                )
+            }
         }
     }
 

@@ -333,7 +333,7 @@ mod tests {
 
     #[test]
     fn test_const_expr_macro() {
-        let pi = const_expr!(π);
+        let pi = const_expr!(pi);
         let e = const_expr!(e);
         let i = const_expr!(i);
 

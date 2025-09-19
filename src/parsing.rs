@@ -77,8 +77,11 @@ impl ExpressionParser {
             .replace("\\mp", "-")
             .replace(" ", "");
 
+        // Remove LaTeX braces for simple expressions like x^{2} -> x^2
+        let without_braces = self.remove_simple_braces(&cleaned);
+
         // Handle implicit multiplication in LaTeX too
-        self.insert_implicit_multiplication(&cleaned)
+        self.insert_implicit_multiplication(&without_braces)
     }
 
     /// Insert multiplication operators for implicit multiplication
@@ -127,13 +130,82 @@ impl ExpressionParser {
         result
     }
 
+    /// Remove simple LaTeX braces for basic expressions like x^{2} -> x^2
+    fn remove_simple_braces(&self, input: &str) -> String {
+        let mut result = String::new();
+        let mut chars = input.chars().peekable();
+
+        while let Some(ch) = chars.next() {
+            if ch == '{' {
+                // Check if this is a simple brace (only contains simple content)
+                let mut brace_content = String::new();
+                let mut brace_count = 1;
+                let mut is_simple = true;
+
+                while let Some(&next_ch) = chars.peek() {
+                    chars.next();
+                    match next_ch {
+                        '{' => {
+                            brace_count += 1;
+                            brace_content.push(next_ch);
+                            is_simple = false; // Nested braces are not simple
+                        }
+                        '}' => {
+                            brace_count -= 1;
+                            if brace_count == 0 {
+                                break;
+                            }
+                            brace_content.push(next_ch);
+                        }
+                        '\\' => {
+                            // LaTeX commands in braces make it not simple
+                            brace_content.push(next_ch);
+                            is_simple = false;
+                        }
+                        _ => {
+                            brace_content.push(next_ch);
+                        }
+                    }
+                }
+
+                // If it's simple content (like numbers, variables, basic operators), remove braces
+                if is_simple
+                    && brace_content
+                        .chars()
+                        .all(|c| c.is_alphanumeric() || "+-*/^.".contains(c))
+                {
+                    result.push_str(&brace_content);
+                } else {
+                    // Keep complex braces
+                    result.push('{');
+                    result.push_str(&brace_content);
+                    result.push('}');
+                }
+            } else {
+                result.push(ch);
+            }
+        }
+
+        result
+    }
+
     /// Parse expression from preprocessed string
     fn parse_expression(&mut self, input: &str) -> Result<Expression, ParseError> {
         if input.is_empty() {
             return Err(ParseError::EmptyInput);
         }
 
-        // Handle equations first (e.g., "2x + 3 = 0")
+        // Handle intervals first (e.g., "[0,1]", "(0,1)")
+        if let Some(interval) = self.parse_interval(input)? {
+            return Ok(interval);
+        }
+
+        // Handle relations (inequalities and equations as Relations, not expressions)
+        if let Some(relation) = self.parse_relation(input)? {
+            return Ok(relation);
+        }
+
+        // Handle equations for solving (e.g., "2x + 3 = 0")
         if let Some(eq_pos) = input.find('=') {
             let left_side = &input[..eq_pos];
             let right_side = &input[eq_pos + 1..];
@@ -412,6 +484,71 @@ impl ExpressionParser {
     /// Clear variable cache
     pub fn clear_variables(&mut self) {
         self.variables.clear();
+    }
+
+    /// Parse interval notation: [0,1], (0,1), [0,1), (0,1]
+    fn parse_interval(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+        let trimmed = input.trim();
+
+        // Check for interval patterns
+        let (start_inclusive, end_inclusive) = if trimmed.starts_with('[') && trimmed.ends_with(']')
+        {
+            (true, true) // [0,1] - closed interval
+        } else if trimmed.starts_with('(') && trimmed.ends_with(')') && trimmed.contains(',') {
+            (false, false) // (0,1) - open interval
+        } else if trimmed.starts_with('[') && trimmed.ends_with(')') {
+            (true, false) // [0,1) - half-open
+        } else if trimmed.starts_with('(') && trimmed.ends_with(']') {
+            (false, true) // (0,1] - half-open
+        } else {
+            return Ok(None); // Not an interval
+        };
+
+        let content = &trimmed[1..trimmed.len() - 1]; // Remove brackets/parentheses
+
+        // Split by comma
+        let parts: Vec<&str> = content.split(',').collect();
+        if parts.len() != 2 {
+            return Ok(None); // Not a valid interval
+        }
+
+        let start_expr = self.parse_expression(parts[0].trim())?;
+        let end_expr = self.parse_expression(parts[1].trim())?;
+
+        Ok(Some(Expression::interval(
+            start_expr,
+            end_expr,
+            start_inclusive,
+            end_inclusive,
+        )))
+    }
+
+    /// Parse relation notation: x<y, x>y, x<=y, x>=y, x==y  
+    fn parse_relation(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+        use crate::core::RelationType;
+
+        // Check for relation operators (in order of specificity)
+        let relations = [
+            ("==", RelationType::Equal),
+            ("<=", RelationType::LessEqual),
+            (">=", RelationType::GreaterEqual),
+            ("<", RelationType::Less),
+            (">", RelationType::Greater),
+        ];
+
+        for (op, rel_type) in relations {
+            if let Some(op_pos) = input.find(op) {
+                let left_str = &input[..op_pos].trim();
+                let right_str = &input[op_pos + op.len()..].trim();
+
+                let left_expr = self.parse_expression(left_str)?;
+                let right_expr = self.parse_expression(right_str)?;
+
+                return Ok(Some(Expression::relation(left_expr, right_expr, rel_type)));
+            }
+        }
+
+        Ok(None)
     }
 }
 

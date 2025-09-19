@@ -26,6 +26,16 @@ impl WolframParser {
 
         let cleaned = self.preprocess(input);
 
+        // Handle Wolfram matrices first
+        if cleaned.starts_with("{{") {
+            return self.parse_wolfram_matrix(&cleaned);
+        }
+
+        // Handle Wolfram sets (single-level braces)
+        if cleaned.starts_with("{") && !cleaned.starts_with("{{") {
+            return self.parse_wolfram_set(&cleaned);
+        }
+
         // Handle Wolfram functions first
         if let Some(expr) = self.parse_functions(&cleaned)? {
             return Ok(expr);
@@ -80,6 +90,56 @@ impl WolframParser {
                         // Exp[x] = e^x
                         Expression::pow(Expression::e(), args[0].clone())
                     }
+                    "derivative" if args.len() == 2 => {
+                        // D[f, x] = derivative of f with respect to x
+                        if let Expression::Symbol(var) = &args[1] {
+                            Expression::derivative(args[0].clone(), var.clone(), 1)
+                        } else {
+                            Expression::function("D", args)
+                        }
+                    }
+                    "integral" if args.len() == 2 => {
+                        // Integrate[f, x] = integral of f with respect to x
+                        if let Expression::Symbol(var) = &args[1] {
+                            Expression::integral(args[0].clone(), var.clone())
+                        } else {
+                            Expression::function("Integrate", args)
+                        }
+                    }
+                    "integral" if args.len() == 4 => {
+                        // Integrate[f, {x, a, b}] → args = [f, x, a, b]
+                        if let Expression::Symbol(var) = &args[1] {
+                            Expression::definite_integral(
+                                args[0].clone(),
+                                var.clone(),
+                                args[2].clone(),
+                                args[3].clone(),
+                            )
+                        } else {
+                            Expression::function("Integrate", args)
+                        }
+                    }
+                    "limit" if args.len() == 3 => {
+                        // Limit[f, x -> a] → args = [f, x, a]
+                        if let Expression::Symbol(var) = &args[1] {
+                            Expression::limit(args[0].clone(), var.clone(), args[2].clone())
+                        } else {
+                            Expression::function("Limit", args)
+                        }
+                    }
+                    "sum" if args.len() == 4 => {
+                        // Sum[f, {i, start, end}] → args = [f, i, start, end]
+                        if let Expression::Symbol(var) = &args[1] {
+                            Expression::sum(
+                                args[0].clone(),
+                                var.clone(),
+                                args[2].clone(),
+                                args[3].clone(),
+                            )
+                        } else {
+                            Expression::function("Sum", args)
+                        }
+                    }
                     _ => Expression::function("unknown", args),
                 }));
             }
@@ -115,8 +175,20 @@ impl WolframParser {
 
         let mut args = Vec::new();
         for arg_str in arg_strings {
-            let arg_expr = self.parse(&arg_str)?;
-            args.push(arg_expr);
+            // Handle Wolfram-specific argument syntax
+            if arg_str.trim().starts_with('{') && arg_str.trim().ends_with('}') {
+                // Parse Wolfram list: {x, 0, 1} → flatten into separate arguments
+                let list_args = self.parse_wolfram_list_elements(&arg_str)?;
+                args.extend(list_args);
+            } else if arg_str.contains(" -> ") {
+                // Parse Wolfram arrow: x -> 0 → flatten into [variable, target]
+                let arrow_args = self.parse_wolfram_arrow_elements(&arg_str)?;
+                args.extend(arrow_args);
+            } else {
+                // Parse as Wolfram expression (recursive)
+                let arg_expr = self.parse(&arg_str)?;
+                args.push(arg_expr);
+            }
         }
 
         Ok(args)
@@ -205,5 +277,104 @@ impl WolframParser {
         result = result.replace("}", ")");
 
         result
+    }
+
+    /// Parse Wolfram list elements: {x, 0, 1} → [x, 0, 1]
+    fn parse_wolfram_list_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
+        let trimmed = input.trim();
+        if !trimmed.starts_with('{') || !trimmed.ends_with('}') {
+            return Err(ParseError::SyntaxError("Not a Wolfram list".to_string()));
+        }
+
+        let content = &trimmed[1..trimmed.len() - 1]; // Remove { and }
+        let element_strings = self.split_args(content)?;
+
+        let mut elements = Vec::new();
+        for element_str in element_strings {
+            let element_expr = self.parse(&element_str)?;
+            elements.push(element_expr);
+        }
+
+        Ok(elements)
+    }
+
+    /// Parse Wolfram arrow elements: x -> 0 → [x, 0]
+    fn parse_wolfram_arrow_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
+        let parts: Vec<&str> = input.split(" -> ").collect();
+        if parts.len() != 2 {
+            return Err(ParseError::SyntaxError("Invalid arrow syntax".to_string()));
+        }
+
+        let mut result = Vec::new();
+        for part in parts {
+            let expr = self.parse(part.trim())?;
+            result.push(expr);
+        }
+
+        Ok(result)
+    }
+
+    /// Parse Wolfram matrix syntax: {{1, 2}, {3, 4}}
+    fn parse_wolfram_matrix(&mut self, input: &str) -> Result<Expression, ParseError> {
+        if !input.starts_with("{{") || !input.ends_with("}}") {
+            return Err(ParseError::SyntaxError("Not a Wolfram matrix".to_string()));
+        }
+
+        let content = &input[1..input.len() - 1]; // Remove outer { and }
+
+        // Split by }, { pattern to get rows
+        let row_strings: Vec<&str> = content.split("}, {").collect();
+        let mut matrix_rows = Vec::new();
+
+        for (i, row_str) in row_strings.iter().enumerate() {
+            // Clean up the row string
+            let clean_row = if i == 0 {
+                // First row: remove leading {
+                &row_str[1..]
+            } else if i == row_strings.len() - 1 {
+                // Last row: remove trailing }
+                &row_str[..row_str.len() - 1]
+            } else {
+                // Middle rows: use as-is
+                row_str
+            };
+
+            // Parse row elements
+            let elements = self.split_args(clean_row)?;
+            let mut row_elements = Vec::new();
+
+            for element_str in elements {
+                let element_expr = self.parse(&element_str)?;
+                row_elements.push(element_expr);
+            }
+
+            matrix_rows.push(row_elements);
+        }
+
+        Ok(Expression::matrix(matrix_rows))
+    }
+
+    /// Parse Wolfram set syntax: {1, 2, 3}
+    fn parse_wolfram_set(&mut self, input: &str) -> Result<Expression, ParseError> {
+        if !input.starts_with("{") || !input.ends_with("}") {
+            return Err(ParseError::SyntaxError("Not a Wolfram set".to_string()));
+        }
+
+        let content = &input[1..input.len() - 1]; // Remove { and }
+
+        if content.trim().is_empty() {
+            return Ok(Expression::set(vec![])); // Empty set
+        }
+
+        // Parse elements
+        let element_strings = self.split_args(content)?;
+        let mut elements = Vec::new();
+
+        for element_str in element_strings {
+            let element_expr = self.parse(&element_str)?;
+            elements.push(element_expr);
+        }
+
+        Ok(Expression::set(elements))
     }
 }
