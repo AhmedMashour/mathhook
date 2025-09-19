@@ -9,6 +9,9 @@ pub mod core;
 pub mod educational;
 pub mod parsing;
 
+// Re-export macros at crate root for ergonomic usage
+pub use parsing::macros::*;
+
 // Re-export the prelude for easy access
 pub mod prelude {
     pub use crate::algebra::*;

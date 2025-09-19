@@ -1,62 +1,83 @@
-use mathhook::prelude::*;
+use mathhook::{const_expr, expr, parse, to_format};
 
 fn main() {
-    // Test step by step
-    println!("Testing: x^2-x-6=9");
+    println!("🎉 MATHHOOK MACRO DEMONSTRATION");
+    println!("Making mathematical expressions delightfully easy!\n");
 
-    // Try a simpler equation first
-    println!("Testing simpler: x^2=4");
-    match convenience::solve("x^2=4") {
-        Ok(result) => println!("✅ x^2=4 solution: {:?}", result),
-        Err(e) => println!("❌ x^2=4 error: {:?}", e),
-    }
+    // ========== BASIC EXPRESSION CREATION ==========
+    println!("📐 Basic Expression Creation with expr! macro:");
 
-    // Test what preprocessing does to our equation
-    println!("Testing preprocessing on: x^2-x-6=9");
-    let test_input = "x^2-x-6=9";
+    let x = expr!(x);
+    let number = expr!(42);
+    let simple_add = expr!(x + 1);
+    let simple_mul = expr!(2 * x);
+    let power = expr!(x ^ 2);
+    let function = expr!(sin(x));
 
-    // Manual preprocessing steps
-    let step1 = test_input.replace(" ", "");
-    println!("After space removal: '{}'", step1);
+    println!("   Symbol:     {:?}", x);
+    println!("   Number:     {:?}", number);
+    println!("   Addition:   {:?}", simple_add);
+    println!("   Multiply:   {:?}", simple_mul);
+    println!("   Power:      {:?}", power);
+    println!("   Function:   {:?}", function);
 
-    // Test if the issue is in implicit multiplication
-    println!("Testing simpler case: x-1=0");
-    match convenience::solve("x-1=0") {
-        Ok(result) => println!("✅ x-1=0 solution: {:?}", result),
-        Err(e) => println!("❌ x-1=0 error: {:?}", e),
-    }
+    // ========== MATHEMATICAL CONSTANTS ==========
+    println!("\n🔢 Mathematical Constants with const_expr! macro:");
 
-    // Step 1: Test parsing
-    match Expression::parse_latex("x^2-x-6=9") {
-        Ok(parsed) => {
-            println!("✅ Parsing successful: {:?}", parsed);
+    let pi = const_expr!(pi);
+    let e = const_expr!(e);
+    let i = const_expr!(i);
+    let infinity = const_expr!(infinity);
 
-            // Step 2: Test analysis
-            match convenience::analyze("x^2-x-6=9") {
-                Ok(eq_type) => {
-                    println!("✅ Analysis successful: {:?}", eq_type);
+    println!("   π: {:?}", pi);
+    println!("   e: {:?}", e);
+    println!("   i: {:?}", i);
+    println!("   ∞: {:?}", infinity);
 
-                    // Step 3: Test solving with steps to see more detail
-                    match convenience::solve_with_steps("x^2-x-6=9") {
-                        Ok((result, steps)) => {
-                            println!("✅ Solution: {:?}", result);
-                            println!("✅ Steps: {:?}", steps);
-                        }
-                        Err(e) => {
-                            println!("❌ Solve error: {:?}", e);
-                        }
-                    }
-                }
-                Err(e) => {
-                    println!("❌ Analysis error: {:?}", e);
-                }
-            }
-        }
-        Err(e) => {
-            println!("❌ Parsing error: {:?}", e);
-        }
-    }
+    // ========== PARSING MACROS ==========
+    println!("\n🔍 Parsing with parse! macro:");
 
-    // Expected: x = (1 ± √61)/2 ≈ 4.405, -3.405
-    println!("Expected: x = (1 + √61)/2 ≈ 4.405, x = (1 - √61)/2 ≈ -3.405");
+    let auto_parsed = parse!("x^2 + 2*x + 1").unwrap();
+    let latex_parsed = parse!(latex: "\\frac{x}{y}").unwrap();
+    let wolfram_parsed = parse!(wolfram: "Times[x, y]").unwrap();
+    let simple_parsed = parse!(simple: "sin(x)").unwrap();
+
+    println!("   Auto:     {:?}", auto_parsed);
+    println!("   LaTeX:    {:?}", latex_parsed);
+    println!("   Wolfram:  {:?}", wolfram_parsed);
+    println!("   Simple:   {:?}", simple_parsed);
+
+    // ========== FORMAT CONVERSION ==========
+    println!("\n🎨 Format Conversion with to_format! macro:");
+
+    let example_expr = expr!(x ^ 2);
+
+    let simple_output = to_format!(simple: example_expr);
+    let latex_output = to_format!(latex: example_expr);
+    let wolfram_output = to_format!(wolfram: example_expr);
+
+    println!("   Expression: {:?}", example_expr);
+    println!("   Simple:     {}", simple_output);
+    println!("   LaTeX:      {}", latex_output);
+    println!("   Wolfram:    {}", wolfram_output);
+
+    // ========== PRACTICAL EXAMPLE ==========
+    println!("\n🚀 Practical Example - Using Parse for Complex Expressions:");
+
+    // For complex expressions, parsing is often more convenient than macros
+    let quadratic = parse!("a*x^2 + b*x + c").unwrap();
+    let fraction = parse!("(x + 1)/(x - 1)").unwrap();
+    let trig = parse!("sin(x) + cos(x)").unwrap();
+
+    println!("   Quadratic: {:?}", quadratic);
+    println!("   Fraction:  {:?}", fraction);
+    println!("   Trig:      {:?}", trig);
+
+    println!("\n   Format outputs for quadratic:");
+    println!("   Simple:  {}", to_format!(simple: quadratic));
+    println!("   LaTeX:   {}", to_format!(latex: quadratic));
+    println!("   Wolfram: {}", to_format!(wolfram: quadratic));
+
+    println!("\n✨ Macros provide ergonomic building blocks!");
+    println!("💡 For complex expressions, parsing is often more convenient!");
 }

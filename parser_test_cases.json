@@ -1,0 +1,1131 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "description": "Comprehensive mathematical expression parser test cases",
+    "languages": [
+      "latex",
+      "wolfram"
+    ],
+    "categories": [
+      "basic_arithmetic",
+      "fractions",
+      "powers_roots",
+      "trigonometric",
+      "logarithmic",
+      "calculus",
+      "special_functions",
+      "matrices",
+      "sets_logic",
+      "complex_expressions"
+    ]
+  },
+  "test_cases": {
+    "basic_arithmetic": {
+      "latex": [
+        {
+          "input": "x + y",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Simple addition"
+        },
+        {
+          "input": "x - y",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:y})]))]))",
+          "description": "Subtraction"
+        },
+        {
+          "input": "x \\cdot y",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Multiplication"
+        },
+        {
+          "input": "x \\times y",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Times operator"
+        },
+        {
+          "input": "\\frac{x}{y}",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(-1))))]))",
+          "description": "Division as fraction"
+        },
+        {
+          "input": "2x + 3y - 5",
+          "expected_expr": "Add(Box([Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:x})])), Mul(Box([Number(SmallInt(3)), Symbol(Symbol{name:y})])), Number(SmallInt(-5))]))",
+          "description": "Mixed operations"
+        },
+        {
+          "input": "-x + y",
+          "expected_expr": "Add(Box([Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])), Symbol(Symbol{name:y})]))",
+          "description": "Negative terms"
+        },
+        {
+          "input": "x + y + z",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})]))",
+          "description": "Multiple addition"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "x + y",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Simple addition"
+        },
+        {
+          "input": "x - y",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:y})]))]))",
+          "description": "Subtraction"
+        },
+        {
+          "input": "x * y",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Multiplication"
+        },
+        {
+          "input": "Times[x, y]",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+          "description": "Times function"
+        },
+        {
+          "input": "x / y",
+          "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(-1))))]))",
+          "description": "Division"
+        },
+        {
+          "input": "Plus[x, y, z]",
+          "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})]))",
+          "description": "Plus function"
+        },
+        {
+          "input": "2 x + 3 y - 5",
+          "expected_expr": "Add(Box([Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:x})])), Mul(Box([Number(SmallInt(3)), Symbol(Symbol{name:y})])), Number(SmallInt(-5))]))",
+          "description": "Mixed operations"
+        },
+        {
+          "input": "-x + y",
+          "expected_expr": "Add(Box([Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])), Symbol(Symbol{name:y})]))",
+          "description": "Negative terms"
+        }
+      ]
+    },
+    "fractions": {
+      "latex": [
+        {
+          "input": "\\frac{1}{2}",
+          "expected_expr": "Number(Rational(1/2))",
+          "description": "Simple fraction"
+        },
+        {
+          "input": "\\frac{x + 1}{y - 2}",
+          "expected_expr": "Mul([Add([Symbol(x), 1]), Pow(Add([Symbol(y), -2]), -1)])",
+          "description": "Complex fraction"
+        },
+        {
+          "input": "\\frac{\\frac{1}{2}}{\\frac{3}{4}}",
+          "expected_expr": "Number(Rational(2/3))",
+          "description": "Nested fractions"
+        },
+        {
+          "input": "\\frac{d}{dx}",
+          "expected_expr": "Function(derivative, [Symbol(d), Symbol(x)])",
+          "description": "Derivative notation"
+        },
+        {
+          "input": "x + \\frac{1}{2} - \\frac{3}{4}",
+          "expected_expr": "Add([Symbol(x), Number(Rational(1/2)), Mul([-1, Number(Rational(3/4))])])",
+          "description": "Mixed fractions"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "1/2",
+          "expected_expr": "Number(Rational(1/2))",
+          "description": "Simple fraction"
+        },
+        {
+          "input": "(x + 1)/(y - 2)",
+          "expected_expr": "Mul([Add([Symbol(x), 1]), Pow(Add([Symbol(y), -2]), -1)])",
+          "description": "Complex fraction"
+        },
+        {
+          "input": "Divide[x, y]",
+          "expected_expr": "Mul([Symbol(x), Pow(Symbol(y), -1)])",
+          "description": "Divide function"
+        },
+        {
+          "input": "Rational[1, 2]",
+          "expected_expr": "Number(Rational(1/2))",
+          "description": "Rational function"
+        },
+        {
+          "input": "(1/2)/(3/4)",
+          "expected_expr": "Number(Rational(2/3))",
+          "description": "Nested fractions"
+        }
+      ]
+    },
+    "powers_roots": {
+      "latex": [
+        {
+          "input": "x^2",
+          "expected_expr": "Pow(Symbol(x), 2)",
+          "description": "Simple power"
+        },
+        {
+          "input": "x^{n+1}",
+          "expected_expr": "Pow(Symbol(x), Add([Symbol(n), 1]))",
+          "description": "Complex exponent"
+        },
+        {
+          "input": "\\sqrt{x}",
+          "expected_expr": "Pow(Symbol(x), Number(Rational(1/2)))",
+          "description": "Square root"
+        },
+        {
+          "input": "\\sqrt[3]{x}",
+          "expected_expr": "Pow(Symbol(x), Number(Rational(1/3)))",
+          "description": "Cube root"
+        },
+        {
+          "input": "\\sqrt[n]{x}",
+          "expected_expr": "Pow(Symbol(x), Pow(Symbol(n), -1))",
+          "description": "Nth root"
+        },
+        {
+          "input": "e^x",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+          "description": "Exponential - FIRST CLASS CONSTANT"
+        },
+        {
+          "input": "2^{3x}",
+          "expected_expr": "Pow(2, Mul([3, Symbol(x)]))",
+          "description": "Complex base and exponent"
+        },
+        {
+          "input": "(x+1)^{2n}",
+          "expected_expr": "Pow(Add([Symbol(x), 1]), Mul([2, Symbol(n)]))",
+          "description": "Complex base and exponent"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "x^2",
+          "expected_expr": "Pow(Symbol(x), 2)",
+          "description": "Simple power"
+        },
+        {
+          "input": "Power[x, n + 1]",
+          "expected_expr": "Pow(Symbol(x), Add([Symbol(n), 1]))",
+          "description": "Power function"
+        },
+        {
+          "input": "Sqrt[x]",
+          "expected_expr": "Pow(Symbol(x), Number(Rational(1/2)))",
+          "description": "Square root"
+        },
+        {
+          "input": "Surd[x, 3]",
+          "expected_expr": "Pow(Symbol(x), Number(Rational(1/3)))",
+          "description": "Cube root"
+        },
+        {
+          "input": "Exp[x]",
+          "expected_expr": "Function(exp, [Symbol(x)])",
+          "description": "Exponential"
+        },
+        {
+          "input": "2^(3 x)",
+          "expected_expr": "Pow(2, Mul([3, Symbol(x)]))",
+          "description": "Complex exponent"
+        },
+        {
+          "input": "(x + 1)^(2 n)",
+          "expected_expr": "Pow(Add([Symbol(x), 1]), Mul([2, Symbol(n)]))",
+          "description": "Complex power"
+        }
+      ]
+    },
+    "trigonometric": {
+      "latex": [
+        {
+          "input": "\\sin(x)",
+          "expected_expr": "Function(sin, [Symbol(x)])",
+          "description": "Sine function"
+        },
+        {
+          "input": "\\cos(x)",
+          "expected_expr": "Function(cos, [Symbol(x)])",
+          "description": "Cosine function"
+        },
+        {
+          "input": "\\tan(x)",
+          "expected_expr": "Function(tan, [Symbol(x)])",
+          "description": "Tangent function"
+        },
+        {
+          "input": "\\sec(x)",
+          "expected_expr": "Function(sec, [Symbol(x)])",
+          "description": "Secant function"
+        },
+        {
+          "input": "\\csc(x)",
+          "expected_expr": "Function(csc, [Symbol(x)])",
+          "description": "Cosecant function"
+        },
+        {
+          "input": "\\cot(x)",
+          "expected_expr": "Function(cot, [Symbol(x)])",
+          "description": "Cotangent function"
+        },
+        {
+          "input": "\\arcsin(x)",
+          "expected_expr": "Function(arcsin, [Symbol(x)])",
+          "description": "Inverse sine"
+        },
+        {
+          "input": "\\arccos(x)",
+          "expected_expr": "Function(arccos, [Symbol(x)])",
+          "description": "Inverse cosine"
+        },
+        {
+          "input": "\\arctan(x)",
+          "expected_expr": "Function(arctan, [Symbol(x)])",
+          "description": "Inverse tangent"
+        },
+        {
+          "input": "\\sin^2(x)",
+          "expected_expr": "Pow(Function(sin, [Symbol(x)]), 2)",
+          "description": "Trigonometric power"
+        },
+        {
+          "input": "\\sin(2x + \\pi)",
+          "expected_expr": "Function{name:sin, args:Box([Add(Box([Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:x})])), Constant(Pi)]))])}",
+          "description": "Complex argument with Pi constant"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Sin[x]",
+          "expected_expr": "Function(sin, [Symbol(x)])",
+          "description": "Sine function"
+        },
+        {
+          "input": "Cos[x]",
+          "expected_expr": "Function(cos, [Symbol(x)])",
+          "description": "Cosine function"
+        },
+        {
+          "input": "Tan[x]",
+          "expected_expr": "Function(tan, [Symbol(x)])",
+          "description": "Tangent function"
+        },
+        {
+          "input": "Sec[x]",
+          "expected_expr": "Function(sec, [Symbol(x)])",
+          "description": "Secant function"
+        },
+        {
+          "input": "Csc[x]",
+          "expected_expr": "Function(csc, [Symbol(x)])",
+          "description": "Cosecant function"
+        },
+        {
+          "input": "Cot[x]",
+          "expected_expr": "Function(cot, [Symbol(x)])",
+          "description": "Cotangent function"
+        },
+        {
+          "input": "ArcSin[x]",
+          "expected_expr": "Function(arcsin, [Symbol(x)])",
+          "description": "Inverse sine"
+        },
+        {
+          "input": "ArcCos[x]",
+          "expected_expr": "Function(arccos, [Symbol(x)])",
+          "description": "Inverse cosine"
+        },
+        {
+          "input": "ArcTan[x]",
+          "expected_expr": "Function(arctan, [Symbol(x)])",
+          "description": "Inverse tangent"
+        },
+        {
+          "input": "Sin[x]^2",
+          "expected_expr": "Pow(Function(sin, [Symbol(x)]), 2)",
+          "description": "Trigonometric power"
+        },
+        {
+          "input": "Sin[2 x + Pi]",
+          "expected_expr": "Function{name:sin, args:Box([Add(Box([Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:x})])), Constant(Pi)]))])}",
+          "description": "Complex argument with Pi constant"
+        }
+      ]
+    },
+    "logarithmic": {
+      "latex": [
+        {
+          "input": "\\ln(x)",
+          "expected_expr": "Function(ln, [Symbol(x)])",
+          "description": "Natural logarithm"
+        },
+        {
+          "input": "\\log(x)",
+          "expected_expr": "Function(log, [Symbol(x)])",
+          "description": "Common logarithm"
+        },
+        {
+          "input": "\\log_2(x)",
+          "expected_expr": "Function(log, [Symbol(x), 2])",
+          "description": "Logarithm base 2"
+        },
+        {
+          "input": "\\log_{10}(x)",
+          "expected_expr": "Function(log, [Symbol(x), 10])",
+          "description": "Logarithm base 10"
+        },
+        {
+          "input": "\\log_a(x)",
+          "expected_expr": "Function(log, [Symbol(x), Symbol(a)])",
+          "description": "Logarithm base a"
+        },
+        {
+          "input": "e^x",
+          "expected_expr": "Function(exp, [Symbol(x)])",
+          "description": "Exponential function"
+        },
+        {
+          "input": "\\exp(x)",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+          "description": "Exponential function - FIRST CLASS"
+        },
+        {
+          "input": "\\ln(x^2 + 1)",
+          "expected_expr": "Function(ln, [Add([Pow(Symbol(x), 2), 1])])",
+          "description": "Complex logarithm argument"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Log[x]",
+          "expected_expr": "Function(ln, [Symbol(x)])",
+          "description": "Natural logarithm"
+        },
+        {
+          "input": "Log[10, x]",
+          "expected_expr": "Function(log, [Symbol(x), 10])",
+          "description": "Logarithm base 10"
+        },
+        {
+          "input": "Log[2, x]",
+          "expected_expr": "Function(log, [Symbol(x), 2])",
+          "description": "Logarithm base 2"
+        },
+        {
+          "input": "Log[a, x]",
+          "expected_expr": "Function(log, [Symbol(x), Symbol(a)])",
+          "description": "Logarithm base a"
+        },
+        {
+          "input": "Exp[x]",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+          "description": "Exponential function - FIRST CLASS"
+        },
+        {
+          "input": "E^x",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+          "description": "Exponential with E - FIRST CLASS"
+        },
+        {
+          "input": "Log[x^2 + 1]",
+          "expected_expr": "Function(ln, [Add([Pow(Symbol(x), 2), 1])])",
+          "description": "Complex argument"
+        }
+      ]
+    },
+    "calculus_old_function_style": {
+      "latex": [
+        {
+          "input": "\\int x dx",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+          "description": "Simple integral - FIRST CLASS"
+        },
+        {
+          "input": "\\int_0^1 x dx",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+          "description": "Definite integral - FIRST CLASS"
+        },
+        {
+          "input": "\\int_{-\\infty}^{\\infty} e^{-x^2} dx",
+          "expected_expr": "Integral{integrand: Box(Pow(Box(Constant(E)), Box(Mul(Box([Number(SmallInt(-1)), Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))]))))), variable: Symbol{name:x}, bounds: Some((Box(Constant(NegInfinity)), Box(Constant(Infinity))))}",
+          "description": "Improper integral - FIRST CLASS"
+        },
+        {
+          "input": "\\frac{d}{dx} f(x)",
+          "expected_expr": "Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, order: 1}",
+          "description": "Derivative - FIRST CLASS"
+        },
+        {
+          "input": "\\frac{d^2}{dx^2} f(x)",
+          "expected_expr": "Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, order: 2}",
+          "description": "Second derivative - FIRST CLASS"
+        },
+        {
+          "input": "\\sum_{i=1}^n i",
+          "expected_expr": "Sum{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Summation - FIRST CLASS"
+        },
+        {
+          "input": "\\prod_{i=1}^n i",
+          "expected_expr": "Product{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Product - FIRST CLASS"
+        },
+        {
+          "input": "\\lim_{x \\to 0} \\frac{\\sin x}{x}",
+          "expected_expr": "Limit{expression: Box(Mul(Box([Function{name:sin, args:Box([Symbol(Symbol{name:x})])}, Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+          "description": "Limit - FIRST CLASS"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Integrate[x, x]",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+          "description": "Simple integral - FIRST CLASS"
+        },
+        {
+          "input": "Integrate[x, {x, 0, 1}]",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+          "description": "Definite integral - FIRST CLASS"
+        },
+        {
+          "input": "Integrate[Exp[-x^2], {x, -Infinity, Infinity}]",
+          "expected_expr": "Integral{integrand: Box(Pow(Box(Constant(E)), Box(Mul(Box([Number(SmallInt(-1)), Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))]))))), variable: Symbol{name:x}, bounds: Some((Box(Constant(NegInfinity)), Box(Constant(Infinity))))}",
+          "description": "Improper integral - FIRST CLASS"
+        },
+        {
+          "input": "D[f[x], x]",
+          "expected_expr": "Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, order: 1}",
+          "description": "Derivative - FIRST CLASS"
+        },
+        {
+          "input": "D[f[x], {x, 2}]",
+          "expected_expr": "Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, order: 2}",
+          "description": "Second derivative - FIRST CLASS"
+        },
+        {
+          "input": "Sum[i, {i, 1, n}]",
+          "expected_expr": "Sum{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Summation - FIRST CLASS"
+        },
+        {
+          "input": "Product[i, {i, 1, n}]",
+          "expected_expr": "Product{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Product - FIRST CLASS"
+        },
+        {
+          "input": "Limit[Sin[x]/x, x -> 0]",
+          "expected_expr": "Limit{expression: Box(Mul(Box([Function{name:sin, args:Box([Symbol(Symbol{name:x})])}, Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+          "description": "Limit - FIRST CLASS"
+        }
+      ]
+    },
+    "special_functions": {
+      "latex": [
+        {
+          "input": "\\Gamma(x)",
+          "expected_expr": "Function(gamma, [Symbol(x)])",
+          "description": "Gamma function"
+        },
+        {
+          "input": "\\zeta(s)",
+          "expected_expr": "Function(zeta, [Symbol(s)])",
+          "description": "Riemann zeta function"
+        },
+        {
+          "input": "\\beta(x, y)",
+          "expected_expr": "Function(beta, [Symbol(x), Symbol(y)])",
+          "description": "Beta function"
+        },
+        {
+          "input": "J_n(x)",
+          "expected_expr": "Function(bessel_j, [Symbol(n), Symbol(x)])",
+          "description": "Bessel function first kind"
+        },
+        {
+          "input": "Y_n(x)",
+          "expected_expr": "Function(bessel_y, [Symbol(n), Symbol(x)])",
+          "description": "Bessel function second kind"
+        },
+        {
+          "input": "\\mathrm{erf}(x)",
+          "expected_expr": "Function(erf, [Symbol(x)])",
+          "description": "Error function"
+        },
+        {
+          "input": "\\mathrm{erfc}(x)",
+          "expected_expr": "Function(erfc, [Symbol(x)])",
+          "description": "Complementary error function"
+        },
+        {
+          "input": "P_n(x)",
+          "expected_expr": "Function(legendre_p, [Symbol(n), Symbol(x)])",
+          "description": "Legendre polynomial"
+        },
+        {
+          "input": "H_n(x)",
+          "expected_expr": "Function(hermite_h, [Symbol(n), Symbol(x)])",
+          "description": "Hermite polynomial"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Gamma[x]",
+          "expected_expr": "Function(gamma, [Symbol(x)])",
+          "description": "Gamma function"
+        },
+        {
+          "input": "Zeta[s]",
+          "expected_expr": "Function(zeta, [Symbol(s)])",
+          "description": "Riemann zeta function"
+        },
+        {
+          "input": "Beta[x, y]",
+          "expected_expr": "Function(beta, [Symbol(x), Symbol(y)])",
+          "description": "Beta function"
+        },
+        {
+          "input": "BesselJ[n, x]",
+          "expected_expr": "Function(bessel_j, [Symbol(n), Symbol(x)])",
+          "description": "Bessel function first kind"
+        },
+        {
+          "input": "BesselY[n, x]",
+          "expected_expr": "Function(bessel_y, [Symbol(n), Symbol(x)])",
+          "description": "Bessel function second kind"
+        },
+        {
+          "input": "Erf[x]",
+          "expected_expr": "Function(erf, [Symbol(x)])",
+          "description": "Error function"
+        },
+        {
+          "input": "Erfc[x]",
+          "expected_expr": "Function(erfc, [Symbol(x)])",
+          "description": "Complementary error function"
+        },
+        {
+          "input": "LegendreP[n, x]",
+          "expected_expr": "Function(legendre_p, [Symbol(n), Symbol(x)])",
+          "description": "Legendre polynomial"
+        },
+        {
+          "input": "HermiteH[n, x]",
+          "expected_expr": "Function(hermite_h, [Symbol(n), Symbol(x)])",
+          "description": "Hermite polynomial"
+        }
+      ]
+    },
+    "matrices": {
+      "latex": [
+        {
+          "input": "\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}",
+          "expected_expr": "Matrix([[1, 2], [3, 4]])",
+          "description": "2x2 matrix"
+        },
+        {
+          "input": "\\begin{bmatrix} x \\\\ y \\\\ z \\end{bmatrix}",
+          "expected_expr": "Matrix([[Symbol(x)], [Symbol(y)], [Symbol(z)]])",
+          "description": "Column vector"
+        },
+        {
+          "input": "\\det(A)",
+          "expected_expr": "Function(det, [Symbol(A)])",
+          "description": "Determinant"
+        },
+        {
+          "input": "A^{-1}",
+          "expected_expr": "Pow(Symbol(A), -1)",
+          "description": "Matrix inverse"
+        },
+        {
+          "input": "A^T",
+          "expected_expr": "Function(transpose, [Symbol(A)])",
+          "description": "Matrix transpose"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "{{1, 2}, {3, 4}}",
+          "expected_expr": "Matrix([[1, 2], [3, 4]])",
+          "description": "2x2 matrix"
+        },
+        {
+          "input": "{{x}, {y}, {z}}",
+          "expected_expr": "Matrix([[Symbol(x)], [Symbol(y)], [Symbol(z)]])",
+          "description": "Column vector"
+        },
+        {
+          "input": "Det[A]",
+          "expected_expr": "Function(det, [Symbol(A)])",
+          "description": "Determinant"
+        },
+        {
+          "input": "Inverse[A]",
+          "expected_expr": "Function(inverse, [Symbol(A)])",
+          "description": "Matrix inverse"
+        },
+        {
+          "input": "Transpose[A]",
+          "expected_expr": "Function(transpose, [Symbol(A)])",
+          "description": "Matrix transpose"
+        }
+      ]
+    },
+    "mathematical_constants": {
+      "latex": [
+        {
+          "input": "\\pi",
+          "expected_expr": "Constant(Pi)",
+          "description": "Pi constant"
+        },
+        {
+          "input": "e",
+          "expected_expr": "Constant(E)",
+          "description": "Euler's number"
+        },
+        {
+          "input": "i",
+          "expected_expr": "Constant(I)",
+          "description": "Imaginary unit"
+        },
+        {
+          "input": "\\infty",
+          "expected_expr": "Constant(Infinity)",
+          "description": "Infinity"
+        },
+        {
+          "input": "-\\infty",
+          "expected_expr": "Constant(NegInfinity)",
+          "description": "Negative infinity"
+        },
+        {
+          "input": "\\phi",
+          "expected_expr": "Constant(GoldenRatio)",
+          "description": "Golden ratio"
+        },
+        {
+          "input": "\\gamma",
+          "expected_expr": "Constant(EulerGamma)",
+          "description": "Euler-Mascheroni constant"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Pi",
+          "expected_expr": "Constant(Pi)",
+          "description": "Pi constant"
+        },
+        {
+          "input": "E",
+          "expected_expr": "Constant(E)",
+          "description": "Euler's number"
+        },
+        {
+          "input": "I",
+          "expected_expr": "Constant(I)",
+          "description": "Imaginary unit"
+        },
+        {
+          "input": "Infinity",
+          "expected_expr": "Constant(Infinity)",
+          "description": "Infinity"
+        },
+        {
+          "input": "-Infinity",
+          "expected_expr": "Constant(NegInfinity)",
+          "description": "Negative infinity"
+        },
+        {
+          "input": "GoldenRatio",
+          "expected_expr": "Constant(GoldenRatio)",
+          "description": "Golden ratio"
+        },
+        {
+          "input": "EulerGamma",
+          "expected_expr": "Constant(EulerGamma)",
+          "description": "Euler-Mascheroni constant"
+        }
+      ]
+    },
+    "complex_numbers": {
+      "latex": [
+        {
+          "input": "3 + 4i",
+          "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+          "description": "Complex number"
+        },
+        {
+          "input": "\\sqrt{-1}",
+          "expected_expr": "Complex{real: Box(Number(SmallInt(0))), imag: Box(Number(SmallInt(1)))}",
+          "description": "Square root of -1"
+        },
+        {
+          "input": "e^{i\\pi}",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Mul(Box([Constant(I), Constant(Pi)]))))",
+          "description": "Euler's formula"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "3 + 4*I",
+          "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+          "description": "Complex number"
+        },
+        {
+          "input": "Sqrt[-1]",
+          "expected_expr": "Complex{real: Box(Number(SmallInt(0))), imag: Box(Number(SmallInt(1)))}",
+          "description": "Square root of -1"
+        },
+        {
+          "input": "Exp[I*Pi]",
+          "expected_expr": "Pow(Box(Constant(E)), Box(Mul(Box([Constant(I), Constant(Pi)]))))",
+          "description": "Euler's formula"
+        }
+      ]
+    },
+    "matrices_vectors": {
+      "latex": [
+        {
+          "input": "\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}",
+          "expected_expr": "Matrix(Box([[Number(SmallInt(1)), Number(SmallInt(2))], [Number(SmallInt(3)), Number(SmallInt(4))]]))",
+          "description": "2x2 matrix"
+        },
+        {
+          "input": "\\begin{bmatrix} x \\\\ y \\\\ z \\end{bmatrix}",
+          "expected_expr": "Matrix(Box([[Symbol(Symbol{name:x})], [Symbol(Symbol{name:y})], [Symbol(Symbol{name:z})]]))",
+          "description": "Column vector"
+        },
+        {
+          "input": "\\det(A)",
+          "expected_expr": "Function{name:det, args:Box([Symbol(Symbol{name:A})])}",
+          "description": "Determinant"
+        },
+        {
+          "input": "A^{-1}",
+          "expected_expr": "Pow(Box(Symbol(Symbol{name:A})), Box(Number(SmallInt(-1))))",
+          "description": "Matrix inverse"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "{{1, 2}, {3, 4}}",
+          "expected_expr": "Matrix(Box([[Number(SmallInt(1)), Number(SmallInt(2))], [Number(SmallInt(3)), Number(SmallInt(4))]]))",
+          "description": "2x2 matrix"
+        },
+        {
+          "input": "{{x}, {y}, {z}}",
+          "expected_expr": "Matrix(Box([[Symbol(Symbol{name:x})], [Symbol(Symbol{name:y})], [Symbol(Symbol{name:z})]]))",
+          "description": "Column vector"
+        },
+        {
+          "input": "Det[A]",
+          "expected_expr": "Function{name:det, args:Box([Symbol(Symbol{name:A})])}",
+          "description": "Determinant"
+        },
+        {
+          "input": "Inverse[A]",
+          "expected_expr": "Function{name:inverse, args:Box([Symbol(Symbol{name:A})])}",
+          "description": "Matrix inverse"
+        }
+      ]
+    },
+    "sets_intervals": {
+      "latex": [
+        {
+          "input": "\\{1, 2, 3\\}",
+          "expected_expr": "Set(Box([Number(SmallInt(1)), Number(SmallInt(2)), Number(SmallInt(3))]))",
+          "description": "Finite set"
+        },
+        {
+          "input": "[0, 1]",
+          "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: true, end_inclusive: true}",
+          "description": "Closed interval"
+        },
+        {
+          "input": "(0, 1)",
+          "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: false, end_inclusive: false}",
+          "description": "Open interval"
+        },
+        {
+          "input": "[0, 1)",
+          "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: true, end_inclusive: false}",
+          "description": "Half-open interval"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "{1, 2, 3}",
+          "expected_expr": "Set(Box([Number(SmallInt(1)), Number(SmallInt(2)), Number(SmallInt(3))]))",
+          "description": "Finite set"
+        },
+        {
+          "input": "Interval[{0, 1}]",
+          "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: true, end_inclusive: true}",
+          "description": "Closed interval"
+        },
+        {
+          "input": "Interval[{0, 1}, {False, False}]",
+          "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: false, end_inclusive: false}",
+          "description": "Open interval"
+        }
+      ]
+    },
+    "equations_relations": {
+      "latex": [
+        {
+          "input": "x = 5",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(5))), relation_type: Equal}",
+          "description": "Simple equation"
+        },
+        {
+          "input": "x \\neq 0",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: NotEqual}",
+          "description": "Inequality"
+        },
+        {
+          "input": "x < y",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Symbol(Symbol{name:y})), relation_type: Less}",
+          "description": "Less than"
+        },
+        {
+          "input": "x \\geq 0",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: GreaterEqual}",
+          "description": "Greater than or equal"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "x == 5",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(5))), relation_type: Equal}",
+          "description": "Simple equation"
+        },
+        {
+          "input": "x != 0",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: NotEqual}",
+          "description": "Inequality"
+        },
+        {
+          "input": "x < y",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Symbol(Symbol{name:y})), relation_type: Less}",
+          "description": "Less than"
+        },
+        {
+          "input": "x >= 0",
+          "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: GreaterEqual}",
+          "description": "Greater than or equal"
+        }
+      ]
+    },
+    "calculus_first_class": {
+      "latex": [
+        {
+          "input": "\\int x dx",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+          "description": "Indefinite integral"
+        },
+        {
+          "input": "\\int_0^1 x dx",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+          "description": "Definite integral"
+        },
+        {
+          "input": "\\frac{d}{dx} x^2",
+          "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+          "description": "First derivative"
+        },
+        {
+          "input": "\\frac{d^2}{dx^2} x^3",
+          "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(3))))), variable: Symbol{name:x}, order: 2}",
+          "description": "Second derivative"
+        },
+        {
+          "input": "\\lim_{x \\to 0} \\sin x",
+          "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+          "description": "Limit"
+        },
+        {
+          "input": "\\sum_{i=1}^n i^2",
+          "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Summation"
+        },
+        {
+          "input": "\\prod_{i=1}^n i",
+          "expected_expr": "Product{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Product"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Integrate[x, x]",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+          "description": "Indefinite integral"
+        },
+        {
+          "input": "Integrate[x, {x, 0, 1}]",
+          "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+          "description": "Definite integral"
+        },
+        {
+          "input": "D[x^2, x]",
+          "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+          "description": "First derivative"
+        },
+        {
+          "input": "D[x^3, {x, 2}]",
+          "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(3))))), variable: Symbol{name:x}, order: 2}",
+          "description": "Second derivative"
+        },
+        {
+          "input": "Limit[Sin[x], x -> 0]",
+          "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+          "description": "Limit"
+        },
+        {
+          "input": "Sum[i^2, {i, 1, n}]",
+          "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Summation"
+        },
+        {
+          "input": "Product[i, {i, 1, n}]",
+          "expected_expr": "Product{expression: Box(Symbol(Symbol{name:i})), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+          "description": "Product"
+        }
+      ]
+    },
+    "piecewise_functions": {
+      "latex": [
+        {
+          "input": "\\begin{cases} x & \\text{if } x > 0 \\\\ -x & \\text{if } x \\leq 0 \\end{cases}",
+          "expected_expr": "Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Greater}, Symbol(Symbol{name:x})), (Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: LessEqual}, Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])))])}",
+          "description": "Absolute value as piecewise"
+        },
+        {
+          "input": "f(x) = \\begin{cases} 1 & \\text{if } x = 0 \\\\ 0 & \\text{otherwise} \\end{cases}",
+          "expected_expr": "Relation{left: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), right: Box(Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Equal}, Number(SmallInt(1)))]), default: Some(Box(Number(SmallInt(0))))}), relation_type: Equal}",
+          "description": "Function definition with piecewise"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "Piecewise[{{x, x > 0}, {-x, x <= 0}}]",
+          "expected_expr": "Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Greater}, Symbol(Symbol{name:x})), (Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: LessEqual}, Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])))])}",
+          "description": "Absolute value as piecewise"
+        },
+        {
+          "input": "f[x_] := Piecewise[{{1, x == 0}}, 0]",
+          "expected_expr": "Relation{left: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), right: Box(Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Equal}, Number(SmallInt(1)))]), default: Some(Box(Number(SmallInt(0))))}), relation_type: Equal}",
+          "description": "Function definition with piecewise"
+        }
+      ]
+    },
+
+    "complex_expressions": {
+      "latex": [
+        {
+          "input": "\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+          "expected_expr": "Mul(Box([Add(Box([Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:b})])), Function{name:pm, args:Box([Pow(Box(Add(Box([Pow(Box(Symbol(Symbol{name:b})), Box(Number(SmallInt(2)))), Mul(Box([Number(SmallInt(-4)), Symbol(Symbol{name:a}), Symbol(Symbol{name:c})]))]))), Box(Number(Rational(1, 2))))])}])), Pow(Box(Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:a})]))), Box(Number(SmallInt(-1))))]))",
+          "description": "Quadratic formula with plus-minus"
+        },
+        {
+          "input": "\\sum_{n=0}^{\\infty} \\frac{x^n}{n!}",
+          "expected_expr": "Sum{expression: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:n}))), Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+          "description": "Exponential series - FIRST CLASS SUM"
+        },
+        {
+          "input": "\\int_0^{2\\pi} \\sin^2(x) dx",
+          "expected_expr": "Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Mul(Box([Number(SmallInt(2)), Constant(Pi)])))))}",
+          "description": "Definite integral with trig - FIRST CLASS"
+        },
+        {
+          "input": "\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n",
+          "expected_expr": "Limit{expression: Box(Pow(Box(Add(Box([Number(SmallInt(1)), Pow(Box(Symbol(Symbol{name:n})), Box(Number(SmallInt(-1))))]))), Box(Symbol(Symbol{name:n})))), variable: Symbol{name:n}, approach: Box(Constant(Infinity)), direction: Both}",
+          "description": "Limit definition of e - FIRST CLASS"
+        }
+      ],
+      "wolfram": [
+        {
+          "input": "(-b + Sqrt[b^2 - 4*a*c])/(2*a)",
+          "expected_expr": "Mul(Box([Add(Box([Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:b})])), Pow(Box(Add(Box([Pow(Box(Symbol(Symbol{name:b})), Box(Number(SmallInt(2)))), Mul(Box([Number(SmallInt(-4)), Symbol(Symbol{name:a}), Symbol(Symbol{name:c})]))]))), Box(Number(Rational(1, 2))))])), Pow(Box(Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:a})]))), Box(Number(SmallInt(-1))))]))",
+          "description": "Quadratic formula"
+        },
+        {
+          "input": "Sum[x^n/n!, {n, 0, Infinity}]",
+          "expected_expr": "Sum{expression: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:n}))), Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+          "description": "Exponential series - FIRST CLASS"
+        },
+        {
+          "input": "Integrate[Sin[x]^2, {x, 0, 2*Pi}]",
+          "expected_expr": "Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Mul(Box([Number(SmallInt(2)), Constant(Pi)])))))}",
+          "description": "Definite integral - FIRST CLASS"
+        },
+        {
+          "input": "Limit[(1 + 1/n)^n, n -> Infinity]",
+          "expected_expr": "Limit{expression: Box(Pow(Box(Add(Box([Number(SmallInt(1)), Pow(Box(Symbol(Symbol{name:n})), Box(Number(SmallInt(-1))))]))), Box(Symbol(Symbol{name:n})))), variable: Symbol{name:n}, approach: Box(Constant(Infinity)), direction: Both}",
+          "description": "Limit definition of e - FIRST CLASS"
+        }
+      ]
+    }
+  },
+  "stress_tests": {
+    "deeply_nested": [
+      {
+        "latex": "\\frac{\\frac{\\frac{x}{y}}{z}}{w}",
+        "wolfram": "((x/y)/z)/w",
+        "description": "Deeply nested fractions"
+      },
+      {
+        "latex": "\\sin(\\cos(\\tan(x)))",
+        "wolfram": "Sin[Cos[Tan[x]]]",
+        "description": "Nested functions"
+      },
+      {
+        "latex": "\\left(\\left(x + 1\\right)^2 + 2\\right)^3",
+        "wolfram": "((x + 1)^2 + 2)^3",
+        "description": "Nested powers"
+      }
+    ],
+    "large_expressions": [
+      {
+        "latex": "x^{10} + x^9 + x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x + 1",
+        "wolfram": "x^10 + x^9 + x^8 + x^7 + x^6 + x^5 + x^4 + x^3 + x^2 + x + 1",
+        "description": "Large polynomial"
+      },
+      {
+        "latex": "\\prod_{i=1}^{100} (x + i)",
+        "wolfram": "Product[x + i, {i, 1, 100}]",
+        "description": "Large product"
+      }
+    ],
+    "edge_cases": [
+      {
+        "latex": "",
+        "wolfram": "",
+        "description": "Empty input",
+        "should_error": true
+      },
+      {
+        "latex": "\\frac{1}{0}",
+        "wolfram": "1/0",
+        "description": "Division by zero",
+        "should_error": false
+      },
+      {
+        "latex": "\\sqrt{-1}",
+        "wolfram": "Sqrt[-1]",
+        "description": "Complex numbers"
+      },
+      {
+        "latex": "0^0",
+        "wolfram": "0^0",
+        "description": "Indeterminate form"
+      }
+    ]
+  }
+}

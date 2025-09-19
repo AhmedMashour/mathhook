@@ -1,6 +1,6 @@
 //! Greatest Common Divisor operations for polynomials and expressions
 
-use crate::core::{Number, Expression};
+use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::One; // For GCD on BigInt
@@ -17,10 +17,8 @@ impl PolynomialGcd for Expression {
     #[inline(always)]
     fn gcd(&self, other: &Self) -> Self {
         // Numeric GCD (most common case)
-        if let (
-            Expression::Number(Number::SmallInt(a)),
-            Expression::Number(Number::SmallInt(b)),
-        ) = (self, other)
+        if let (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) =
+            (self, other)
         {
             return Expression::integer(a.gcd(b));
         }
@@ -156,9 +154,7 @@ impl Expression {
                 for factor in factors.iter() {
                     match factor {
                         Expression::Number(Number::SmallInt(n)) => return BigInt::from(*n),
-                        Expression::Number(Number::BigInteger(n)) => {
-                            return n.as_ref().clone()
-                        }
+                        Expression::Number(Number::BigInteger(n)) => return n.as_ref().clone(),
                         _ => {}
                     }
                 }
@@ -232,10 +228,9 @@ impl Expression {
     fn is_multiple_of(&self, other: &Self) -> bool {
         match (self, other) {
             (Expression::Mul(factors), single) => factors.contains(single),
-            (
-                Expression::Number(Number::SmallInt(a)),
-                Expression::Number(Number::SmallInt(b)),
-            ) => *b != 0 && (a % b) == 0,
+            (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) => {
+                *b != 0 && (a % b) == 0
+            }
             _ => false,
         }
     }
@@ -266,6 +261,8 @@ impl Expression {
             Expression::Function { args, .. } => {
                 1 + args.iter().map(|a| a.complexity()).sum::<usize>()
             }
+            // New expression types - implement later
+            _ => 1,
         }
     }
 }

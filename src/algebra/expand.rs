@@ -30,6 +30,8 @@ impl Expand for Expression {
                 let expanded_args: Vec<Expression> = args.iter().map(|arg| arg.expand()).collect();
                 Expression::function(name.clone(), expanded_args)
             }
+            // New expression types - implement later
+            _ => self.clone(),
         }
     }
 }

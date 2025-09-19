@@ -1,9 +1,31 @@
 //! Parsing module for mathematical expressions and LaTeX input
 //! Handles conversion between string representations and Expression objects
 
+// Parser constants and patterns
+pub mod constants;
+
+// Focused parser modules
+pub mod latex_parser;
+pub mod wolfram_parser;
+
+// Universal parser for comprehensive language support
+pub mod universal;
+
+// Serialization API for mathematical expressions
+pub mod serialize;
+
+// Convenient macros for expression creation and parsing
+pub mod macros;
+
 use crate::core::{Expression, Number, Symbol};
 use num_traits::One;
 use std::collections::HashMap;
+
+// Re-exports for easy access
+pub use latex_parser::LaTeXParser;
+pub use serialize::{ExpressionData, MathSerializer, SerializationError};
+pub use universal::{MathLanguage, UniversalParser};
+pub use wolfram_parser::WolframParser;
 
 /// Parser for mathematical expressions
 pub struct ExpressionParser {
@@ -548,6 +570,8 @@ impl Expression {
                     format!("{}\\left({}\\right)", formatted_name, arg_strs.join(", "))
                 }
             }
+            // New expression types - implement later
+            _ => "\\text{unknown}".to_string(),
         }
     }
 }

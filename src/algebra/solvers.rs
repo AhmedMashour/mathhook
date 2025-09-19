@@ -153,6 +153,55 @@ impl Expression {
             }
             Expression::Pow(base, exp) => base.is_valid_expression() && exp.is_valid_expression(),
             Expression::Function { args, .. } => args.iter().all(|a| a.is_valid_expression()),
+            // New expression types - basic validity checks
+            Expression::Complex { real, imag } => {
+                real.is_valid_expression() && imag.is_valid_expression()
+            }
+            Expression::Matrix(rows) => rows
+                .iter()
+                .all(|row| row.iter().all(|e| e.is_valid_expression())),
+            Expression::Constant(_) => true,
+            Expression::Relation { left, right, .. } => {
+                left.is_valid_expression() && right.is_valid_expression()
+            }
+            Expression::Piecewise { cases, default } => {
+                cases
+                    .iter()
+                    .all(|(cond, val)| cond.is_valid_expression() && val.is_valid_expression())
+                    && default.as_ref().map_or(true, |d| d.is_valid_expression())
+            }
+            Expression::Set(elements) => elements.iter().all(|e| e.is_valid_expression()),
+            Expression::Interval { start, end, .. } => {
+                start.is_valid_expression() && end.is_valid_expression()
+            }
+            // New calculus types - implement later
+            Expression::Derivative { expression, .. } => expression.is_valid_expression(),
+            Expression::Integral { integrand, .. } => integrand.is_valid_expression(),
+            Expression::Limit {
+                expression,
+                approach,
+                ..
+            } => expression.is_valid_expression() && approach.is_valid_expression(),
+            Expression::Sum {
+                expression,
+                start,
+                end,
+                ..
+            } => {
+                expression.is_valid_expression()
+                    && start.is_valid_expression()
+                    && end.is_valid_expression()
+            }
+            Expression::Product {
+                expression,
+                start,
+                end,
+                ..
+            } => {
+                expression.is_valid_expression()
+                    && start.is_valid_expression()
+                    && end.is_valid_expression()
+            }
         }
     }
 
@@ -176,6 +225,8 @@ impl Expression {
                 let arg_strs: Vec<String> = args.iter().map(|a| format!("{}", a)).collect();
                 format!("\\{}({})", name, arg_strs.join(", "))
             }
+            // New expression types - implement later
+            _ => "\\text{unknown}".to_string(),
         }
     }
 }

@@ -35,6 +35,8 @@ impl Factor for Expression {
                 let factored_args: Vec<Expression> = args.iter().map(|arg| arg.factor()).collect();
                 Expression::function(name.clone(), factored_args)
             }
+            // New expression types - implement later
+            _ => self.clone(),
         }
     }
 

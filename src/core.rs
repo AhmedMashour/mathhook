@@ -12,7 +12,7 @@ pub mod simd_ops;
 
 // Re-exports for easy access
 pub use arena::ExpressionArena;
-pub use expression::Expression;
+pub use expression::{Expression, LimitDirection, MathConstant, RelationType};
 pub use number::Number;
 pub use simd_ops::SimdOptimized;
 pub use symbol::Symbol;

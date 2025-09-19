@@ -16,6 +16,19 @@ impl Simplify for Expression {
             Expression::Mul(factors) => self.simplify_multiplication(factors),
             Expression::Pow(base, exp) => self.simplify_power(base, exp),
             Expression::Function { .. } => self.clone(),
+            Expression::Complex { .. } => self.clone(),
+            Expression::Matrix(_) => self.clone(),
+            Expression::Constant(_) => self.clone(),
+            Expression::Relation { .. } => self.clone(),
+            Expression::Piecewise { .. } => self.clone(),
+            Expression::Set(_) => self.clone(),
+            Expression::Interval { .. } => self.clone(),
+            // New calculus types - implement later
+            Expression::Derivative { .. } => self.clone(),
+            Expression::Integral { .. } => self.clone(),
+            Expression::Limit { .. } => self.clone(),
+            Expression::Sum { .. } => self.clone(),
+            Expression::Product { .. } => self.clone(),
         }
     }
 }

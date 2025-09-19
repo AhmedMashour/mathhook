@@ -1,0 +1,466 @@
+[
+    {
+        "id": "basic_add_latex",
+        "language": "latex",
+        "category": "basic_arithmetic",
+        "input": "x + y",
+        "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+        "description": "Simple addition"
+    },
+    {
+        "id": "basic_sub_latex",
+        "language": "latex",
+        "category": "basic_arithmetic",
+        "input": "x - y",
+        "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:y})]))]))",
+        "description": "Subtraction"
+    },
+    {
+        "id": "basic_mul_latex",
+        "language": "latex",
+        "category": "basic_arithmetic",
+        "input": "x \\cdot y",
+        "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+        "description": "Multiplication"
+    },
+    {
+        "id": "basic_div_latex",
+        "language": "latex",
+        "category": "basic_arithmetic",
+        "input": "\\frac{x}{y}",
+        "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(-1))))]))",
+        "description": "Division as fraction"
+    },
+    {
+        "id": "implicit_mult_latex",
+        "language": "latex",
+        "category": "basic_arithmetic",
+        "input": "2x + 3y - 5",
+        "expected_expr": "Add(Box([Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:x})])), Mul(Box([Number(SmallInt(3)), Symbol(Symbol{name:y})])), Number(SmallInt(-5))]))",
+        "description": "Mixed operations with implicit multiplication"
+    },
+    {
+        "id": "basic_add_wolfram",
+        "language": "wolfram",
+        "category": "basic_arithmetic",
+        "input": "x + y",
+        "expected_expr": "Add(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+        "description": "Simple addition"
+    },
+    {
+        "id": "basic_mul_wolfram",
+        "language": "wolfram",
+        "category": "basic_arithmetic",
+        "input": "Times[x, y]",
+        "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})]))",
+        "description": "Times function"
+    },
+    {
+        "id": "basic_div_wolfram",
+        "language": "wolfram",
+        "category": "basic_arithmetic",
+        "input": "x / y",
+        "expected_expr": "Mul(Box([Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(-1))))]))",
+        "description": "Division"
+    },
+    {
+        "id": "simple_fraction_latex",
+        "language": "latex",
+        "category": "fractions",
+        "input": "\\frac{1}{2}",
+        "expected_expr": "Number(Rational(1/2))",
+        "description": "Simple fraction"
+    },
+    {
+        "id": "simple_power_latex",
+        "language": "latex",
+        "category": "powers_roots",
+        "input": "x^2",
+        "expected_expr": "Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))",
+        "description": "Simple power"
+    },
+    {
+        "id": "sqrt_latex",
+        "language": "latex",
+        "category": "powers_roots",
+        "input": "\\sqrt{x}",
+        "expected_expr": "Pow(Box(Symbol(Symbol{name:x})), Box(Number(Rational(1/2))))",
+        "description": "Square root"
+    },
+    {
+        "id": "exponential_latex",
+        "language": "latex",
+        "category": "powers_roots",
+        "input": "e^x",
+        "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+        "description": "Exponential with e constant"
+    },
+    {
+        "id": "simple_power_wolfram",
+        "language": "wolfram",
+        "category": "powers_roots",
+        "input": "x^2",
+        "expected_expr": "Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))",
+        "description": "Simple power"
+    },
+    {
+        "id": "sqrt_wolfram",
+        "language": "wolfram",
+        "category": "powers_roots",
+        "input": "Sqrt[x]",
+        "expected_expr": "Pow(Box(Symbol(Symbol{name:x})), Box(Number(Rational(1/2))))",
+        "description": "Square root"
+    },
+    {
+        "id": "exponential_wolfram",
+        "language": "wolfram",
+        "category": "powers_roots",
+        "input": "Exp[x]",
+        "expected_expr": "Pow(Box(Constant(E)), Box(Symbol(Symbol{name:x})))",
+        "description": "Exponential function"
+    },
+    {
+        "id": "sin_latex",
+        "language": "latex",
+        "category": "trigonometric",
+        "input": "\\sin(x)",
+        "expected_expr": "Function{name:sin, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Sine function"
+    },
+    {
+        "id": "cos_latex",
+        "language": "latex",
+        "category": "trigonometric",
+        "input": "\\cos(x)",
+        "expected_expr": "Function{name:cos, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cosine function"
+    },
+    {
+        "id": "sin_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric",
+        "input": "Sin[x]",
+        "expected_expr": "Function{name:sin, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Sine function"
+    },
+    {
+        "id": "cos_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric",
+        "input": "Cos[x]",
+        "expected_expr": "Function{name:cos, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cosine function"
+    },
+    {
+        "id": "ln_latex",
+        "language": "latex",
+        "category": "logarithmic",
+        "input": "\\ln(x)",
+        "expected_expr": "Function{name:ln, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Natural logarithm"
+    },
+    {
+        "id": "log_latex",
+        "language": "latex",
+        "category": "logarithmic",
+        "input": "\\log(x)",
+        "expected_expr": "Function{name:log, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Common logarithm"
+    },
+    {
+        "id": "ln_wolfram",
+        "language": "wolfram",
+        "category": "logarithmic",
+        "input": "Log[x]",
+        "expected_expr": "Function{name:ln, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Natural logarithm"
+    },
+    {
+        "id": "pi_constant_latex",
+        "language": "latex",
+        "category": "mathematical_constants",
+        "input": "\\pi",
+        "expected_expr": "Constant(Pi)",
+        "description": "Pi constant"
+    },
+    {
+        "id": "e_constant_latex",
+        "language": "latex",
+        "category": "mathematical_constants",
+        "input": "e",
+        "expected_expr": "Constant(E)",
+        "description": "Euler's number"
+    },
+    {
+        "id": "i_constant_latex",
+        "language": "latex",
+        "category": "mathematical_constants",
+        "input": "i",
+        "expected_expr": "Constant(I)",
+        "description": "Imaginary unit"
+    },
+    {
+        "id": "infinity_latex",
+        "language": "latex",
+        "category": "mathematical_constants",
+        "input": "\\infty",
+        "expected_expr": "Constant(Infinity)",
+        "description": "Infinity"
+    },
+    {
+        "id": "pi_constant_wolfram",
+        "language": "wolfram",
+        "category": "mathematical_constants",
+        "input": "Pi",
+        "expected_expr": "Constant(Pi)",
+        "description": "Pi constant"
+    },
+    {
+        "id": "e_constant_wolfram",
+        "language": "wolfram",
+        "category": "mathematical_constants",
+        "input": "E",
+        "expected_expr": "Constant(E)",
+        "description": "Euler's number"
+    },
+    {
+        "id": "i_constant_wolfram",
+        "language": "wolfram",
+        "category": "mathematical_constants",
+        "input": "I",
+        "expected_expr": "Constant(I)",
+        "description": "Imaginary unit"
+    },
+    {
+        "id": "complex_number_latex",
+        "language": "latex",
+        "category": "complex_numbers",
+        "input": "3 + 4i",
+        "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+        "description": "Complex number"
+    },
+    {
+        "id": "complex_number_wolfram",
+        "language": "wolfram",
+        "category": "complex_numbers",
+        "input": "3 + 4*I",
+        "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+        "description": "Complex number"
+    },
+    {
+        "id": "derivative_latex",
+        "language": "latex",
+        "category": "calculus_first_class",
+        "input": "\\frac{d}{dx} x^2",
+        "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+        "description": "First derivative - FIRST CLASS"
+    },
+    {
+        "id": "integral_latex",
+        "language": "latex",
+        "category": "calculus_first_class",
+        "input": "\\int x dx",
+        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+        "description": "Indefinite integral - FIRST CLASS"
+    },
+    {
+        "id": "definite_integral_latex",
+        "language": "latex",
+        "category": "calculus_first_class",
+        "input": "\\int_0^1 x dx",
+        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+        "description": "Definite integral - FIRST CLASS"
+    },
+    {
+        "id": "limit_latex",
+        "language": "latex",
+        "category": "calculus_first_class",
+        "input": "\\lim_{x \\to 0} \\sin x",
+        "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+        "description": "Limit - FIRST CLASS"
+    },
+    {
+        "id": "sum_latex",
+        "language": "latex",
+        "category": "calculus_first_class",
+        "input": "\\sum_{i=1}^n i^2",
+        "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+        "description": "Summation - FIRST CLASS"
+    },
+    {
+        "id": "derivative_wolfram",
+        "language": "wolfram",
+        "category": "calculus_first_class",
+        "input": "D[x^2, x]",
+        "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+        "description": "First derivative - FIRST CLASS"
+    },
+    {
+        "id": "integral_wolfram",
+        "language": "wolfram",
+        "category": "calculus_first_class",
+        "input": "Integrate[x, x]",
+        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+        "description": "Indefinite integral - FIRST CLASS"
+    },
+    {
+        "id": "definite_integral_wolfram",
+        "language": "wolfram",
+        "category": "calculus_first_class",
+        "input": "Integrate[x, {x, 0, 1}]",
+        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+        "description": "Definite integral - FIRST CLASS"
+    },
+    {
+        "id": "limit_wolfram",
+        "language": "wolfram",
+        "category": "calculus_first_class",
+        "input": "Limit[Sin[x], x -> 0]",
+        "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+        "description": "Limit - FIRST CLASS"
+    },
+    {
+        "id": "sum_wolfram",
+        "language": "wolfram",
+        "category": "calculus_first_class",
+        "input": "Sum[i^2, {i, 1, n}]",
+        "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+        "description": "Summation - FIRST CLASS"
+    },
+    {
+        "id": "matrix_latex",
+        "language": "latex",
+        "category": "matrices_vectors",
+        "input": "\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}",
+        "expected_expr": "Matrix(Box([[Number(SmallInt(1)), Number(SmallInt(2))], [Number(SmallInt(3)), Number(SmallInt(4))]]))",
+        "description": "2x2 matrix"
+    },
+    {
+        "id": "matrix_wolfram",
+        "language": "wolfram",
+        "category": "matrices_vectors",
+        "input": "{{1, 2}, {3, 4}}",
+        "expected_expr": "Matrix(Box([[Number(SmallInt(1)), Number(SmallInt(2))], [Number(SmallInt(3)), Number(SmallInt(4))]]))",
+        "description": "2x2 matrix"
+    },
+    {
+        "id": "set_latex",
+        "language": "latex",
+        "category": "sets_intervals",
+        "input": "\\{1, 2, 3\\}",
+        "expected_expr": "Set(Box([Number(SmallInt(1)), Number(SmallInt(2)), Number(SmallInt(3))]))",
+        "description": "Finite set"
+    },
+    {
+        "id": "interval_closed_latex",
+        "language": "latex",
+        "category": "sets_intervals",
+        "input": "[0, 1]",
+        "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: true, end_inclusive: true}",
+        "description": "Closed interval"
+    },
+    {
+        "id": "interval_open_latex",
+        "language": "latex",
+        "category": "sets_intervals",
+        "input": "(0, 1)",
+        "expected_expr": "Interval{start: Box(Number(SmallInt(0))), end: Box(Number(SmallInt(1))), start_inclusive: false, end_inclusive: false}",
+        "description": "Open interval"
+    },
+    {
+        "id": "set_wolfram",
+        "language": "wolfram",
+        "category": "sets_intervals",
+        "input": "{1, 2, 3}",
+        "expected_expr": "Set(Box([Number(SmallInt(1)), Number(SmallInt(2)), Number(SmallInt(3))]))",
+        "description": "Finite set"
+    },
+    {
+        "id": "equation_latex",
+        "language": "latex",
+        "category": "equations_relations",
+        "input": "x = 5",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(5))), relation_type: Equal}",
+        "description": "Simple equation"
+    },
+    {
+        "id": "inequality_latex",
+        "language": "latex",
+        "category": "equations_relations",
+        "input": "x < y",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Symbol(Symbol{name:y})), relation_type: Less}",
+        "description": "Less than inequality"
+    },
+    {
+        "id": "equation_wolfram",
+        "language": "wolfram",
+        "category": "equations_relations",
+        "input": "x == 5",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(5))), relation_type: Equal}",
+        "description": "Simple equation"
+    },
+    {
+        "id": "special_gamma_latex",
+        "language": "latex",
+        "category": "special_functions",
+        "input": "\\Gamma(x)",
+        "expected_expr": "Function{name:gamma, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Gamma function"
+    },
+    {
+        "id": "special_gamma_wolfram",
+        "language": "wolfram",
+        "category": "special_functions",
+        "input": "Gamma[x]",
+        "expected_expr": "Function{name:gamma, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Gamma function"
+    },
+    {
+        "id": "piecewise_latex",
+        "language": "latex",
+        "category": "piecewise_functions",
+        "input": "\\begin{cases} x & \\text{if } x > 0 \\\\ -x & \\text{if } x \\leq 0 \\end{cases}",
+        "expected_expr": "Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Greater}, Symbol(Symbol{name:x})), (Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: LessEqual}, Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])))])}",
+        "description": "Absolute value as piecewise"
+    },
+    {
+        "id": "piecewise_wolfram",
+        "language": "wolfram",
+        "category": "piecewise_functions",
+        "input": "Piecewise[{{x, x > 0}, {-x, x <= 0}}]",
+        "expected_expr": "Piecewise{cases: Box([(Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: Greater}, Symbol(Symbol{name:x})), (Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Number(SmallInt(0))), relation_type: LessEqual}, Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x})])))])}",
+        "description": "Absolute value as piecewise"
+    },
+    {
+        "id": "quadratic_formula_latex",
+        "language": "latex",
+        "category": "complex_expressions",
+        "input": "\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+        "expected_expr": "Mul(Box([Add(Box([Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:b})])), Function{name:pm, args:Box([Pow(Box(Add(Box([Pow(Box(Symbol(Symbol{name:b})), Box(Number(SmallInt(2)))), Mul(Box([Number(SmallInt(-4)), Symbol(Symbol{name:a}), Symbol(Symbol{name:c})]))]))), Box(Number(Rational(1, 2))))])}])), Pow(Box(Mul(Box([Number(SmallInt(2)), Symbol(Symbol{name:a})]))), Box(Number(SmallInt(-1))))]))",
+        "description": "Quadratic formula with plus-minus"
+    },
+    {
+        "id": "exponential_series_latex",
+        "language": "latex",
+        "category": "complex_expressions",
+        "input": "\\sum_{n=0}^{\\infty} \\frac{x^n}{n!}",
+        "expected_expr": "Sum{expression: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:n}))), Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Exponential series - FIRST CLASS SUM"
+    },
+    {
+        "id": "definite_integral_trig_latex",
+        "language": "latex",
+        "category": "complex_expressions",
+        "input": "\\int_0^{2\\pi} \\sin^2(x) dx",
+        "expected_expr": "Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Mul(Box([Number(SmallInt(2)), Constant(Pi)])))))}",
+        "description": "Definite integral with trig - FIRST CLASS"
+    },
+    {
+        "id": "limit_definition_e_latex",
+        "language": "latex",
+        "category": "complex_expressions",
+        "input": "\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n",
+        "expected_expr": "Limit{expression: Box(Pow(Box(Add(Box([Number(SmallInt(1)), Pow(Box(Symbol(Symbol{name:n})), Box(Number(SmallInt(-1))))]))), Box(Symbol(Symbol{name:n})))), variable: Symbol{name:n}, approach: Box(Constant(Infinity)), direction: Both}",
+        "description": "Limit definition of e - FIRST CLASS"
+    }
+]

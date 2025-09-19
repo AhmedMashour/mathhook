@@ -388,6 +388,20 @@ impl Expression {
             }
             Expression::Pow(base, exp) => self.is_constant(base) && self.is_constant(exp),
             Expression::Function { args, .. } => args.iter().all(|a| self.is_constant(a)),
+            // New expression types - implement later
+            Expression::Complex { .. } => true,
+            Expression::Matrix(_) => false,
+            Expression::Constant(_) => true,
+            Expression::Relation { .. } => false,
+            Expression::Piecewise { .. } => false,
+            Expression::Set(_) => false,
+            Expression::Interval { .. } => true,
+            // New calculus types - implement later
+            Expression::Derivative { .. } => false,
+            Expression::Integral { .. } => false,
+            Expression::Limit { .. } => false,
+            Expression::Sum { .. } => false,
+            Expression::Product { .. } => false,
         }
     }
 }

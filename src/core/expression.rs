@@ -5,6 +5,46 @@ use crate::core::{Number, Symbol};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
+/// Mathematical constants
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum MathConstant {
+    /// Pi (π)
+    Pi,
+    /// Euler's number (e)
+    E,
+    /// Imaginary unit (i)
+    I,
+    /// Positive infinity (∞)
+    Infinity,
+    /// Negative infinity (-∞)
+    NegInfinity,
+    /// Undefined/NaN
+    Undefined,
+    /// Golden ratio (φ)
+    GoldenRatio,
+    /// Euler-Mascheroni constant (γ)
+    EulerGamma,
+}
+
+/// Relation types for equations and inequalities
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum RelationType {
+    /// Equal (=)
+    Equal,
+    /// Not equal (≠)
+    NotEqual,
+    /// Less than (<)
+    Less,
+    /// Greater than (>)
+    Greater,
+    /// Less than or equal (≤)
+    LessEqual,
+    /// Greater than or equal (≥)
+    GreaterEqual,
+    /// Approximately equal (≈)
+    Approximately,
+}
+
 /// Expression with 32-byte optimization
 /// Memory-optimized with boxed vectors for cache
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -24,6 +64,79 @@ pub enum Expression {
         name: String,
         args: Box<Vec<Expression>>,
     },
+    /// Complex number representation
+    Complex {
+        real: Box<Expression>,
+        imag: Box<Expression>,
+    },
+    /// Matrix representation
+    Matrix(Box<Vec<Vec<Expression>>>),
+    /// Mathematical constants
+    Constant(MathConstant),
+    /// Equations and relations
+    Relation {
+        left: Box<Expression>,
+        right: Box<Expression>,
+        relation_type: RelationType,
+    },
+    /// Piecewise functions
+    Piecewise {
+        cases: Box<Vec<(Expression, Expression)>>, // (condition, value)
+        default: Option<Box<Expression>>,
+    },
+    /// Set representation
+    Set(Box<Vec<Expression>>),
+    /// Interval notation
+    Interval {
+        start: Box<Expression>,
+        end: Box<Expression>,
+        start_inclusive: bool,
+        end_inclusive: bool,
+    },
+    /// Derivative
+    Derivative {
+        expression: Box<Expression>,
+        variable: Symbol,
+        order: u32,
+    },
+    /// Integral
+    Integral {
+        integrand: Box<Expression>,
+        variable: Symbol,
+        bounds: Option<(Box<Expression>, Box<Expression>)>, // None = indefinite, Some = definite
+    },
+    /// Limit
+    Limit {
+        expression: Box<Expression>,
+        variable: Symbol,
+        approach: Box<Expression>,
+        direction: LimitDirection,
+    },
+    /// Summation
+    Sum {
+        expression: Box<Expression>,
+        variable: Symbol,
+        start: Box<Expression>,
+        end: Box<Expression>,
+    },
+    /// Product
+    Product {
+        expression: Box<Expression>,
+        variable: Symbol,
+        start: Box<Expression>,
+        end: Box<Expression>,
+    },
+}
+
+/// Direction for limits
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum LimitDirection {
+    /// Approach from both sides
+    Both,
+    /// Approach from the left
+    Left,
+    /// Approach from the right
+    Right,
 }
 
 impl Expression {
@@ -87,6 +200,180 @@ impl Expression {
         Self::Function {
             name: name.into(),
             args: Box::new(args),
+        }
+    }
+
+    /// Create a complex number expression
+    #[inline]
+    pub fn complex(real: Expression, imag: Expression) -> Self {
+        Self::Complex {
+            real: Box::new(real),
+            imag: Box::new(imag),
+        }
+    }
+
+    /// Create a matrix expression
+    #[inline]
+    pub fn matrix(rows: Vec<Vec<Expression>>) -> Self {
+        Self::Matrix(Box::new(rows))
+    }
+
+    /// Create a mathematical constant
+    #[inline(always)]
+    pub fn constant(constant: MathConstant) -> Self {
+        Self::Constant(constant)
+    }
+
+    /// Create pi constant
+    #[inline(always)]
+    pub fn pi() -> Self {
+        Self::Constant(MathConstant::Pi)
+    }
+
+    /// Create e constant
+    #[inline(always)]
+    pub fn e() -> Self {
+        Self::Constant(MathConstant::E)
+    }
+
+    /// Create imaginary unit i
+    #[inline(always)]
+    pub fn i() -> Self {
+        Self::Constant(MathConstant::I)
+    }
+
+    /// Create infinity
+    #[inline(always)]
+    pub fn infinity() -> Self {
+        Self::Constant(MathConstant::Infinity)
+    }
+
+    /// Create an equation (relation)
+    #[inline]
+    pub fn equation(left: Expression, right: Expression) -> Self {
+        Self::Relation {
+            left: Box::new(left),
+            right: Box::new(right),
+            relation_type: RelationType::Equal,
+        }
+    }
+
+    /// Create a relation with specific type
+    #[inline]
+    pub fn relation(left: Expression, right: Expression, relation_type: RelationType) -> Self {
+        Self::Relation {
+            left: Box::new(left),
+            right: Box::new(right),
+            relation_type,
+        }
+    }
+
+    /// Create a set
+    #[inline]
+    pub fn set(elements: Vec<Expression>) -> Self {
+        Self::Set(Box::new(elements))
+    }
+
+    /// Create an interval
+    #[inline]
+    pub fn interval(
+        start: Expression,
+        end: Expression,
+        start_inclusive: bool,
+        end_inclusive: bool,
+    ) -> Self {
+        Self::Interval {
+            start: Box::new(start),
+            end: Box::new(end),
+            start_inclusive,
+            end_inclusive,
+        }
+    }
+
+    /// Create a piecewise function
+    #[inline]
+    pub fn piecewise(cases: Vec<(Expression, Expression)>, default: Option<Expression>) -> Self {
+        Self::Piecewise {
+            cases: Box::new(cases),
+            default: default.map(Box::new),
+        }
+    }
+
+    /// Create a derivative
+    #[inline]
+    pub fn derivative(expression: Expression, variable: Symbol, order: u32) -> Self {
+        Self::Derivative {
+            expression: Box::new(expression),
+            variable,
+            order,
+        }
+    }
+
+    /// Create an indefinite integral
+    #[inline]
+    pub fn integral(integrand: Expression, variable: Symbol) -> Self {
+        Self::Integral {
+            integrand: Box::new(integrand),
+            variable,
+            bounds: None,
+        }
+    }
+
+    /// Create a definite integral
+    #[inline]
+    pub fn definite_integral(
+        integrand: Expression,
+        variable: Symbol,
+        start: Expression,
+        end: Expression,
+    ) -> Self {
+        Self::Integral {
+            integrand: Box::new(integrand),
+            variable,
+            bounds: Some((Box::new(start), Box::new(end))),
+        }
+    }
+
+    /// Create a limit
+    #[inline]
+    pub fn limit(expression: Expression, variable: Symbol, approach: Expression) -> Self {
+        Self::Limit {
+            expression: Box::new(expression),
+            variable,
+            approach: Box::new(approach),
+            direction: LimitDirection::Both,
+        }
+    }
+
+    /// Create a summation
+    #[inline]
+    pub fn sum(
+        expression: Expression,
+        variable: Symbol,
+        start: Expression,
+        end: Expression,
+    ) -> Self {
+        Self::Sum {
+            expression: Box::new(expression),
+            variable,
+            start: Box::new(start),
+            end: Box::new(end),
+        }
+    }
+
+    /// Create a product
+    #[inline]
+    pub fn product(
+        expression: Expression,
+        variable: Symbol,
+        start: Expression,
+        end: Expression,
+    ) -> Self {
+        Self::Product {
+            expression: Box::new(expression),
+            variable,
+            start: Box::new(start),
+            end: Box::new(end),
         }
     }
 
@@ -172,6 +459,168 @@ impl fmt::Display for Expression {
                     write!(f, "{}", arg)?;
                 }
                 write!(f, ")")
+            }
+            Expression::Complex { real, imag } => {
+                write!(f, "({} + {}i)", real, imag)
+            }
+            Expression::Matrix(rows) => {
+                write!(f, "[")?;
+                for (i, row) in rows.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, "; ")?;
+                    }
+                    write!(f, "[")?;
+                    for (j, elem) in row.iter().enumerate() {
+                        if j > 0 {
+                            write!(f, ", ")?;
+                        }
+                        write!(f, "{}", elem)?;
+                    }
+                    write!(f, "]")?;
+                }
+                write!(f, "]")
+            }
+            Expression::Constant(c) => match c {
+                MathConstant::Pi => write!(f, "π"),
+                MathConstant::E => write!(f, "e"),
+                MathConstant::I => write!(f, "i"),
+                MathConstant::Infinity => write!(f, "∞"),
+                MathConstant::NegInfinity => write!(f, "-∞"),
+                MathConstant::Undefined => write!(f, "undefined"),
+                MathConstant::GoldenRatio => write!(f, "φ"),
+                MathConstant::EulerGamma => write!(f, "γ"),
+            },
+            Expression::Relation {
+                left,
+                right,
+                relation_type,
+            } => {
+                let symbol = match relation_type {
+                    RelationType::Equal => "=",
+                    RelationType::NotEqual => "≠",
+                    RelationType::Less => "<",
+                    RelationType::Greater => ">",
+                    RelationType::LessEqual => "≤",
+                    RelationType::GreaterEqual => "≥",
+                    RelationType::Approximately => "≈",
+                };
+                write!(f, "{} {} {}", left, symbol, right)
+            }
+            Expression::Set(elements) => {
+                write!(f, "{{")?;
+                for (i, elem) in elements.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", elem)?;
+                }
+                write!(f, "}}")
+            }
+            Expression::Interval {
+                start,
+                end,
+                start_inclusive,
+                end_inclusive,
+            } => {
+                let start_bracket = if *start_inclusive { "[" } else { "(" };
+                let end_bracket = if *end_inclusive { "]" } else { ")" };
+                write!(f, "{}{}, {}{}", start_bracket, start, end, end_bracket)
+            }
+            Expression::Piecewise { cases, default } => {
+                write!(f, "piecewise(")?;
+                for (i, (condition, value)) in cases.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{} if {}", value, condition)?;
+                }
+                if let Some(def) = default {
+                    write!(f, ", {} otherwise", def)?;
+                }
+                write!(f, ")")
+            }
+            Expression::Derivative {
+                expression,
+                variable,
+                order,
+            } => {
+                if *order == 1 {
+                    write!(f, "d/d{} ({})", variable.name(), expression)
+                } else {
+                    write!(
+                        f,
+                        "d^{}/d{}^{} ({})",
+                        order,
+                        variable.name(),
+                        order,
+                        expression
+                    )
+                }
+            }
+            Expression::Integral {
+                integrand,
+                variable,
+                bounds,
+            } => match bounds {
+                None => write!(f, "∫ {} d{}", integrand, variable.name()),
+                Some((start, end)) => write!(
+                    f,
+                    "∫[{} to {}] {} d{}",
+                    start,
+                    end,
+                    integrand,
+                    variable.name()
+                ),
+            },
+            Expression::Limit {
+                expression,
+                variable,
+                approach,
+                direction,
+            } => {
+                let dir_str = match direction {
+                    LimitDirection::Both => "",
+                    LimitDirection::Left => "⁻",
+                    LimitDirection::Right => "⁺",
+                };
+                write!(
+                    f,
+                    "lim({} → {}{}) {}",
+                    variable.name(),
+                    approach,
+                    dir_str,
+                    expression
+                )
+            }
+            Expression::Sum {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                write!(
+                    f,
+                    "Σ({}={} to {}) {}",
+                    variable.name(),
+                    start,
+                    end,
+                    expression
+                )
+            }
+            Expression::Product {
+                expression,
+                variable,
+                start,
+                end,
+            } => {
+                write!(
+                    f,
+                    "Π({}={} to {}) {}",
+                    variable.name(),
+                    start,
+                    end,
+                    expression
+                )
             }
         }
     }
