@@ -32,25 +32,77 @@ impl ExpressionParser {
 
     /// Preprocess input to normalize format
     fn preprocess_input(&self, input: &str) -> String {
-        input
+        let cleaned = input
             .trim()
             .replace(" ", "")
             .replace("**", "^")
             .replace("×", "*")
             .replace("÷", "/")
-            .replace("−", "-")
+            .replace("−", "-");
+
+        // Handle implicit multiplication (e.g., "2x" -> "2*x", "3xy" -> "3*x*y")
+        self.insert_implicit_multiplication(&cleaned)
     }
 
     /// Preprocess LaTeX input
-    fn preprocess_latex(&self, latex: &str) -> String {
-        latex
+    pub fn preprocess_latex(&self, latex: &str) -> String {
+        let cleaned = latex
             .trim()
             .replace("\\cdot", "*")
             .replace("\\times", "*")
             .replace("\\div", "/")
             .replace("\\pm", "+")
             .replace("\\mp", "-")
-            .replace(" ", "")
+            .replace(" ", "");
+
+        // Handle implicit multiplication in LaTeX too
+        self.insert_implicit_multiplication(&cleaned)
+    }
+
+    /// Insert multiplication operators for implicit multiplication
+    fn insert_implicit_multiplication(&self, input: &str) -> String {
+        let mut result = String::new();
+        let chars: Vec<char> = input.chars().collect();
+
+        for i in 0..chars.len() {
+            let current = chars[i];
+            result.push(current);
+
+            // Look ahead for implicit multiplication cases
+            if i < chars.len() - 1 {
+                let next = chars[i + 1];
+
+                // Cases where we need to insert '*':
+                // 1. Number followed by letter: "2x" -> "2*x"
+                // 2. Letter followed by letter: "xy" -> "x*y"
+                // 3. Number/letter followed by '(': "2(" -> "2*("
+                // 4. ')' followed by number/letter: ")x" -> ")*x"
+
+                let needs_multiplication = match (current, next) {
+                    // Number followed by letter
+                    (c1, c2) if c1.is_ascii_digit() && c2.is_alphabetic() => true,
+                    // Letter followed by letter (but not in same variable name)
+                    (c1, c2) if c1.is_alphabetic() && c2.is_alphabetic() => {
+                        // For now, treat consecutive letters as separate variables
+                        // Later we can add logic for multi-character variables
+                        true
+                    }
+                    // Number or letter followed by '('
+                    (c1, '(') if c1.is_alphanumeric() => true,
+                    // ')' followed by number or letter
+                    (')', c2) if c2.is_alphanumeric() => true,
+                    // ')' followed by '('
+                    (')', '(') => true,
+                    _ => false,
+                };
+
+                if needs_multiplication {
+                    result.push('*');
+                }
+            }
+        }
+
+        result
     }
 
     /// Parse expression from preprocessed string
@@ -59,40 +111,52 @@ impl ExpressionParser {
             return Err(ParseError::EmptyInput);
         }
 
-        if let Some(expr) = self.parse_parentheses(input)? {
-            return Ok(expr);
+        // Handle equations first (e.g., "2x + 3 = 0")
+        if let Some(eq_pos) = input.find('=') {
+            let left_side = &input[..eq_pos];
+            let right_side = &input[eq_pos + 1..];
+
+            let left_expr = self.parse_expression(left_side)?;
+            let right_expr = self.parse_expression(right_side)?;
+
+            // Convert equation to expression by moving everything to left side
+            // "a = b" becomes "a - b"
+            return Ok(Expression::add(vec![
+                left_expr,
+                Expression::mul(vec![Expression::integer(-1), right_expr]),
+            ]));
         }
 
-        if let Some(expr) = self.parse_addition(input)? {
-            return Ok(expr);
-        }
-
-        if let Some(expr) = self.parse_multiplication(input)? {
-            return Ok(expr);
-        }
-
-        if let Some(expr) = self.parse_exponentiation(input)? {
-            return Ok(expr);
-        }
-
-        if let Some(expr) = self.parse_function(input)? {
-            return Ok(expr);
-        }
-
-        self.parse_atom(input)
-    }
-
-    /// Parse parentheses
-    fn parse_parentheses(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
-        if input.starts_with('(') && input.ends_with(')') {
+        // Handle parentheses
+        if input.starts_with('(') && input.ends_with(')') && self.is_balanced_parentheses(input) {
             let inner = &input[1..input.len() - 1];
-            return Ok(Some(self.parse_expression(inner)?));
+            return self.parse_expression(inner);
         }
-        Ok(None)
+
+        // Parse with proper precedence: addition -> multiplication -> exponentiation -> atom
+        self.parse_addition_level(input)
     }
 
-    /// Parse addition and subtraction
-    fn parse_addition(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+    /// Check if parentheses are balanced and outer-most
+    fn is_balanced_parentheses(&self, input: &str) -> bool {
+        let mut depth = 0;
+        for (i, ch) in input.chars().enumerate() {
+            match ch {
+                '(' => depth += 1,
+                ')' => {
+                    depth -= 1;
+                    if depth == 0 && i < input.len() - 1 {
+                        return false; // Closes before the end
+                    }
+                }
+                _ => {}
+            }
+        }
+        depth == 0
+    }
+
+    /// Parse addition and subtraction (highest precedence level)
+    fn parse_addition_level(&mut self, input: &str) -> Result<Expression, ParseError> {
         let mut terms = Vec::new();
         let mut current_term = String::new();
         let mut paren_depth = 0;
@@ -112,17 +176,16 @@ impl ExpressionParser {
                 }
                 '+' if paren_depth == 0 => {
                     if !current_term.is_empty() {
-                        terms.push(self.parse_expression(&current_term)?);
+                        terms.push(self.parse_multiplication_level(&current_term)?);
                         current_term.clear();
                     }
                 }
                 '-' if paren_depth == 0 && i > 0 => {
                     if !current_term.is_empty() {
-                        terms.push(self.parse_expression(&current_term)?);
+                        terms.push(self.parse_multiplication_level(&current_term)?);
                         current_term.clear();
                     }
-                    // Look ahead to get the negative term
-                    i += 1;
+                    // Start negative term with minus sign
                     current_term.push('-');
                 }
                 _ => {
@@ -133,18 +196,20 @@ impl ExpressionParser {
         }
 
         if !current_term.is_empty() {
-            terms.push(self.parse_expression(&current_term)?);
+            terms.push(self.parse_multiplication_level(&current_term)?);
         }
 
         if terms.len() > 1 {
-            Ok(Some(Expression::add(terms)))
+            Ok(Expression::add(terms))
+        } else if terms.len() == 1 {
+            Ok(terms.into_iter().next().unwrap())
         } else {
-            Ok(None)
+            Err(ParseError::EmptyInput)
         }
     }
 
     /// Parse multiplication and division
-    fn parse_multiplication(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+    fn parse_multiplication_level(&mut self, input: &str) -> Result<Expression, ParseError> {
         let mut factors = Vec::new();
         let mut current_factor = String::new();
         let mut paren_depth = 0;
@@ -164,16 +229,16 @@ impl ExpressionParser {
                 }
                 '*' if paren_depth == 0 => {
                     if !current_factor.is_empty() {
-                        factors.push(self.parse_expression(&current_factor)?);
+                        factors.push(self.parse_exponentiation_level(&current_factor)?);
                         current_factor.clear();
                     }
                 }
                 '/' if paren_depth == 0 => {
                     if !current_factor.is_empty() {
-                        factors.push(self.parse_expression(&current_factor)?);
+                        factors.push(self.parse_exponentiation_level(&current_factor)?);
                         current_factor.clear();
                     }
-                    // Division: multiply by inverse (negative exponent)
+                    // Division: multiply by inverse
                     i += 1;
                     let mut divisor = String::new();
                     while i < input.len()
@@ -186,7 +251,7 @@ impl ExpressionParser {
                     i -= 1; // Back up one since the loop will increment
 
                     if !divisor.is_empty() {
-                        let divisor_expr = self.parse_expression(&divisor)?;
+                        let divisor_expr = self.parse_exponentiation_level(&divisor)?;
                         factors.push(Expression::pow(divisor_expr, Expression::integer(-1)));
                     }
                 }
@@ -198,33 +263,35 @@ impl ExpressionParser {
         }
 
         if !current_factor.is_empty() {
-            factors.push(self.parse_expression(&current_factor)?);
+            factors.push(self.parse_exponentiation_level(&current_factor)?);
         }
 
         if factors.len() > 1 {
-            Ok(Some(Expression::mul(factors)))
+            Ok(Expression::mul(factors))
+        } else if factors.len() == 1 {
+            Ok(factors.into_iter().next().unwrap())
         } else {
-            Ok(None)
+            Err(ParseError::EmptyInput)
         }
     }
 
     /// Parse exponentiation
-    fn parse_exponentiation(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+    fn parse_exponentiation_level(&mut self, input: &str) -> Result<Expression, ParseError> {
         if let Some(caret_pos) = input.find('^') {
             let base_str = &input[..caret_pos];
             let exp_str = &input[caret_pos + 1..];
 
-            let base = self.parse_expression(base_str)?;
-            let exp = self.parse_expression(exp_str)?;
+            let base = self.parse_atom_level(base_str)?;
+            let exp = self.parse_atom_level(exp_str)?;
 
-            Ok(Some(Expression::pow(base, exp)))
+            Ok(Expression::pow(base, exp))
         } else {
-            Ok(None)
+            self.parse_atom_level(input)
         }
     }
 
-    /// Parse function calls
-    fn parse_function(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
+    /// Try to parse function calls
+    fn try_parse_function(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
         if let Some(paren_pos) = input.find('(') {
             if paren_pos > 0 && input.ends_with(')') {
                 let func_name = &input[..paren_pos];
@@ -246,8 +313,45 @@ impl ExpressionParser {
         Ok(None)
     }
 
+    /// Parse atomic expressions (numbers, variables, functions)
+    fn parse_atom_level(&mut self, input: &str) -> Result<Expression, ParseError> {
+        // Handle parentheses at atom level
+        if input.starts_with('(') && input.ends_with(')') && self.is_balanced_parentheses(input) {
+            let inner = &input[1..input.len() - 1];
+            return self.parse_expression(inner);
+        }
+
+        // Try function first
+        if let Some(expr) = self.try_parse_function(input)? {
+            return Ok(expr);
+        }
+
+        self.parse_atom(input)
+    }
+
     /// Parse atomic expressions (numbers, variables)
     fn parse_atom(&mut self, input: &str) -> Result<Expression, ParseError> {
+        // Handle negative numbers
+        if input.starts_with('-') && input.len() > 1 {
+            let positive_part = &input[1..];
+            if let Ok(n) = positive_part.parse::<i64>() {
+                return Ok(Expression::integer(-n));
+            }
+            if let Ok(f) = positive_part.parse::<f64>() {
+                return Ok(Expression::number(Number::float(-f)));
+            }
+            // Negative variable: -x becomes -1*x
+            if positive_part.chars().all(|c| c.is_alphabetic() || c == '_') {
+                let symbol = Symbol::new(positive_part);
+                self.variables
+                    .insert(positive_part.to_string(), symbol.clone());
+                return Ok(Expression::mul(vec![
+                    Expression::integer(-1),
+                    Expression::symbol(symbol),
+                ]));
+            }
+        }
+
         if let Ok(n) = input.parse::<i64>() {
             return Ok(Expression::integer(n));
         }
@@ -453,7 +557,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[ignore] // TEMPORARILY DISABLED: Stack overflow in parsing - needs investigation
     fn test_basic_parsing() {
         let mut parser = ExpressionParser::new();
 
@@ -506,7 +609,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore] // TEMPORARILY DISABLED: Stack overflow in parsing - needs investigation
     fn test_complex_expression_parsing() {
         let mut parser = ExpressionParser::new();
 

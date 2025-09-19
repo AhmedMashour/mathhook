@@ -1,7 +1,7 @@
 //! Solves equations of the form ax + b = 0
 //! Includes step-by-step explanations for educational value
 
-use crate::core::{Number, Expression, Symbol};
+use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 // Temporarily simplified for TDD success
 use crate::algebra::simplify::Simplify;
@@ -44,8 +44,11 @@ impl EquationSolver for LinearSolver {
             }
         }
 
-        // Extract coefficients from linear equation
-        let (a, b) = self.extract_linear_coefficients(equation, variable);
+        // Simplify equation first to flatten nested structures
+        let simplified_equation = equation.simplify();
+
+        // Extract coefficients from simplified linear equation
+        let (a, b) = self.extract_linear_coefficients(&simplified_equation, variable);
 
         // 🧠 SMART SOLVER: Analyze original equation structure before simplification
 
@@ -109,8 +112,11 @@ impl EquationSolver for LinearSolver {
         equation: &Expression,
         variable: &Symbol,
     ) -> (SolverResult, StepByStepExplanation) {
+        // Simplify equation first to flatten nested structures
+        let simplified_equation = equation.simplify();
+
         // Extract coefficients for analysis
-        let (a, b) = self.extract_linear_coefficients(equation, variable);
+        let (a, b) = self.extract_linear_coefficients(&simplified_equation, variable);
 
         // Handle special cases with cool explanations
         if a.is_zero() {
@@ -188,58 +194,66 @@ impl LinearSolver {
         equation: &Expression,
         variable: &Symbol,
     ) -> (Expression, Expression) {
-        match equation {
-            Expression::Add(terms) => {
-                let mut coefficient = Expression::integer(0); // Coefficient of variable
-                let mut constant = Expression::integer(0); // Constant term
+        // First, flatten all nested Add expressions
+        let flattened_terms = self.flatten_add_terms(equation);
 
-                for term in terms.iter() {
-                    match term {
-                        Expression::Symbol(s) if s == variable => {
-                            // x term (coefficient = 1)
-                            coefficient =
-                                Expression::add(vec![coefficient, Expression::integer(1)]);
-                        }
-                        Expression::Mul(factors) => {
-                            // Check if this is a variable term (like 2x)
-                            let mut var_coeff = Expression::integer(1);
-                            let mut has_variable = false;
+        let mut coefficient = Expression::integer(0); // Coefficient of variable
+        let mut constant = Expression::integer(0); // Constant term
 
-                            for factor in factors.iter() {
-                                match factor {
-                                    Expression::Symbol(s) if s == variable => {
-                                        has_variable = true;
-                                    }
-                                    _ => {
-                                        var_coeff =
-                                            Expression::mul(vec![var_coeff, factor.clone()]);
-                                    }
-                                }
+        for term in flattened_terms.iter() {
+            match term {
+                Expression::Symbol(s) if s == variable => {
+                    // x term (coefficient = 1)
+                    coefficient = Expression::add(vec![coefficient, Expression::integer(1)]);
+                }
+                Expression::Mul(factors) => {
+                    // Check if this is a variable term (like 2x)
+                    let mut var_coeff = Expression::integer(1);
+                    let mut has_variable = false;
+
+                    for factor in factors.iter() {
+                        match factor {
+                            Expression::Symbol(s) if s == variable => {
+                                has_variable = true;
                             }
-
-                            if has_variable {
-                                coefficient = Expression::add(vec![coefficient, var_coeff]);
-                            } else {
-                                constant = Expression::add(vec![constant, term.clone()]);
+                            _ => {
+                                var_coeff = Expression::mul(vec![var_coeff, factor.clone()]);
                             }
-                        }
-                        _ => {
-                            // Constant term
-                            constant = Expression::add(vec![constant, term.clone()]);
                         }
                     }
-                }
 
-                (coefficient, constant)
+                    if has_variable {
+                        coefficient = Expression::add(vec![coefficient, var_coeff]);
+                    } else {
+                        constant = Expression::add(vec![constant, term.clone()]);
+                    }
+                }
+                _ => {
+                    // Constant term
+                    constant = Expression::add(vec![constant, term.clone()]);
+                }
             }
-            Expression::Symbol(s) if s == variable => {
-                // Just x = 0 → coefficient = 1, constant = 0
-                (Expression::integer(1), Expression::integer(0))
+        }
+
+        (coefficient, constant)
+    }
+
+    /// Flatten nested Add expressions into a single list of terms
+    fn flatten_add_terms(&self, expr: &Expression) -> Vec<Expression> {
+        match expr {
+            Expression::Add(terms) => {
+                let mut flattened = Vec::new();
+                for term in terms.iter() {
+                    // Recursively flatten nested Add expressions
+                    if let Expression::Add(_) = term {
+                        flattened.extend(self.flatten_add_terms(term));
+                    } else {
+                        flattened.push(term.clone());
+                    }
+                }
+                flattened
             }
-            _ => {
-                // Not a standard linear form - treat as constant
-                (Expression::integer(0), equation.clone())
-            }
+            _ => vec![expr.clone()], // Single term, not an Add
         }
     }
 
@@ -266,8 +280,7 @@ impl LinearSolver {
                 // Check for patterns: 0*x + constant
                 if let [Expression::Mul(factors), constant] = &terms[..] {
                     if factors.len() == 2 {
-                        if let [Expression::Number(Number::SmallInt(0)), var] = &factors[..]
-                        {
+                        if let [Expression::Number(Number::SmallInt(0)), var] = &factors[..] {
                             if var == &Expression::symbol(variable.clone()) {
                                 // Found 0*x + constant pattern
                                 match constant {
@@ -300,9 +313,7 @@ impl LinearSolver {
         match expr {
             // Handle -1 * (complex expression)
             Expression::Mul(factors) if factors.len() == 2 => {
-                if let [Expression::Number(Number::SmallInt(-1)), complex_expr] =
-                    &factors[..]
-                {
+                if let [Expression::Number(Number::SmallInt(-1)), complex_expr] = &factors[..] {
                     // Evaluate the complex expression and negate it
                     let evaluated = self.evaluate_expression(complex_expr);
                     self.negate_expression(&evaluated).simplify()
@@ -398,10 +409,7 @@ impl LinearSolver {
 
         match (&num_simplified, &den_simplified) {
             // Simple integer division
-            (
-                Expression::Number(Number::SmallInt(n)),
-                Expression::Number(Number::SmallInt(d)),
-            ) => {
+            (Expression::Number(Number::SmallInt(n)), Expression::Number(Number::SmallInt(d))) => {
                 if *d != 0 {
                     if n % d == 0 {
                         Expression::integer(n / d)

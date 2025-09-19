@@ -4,7 +4,7 @@
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::algebra::Simplify;
-use crate::core::{Number, Expression, Symbol};
+use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -22,8 +22,11 @@ impl QuadraticSolver {
 impl EquationSolver for QuadraticSolver {
     #[inline(always)]
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
+        // Simplify equation first to flatten nested structures
+        let simplified_equation = equation.simplify();
+
         // Extract coefficients from quadratic equation ax² + bx + c = 0
-        let (a, b, c) = self.extract_quadratic_coefficients(equation, variable);
+        let (a, b, c) = self.extract_quadratic_coefficients(&simplified_equation, variable);
 
         // Handle special cases
         let a_simplified = a.simplify();
@@ -82,94 +85,66 @@ impl QuadraticSolver {
         equation: &Expression,
         variable: &Symbol,
     ) -> (Expression, Expression, Expression) {
-        // For now, simplified implementation - extract from common patterns
-        match equation {
-            // Simple case: x² + bx + c or ax² + bx + c
-            Expression::Add(terms) => {
-                let mut a_coeff = Expression::integer(0);
-                let mut b_coeff = Expression::integer(0);
-                let mut c_coeff = Expression::integer(0);
+        // First, flatten all nested Add expressions
+        let flattened_terms = self.flatten_add_terms(equation);
 
-                for term in terms.iter() {
-                    match term {
-                        // x² term
-                        Expression::Pow(base, exp)
-                            if **base == Expression::symbol(variable.clone()) =>
-                        {
-                            if let Expression::Number(Number::SmallInt(2)) = **exp {
-                                a_coeff = Expression::integer(1);
-                            }
-                        }
-                        // ax² term
-                        Expression::Mul(factors) => {
-                            let mut has_x_squared = false;
-                            let mut coeff = Expression::integer(1);
+        let mut a_coeff = Expression::integer(0);
+        let mut b_coeff = Expression::integer(0);
+        let mut c_coeff = Expression::integer(0);
 
-                            for factor in factors.iter() {
-                                if let Expression::Pow(base, exp) = factor {
-                                    if **base == Expression::symbol(variable.clone()) {
-                                        if let Expression::Number(Number::SmallInt(2)) =
-                                            **exp
-                                        {
-                                            has_x_squared = true;
-                                        } else if let Expression::Number(Number::SmallInt(
-                                            1,
-                                        )) = **exp
-                                        {
-                                            // x^1 = x (linear term)
-                                            b_coeff = coeff.clone();
-                                        }
-                                    }
-                                } else if *factor == Expression::symbol(variable.clone()) {
-                                    // Linear term: coefficient * x
-                                    b_coeff = coeff.clone();
-                                } else {
-                                    coeff = Expression::mul(vec![coeff, factor.clone()]);
-                                }
-                            }
-
-                            if has_x_squared {
-                                a_coeff = coeff;
-                            }
-                        }
-                        // x term (linear)
-                        _ if *term == Expression::symbol(variable.clone()) => {
-                            b_coeff = Expression::integer(1);
-                        }
-                        // Constant term
-                        _ => {
-                            c_coeff = Expression::add(vec![c_coeff, term.clone()]);
-                        }
+        for term in flattened_terms.iter() {
+            match term {
+                // x² term
+                Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
+                    if let Expression::Number(Number::SmallInt(2)) = **exp {
+                        a_coeff = Expression::add(vec![a_coeff, Expression::integer(1)]);
                     }
                 }
+                // ax² term
+                Expression::Mul(factors) => {
+                    let mut has_x_squared = false;
+                    let mut has_x_linear = false;
+                    let mut coeff = Expression::integer(1);
 
-                (a_coeff.simplify(), b_coeff.simplify(), c_coeff.simplify())
-            }
-            // Single term cases
-            Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
-                if let Expression::Number(Number::SmallInt(2)) = **exp {
-                    (
-                        Expression::integer(1),
-                        Expression::integer(0),
-                        Expression::integer(0),
-                    )
-                } else {
-                    (
-                        Expression::integer(0),
-                        Expression::integer(1),
-                        Expression::integer(0),
-                    )
+                    for factor in factors.iter() {
+                        if let Expression::Pow(base, exp) = factor {
+                            if **base == Expression::symbol(variable.clone()) {
+                                if let Expression::Number(Number::SmallInt(2)) = **exp {
+                                    has_x_squared = true;
+                                } else if let Expression::Number(Number::SmallInt(1)) = **exp {
+                                    // x^1 = x (linear term)
+                                    b_coeff = coeff.clone();
+                                }
+                            }
+                        } else if *factor == Expression::symbol(variable.clone()) {
+                            // Linear term: coefficient * x
+                            b_coeff = coeff.clone();
+                        } else {
+                            coeff = Expression::mul(vec![coeff, factor.clone()]);
+                        }
+                    }
+
+                    if has_x_squared {
+                        a_coeff = Expression::add(vec![a_coeff, coeff]);
+                    } else if has_x_linear {
+                        b_coeff = Expression::add(vec![b_coeff, coeff]);
+                    } else {
+                        // No variable in this multiplication - it's a constant
+                        c_coeff = Expression::add(vec![c_coeff, term.clone()]);
+                    }
+                }
+                // x term (linear)
+                _ if *term == Expression::symbol(variable.clone()) => {
+                    b_coeff = Expression::add(vec![b_coeff, Expression::integer(1)]);
+                }
+                // Constant term
+                _ => {
+                    c_coeff = Expression::add(vec![c_coeff, term.clone()]);
                 }
             }
-            _ => {
-                // Default: treat as constant term
-                (
-                    Expression::integer(0),
-                    Expression::integer(0),
-                    equation.clone(),
-                )
-            }
         }
+
+        (a_coeff, b_coeff, c_coeff)
     }
 
     /// Solve linear equation bx + c = 0 (degenerate quadratic case)
@@ -273,5 +248,24 @@ impl QuadraticSolver {
     fn is_quadratic_equation(&self, _equation: &Expression) -> bool {
         // Simplified check for now
         true
+    }
+
+    /// Flatten nested Add expressions into a single list of terms
+    fn flatten_add_terms(&self, expr: &Expression) -> Vec<Expression> {
+        match expr {
+            Expression::Add(terms) => {
+                let mut flattened = Vec::new();
+                for term in terms.iter() {
+                    // Recursively flatten nested Add expressions
+                    if let Expression::Add(_) = term {
+                        flattened.extend(self.flatten_add_terms(term));
+                    } else {
+                        flattened.push(term.clone());
+                    }
+                }
+                flattened
+            }
+            _ => vec![expr.clone()], // Single term, not an Add
+        }
     }
 }
