@@ -1,11 +1,22 @@
-use mathhook::{const_expr, expr, parse, to_format};
+use mathhook::{calculus, const_expr, expr, parse, symbol, to_format};
 
 fn main() {
-    println!("🎉 MATHHOOK MACRO DEMONSTRATION");
+    println!("MATHHOOK MACRO DEMONSTRATION");
     println!("Making mathematical expressions delightfully easy!\n");
 
+    // ========== SYMBOL CREATION ==========
+    println!("Symbol Creation with symbol! macro:");
+
+    let x = symbol!(x);
+    let (a, b, c) = symbol!(a, b, c);
+    let alpha = symbol!("α");
+
+    println!("   Single symbol:     {:?}", x);
+    println!("   Multiple symbols:  {:?}, {:?}, {:?}", a, b, c);
+    println!("   Unicode symbol:    {:?}", alpha);
+
     // ========== BASIC EXPRESSION CREATION ==========
-    println!("📐 Basic Expression Creation with expr! macro:");
+    println!("\nBasic Expression Creation with expr! macro:");
 
     let x = expr!(x);
     let number = expr!(42);
@@ -22,7 +33,7 @@ fn main() {
     println!("   Function:   {:?}", function);
 
     // ========== MATHEMATICAL CONSTANTS ==========
-    println!("\n🔢 Mathematical Constants with const_expr! macro:");
+    println!("\nMathematical Constants with const_expr! macro:");
 
     let pi = const_expr!(pi);
     let e = const_expr!(e);
@@ -35,7 +46,7 @@ fn main() {
     println!("   ∞: {:?}", infinity);
 
     // ========== PARSING MACROS ==========
-    println!("\n🔍 Parsing with parse! macro:");
+    println!("\nParsing with parse! macro:");
 
     let auto_parsed = parse!("x^2 + 2*x + 1").unwrap();
     let latex_parsed = parse!(latex: "\\frac{x}{y}").unwrap();
@@ -48,7 +59,7 @@ fn main() {
     println!("   Simple:   {:?}", simple_parsed);
 
     // ========== FORMAT CONVERSION ==========
-    println!("\n🎨 Format Conversion with to_format! macro:");
+    println!("\nFormat Conversion with to_format! macro:");
 
     let example_expr = expr!(x ^ 2);
 
@@ -61,8 +72,19 @@ fn main() {
     println!("   LaTeX:      {}", latex_output);
     println!("   Wolfram:    {}", wolfram_output);
 
+    // ========== CALCULUS MACROS ==========
+    println!("\nCalculus with calculus! macro:");
+
+    let f = expr!(x ^ 2);
+    let derivative = calculus!(derivative: f.clone(), x);
+    let integral = calculus!(integral: f.clone(), x);
+
+    println!("   Function:   {:?}", f);
+    println!("   Derivative: {:?}", derivative);
+    println!("   Integral:   {:?}", integral);
+
     // ========== PRACTICAL EXAMPLE ==========
-    println!("\n🚀 Practical Example - Using Parse for Complex Expressions:");
+    println!("\nPractical Example - Using Parse for Complex Expressions:");
 
     // For complex expressions, parsing is often more convenient than macros
     let quadratic = parse!("a*x^2 + b*x + c").unwrap();
@@ -78,6 +100,17 @@ fn main() {
     println!("   LaTeX:   {}", to_format!(latex: quadratic));
     println!("   Wolfram: {}", to_format!(wolfram: quadratic));
 
-    println!("\n✨ Macros provide ergonomic building blocks!");
-    println!("💡 For complex expressions, parsing is often more convenient!");
+    // ========== COMPOSITION EXAMPLE ==========
+    println!("\nComposition Example - Combining Macros:");
+
+    let (_x_sym, _y_sym) = symbol!(x, y);
+    let pi_const = const_expr!(pi);
+    let base = expr!(2 * x);
+
+    // Build complex expression using composition
+    let composed = base + pi_const * expr!(y ^ 2);
+    println!("   Composed: {:?}", composed);
+
+    println!("\nMacros provide ergonomic building blocks!");
+    println!("For complex expressions, parsing is often more convenient!");
 }
