@@ -696,13 +696,14 @@ impl UniversalParser {
             }
             Expression::Function { name, args } => self.function_to_latex(name, args, context),
             // New expression types - implement later
-            Expression::Complex { real, imag } => format!(
+            Expression::Complex(complex_data) => format!(
                 "{} + {}i",
-                self.expression_to_latex(real, context),
-                self.expression_to_latex(imag, context)
+                self.expression_to_latex(&complex_data.real, context),
+                self.expression_to_latex(&complex_data.imag, context)
             ),
-            Expression::Matrix(rows) => {
-                let row_strs: Vec<String> = rows
+            Expression::Matrix(matrix_data) => {
+                let row_strs: Vec<String> = matrix_data
+                    .rows
                     .iter()
                     .map(|row| {
                         row.iter()
@@ -732,85 +733,90 @@ impl UniversalParser {
             }
             Expression::Interval { .. } => "\\text{interval}".to_string(),
             // Calculus expressions with proper LaTeX formatting
-            Expression::Derivative {
-                expression,
-                variable,
-                order,
-            } => {
-                if *order == 1 {
-                    format!(
-                        "\\frac{{d}}{{d{}}} {}",
-                        variable.name(),
-                        self.expression_to_latex(expression, context)
-                    )
-                } else {
-                    format!(
-                        "\\frac{{d^{}}}{{d{}^{}}} {}",
+            Expression::Calculus(calculus_data) => {
+                use crate::core::expression::CalculusData;
+                match calculus_data.as_ref() {
+                    CalculusData::Derivative {
+                        expression,
+                        variable,
                         order,
-                        variable.name(),
-                        order,
-                        self.expression_to_latex(expression, context)
-                    )
+                    } => {
+                        if *order == 1 {
+                            format!(
+                                "\\frac{{d}}{{d{}}} {}",
+                                variable.name(),
+                                self.expression_to_latex(expression, context)
+                            )
+                        } else {
+                            format!(
+                                "\\frac{{d^{}}}{{d{}^{}}} {}",
+                                order,
+                                variable.name(),
+                                order,
+                                self.expression_to_latex(expression, context)
+                            )
+                        }
+                    }
+                    CalculusData::Integral {
+                        integrand,
+                        variable,
+                        bounds,
+                    } => match bounds {
+                        None => format!(
+                            "\\int {} d{}",
+                            self.expression_to_latex(integrand, context),
+                            variable.name()
+                        ),
+                        Some((start, end)) => format!(
+                            "\\int_{{{}}}^{{{}}} {} d{}",
+                            self.expression_to_latex(start, context),
+                            self.expression_to_latex(end, context),
+                            self.expression_to_latex(integrand, context),
+                            variable.name()
+                        ),
+                    },
+                    CalculusData::Limit {
+                        expression,
+                        variable,
+                        approach,
+                        ..
+                    } => {
+                        format!(
+                            "\\lim_{{{}\\to{}}} {}",
+                            variable.name(),
+                            self.expression_to_latex(approach, context),
+                            self.expression_to_latex(expression, context)
+                        )
+                    }
+                    CalculusData::Sum {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "\\sum_{{{}={}}}^{{{}}} {}",
+                            variable.name(),
+                            self.expression_to_latex(start, context),
+                            self.expression_to_latex(end, context),
+                            self.expression_to_latex(expression, context)
+                        )
+                    }
+                    CalculusData::Product {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "\\prod_{{{}={}}}^{{{}}} {}",
+                            variable.name(),
+                            self.expression_to_latex(start, context),
+                            self.expression_to_latex(end, context),
+                            self.expression_to_latex(expression, context)
+                        )
+                    }
                 }
-            }
-            Expression::Integral {
-                integrand,
-                variable,
-                bounds,
-            } => match bounds {
-                None => format!(
-                    "\\int {} d{}",
-                    self.expression_to_latex(integrand, context),
-                    variable.name()
-                ),
-                Some((start, end)) => format!(
-                    "\\int_{{{}}}^{{{}}} {} d{}",
-                    self.expression_to_latex(start, context),
-                    self.expression_to_latex(end, context),
-                    self.expression_to_latex(integrand, context),
-                    variable.name()
-                ),
-            },
-            Expression::Limit {
-                expression,
-                variable,
-                approach,
-                ..
-            } => {
-                format!(
-                    "\\lim_{{{}\\to{}}} {}",
-                    variable.name(),
-                    self.expression_to_latex(approach, context),
-                    self.expression_to_latex(expression, context)
-                )
-            }
-            Expression::Sum {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                format!(
-                    "\\sum_{{{}={}}}^{{{}}} {}",
-                    variable.name(),
-                    self.expression_to_latex(start, context),
-                    self.expression_to_latex(end, context),
-                    self.expression_to_latex(expression, context)
-                )
-            }
-            Expression::Product {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                format!(
-                    "\\prod_{{{}={}}}^{{{}}} {}",
-                    variable.name(),
-                    self.expression_to_latex(start, context),
-                    self.expression_to_latex(end, context),
-                    self.expression_to_latex(expression, context)
-                )
             }
         }
     }
@@ -861,15 +867,15 @@ impl UniversalParser {
             }
             Expression::Function { name, args } => self.function_to_wolfram(name, args, context),
             // New expression types - implement later
-            Expression::Complex { real, imag } => format!(
+            Expression::Complex(complex_data) => format!(
                 "Complex[{}, {}]",
-                self.expression_to_wolfram(real, context),
-                self.expression_to_wolfram(imag, context)
+                self.expression_to_wolfram(&complex_data.real, context),
+                self.expression_to_wolfram(&complex_data.imag, context)
             ),
             Expression::Matrix(_) => "matrix".to_string(),
             Expression::Constant(c) => format!("{:?}", c),
-            Expression::Relation { .. } => "relation".to_string(),
-            Expression::Piecewise { .. } => "piecewise".to_string(),
+            Expression::Relation(_) => "relation".to_string(),
+            Expression::Piecewise(_) => "piecewise".to_string(),
             Expression::Set(elements) => {
                 if elements.is_empty() {
                     "{}".to_string()
@@ -881,86 +887,91 @@ impl UniversalParser {
                     format!("{{{}}}", element_strs.join(", "))
                 }
             }
-            Expression::Interval { .. } => "interval".to_string(),
+            Expression::Interval(_) => "interval".to_string(),
             // Calculus expressions with proper Wolfram formatting
-            Expression::Derivative {
-                expression,
-                variable,
-                order,
-            } => {
-                if *order == 1 {
-                    format!(
-                        "D[{}, {}]",
-                        self.expression_to_wolfram(expression, context),
-                        variable.name()
-                    )
-                } else {
-                    format!(
-                        "D[{}, {{{}, {}}}]",
-                        self.expression_to_wolfram(expression, context),
-                        variable.name(),
-                        order
-                    )
+            Expression::Calculus(calculus_data) => {
+                use crate::core::expression::CalculusData;
+                match calculus_data.as_ref() {
+                    CalculusData::Derivative {
+                        expression,
+                        variable,
+                        order,
+                    } => {
+                        if *order == 1 {
+                            format!(
+                                "D[{}, {}]",
+                                self.expression_to_wolfram(expression, context),
+                                variable.name()
+                            )
+                        } else {
+                            format!(
+                                "D[{}, {{{}, {}}}]",
+                                self.expression_to_wolfram(expression, context),
+                                variable.name(),
+                                order
+                            )
+                        }
+                    }
+                    CalculusData::Integral {
+                        integrand,
+                        variable,
+                        bounds,
+                    } => match bounds {
+                        None => format!(
+                            "Integrate[{}, {}]",
+                            self.expression_to_wolfram(integrand, context),
+                            variable.name()
+                        ),
+                        Some((start, end)) => format!(
+                            "Integrate[{}, {{{}, {}, {}}}]",
+                            self.expression_to_wolfram(integrand, context),
+                            variable.name(),
+                            self.expression_to_wolfram(start, context),
+                            self.expression_to_wolfram(end, context)
+                        ),
+                    },
+                    CalculusData::Limit {
+                        expression,
+                        variable,
+                        approach,
+                        ..
+                    } => {
+                        format!(
+                            "Limit[{}, {} -> {}]",
+                            self.expression_to_wolfram(expression, context),
+                            variable.name(),
+                            self.expression_to_wolfram(approach, context)
+                        )
+                    }
+                    CalculusData::Sum {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "Sum[{}, {{{}, {}, {}}}]",
+                            self.expression_to_wolfram(expression, context),
+                            variable.name(),
+                            self.expression_to_wolfram(start, context),
+                            self.expression_to_wolfram(end, context)
+                        )
+                    }
+                    CalculusData::Product {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        format!(
+                            "Product[{}, {{{}, {}, {}}}]",
+                            self.expression_to_wolfram(expression, context),
+                            variable.name(),
+                            self.expression_to_wolfram(start, context),
+                            self.expression_to_wolfram(end, context)
+                        )
+                    }
                 }
-            }
-            Expression::Integral {
-                integrand,
-                variable,
-                bounds,
-            } => match bounds {
-                None => format!(
-                    "Integrate[{}, {}]",
-                    self.expression_to_wolfram(integrand, context),
-                    variable.name()
-                ),
-                Some((start, end)) => format!(
-                    "Integrate[{}, {{{}, {}, {}}}]",
-                    self.expression_to_wolfram(integrand, context),
-                    variable.name(),
-                    self.expression_to_wolfram(start, context),
-                    self.expression_to_wolfram(end, context)
-                ),
-            },
-            Expression::Limit {
-                expression,
-                variable,
-                approach,
-                ..
-            } => {
-                format!(
-                    "Limit[{}, {} -> {}]",
-                    self.expression_to_wolfram(expression, context),
-                    variable.name(),
-                    self.expression_to_wolfram(approach, context)
-                )
-            }
-            Expression::Sum {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                format!(
-                    "Sum[{}, {{{}, {}, {}}}]",
-                    self.expression_to_wolfram(expression, context),
-                    variable.name(),
-                    self.expression_to_wolfram(start, context),
-                    self.expression_to_wolfram(end, context)
-                )
-            }
-            Expression::Product {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                format!(
-                    "Product[{}, {{{}, {}, {}}}]",
-                    self.expression_to_wolfram(expression, context),
-                    variable.name(),
-                    self.expression_to_wolfram(start, context),
-                    self.expression_to_wolfram(end, context)
-                )
             }
         }
     }

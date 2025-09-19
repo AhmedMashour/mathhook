@@ -61,8 +61,8 @@ mod tests {
         let derivative = Expression::derivative(f.clone(), Symbol::new("x"), 1);
         let integral = Expression::integral(f.clone(), Symbol::new("x"));
 
-        assert!(matches!(derivative, Expression::Derivative { .. }));
-        assert!(matches!(integral, Expression::Integral { .. }));
+        assert!(matches!(derivative, Expression::Calculus(_)));
+        assert!(matches!(integral, Expression::Calculus(_)));
     }
 
     #[test]

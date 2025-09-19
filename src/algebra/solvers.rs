@@ -154,53 +154,64 @@ impl Expression {
             Expression::Pow(base, exp) => base.is_valid_expression() && exp.is_valid_expression(),
             Expression::Function { args, .. } => args.iter().all(|a| a.is_valid_expression()),
             // New expression types - basic validity checks
-            Expression::Complex { real, imag } => {
-                real.is_valid_expression() && imag.is_valid_expression()
+            Expression::Complex(complex_data) => {
+                complex_data.real.is_valid_expression() && complex_data.imag.is_valid_expression()
             }
-            Expression::Matrix(rows) => rows
+            Expression::Matrix(matrix_data) => matrix_data
+                .rows
                 .iter()
                 .all(|row| row.iter().all(|e| e.is_valid_expression())),
             Expression::Constant(_) => true,
-            Expression::Relation { left, right, .. } => {
-                left.is_valid_expression() && right.is_valid_expression()
+            Expression::Relation(relation_data) => {
+                relation_data.left.is_valid_expression()
+                    && relation_data.right.is_valid_expression()
             }
-            Expression::Piecewise { cases, default } => {
-                cases
+            Expression::Piecewise(piecewise_data) => {
+                piecewise_data
+                    .cases
                     .iter()
                     .all(|(cond, val)| cond.is_valid_expression() && val.is_valid_expression())
-                    && default.as_ref().map_or(true, |d| d.is_valid_expression())
+                    && piecewise_data
+                        .default
+                        .as_ref()
+                        .map_or(true, |d| d.is_valid_expression())
             }
             Expression::Set(elements) => elements.iter().all(|e| e.is_valid_expression()),
-            Expression::Interval { start, end, .. } => {
-                start.is_valid_expression() && end.is_valid_expression()
+            Expression::Interval(interval_data) => {
+                interval_data.start.is_valid_expression() && interval_data.end.is_valid_expression()
             }
-            // New calculus types - implement later
-            Expression::Derivative { expression, .. } => expression.is_valid_expression(),
-            Expression::Integral { integrand, .. } => integrand.is_valid_expression(),
-            Expression::Limit {
-                expression,
-                approach,
-                ..
-            } => expression.is_valid_expression() && approach.is_valid_expression(),
-            Expression::Sum {
-                expression,
-                start,
-                end,
-                ..
-            } => {
-                expression.is_valid_expression()
-                    && start.is_valid_expression()
-                    && end.is_valid_expression()
-            }
-            Expression::Product {
-                expression,
-                start,
-                end,
-                ..
-            } => {
-                expression.is_valid_expression()
-                    && start.is_valid_expression()
-                    && end.is_valid_expression()
+            // Calculus types - unified validation
+            Expression::Calculus(calculus_data) => {
+                use crate::core::expression::CalculusData;
+                match calculus_data.as_ref() {
+                    CalculusData::Derivative { expression, .. } => expression.is_valid_expression(),
+                    CalculusData::Integral { integrand, .. } => integrand.is_valid_expression(),
+                    CalculusData::Limit {
+                        expression,
+                        approach,
+                        ..
+                    } => expression.is_valid_expression() && approach.is_valid_expression(),
+                    CalculusData::Sum {
+                        expression,
+                        start,
+                        end,
+                        ..
+                    } => {
+                        expression.is_valid_expression()
+                            && start.is_valid_expression()
+                            && end.is_valid_expression()
+                    }
+                    CalculusData::Product {
+                        expression,
+                        start,
+                        end,
+                        ..
+                    } => {
+                        expression.is_valid_expression()
+                            && start.is_valid_expression()
+                            && end.is_valid_expression()
+                    }
+                }
             }
         }
     }

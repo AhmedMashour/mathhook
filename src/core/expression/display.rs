@@ -52,12 +52,12 @@ impl fmt::Display for Expression {
                 }
                 write!(f, ")")
             }
-            Expression::Complex { real, imag } => {
-                write!(f, "({} + {}i)", real, imag)
+            Expression::Complex(complex_data) => {
+                write!(f, "({} + {}i)", complex_data.real, complex_data.imag)
             }
-            Expression::Matrix(rows) => {
+            Expression::Matrix(matrix_data) => {
                 write!(f, "[")?;
-                for (i, row) in rows.iter().enumerate() {
+                for (i, row) in matrix_data.rows.iter().enumerate() {
                     if i > 0 {
                         write!(f, "; ")?;
                     }
@@ -82,12 +82,8 @@ impl fmt::Display for Expression {
                 MathConstant::GoldenRatio => write!(f, "φ"),
                 MathConstant::EulerGamma => write!(f, "γ"),
             },
-            Expression::Relation {
-                left,
-                right,
-                relation_type,
-            } => {
-                let symbol = match relation_type {
+            Expression::Relation(relation_data) => {
+                let symbol = match relation_data.relation_type {
                     RelationType::Equal => "=",
                     RelationType::NotEqual => "≠",
                     RelationType::Less => "<",
@@ -96,7 +92,11 @@ impl fmt::Display for Expression {
                     RelationType::GreaterEqual => "≥",
                     RelationType::Approximately => "≈",
                 };
-                write!(f, "{} {} {}", left, symbol, right)
+                write!(
+                    f,
+                    "{} {} {}",
+                    relation_data.left, symbol, relation_data.right
+                )
             }
             Expression::Set(elements) => {
                 write!(f, "{{")?;
@@ -108,112 +108,121 @@ impl fmt::Display for Expression {
                 }
                 write!(f, "}}")
             }
-            Expression::Interval {
-                start,
-                end,
-                start_inclusive,
-                end_inclusive,
-            } => {
-                let start_bracket = if *start_inclusive { "[" } else { "(" };
-                let end_bracket = if *end_inclusive { "]" } else { ")" };
-                write!(f, "{}{}, {}{}", start_bracket, start, end, end_bracket)
+            Expression::Interval(interval_data) => {
+                let start_bracket = if interval_data.start_inclusive {
+                    "["
+                } else {
+                    "("
+                };
+                let end_bracket = if interval_data.end_inclusive {
+                    "]"
+                } else {
+                    ")"
+                };
+                write!(
+                    f,
+                    "{}{}, {}{}",
+                    start_bracket, interval_data.start, interval_data.end, end_bracket
+                )
             }
-            Expression::Piecewise { cases, default } => {
+            Expression::Piecewise(piecewise_data) => {
                 write!(f, "piecewise(")?;
-                for (i, (condition, value)) in cases.iter().enumerate() {
+                for (i, (condition, value)) in piecewise_data.cases.iter().enumerate() {
                     if i > 0 {
                         write!(f, ", ")?;
                     }
                     write!(f, "{} if {}", value, condition)?;
                 }
-                if let Some(def) = default {
+                if let Some(def) = &piecewise_data.default {
                     write!(f, ", {} otherwise", def)?;
                 }
                 write!(f, ")")
             }
-            Expression::Derivative {
-                expression,
-                variable,
-                order,
-            } => {
-                if *order == 1 {
-                    write!(f, "d/d{} ({})", variable.name(), expression)
-                } else {
+            Expression::Calculus(calculus_data) => match calculus_data.as_ref() {
+                super::CalculusData::Derivative {
+                    expression,
+                    variable,
+                    order,
+                } => {
+                    if *order == 1 {
+                        write!(f, "d/d{} ({})", variable.name(), expression)
+                    } else {
+                        write!(
+                            f,
+                            "d^{}/d{}^{} ({})",
+                            order,
+                            variable.name(),
+                            order,
+                            expression
+                        )
+                    }
+                }
+                super::CalculusData::Integral {
+                    integrand,
+                    variable,
+                    bounds,
+                } => match bounds {
+                    None => write!(f, "∫ {} d{}", integrand, variable.name()),
+                    Some((start, end)) => write!(
+                        f,
+                        "∫[{} to {}] {} d{}",
+                        start,
+                        end,
+                        integrand,
+                        variable.name()
+                    ),
+                },
+                super::CalculusData::Limit {
+                    expression,
+                    variable,
+                    approach,
+                    direction,
+                } => {
+                    let dir_str = match direction {
+                        LimitDirection::Both => "",
+                        LimitDirection::Left => "⁻",
+                        LimitDirection::Right => "⁺",
+                    };
                     write!(
                         f,
-                        "d^{}/d{}^{} ({})",
-                        order,
+                        "lim({} → {}{}) {}",
                         variable.name(),
-                        order,
+                        approach,
+                        dir_str,
                         expression
                     )
                 }
-            }
-            Expression::Integral {
-                integrand,
-                variable,
-                bounds,
-            } => match bounds {
-                None => write!(f, "∫ {} d{}", integrand, variable.name()),
-                Some((start, end)) => write!(
-                    f,
-                    "∫[{} to {}] {} d{}",
+                super::CalculusData::Sum {
+                    expression,
+                    variable,
                     start,
                     end,
-                    integrand,
-                    variable.name()
-                ),
+                } => {
+                    write!(
+                        f,
+                        "Σ({}={} to {}) {}",
+                        variable.name(),
+                        start,
+                        end,
+                        expression
+                    )
+                }
+                super::CalculusData::Product {
+                    expression,
+                    variable,
+                    start,
+                    end,
+                } => {
+                    write!(
+                        f,
+                        "Π({}={} to {}) {}",
+                        variable.name(),
+                        start,
+                        end,
+                        expression
+                    )
+                }
             },
-            Expression::Limit {
-                expression,
-                variable,
-                approach,
-                direction,
-            } => {
-                let dir_str = match direction {
-                    LimitDirection::Both => "",
-                    LimitDirection::Left => "⁻",
-                    LimitDirection::Right => "⁺",
-                };
-                write!(
-                    f,
-                    "lim({} → {}{}) {}",
-                    variable.name(),
-                    approach,
-                    dir_str,
-                    expression
-                )
-            }
-            Expression::Sum {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                write!(
-                    f,
-                    "Σ({}={} to {}) {}",
-                    variable.name(),
-                    start,
-                    end,
-                    expression
-                )
-            }
-            Expression::Product {
-                expression,
-                variable,
-                start,
-                end,
-            } => {
-                write!(
-                    f,
-                    "Π({}={} to {}) {}",
-                    variable.name(),
-                    start,
-                    end,
-                    expression
-                )
-            }
         }
     }
 }

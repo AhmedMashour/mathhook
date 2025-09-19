@@ -72,16 +72,13 @@ impl Expression {
     /// Create a complex number expression
     #[inline]
     pub fn complex(real: Expression, imag: Expression) -> Self {
-        Self::Complex {
-            real: Box::new(real),
-            imag: Box::new(imag),
-        }
+        Self::Complex(Box::new(super::ComplexData { real, imag }))
     }
 
     /// Create a matrix expression
     #[inline]
     pub fn matrix(rows: Vec<Vec<Expression>>) -> Self {
-        Self::Matrix(Box::new(rows))
+        Self::Matrix(Box::new(super::MatrixData { rows }))
     }
 
     /// Create a mathematical constant
@@ -117,21 +114,21 @@ impl Expression {
     /// Create an equation (relation)
     #[inline]
     pub fn equation(left: Expression, right: Expression) -> Self {
-        Self::Relation {
-            left: Box::new(left),
-            right: Box::new(right),
+        Self::Relation(Box::new(super::RelationData {
+            left,
+            right,
             relation_type: RelationType::Equal,
-        }
+        }))
     }
 
     /// Create a relation with specific type
     #[inline]
     pub fn relation(left: Expression, right: Expression, relation_type: RelationType) -> Self {
-        Self::Relation {
-            left: Box::new(left),
-            right: Box::new(right),
+        Self::Relation(Box::new(super::RelationData {
+            left,
+            right,
             relation_type,
-        }
+        }))
     }
 
     /// Create a set
@@ -148,41 +145,38 @@ impl Expression {
         start_inclusive: bool,
         end_inclusive: bool,
     ) -> Self {
-        Self::Interval {
-            start: Box::new(start),
-            end: Box::new(end),
+        Self::Interval(Box::new(super::IntervalData {
+            start,
+            end,
             start_inclusive,
             end_inclusive,
-        }
+        }))
     }
 
     /// Create a piecewise function
     #[inline]
     pub fn piecewise(cases: Vec<(Expression, Expression)>, default: Option<Expression>) -> Self {
-        Self::Piecewise {
-            cases: Box::new(cases),
-            default: default.map(Box::new),
-        }
+        Self::Piecewise(Box::new(super::PiecewiseData { cases, default }))
     }
 
     /// Create a derivative
     #[inline]
     pub fn derivative(expression: Expression, variable: Symbol, order: u32) -> Self {
-        Self::Derivative {
-            expression: Box::new(expression),
+        Self::Calculus(Box::new(super::CalculusData::Derivative {
+            expression,
             variable,
             order,
-        }
+        }))
     }
 
     /// Create an indefinite integral
     #[inline]
     pub fn integral(integrand: Expression, variable: Symbol) -> Self {
-        Self::Integral {
-            integrand: Box::new(integrand),
+        Self::Calculus(Box::new(super::CalculusData::Integral {
+            integrand,
             variable,
             bounds: None,
-        }
+        }))
     }
 
     /// Create a definite integral
@@ -193,22 +187,22 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Integral {
-            integrand: Box::new(integrand),
+        Self::Calculus(Box::new(super::CalculusData::Integral {
+            integrand,
             variable,
-            bounds: Some((Box::new(start), Box::new(end))),
-        }
+            bounds: Some((start, end)),
+        }))
     }
 
     /// Create a limit
     #[inline]
     pub fn limit(expression: Expression, variable: Symbol, approach: Expression) -> Self {
-        Self::Limit {
-            expression: Box::new(expression),
+        Self::Calculus(Box::new(super::CalculusData::Limit {
+            expression,
             variable,
-            approach: Box::new(approach),
+            approach,
             direction: LimitDirection::Both,
-        }
+        }))
     }
 
     /// Create a summation
@@ -219,12 +213,12 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Sum {
-            expression: Box::new(expression),
+        Self::Calculus(Box::new(super::CalculusData::Sum {
+            expression,
             variable,
-            start: Box::new(start),
-            end: Box::new(end),
-        }
+            start,
+            end,
+        }))
     }
 
     /// Create a product
@@ -235,11 +229,11 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Product {
-            expression: Box::new(expression),
+        Self::Calculus(Box::new(super::CalculusData::Product {
+            expression,
             variable,
-            start: Box::new(start),
-            end: Box::new(end),
-        }
+            start,
+            end,
+        }))
     }
 }

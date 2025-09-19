@@ -156,39 +156,47 @@ impl MathSerializer {
                 args: args.iter().map(Self::expression_to_data).collect(),
             },
 
-            Expression::Complex { real, imag } => ExpressionData::Complex {
-                real: Box::new(Self::expression_to_data(real)),
-                imag: Box::new(Self::expression_to_data(imag)),
+            Expression::Complex(complex_data) => ExpressionData::Complex {
+                real: Box::new(Self::expression_to_data(&complex_data.real)),
+                imag: Box::new(Self::expression_to_data(&complex_data.imag)),
             },
 
             Expression::Constant(c) => ExpressionData::Constant {
                 constant: c.clone(),
             },
 
-            Expression::Derivative {
-                expression,
-                variable,
-                order,
-            } => ExpressionData::Derivative {
-                expression: Box::new(Self::expression_to_data(expression)),
-                variable: variable.name().to_string(),
-                order: *order,
-            },
-
-            Expression::Integral {
-                integrand,
-                variable,
-                bounds,
-            } => ExpressionData::Integral {
-                integrand: Box::new(Self::expression_to_data(integrand)),
-                variable: variable.name().to_string(),
-                bounds: bounds.as_ref().map(|(start, end)| {
-                    (
-                        Box::new(Self::expression_to_data(start)),
-                        Box::new(Self::expression_to_data(end)),
-                    )
-                }),
-            },
+            Expression::Calculus(calculus_data) => {
+                use crate::core::expression::CalculusData;
+                match calculus_data.as_ref() {
+                    CalculusData::Derivative {
+                        expression,
+                        variable,
+                        order,
+                    } => ExpressionData::Derivative {
+                        expression: Box::new(Self::expression_to_data(expression)),
+                        variable: variable.name().to_string(),
+                        order: *order,
+                    },
+                    CalculusData::Integral {
+                        integrand,
+                        variable,
+                        bounds,
+                    } => ExpressionData::Integral {
+                        integrand: Box::new(Self::expression_to_data(integrand)),
+                        variable: variable.name().to_string(),
+                        bounds: bounds.as_ref().map(|(start, end)| {
+                            (
+                                Box::new(Self::expression_to_data(start)),
+                                Box::new(Self::expression_to_data(end)),
+                            )
+                        }),
+                    },
+                    _ => ExpressionData::Function {
+                        name: "calculus_operation".to_string(),
+                        args: vec![],
+                    },
+                }
+            }
 
             // For other types, use placeholder for now
             _ => ExpressionData::Symbol {
