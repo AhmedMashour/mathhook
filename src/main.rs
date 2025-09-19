@@ -1,8 +1,7 @@
 use mathhook::prelude::*;
 
 fn main() {
-    let x = Symbol::new("x");
-    let expr = Expression::symbol(x) + Expression::integer(1);
-    let simplified = expr.simplify();
-    println!("{:?}", simplified);
+    let result = convenience::solve("2x + 6 = 0").unwrap_or(SolverResult::NoSolution);
+
+    println!("{:?}", result);
 }

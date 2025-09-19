@@ -8,7 +8,7 @@
 
 ## ✨ Key Features
 
-- 🚀 **High Performance:** 5 "Magic Bullets" for maximum speed
+- 🚀 **High Performance:**
 - 🎓 **Educational:** Step-by-step explanations for every solution
 - 📝 **LaTeX Support:** Parse and output beautiful mathematical notation
 - 🎯 **Smart Dispatch:** Automatically routes equations to optimal solvers

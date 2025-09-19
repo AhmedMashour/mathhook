@@ -1,7 +1,7 @@
 //! Advanced simplification operations including special functions
 //! Handles factorial, trigonometric functions, logarithms, and complex simplifications
 
-use crate::core::{Number, Expression};
+use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 
@@ -157,13 +157,10 @@ impl Expression {
                 }
             }
 
-            // Factorial identities
             Expression::Add(terms) if terms.len() == 2 => {
                 // Check for n! where n = k - 1, so (k-1)! = factorial(k-1)
-                if let (
-                    Expression::Symbol(_s),
-                    Expression::Number(Number::SmallInt(offset)),
-                ) = (&terms[0], &terms[1])
+                if let (Expression::Symbol(_s), Expression::Number(Number::SmallInt(offset))) =
+                    (&terms[0], &terms[1])
                 {
                     if *offset == -1 {
                         // (n-1)! case - this is complex, return as function for now
@@ -366,9 +363,7 @@ impl Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::SmallInt(n)) => Expression::integer(n.abs()),
-                Expression::Number(Number::Float(f)) => {
-                    Expression::number(Number::float(f.abs()))
-                }
+                Expression::Number(Number::Float(f)) => Expression::number(Number::float(f.abs())),
                 _ => Expression::function("abs", args.to_vec()),
             }
         } else {

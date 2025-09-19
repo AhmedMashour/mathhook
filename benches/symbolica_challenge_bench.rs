@@ -11,7 +11,6 @@ fn bench_symbolica_challenge(c: &mut Criterion) {
 
     c.bench_function("symbolica_arithmetic_challenge", |b| {
         b.iter(|| {
-            // Challenge Symbolica's arithmetic performance
             let expr = Expression::add(vec![
                 Expression::mul(vec![
                     Expression::integer(black_box(123)),
@@ -29,7 +28,6 @@ fn bench_symbolica_challenge(c: &mut Criterion) {
 
     c.bench_function("symbolica_gcd_challenge", |b| {
         b.iter(|| {
-            // Challenge Symbolica's GCD performance
             let poly1 = Expression::mul(vec![
                 Expression::integer(black_box(12345)),
                 Expression::symbol(x.clone()),
@@ -44,7 +42,6 @@ fn bench_symbolica_challenge(c: &mut Criterion) {
 
     c.bench_function("symbolica_power_challenge", |b| {
         b.iter(|| {
-            // Challenge Symbolica's power operations
             let expr = Expression::pow(
                 Expression::add(vec![
                     Expression::symbol(x.clone()),
@@ -62,7 +59,6 @@ fn bench_memory_efficiency(c: &mut Criterion) {
     c.bench_function("memory_compact_vs_symbolica", |b| {
         let x = Symbol::new("x");
         b.iter(|| {
-            // Test our memory-optimized approach
             let expressions: Vec<Expression> = (0..black_box(1000))
                 .map(|i| {
                     Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(i)])
@@ -75,7 +71,6 @@ fn bench_memory_efficiency(c: &mut Criterion) {
     c.bench_function("bulk_simplification_vs_symbolica", |b| {
         let x = Symbol::new("x");
         b.iter(|| {
-            // Bulk operations that challenge Symbolica
             let mut results = Vec::new();
             for i in 0..black_box(100) {
                 let expr =
@@ -90,9 +85,7 @@ fn bench_memory_efficiency(c: &mut Criterion) {
 /// Benchmark the 42M ops/sec target
 fn bench_ultimate_performance(c: &mut Criterion) {
     c.bench_function("ultimate_42m_ops_target", |b| {
-        let x = Symbol::new("x");
         b.iter(|| {
-            // Ultra-fast operations targeting 42M ops/sec
             let expr = Expression::add(vec![
                 Expression::integer(black_box(1)),
                 Expression::integer(black_box(2)),

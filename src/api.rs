@@ -67,7 +67,7 @@ impl Default for MathHook {
     }
 }
 
-/// 🎯 CONVENIENCE FUNCTIONS - One-line solving
+/// One-line solving
 pub mod convenience {
     use super::*;
 
@@ -92,7 +92,7 @@ pub mod convenience {
     }
 }
 
-/// 🎓 EDUCATIONAL HELPERS - For students and teachers
+/// For students and teachers
 pub mod educational {
     use super::*;
     use crate::educational::step_by_step::StepByStepExplanation;

@@ -15,13 +15,11 @@ fn bench_industry_gcd(c: &mut Criterion) {
 }
 
 fn bench_isolated_gcd(c: &mut Criterion) {
-    // Create the Expressions once, outside of the benchmarked loop
     let a = black_box(Expression::integer(12000));
     let b = black_box(Expression::integer(18000));
 
     c.bench_function("isolated_gcd_benchmark", |d| {
         d.iter(|| {
-            // Only measure the GCD operation
             black_box(a.gcd(&b));
         })
     });

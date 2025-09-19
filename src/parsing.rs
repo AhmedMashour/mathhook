@@ -59,32 +59,26 @@ impl ExpressionParser {
             return Err(ParseError::EmptyInput);
         }
 
-        // Handle parentheses first
         if let Some(expr) = self.parse_parentheses(input)? {
             return Ok(expr);
         }
 
-        // Parse addition/subtraction (lowest precedence)
         if let Some(expr) = self.parse_addition(input)? {
             return Ok(expr);
         }
 
-        // Parse multiplication/division
         if let Some(expr) = self.parse_multiplication(input)? {
             return Ok(expr);
         }
 
-        // Parse exponentiation (highest precedence)
         if let Some(expr) = self.parse_exponentiation(input)? {
             return Ok(expr);
         }
 
-        // Parse functions
         if let Some(expr) = self.parse_function(input)? {
             return Ok(expr);
         }
 
-        // Parse atoms (numbers, variables)
         self.parse_atom(input)
     }
 
@@ -254,17 +248,14 @@ impl ExpressionParser {
 
     /// Parse atomic expressions (numbers, variables)
     fn parse_atom(&mut self, input: &str) -> Result<Expression, ParseError> {
-        // Try to parse as integer
         if let Ok(n) = input.parse::<i64>() {
             return Ok(Expression::integer(n));
         }
 
-        // Try to parse as float
         if let Ok(f) = input.parse::<f64>() {
             return Ok(Expression::number(Number::float(f)));
         }
 
-        // Try to parse as fraction (a/b)
         if let Some(slash_pos) = input.find('/') {
             let num_str = &input[..slash_pos];
             let den_str = &input[slash_pos + 1..];
@@ -278,7 +269,6 @@ impl ExpressionParser {
             }
         }
 
-        // Parse as variable
         if input.chars().all(|c| c.is_alphabetic() || c == '_') {
             let symbol = Symbol::new(input);
             self.variables.insert(input.to_string(), symbol.clone());
@@ -467,15 +457,12 @@ mod tests {
     fn test_basic_parsing() {
         let mut parser = ExpressionParser::new();
 
-        // Test number parsing
         let expr = parser.parse("42").unwrap();
         assert_eq!(expr, Expression::integer(42));
 
-        // Test variable parsing
         let expr = parser.parse("x").unwrap();
         assert_eq!(expr, Expression::symbol(Symbol::new("x")));
 
-        // Test simple addition
         let expr = parser.parse("x + 5").unwrap();
         match expr {
             Expression::Add(terms) => assert_eq!(terms.len(), 2),
@@ -488,11 +475,9 @@ mod tests {
     fn test_latex_parsing() {
         let mut parser = ExpressionParser::new();
 
-        // Test LaTeX fraction
         let expr = parser.parse_latex("\\frac{3}{4}").unwrap();
         println!("Parsed fraction: {}", expr);
 
-        // Test LaTeX power
         let expr = parser.parse_latex("x^{2}").unwrap();
         match expr {
             Expression::Pow(_, _) => assert!(true),
@@ -504,7 +489,6 @@ mod tests {
     fn test_latex_output() {
         let x = Symbol::new("x");
 
-        // Test fraction output
         let rational = Expression::number(Number::rational(num_rational::BigRational::new(
             num_bigint::BigInt::from(3),
             num_bigint::BigInt::from(4),
@@ -512,12 +496,10 @@ mod tests {
         let latex = rational.to_latex_advanced();
         assert_eq!(latex, "\\frac{3}{4}");
 
-        // Test power output
         let power = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let latex = power.to_latex_advanced();
         assert_eq!(latex, "x^{2}");
 
-        // Test function output
         let factorial = Expression::function("factorial", vec![Expression::integer(5)]);
         let latex = factorial.to_latex_advanced();
         assert_eq!(latex, "5!");
@@ -528,7 +510,6 @@ mod tests {
     fn test_complex_expression_parsing() {
         let mut parser = ExpressionParser::new();
 
-        // Test (x + 1)^2
         let expr = parser.parse("(x + 1)^2").unwrap();
         match expr {
             Expression::Pow(base, exp) => {
@@ -544,7 +525,6 @@ mod tests {
     fn test_function_parsing() {
         let mut parser = ExpressionParser::new();
 
-        // Test sin(x)
         let expr = parser.parse("sin(x)").unwrap();
         match expr {
             Expression::Function { name, args } => {

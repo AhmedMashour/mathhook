@@ -17,12 +17,10 @@ pub mod step_by_step;
 // pub use messages::{ClearMessageFactory, MessageContext};
 pub use step_by_step::{Step, StepByStep, StepByStepExplanation};
 
-/// 🎯 EDUCATIONAL TRAITS - COMMON INTERFACE FOR LEARNING FEATURES
 pub trait Educational {
     /// Generate step-by-step explanation
     fn explain(&self) -> StepByStepExplanation;
 
-    // Temporarily disabled
     // fn explain_enhanced(&self) -> EnhancedStepExplanation;
 
     /// Convert to LaTeX for educational display
