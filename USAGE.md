@@ -142,7 +142,7 @@ println!("Steps: {}", result.explanation.total_steps);
 
 ### High-Performance Solving
 ```rust
-use mathhook::core::*;
+use mathhook_core::*;
 
 // Direct solver access (fastest)
 let linear_solver = LinearSolver::new();

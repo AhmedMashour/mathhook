@@ -1,0 +1,19 @@
+[package]
+name = "mathhook-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
+
+[dependencies]
+num-bigint = { workspace = true, features = ["serde"] }
+num-rational = { workspace = true, features = ["serde"] }
+num-traits.workspace = true
+num-integer.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true

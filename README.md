@@ -82,7 +82,7 @@ match eq_type {
 
 ### 3. **Performance-Critical Applications**
 ```rust
-use mathhook::core::*;
+use mathhook_core::*;
 
 // Direct solver access (maximum performance)
 let linear_solver = LinearSolver::new();

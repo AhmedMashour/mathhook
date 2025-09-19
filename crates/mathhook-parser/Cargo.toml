@@ -1,0 +1,19 @@
+[package]
+name = "mathhook-parser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Multi-format mathematical expression parser for MathHook"
+
+[dependencies]
+mathhook-core = { path = "../mathhook-core" }
+serde.workspace = true
+serde_json.workspace = true
+regex.workspace = true
+once_cell.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+
