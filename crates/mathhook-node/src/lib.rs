@@ -73,7 +73,7 @@ impl JsExpression {
     #[napi]
     pub fn multiply(&self, other: &JsExpression) -> JsExpression {
         JsExpression {
-            inner: Expression::multiply(self.inner.clone(), other.inner.clone()),
+            inner: Expression::mul(vec![self.inner.clone(), other.inner.clone()]),
         }
     }
 

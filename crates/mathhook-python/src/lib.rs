@@ -71,7 +71,7 @@ impl PyExpression {
     /// ```
     pub fn multiply(&self, other: &PyExpression) -> Self {
         Self {
-            inner: Expression::multiply(self.inner.clone(), other.inner.clone()),
+            inner: Expression::mul(vec![self.inner.clone(), other.inner.clone()]),
         }
     }
 

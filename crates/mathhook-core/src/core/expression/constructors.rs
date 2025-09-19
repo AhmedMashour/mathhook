@@ -71,23 +71,12 @@ impl Expression {
     /// ```rust
     /// use mathhook_core::Expression;
     ///
-    /// let expr = Expression::multiply(
+    /// let expr = Expression::mul(vec![
     ///     Expression::integer(2),
     ///     Expression::symbol("x"),
-    /// );
-    /// ```
-    pub fn multiply(left: Expression, right: Expression) -> Self {
-        Self::Mul(Box::new(vec![left, right]))
-    }
-
-    /// Create a multiplication expression from multiple factors
+    /// ]);
     ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let expr = Expression::mul(vec![
+    /// let multi = Expression::mul(vec![
     ///     Expression::integer(2),
     ///     Expression::symbol("x"),
     ///     Expression::integer(3),

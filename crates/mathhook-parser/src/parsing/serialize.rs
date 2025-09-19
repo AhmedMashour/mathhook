@@ -123,7 +123,7 @@ impl MathSerializer {
     /// Convert Expression to ExpressionData
     fn expression_to_data(expr: &Expression) -> ExpressionData {
         match expr {
-            Expression::Number(Number::SmallInt(n)) => ExpressionData::Number { value: *n },
+            Expression::Number(Number::Integer(n)) => ExpressionData::Number { value: *n },
             Expression::Number(Number::BigInteger(n)) => ExpressionData::Number {
                 value: n.to_string().parse().unwrap_or(0),
             },

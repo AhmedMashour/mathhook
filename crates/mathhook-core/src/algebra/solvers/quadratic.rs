@@ -96,7 +96,7 @@ impl QuadraticSolver {
             match term {
                 // x² term
                 Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
-                    if let Expression::Number(Number::SmallInt(2)) = **exp {
+                    if let Expression::Number(Number::Integer(2)) = **exp {
                         a_coeff = Expression::add(vec![a_coeff, Expression::integer(1)]);
                     }
                 }
@@ -109,9 +109,9 @@ impl QuadraticSolver {
                     for factor in factors.iter() {
                         if let Expression::Pow(base, exp) = factor {
                             if **base == Expression::symbol(variable.clone()) {
-                                if let Expression::Number(Number::SmallInt(2)) = **exp {
+                                if let Expression::Number(Number::Integer(2)) = **exp {
                                     has_x_squared = true;
-                                } else if let Expression::Number(Number::SmallInt(1)) = **exp {
+                                } else if let Expression::Number(Number::Integer(1)) = **exp {
                                     // x^1 = x (linear term)
                                     b_coeff = coeff.clone();
                                 }
@@ -151,8 +151,8 @@ impl QuadraticSolver {
     fn solve_linear(&self, b: &Expression, c: &Expression) -> SolverResult {
         match (b, c) {
             (
-                Expression::Number(Number::SmallInt(b_val)),
-                Expression::Number(Number::SmallInt(c_val)),
+                Expression::Number(Number::Integer(b_val)),
+                Expression::Number(Number::Integer(c_val)),
             ) => {
                 if *b_val != 0 {
                     let result = -c_val / b_val;
@@ -180,9 +180,9 @@ impl QuadraticSolver {
     ) -> SolverResult {
         match (a, b, c) {
             (
-                Expression::Number(Number::SmallInt(a_val)),
-                Expression::Number(Number::SmallInt(b_val)),
-                Expression::Number(Number::SmallInt(c_val)),
+                Expression::Number(Number::Integer(a_val)),
+                Expression::Number(Number::Integer(b_val)),
+                Expression::Number(Number::Integer(c_val)),
             ) => {
                 // Calculate discriminant: Δ = b² - 4ac
                 let discriminant = b_val * b_val - 4 * a_val * c_val;

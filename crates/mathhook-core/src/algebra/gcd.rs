@@ -17,7 +17,7 @@ impl PolynomialGcd for Expression {
     #[inline(always)]
     fn gcd(&self, other: &Self) -> Self {
         // Numeric GCD (most common case)
-        if let (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) =
+        if let (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) =
             (self, other)
         {
             return Expression::integer(a.gcd(b));
@@ -148,12 +148,12 @@ impl Expression {
     #[allow(dead_code)]
     fn extract_numeric_coefficient(&self) -> BigInt {
         match self {
-            Expression::Number(Number::SmallInt(n)) => BigInt::from(*n),
+            Expression::Number(Number::Integer(n)) => BigInt::from(*n),
             Expression::Number(Number::BigInteger(n)) => n.as_ref().clone(),
             Expression::Mul(factors) => {
                 for factor in factors.iter() {
                     match factor {
-                        Expression::Number(Number::SmallInt(n)) => return BigInt::from(*n),
+                        Expression::Number(Number::Integer(n)) => return BigInt::from(*n),
                         Expression::Number(Number::BigInteger(n)) => return n.as_ref().clone(),
                         _ => {}
                     }
@@ -228,7 +228,7 @@ impl Expression {
     fn is_multiple_of(&self, other: &Self) -> bool {
         match (self, other) {
             (Expression::Mul(factors), single) => factors.contains(single),
-            (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) => {
+            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
                 *b != 0 && (a % b) == 0
             }
             _ => false,

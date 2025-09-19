@@ -47,7 +47,7 @@ impl EquationAnalyzer {
             // Direct power: x^2, x^3, etc.
             Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
                 match exp.as_ref() {
-                    Expression::Number(Number::SmallInt(n)) => *n as u32,
+                    Expression::Number(Number::Integer(n)) => *n as u32,
                     _ => 1, // Non-constant exponent
                 }
             }

@@ -571,7 +571,7 @@ fn test_solver_magic_bullets_preservation() {
     // CRITICAL: Verify all Magic Bullets still work after solver implementation
     
     // Magic Bullet #1: Number still working
-    let num = Number::SmallInt(42);
+    let num = Number::Integer(42);
     assert!(!num.is_zero()); // Basic verification
     
     // Magic Bullet #2: Expression still 32 bytes

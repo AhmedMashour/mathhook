@@ -113,7 +113,7 @@ impl Expression {
     ) -> (BigInt, Expression) {
         match term {
             // Pure number
-            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(0)),
+            Expression::Number(Number::Integer(n)) => (BigInt::from(*n), Expression::integer(0)),
 
             // Pure variable
             Expression::Symbol(s) if s == var => (BigInt::one(), Expression::integer(1)),
@@ -139,7 +139,7 @@ impl Expression {
 
                 for factor in factors.iter() {
                     match factor {
-                        Expression::Number(Number::SmallInt(n)) => {
+                        Expression::Number(Number::Integer(n)) => {
                             coefficient *= BigInt::from(*n);
                         }
                         Expression::Symbol(s) if s == var => {
@@ -221,7 +221,7 @@ impl Expression {
     /// Extract coefficient and base term from any expression
     fn extract_coefficient_and_base(&self, expr: &Expression) -> (BigInt, Expression) {
         match expr {
-            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
+            Expression::Number(Number::Integer(n)) => (BigInt::from(*n), Expression::integer(1)),
 
             Expression::Symbol(_) => (BigInt::one(), expr.clone()),
 
@@ -230,7 +230,7 @@ impl Expression {
                 let mut non_numeric_factors = Vec::new();
 
                 for factor in factors.iter() {
-                    if let Expression::Number(Number::SmallInt(n)) = factor {
+                    if let Expression::Number(Number::Integer(n)) = factor {
                         coefficient *= BigInt::from(*n);
                     } else {
                         non_numeric_factors.push(factor.clone());
@@ -261,7 +261,7 @@ impl Expression {
 
         for factor in factors {
             match factor {
-                Expression::Number(Number::SmallInt(n)) => {
+                Expression::Number(Number::Integer(n)) => {
                     numeric_factor *= BigInt::from(*n);
                 }
                 Expression::Pow(base, exp) => {

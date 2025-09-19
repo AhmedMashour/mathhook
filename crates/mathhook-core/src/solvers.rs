@@ -53,7 +53,7 @@ impl Default for SolverConfig {
 /// let mut solver = MathSolver::new();
 /// let equation = Expression::equation(
 ///     Expression::add(vec![
-///         Expression::multiply(Expression::integer(2), Expression::symbol("x")),
+///         Expression::mul(vec![Expression::integer(2), Expression::symbol("x")),
 ///         Expression::integer(3),
 ///     ]),
 ///     Expression::integer(7),

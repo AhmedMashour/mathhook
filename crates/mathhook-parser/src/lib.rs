@@ -184,7 +184,7 @@ impl MathParser {
             let left_expr = self.parse_basic(left)?;
             let right_expr = self.parse_basic(right)?;
 
-            return Ok(Expression::multiply(left_expr, right_expr));
+            return Ok(Expression::mul(vec![left_expr, right_expr]));
         }
 
         // Handle basic powers: "a^b"

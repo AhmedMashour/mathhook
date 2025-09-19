@@ -227,7 +227,7 @@ fn test_numeric_powers() {
 
     // Should calculate 2^3 = 8
     match result {
-        Expression::Number(Number::SmallInt(n)) if n == 8 => {
+        Expression::Number(Number::Integer(n)) if n == 8 => {
             assert_eq!(n, 8);
         }
         _ => {

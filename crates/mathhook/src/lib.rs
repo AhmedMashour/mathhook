@@ -95,7 +95,7 @@ pub mod macros {
             $crate::Expression::add(vec![expr!($left), expr!($right)])
         };
         ($left:tt * $right:tt) => {
-            $crate::Expression::multiply(expr!($left), expr!($right))
+            $crate::Expression::mul(vec![expr!($left), expr!($right)])
         };
         ($base:tt ^ $exp:tt) => {
             $crate::Expression::pow(expr!($base), expr!($exp))

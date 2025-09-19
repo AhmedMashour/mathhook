@@ -569,7 +569,7 @@ impl UniversalParser {
     /// Convert Expression to simple mathematical notation (no LaTeX commands)
     fn expression_to_simple(&self, expr: &Expression) -> String {
         match expr {
-            Expression::Number(Number::SmallInt(n)) => n.to_string(),
+            Expression::Number(Number::Integer(n)) => n.to_string(),
             Expression::Number(Number::BigInteger(n)) => n.to_string(),
             Expression::Number(Number::Rational(r)) => {
                 if r.denom() == &num_bigint::BigInt::from(1) {
@@ -629,7 +629,7 @@ impl UniversalParser {
     /// Convert Expression to LaTeX
     fn expression_to_latex(&self, expr: &Expression, context: &LaTeXContext) -> String {
         match expr {
-            Expression::Number(Number::SmallInt(n)) => n.to_string(),
+            Expression::Number(Number::Integer(n)) => n.to_string(),
             Expression::Number(Number::BigInteger(n)) => n.to_string(),
             Expression::Number(Number::Rational(r)) => {
                 if r.denom() == &num_bigint::BigInt::from(1) {
@@ -824,7 +824,7 @@ impl UniversalParser {
     /// Convert Expression to Wolfram Language
     fn expression_to_wolfram(&self, expr: &Expression, context: &WolframContext) -> String {
         match expr {
-            Expression::Number(Number::SmallInt(n)) => n.to_string(),
+            Expression::Number(Number::Integer(n)) => n.to_string(),
             Expression::Number(Number::BigInteger(n)) => n.to_string(),
             Expression::Number(Number::Rational(r)) => {
                 if r.denom() == &num_bigint::BigInt::from(1) {

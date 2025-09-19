@@ -24,7 +24,7 @@ impl RationalSimplify for Expression {
             // Handle fractions in other forms
             Expression::Pow(base, exp) => {
                 // Check for negative exponents (which represent division)
-                if let Expression::Number(Number::SmallInt(n)) = exp.as_ref() {
+                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
                     if *n < 0 {
                         // x^(-n) = 1/x^n
                         let positive_exp = Expression::integer(-n);
@@ -67,7 +67,7 @@ impl RationalSimplify for Expression {
             }
 
             Expression::Pow(base, exp) => {
-                if let Expression::Number(Number::SmallInt(n)) = exp.as_ref() {
+                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
                     if *n < 0 {
                         // Negative exponent: move to denominator
                         let positive_exp = Expression::integer(-n);
@@ -112,7 +112,7 @@ impl Expression {
             match factor {
                 // Negative exponents go to denominator
                 Expression::Pow(base, exp) => {
-                    if let Expression::Number(Number::SmallInt(n)) = exp.as_ref() {
+                    if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
                         if *n < 0 {
                             let positive_exp = Expression::integer(-n);
                             denominator_factors
@@ -197,7 +197,7 @@ impl Expression {
     fn divide_expressions(&self, dividend: &Expression, divisor: &Expression) -> Expression {
         match (dividend, divisor) {
             // Numeric division
-            (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) => {
+            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
                 if !b.is_zero() {
                     let rational = BigRational::new(BigInt::from(*a), BigInt::from(*b));
                     if rational.denom().is_one() {
@@ -312,7 +312,7 @@ impl Expression {
             Expression::Number(Number::Rational(_)) => true,
             Expression::Pow(_, exp) => {
                 // Negative exponents indicate rational expressions
-                if let Expression::Number(Number::SmallInt(n)) = exp.as_ref() {
+                if let Expression::Number(Number::Integer(n)) = exp.as_ref() {
                     *n < 0
                 } else {
                     false
@@ -326,7 +326,7 @@ impl Expression {
     pub fn extract_rational_coefficient(&self) -> (BigRational, Expression) {
         match self {
             Expression::Number(Number::Rational(r)) => ((**r).clone(), Expression::integer(1)),
-            Expression::Number(Number::SmallInt(n)) => {
+            Expression::Number(Number::Integer(n)) => {
                 (BigRational::from(BigInt::from(*n)), Expression::integer(1))
             }
             Expression::Mul(factors) => {
@@ -338,7 +338,7 @@ impl Expression {
                         Expression::Number(Number::Rational(r)) => {
                             coefficient *= r.as_ref();
                         }
-                        Expression::Number(Number::SmallInt(n)) => {
+                        Expression::Number(Number::Integer(n)) => {
                             coefficient *= BigRational::from(BigInt::from(*n));
                         }
                         _ => {

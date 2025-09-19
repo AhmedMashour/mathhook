@@ -166,12 +166,12 @@ impl SystemSolver {
 
         match (&a1, &b1, &c1, &a2, &b2, &c2) {
             (
-                Expression::Number(Number::SmallInt(a1_val)),
-                Expression::Number(Number::SmallInt(b1_val)),
-                Expression::Number(Number::SmallInt(c1_val)),
-                Expression::Number(Number::SmallInt(a2_val)),
-                Expression::Number(Number::SmallInt(b2_val)),
-                Expression::Number(Number::SmallInt(c2_val)),
+                Expression::Number(Number::Integer(a1_val)),
+                Expression::Number(Number::Integer(b1_val)),
+                Expression::Number(Number::Integer(c1_val)),
+                Expression::Number(Number::Integer(a2_val)),
+                Expression::Number(Number::Integer(b2_val)),
+                Expression::Number(Number::Integer(c2_val)),
             ) => {
                 // Calculate determinant: det = a1*b2 - a2*b1
                 let det = a1_val * b2_val - a2_val * b1_val;

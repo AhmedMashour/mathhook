@@ -32,7 +32,7 @@ pub trait Factor {
     ///
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol("x"), Expression::integer(2)),
-    ///     Expression::multiply(Expression::integer(5), Expression::symbol("x")),
+    ///     Expression::mul(vec![Expression::integer(5), Expression::symbol("x")),
     ///     Expression::integer(6),
     /// ]);
     /// let factored = expr.factor();
@@ -50,7 +50,7 @@ pub trait Expand {
     /// ```rust
     /// use mathhook_core::{Expression, algebra::Expand};
     ///
-    /// let expr = Expression::multiply(
+    /// let expr = Expression::mul(vec![
     ///     Expression::add(vec![Expression::symbol("x"), Expression::integer(1)]),
     ///     Expression::add(vec![Expression::symbol("x"), Expression::integer(2)]),
     /// );

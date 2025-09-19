@@ -109,20 +109,20 @@ impl Expression {
     fn are_additive_inverses(&self, expr1: &Expression, expr2: &Expression) -> bool {
         match (expr1, expr2) {
             // Simple numeric case: 5 + (-5) = 0
-            (Expression::Number(Number::SmallInt(a)), Expression::Number(Number::SmallInt(b))) => {
+            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
                 *a + *b == 0
             }
 
             // Symbolic case: x + (-x) = 0
             (Expression::Symbol(s1), Expression::Mul(factors)) => {
                 if factors.len() == 2 {
-                    if let (Expression::Number(Number::SmallInt(n)), Expression::Symbol(s2)) =
+                    if let (Expression::Number(Number::Integer(n)), Expression::Symbol(s2)) =
                         (&factors[0], &factors[1])
                     {
                         *n == -1 && s1 == s2
                     } else if let (
                         Expression::Symbol(s2),
-                        Expression::Number(Number::SmallInt(n)),
+                        Expression::Number(Number::Integer(n)),
                     ) = (&factors[0], &factors[1])
                     {
                         *n == -1 && s1 == s2
@@ -166,7 +166,7 @@ impl Expression {
         // Remove the -1 factor and compare
         let neg_without_minus_one: Vec<Expression> = neg_factors
             .iter()
-            .filter(|f| !matches!(f, Expression::Number(Number::SmallInt(n)) if *n == -1))
+            .filter(|f| !matches!(f, Expression::Number(Number::Integer(n)) if *n == -1))
             .cloned()
             .collect();
 
@@ -178,7 +178,7 @@ impl Expression {
     fn has_negative_one_factor(&self, factors: &[Expression]) -> bool {
         factors
             .iter()
-            .any(|f| matches!(f, Expression::Number(Number::SmallInt(n)) if *n == -1))
+            .any(|f| matches!(f, Expression::Number(Number::Integer(n)) if *n == -1))
     }
 
     /// Check if two factor sets are equal (ignoring order)
@@ -226,14 +226,14 @@ impl Expression {
     /// Extract coefficient and base term
     fn extract_coefficient_and_base_term(&self, term: &Expression) -> (BigInt, Expression) {
         match term {
-            Expression::Number(Number::SmallInt(n)) => (BigInt::from(*n), Expression::integer(1)),
+            Expression::Number(Number::Integer(n)) => (BigInt::from(*n), Expression::integer(1)),
             Expression::Symbol(_) => (BigInt::one(), term.clone()),
             Expression::Mul(factors) => {
                 let mut coefficient = BigInt::one();
                 let mut base_factors = Vec::new();
 
                 for factor in factors.iter() {
-                    if let Expression::Number(Number::SmallInt(n)) = factor {
+                    if let Expression::Number(Number::Integer(n)) = factor {
                         coefficient *= BigInt::from(*n);
                     } else {
                         base_factors.push(factor.clone());
@@ -304,7 +304,7 @@ impl Expression {
         // Look for patterns like coefficient * (sum)
         if factors.len() == 2 {
             match (&factors[0], &factors[1]) {
-                (Expression::Number(Number::SmallInt(coeff)), Expression::Add(terms)) => {
+                (Expression::Number(Number::Integer(coeff)), Expression::Add(terms)) => {
                     // Distribute: coeff * (a + b) = coeff*a + coeff*b
                     let distributed_terms: Vec<Expression> = terms
                         .iter()
@@ -314,7 +314,7 @@ impl Expression {
                         .collect();
                     Some(Expression::add(distributed_terms))
                 }
-                (Expression::Add(terms), Expression::Number(Number::SmallInt(coeff))) => {
+                (Expression::Add(terms), Expression::Number(Number::Integer(coeff))) => {
                     // Distribute: (a + b) * coeff = a*coeff + b*coeff
                     let distributed_terms: Vec<Expression> = terms
                         .iter()

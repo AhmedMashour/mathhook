@@ -21,7 +21,7 @@ impl BenchmarkData {
     pub fn linear_expression(var_name: &str, coeff: i64, constant: i64) -> Expression {
         let x = Symbol::new(var_name);
         Expression::add(vec![
-            Expression::multiply(Expression::integer(coeff), Expression::symbol(x)),
+            Expression::mul(vec![Expression::integer(coeff), Expression::symbol(x)]),
             Expression::integer(constant),
         ])
     }
@@ -38,11 +38,11 @@ impl BenchmarkData {
     pub fn quadratic_expression(var_name: &str, a: i64, b: i64, c: i64) -> Expression {
         let x = Symbol::new(var_name);
         Expression::add(vec![
-            Expression::multiply(
+            Expression::mul(vec![
                 Expression::integer(a),
                 Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-            ),
-            Expression::multiply(Expression::integer(b), Expression::symbol(x)),
+            ]),
+            Expression::mul(vec![Expression::integer(b), Expression::symbol(x)]),
             Expression::integer(c),
         ])
     }
@@ -65,10 +65,10 @@ impl BenchmarkData {
             let term = if i == 0 {
                 coeff
             } else {
-                Expression::multiply(
+                Expression::mul(vec![
                     coeff,
                     Expression::pow(Expression::symbol(x.clone()), Expression::integer(i as i64)),
-                )
+                ])
             };
             terms.push(term);
         }

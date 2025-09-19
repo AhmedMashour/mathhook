@@ -65,7 +65,7 @@ impl PolynomialSolver {
         match expr {
             Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
                 match exp.as_ref() {
-                    Expression::Number(Number::SmallInt(n)) => *n as u32,
+                    Expression::Number(Number::Integer(n)) => *n as u32,
                     _ => 1,
                 }
             }
@@ -94,7 +94,7 @@ impl PolynomialSolver {
             if terms.len() == 2 {
                 if let (
                     Expression::Pow(base, exp),
-                    Expression::Number(Number::SmallInt(constant)),
+                    Expression::Number(Number::Integer(constant)),
                 ) = (&terms[0], &terms[1])
                 {
                     if **base == Expression::symbol(variable.clone())
@@ -178,7 +178,7 @@ impl PolynomialSolver {
             if terms.len() == 2 {
                 if let (
                     Expression::Pow(base, exp),
-                    Expression::Number(Number::SmallInt(constant)),
+                    Expression::Number(Number::Integer(constant)),
                 ) = (&terms[0], &terms[1])
                 {
                     if **base == Expression::symbol(variable.clone())

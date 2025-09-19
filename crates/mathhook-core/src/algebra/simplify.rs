@@ -47,7 +47,7 @@ impl Expression {
         // Single pass - count and accumulate
         for term in terms {
             match term {
-                Expression::Number(Number::SmallInt(n)) => {
+                Expression::Number(Number::Integer(n)) => {
                     int_sum += n;
                 }
                 Expression::Number(Number::Float(f)) => {
@@ -119,8 +119,8 @@ impl Expression {
         if factors.len() == 2 {
             match (&factors[0], &factors[1]) {
                 (
-                    Expression::Number(Number::SmallInt(a)),
-                    Expression::Number(Number::SmallInt(b)),
+                    Expression::Number(Number::Integer(a)),
+                    Expression::Number(Number::Integer(b)),
                 ) => {
                     return Expression::integer(a * b);
                 }
@@ -133,7 +133,7 @@ impl Expression {
 
         // Zero detection first - early termination
         for factor in factors {
-            if let Expression::Number(Number::SmallInt(0)) = factor {
+            if let Expression::Number(Number::Integer(0)) = factor {
                 return Expression::integer(0);
             }
         }
@@ -147,7 +147,7 @@ impl Expression {
 
         for factor in factors {
             match factor {
-                Expression::Number(Number::SmallInt(n)) => {
+                Expression::Number(Number::Integer(n)) => {
                     int_product *= n;
                 }
                 Expression::Number(Number::Float(f)) => {
@@ -183,7 +183,7 @@ impl Expression {
             (Some(num), 1) => {
                 // Only multiply if the numeric factor isn't 1
                 match num {
-                    Expression::Number(Number::SmallInt(1)) => first_non_numeric.unwrap(),
+                    Expression::Number(Number::Integer(1)) => first_non_numeric.unwrap(),
                     Expression::Number(Number::Float(f)) if *f == 1.0 => first_non_numeric.unwrap(),
                     _ => Expression::mul(vec![num.clone(), first_non_numeric.unwrap()]),
                 }
@@ -194,7 +194,7 @@ impl Expression {
                 if let Some(num) = numeric_result {
                     // Only include numeric factor if it's not 1
                     match num {
-                        Expression::Number(Number::SmallInt(1)) => {}
+                        Expression::Number(Number::Integer(1)) => {}
                         Expression::Number(Number::Float(f)) if f == 1.0 => {}
                         _ => result_factors.push(num),
                     }
@@ -218,21 +218,21 @@ impl Expression {
     fn simplify_power(&self, base: &Expression, exp: &Expression) -> Self {
         match (base, exp) {
             // x^0 = 1
-            (_, Expression::Number(Number::SmallInt(0))) => Expression::integer(1),
+            (_, Expression::Number(Number::Integer(0))) => Expression::integer(1),
             // x^1 = x
-            (_, Expression::Number(Number::SmallInt(1))) => base.clone(),
+            (_, Expression::Number(Number::Integer(1))) => base.clone(),
             // 0^n = 0 (for n > 0)
-            (Expression::Number(Number::SmallInt(0)), Expression::Number(Number::SmallInt(n)))
+            (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(n)))
                 if *n > 0 =>
             {
                 Expression::integer(0)
             }
             // 1^n = 1
-            (Expression::Number(Number::SmallInt(1)), _) => Expression::integer(1),
+            (Expression::Number(Number::Integer(1)), _) => Expression::integer(1),
             // Direct numeric powers for small integers
             (
-                Expression::Number(Number::SmallInt(base_val)),
-                Expression::Number(Number::SmallInt(exp_val)),
+                Expression::Number(Number::Integer(base_val)),
+                Expression::Number(Number::Integer(exp_val)),
             ) => {
                 if *exp_val >= 0 && *exp_val <= 10 && base_val.abs() <= 100 {
                     // Safe to compute directly

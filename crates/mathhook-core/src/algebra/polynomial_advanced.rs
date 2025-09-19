@@ -27,7 +27,7 @@ impl AdvancedPolynomial for Expression {
     #[inline(always)]
     fn polynomial_divide(&self, divisor: &Self) -> (Expression, Expression) {
         // Fast path: division by constants
-        if let Expression::Number(Number::SmallInt(d)) = divisor {
+        if let Expression::Number(Number::Integer(d)) = divisor {
             if *d != 0 {
                 return (
                     Expression::mul(vec![
@@ -68,7 +68,7 @@ impl AdvancedPolynomial for Expression {
             Expression::Symbol(s) if s == var => Some(1),
             Expression::Number(_) => Some(0),
             Expression::Pow(base, exp) => {
-                if let (Expression::Symbol(s), Expression::Number(Number::SmallInt(e))) =
+                if let (Expression::Symbol(s), Expression::Number(Number::Integer(e))) =
                     (base.as_ref(), exp.as_ref())
                 {
                     if s == var {

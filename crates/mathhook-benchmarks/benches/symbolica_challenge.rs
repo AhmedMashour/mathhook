@@ -11,7 +11,7 @@ fn bench_symbolica_challenge(c: &mut Criterion) {
     let y = Symbol::new("y");
 
     c.bench_function("complex_expansion", |b| {
-        let expr = Expression::multiply(
+        let expr = Expression::mul(vec![
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
             Expression::add(vec![Expression::symbol(y.clone()), Expression::integer(2)]),
         );

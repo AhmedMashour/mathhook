@@ -33,11 +33,11 @@ impl EquationSolver for LinearSolver {
     #[inline(always)]
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
         // Handle simplified equations that lost structure
-        if let Expression::Number(Number::SmallInt(0)) = equation {
+        if let Expression::Number(Number::Integer(0)) = equation {
             // If equation simplified to just 0, it means 0 = 0 (infinite solutions)
             return SolverResult::InfiniteSolutions;
         }
-        if let Expression::Number(Number::SmallInt(n)) = equation {
+        if let Expression::Number(Number::Integer(n)) = equation {
             if *n != 0 {
                 // If equation simplified to non-zero constant, no solution
                 return SolverResult::NoSolution;
@@ -75,8 +75,8 @@ impl EquationSolver for LinearSolver {
         // Check if we can solve numerically
         match (&a_simplified, &b_simplified) {
             (
-                Expression::Number(Number::SmallInt(a_val)),
-                Expression::Number(Number::SmallInt(b_val)),
+                Expression::Number(Number::Integer(a_val)),
+                Expression::Number(Number::Integer(b_val)),
             ) => {
                 if *a_val != 0 {
                     // Simple case: ax + b = 0 → x = -b/a
@@ -280,11 +280,11 @@ impl LinearSolver {
                 // Check for patterns: 0*x + constant
                 if let [Expression::Mul(factors), constant] = &terms[..] {
                     if factors.len() == 2 {
-                        if let [Expression::Number(Number::SmallInt(0)), var] = &factors[..] {
+                        if let [Expression::Number(Number::Integer(0)), var] = &factors[..] {
                             if var == &Expression::symbol(variable.clone()) {
                                 // Found 0*x + constant pattern
                                 match constant {
-                                    Expression::Number(Number::SmallInt(0)) => {
+                                    Expression::Number(Number::Integer(0)) => {
                                         return Some(SolverResult::InfiniteSolutions);
                                         // 0*x + 0 = 0
                                     }
@@ -313,7 +313,7 @@ impl LinearSolver {
         match expr {
             // Handle -1 * (complex expression)
             Expression::Mul(factors) if factors.len() == 2 => {
-                if let [Expression::Number(Number::SmallInt(-1)), complex_expr] = &factors[..] {
+                if let [Expression::Number(Number::Integer(-1)), complex_expr] = &factors[..] {
                     // Evaluate the complex expression and negate it
                     let evaluated = self.evaluate_expression(complex_expr);
                     self.negate_expression(&evaluated).simplify()
@@ -337,7 +337,7 @@ impl LinearSolver {
                 let mut total = 0i64;
                 for term in terms.iter() {
                     match self.evaluate_expression(term) {
-                        Expression::Number(Number::SmallInt(n)) => total += n,
+                        Expression::Number(Number::Integer(n)) => total += n,
                         _ => return expr.clone(), // Can't evaluate
                     }
                 }
@@ -347,7 +347,7 @@ impl LinearSolver {
                 let mut product = 1i64;
                 for factor in factors.iter() {
                     match self.evaluate_expression(factor) {
-                        Expression::Number(Number::SmallInt(n)) => product *= n,
+                        Expression::Number(Number::Integer(n)) => product *= n,
                         _ => return expr.clone(), // Can't evaluate
                     }
                 }
@@ -376,8 +376,8 @@ impl LinearSolver {
                         }
                     }
                     (
-                        Expression::Number(Number::SmallInt(num)),
-                        Expression::Number(Number::SmallInt(den)),
+                        Expression::Number(Number::Integer(num)),
+                        Expression::Number(Number::Integer(den)),
                     ) => {
                         if *den != 0 {
                             if num % den == 0 {
@@ -409,7 +409,7 @@ impl LinearSolver {
 
         match (&num_simplified, &den_simplified) {
             // Simple integer division
-            (Expression::Number(Number::SmallInt(n)), Expression::Number(Number::SmallInt(d))) => {
+            (Expression::Number(Number::Integer(n)), Expression::Number(Number::Integer(d))) => {
                 if *d != 0 {
                     if n % d == 0 {
                         Expression::integer(n / d)
@@ -426,10 +426,10 @@ impl LinearSolver {
                 }
             }
             // Try to simplify further - if denominator is 1, just return numerator
-            (num, Expression::Number(Number::SmallInt(1))) => num.clone(),
+            (num, Expression::Number(Number::Integer(1))) => num.clone(),
             // Handle multiplication by -1 and other simple cases
             (Expression::Mul(factors), den) if factors.len() == 2 => {
-                if let [Expression::Number(Number::SmallInt(-1)), expr] = &factors[..] {
+                if let [Expression::Number(Number::Integer(-1)), expr] = &factors[..] {
                     // -1 * expr / den = -(expr / den)
                     let inner_div = self.divide_expressions(expr, den);
                     Expression::mul(vec![Expression::integer(-1), inner_div]).simplify()
