@@ -1,5 +1,5 @@
 /// Verify performance after memory optimization
-use mathhook_core::core::{Expression, Symbol};
+use mathhook_core::prelude::*;
 use std::time::Instant;
 
 #[test]
