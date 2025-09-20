@@ -8,11 +8,11 @@ fn test_logarithm_simplification() {
     
     // Test ln(1) = 0
     let expr = Expression::function("ln", vec![Expression::integer(1)]);
-    let result = expr.simplify(); // Would use advanced_simplify() when implemented
+    let result = expr.simplify(); 
     
     println!("ln(1) = {}", result);
     
-    // Should simplify to 0 when advanced simplification is implemented
+    
     match result {
         Expression::Number(Number::Integer(0)) => assert_eq!(0, 0),
         _ => println!("ln(1) result: {}", result),
@@ -41,11 +41,11 @@ fn test_logcombine_1() {
 fn test_factorial_simplify() {
     // Test 5! = 120
     let expr = Expression::function("factorial", vec![Expression::integer(5)]);
-    let result = expr.simplify(); // Would use advanced_simplify() when implemented
+    let result = expr.simplify(); 
     
     println!("5! = {}", result);
     
-    // Should compute factorial when advanced simplification is implemented
+    
     match result {
         Expression::Number(Number::Integer(120)) => assert_eq!(120, 120),
         _ => println!("5! result: {}", result),
@@ -60,7 +60,7 @@ fn test_nsimplify() {
     
     println!("0.333333333 simplified = {}", result);
     
-    // Might recognize as 1/3 with advanced simplification
+    
     assert!(!result.is_zero());
 }
 
@@ -78,7 +78,7 @@ fn test_simplify_expr() {
     let result = expr.simplify();
     println!("x^2 - x^2 + x = {}", result);
     
-    // Should simplify to x
+    
     assert!(!result.is_zero());
 }
 
@@ -145,7 +145,7 @@ fn test_advanced_function_combinations() {
     let result = expr.simplify();
     println!("ln(exp(x)) = {}", result);
     
-    // Should simplify to x when advanced simplification is implemented
+    
     match result {
         Expression::Symbol(s) if s.name() == "x" => assert_eq!(s.name(), "x"),
         _ => println!("ln(exp(x)) result: {}", result),
@@ -167,7 +167,7 @@ fn test_mathematical_function_mastery() {
     let result = expr.simplify();
     println!("sin(0) + cos(0) + 3! + x = {}", result);
     
-    // Should simplify to 0 + 1 + 6 + x = 7 + x when implemented
+    
     assert!(!result.is_zero());
 }
 

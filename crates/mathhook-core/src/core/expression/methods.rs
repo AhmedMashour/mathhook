@@ -15,46 +15,6 @@ fn gcd_integers(a: i64, b: i64) -> i64 {
 }
 
 impl Expression {
-    /// Check if the expression represents zero
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let zero = Expression::integer(0);
-    /// assert!(zero.is_zero());
-    ///
-    /// let non_zero = Expression::integer(5);
-    /// assert!(!non_zero.is_zero());
-    /// ```
-    pub fn is_zero(&self) -> bool {
-        match self {
-            Expression::Number(num) => num.is_zero(),
-            _ => false,
-        }
-    }
-
-    /// Check if the expression represents one
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let one = Expression::integer(1);
-    /// assert!(one.is_one());
-    ///
-    /// let non_one = Expression::integer(5);
-    /// assert!(!non_one.is_one());
-    /// ```
-    pub fn is_one(&self) -> bool {
-        match self {
-            Expression::Number(num) => num.is_one(),
-            _ => false,
-        }
-    }
-
     /// Compute the greatest common divisor of two expressions
     ///
     /// # Examples
@@ -67,6 +27,17 @@ impl Expression {
     /// let gcd = a.gcd(&b);
     /// ```
     pub fn gcd(&self, other: &Expression) -> Expression {
+        if self == other {
+            return self.clone();
+        }
+
+        if self.is_zero() {
+            return other.clone();
+        }
+        if other.is_zero() {
+            return self.clone();
+        }
+
         match (self, other) {
             (Expression::Number(num1), Expression::Number(num2)) => match (num1, num2) {
                 (Number::Integer(a), Number::Integer(b)) => {
@@ -137,5 +108,38 @@ impl Expression {
     pub fn cofactors(&self, other: &Expression) -> (Expression, Expression, Expression) {
         let gcd = self.gcd(other);
         (gcd.clone(), self.clone(), other.clone())
+    }
+
+    /// Convert expression to LaTeX format
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let expr = Expression::pow(Expression::symbol("x"), Expression::integer(2));
+    /// let latex = expr.to_latex();
+    /// ```
+    pub fn to_latex(&self) -> String {
+        match self {
+            Expression::Number(num) => format!("{}", num),
+            Expression::Symbol(sym) => sym.name.clone(),
+            Expression::Add(terms) => {
+                let term_strs: Vec<String> = terms.iter().map(|t| t.to_latex()).collect();
+                term_strs.join(" + ")
+            }
+            Expression::Mul(factors) => {
+                let factor_strs: Vec<String> = factors.iter().map(|f| f.to_latex()).collect();
+                factor_strs.join(" \\cdot ")
+            }
+            Expression::Pow(base, exp) => {
+                format!("{}^{{{}}}", base.to_latex(), exp.to_latex())
+            }
+            Expression::Function { name, args } => {
+                let arg_strs: Vec<String> = args.iter().map(|a| a.to_latex()).collect();
+                format!("\\{}({})", name, arg_strs.join(", "))
+            }
+            _ => format!("{}", self),
+        }
     }
 }

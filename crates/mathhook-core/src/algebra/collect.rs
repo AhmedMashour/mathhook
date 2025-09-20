@@ -72,7 +72,7 @@ impl Expression {
 
         // Add constant term if non-zero
         if !constant_term.is_zero() {
-            result_terms.push(Expression::integer(constant_term));
+            result_terms.push(Expression::big_integer(constant_term));
         }
 
         // Add variable terms
@@ -90,7 +90,7 @@ impl Expression {
                     } else {
                         Expression::pow(Expression::symbol(var.clone()), power_expr)
                     };
-                    Expression::mul(vec![Expression::integer(coeff), var_part])
+                    Expression::mul(vec![Expression::big_integer(coeff), var_part])
                 };
                 result_terms.push(term);
             }
@@ -201,9 +201,9 @@ impl Expression {
                 let final_term = if total_coeff.is_one() {
                     base_term
                 } else if base_term == Expression::integer(1) {
-                    Expression::integer(total_coeff)
+                    Expression::big_integer(total_coeff)
                 } else {
-                    Expression::mul(vec![Expression::integer(total_coeff), base_term])
+                    Expression::mul(vec![Expression::big_integer(total_coeff), base_term])
                 };
                 result_terms.push(final_term);
             }
@@ -304,7 +304,7 @@ impl Expression {
         let mut result_factors = Vec::new();
 
         if !numeric_factor.is_one() {
-            result_factors.push(Expression::integer(numeric_factor));
+            result_factors.push(Expression::big_integer(numeric_factor));
         }
 
         for (base, exponents) in base_powers {

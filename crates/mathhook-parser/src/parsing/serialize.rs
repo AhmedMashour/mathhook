@@ -1,8 +1,7 @@
-//! 🔄 MATHEMATICAL EXPRESSION SERIALIZATION API
 //! Clean parse and stringify API for mathematical expressions
 
-use crate::core::{Expression, LimitDirection, MathConstant, Number, RelationType, Symbol};
-use crate::parsing::{MathLanguage, UniversalParser};
+use mathhook_core::core::expression::LimitDirection;
+use mathhook_core::{Expression, MathConstant, Number, Symbol};
 use num_traits::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -166,7 +165,7 @@ impl MathSerializer {
             },
 
             Expression::Calculus(calculus_data) => {
-                use crate::core::expression::CalculusData;
+                use mathhook_core::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,
@@ -281,21 +280,3 @@ impl std::fmt::Display for SerializationError {
 }
 
 impl std::error::Error for SerializationError {}
-
-/// Convenience functions for serialization API
-impl Expression {
-    /// Parse from serialized string
-    pub fn parse_serialized(data_str: &str) -> Result<Expression, SerializationError> {
-        MathSerializer::parse(data_str)
-    }
-
-    /// Convert to serialized string
-    pub fn stringify(&self) -> Result<String, SerializationError> {
-        MathSerializer::stringify(self)
-    }
-
-    /// Convert to compact serialized string
-    pub fn stringify_compact(&self) -> Result<String, SerializationError> {
-        MathSerializer::stringify_compact(self)
-    }
-}

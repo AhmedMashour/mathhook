@@ -7,7 +7,7 @@ use crate::core::{Number, Symbol};
 
 impl From<i32> for Expression {
     fn from(value: i32) -> Self {
-        Self::integer(value)
+        Self::integer(value as i64)
     }
 }
 

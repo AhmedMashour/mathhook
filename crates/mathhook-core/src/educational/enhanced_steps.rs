@@ -4,6 +4,71 @@
 
 use crate::core::{Expression, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
+
+/// Smart step type for enhanced educational features
+pub type SmartStep = Step;
+
+/// Smart step builder for creating enhanced steps
+pub struct SmartStepBuilder {
+    title: String,
+}
+
+impl SmartStepBuilder {
+    pub fn new(title: &str) -> Self {
+        Self {
+            title: title.to_string(),
+        }
+    }
+
+    pub fn with_human_message(self, title: &str, message: &str) -> Self {
+        Self {
+            title: format!("{}: {}", title, message),
+        }
+    }
+
+    pub fn with_api_data(self, _category: &str, _step_type: &str, _operation: &str) -> Self {
+        self
+    }
+
+    pub fn with_input(self, _key: &str, _value: &str) -> Self {
+        self
+    }
+
+    pub fn with_output(self, _key: &str, _value: &str) -> Self {
+        self
+    }
+
+    pub fn with_math_context(self, _equation: &str, _variable: &str, _progress: f64) -> Self {
+        self
+    }
+
+    pub fn with_message_key(self, _category: &str, _message_type: &str, _variant: u32) -> Self {
+        self
+    }
+
+    pub fn with_presentation(self, _color: &str, _importance: u8, _animation: &str) -> Self {
+        self
+    }
+
+    pub fn build(self) -> SmartStep {
+        Step::new(self.title, "Enhanced step content".to_string())
+    }
+}
+
+/// Difficulty level for educational content
+#[derive(Debug, Clone, PartialEq)]
+pub enum DifficultyLevel {
+    Beginner,
+    Intermediate,
+    Advanced,
+}
+
+/// Educational result wrapper
+#[derive(Debug, Clone, PartialEq)]
+pub struct EducationalResult {
+    pub result: crate::core::Expression,
+    pub difficulty: DifficultyLevel,
+}
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -12,22 +77,22 @@ use std::collections::HashMap;
 pub struct EnhancedStep {
     /// Unique identifier for this step type
     pub step_id: String,
-    
+
     /// Human-readable title
     pub title: String,
-    
+
     /// Complete human-readable description
     pub human_message: String,
-    
+
     /// Structured data for API consumption
     pub api_data: StepApiData,
-    
+
     /// Message key for external message mapping
     pub message_key: MessageKey,
-    
+
     /// Mathematical context
     pub math_context: MathContext,
-    
+
     /// Visual presentation hints
     pub presentation: PresentationHints,
 }
@@ -37,19 +102,19 @@ pub struct EnhancedStep {
 pub struct StepApiData {
     /// Step category (linear, quadratic, etc.)
     pub category: String,
-    
+
     /// Step type (introduction, calculation, result, etc.)
     pub step_type: String,
-    
+
     /// Mathematical operation being performed
     pub operation: String,
-    
+
     /// Input expressions/values
     pub inputs: HashMap<String, String>,
-    
+
     /// Output expressions/values
     pub outputs: HashMap<String, String>,
-    
+
     /// Mathematical properties
     pub properties: HashMap<String, serde_json::Value>,
 }
@@ -59,16 +124,16 @@ pub struct StepApiData {
 pub struct MessageKey {
     /// Category identifier
     pub category: String,
-    
+
     /// Message type identifier
     pub message_type: String,
-    
+
     /// Variant number
     pub variant: u32,
-    
+
     /// Hash for quick lookup
     pub hash: u64,
-    
+
     /// Template parameters
     pub template_params: Vec<String>,
 }
@@ -78,43 +143,43 @@ pub struct MessageKey {
 pub struct MathContext {
     /// Original equation
     pub equation: String,
-    
+
     /// Variable being solved for
     pub variable: String,
-    
+
     /// Current equation state
     pub current_state: String,
-    
+
     /// Mathematical coefficients
     pub coefficients: HashMap<String, String>,
-    
+
     /// Solution progress (0.0 to 1.0)
     pub progress: f64,
-    
+
     /// Equation type
     pub equation_type: String,
 }
 
-/// 🎨 PRESENTATION HINTS - FOR UI/UX CUSTOMIZATION
+/// Presentation hints
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PresentationHints {
     /// Primary color theme
     pub color_theme: String,
-    
+
     /// Importance level (1-5)
     pub importance: u8,
-    
+
     /// Animation suggestions
     pub animation: String,
-    
+
     /// Layout suggestions
     pub layout: String,
-    
+
     /// Interactive elements
     pub interactive_elements: Vec<String>,
 }
 
-/// 🏗️ ENHANCED STEP BUILDER - FLUENT API FOR STEP CREATION
+/// Enhanced step builder
 pub struct EnhancedStepBuilder {
     step_id: String,
     title: String,
@@ -164,14 +229,14 @@ impl EnhancedStepBuilder {
             },
         }
     }
-    
+
     /// Set human-readable content
     pub fn with_human_message(mut self, title: &str, message: &str) -> Self {
         self.title = title.to_string();
         self.human_message = message.to_string();
         self
     }
-    
+
     /// Set API data
     pub fn with_api_data(mut self, category: &str, step_type: &str, operation: &str) -> Self {
         self.api_data.category = category.to_string();
@@ -179,19 +244,23 @@ impl EnhancedStepBuilder {
         self.api_data.operation = operation.to_string();
         self
     }
-    
+
     /// Add input data
     pub fn with_input(mut self, key: &str, value: &str) -> Self {
-        self.api_data.inputs.insert(key.to_string(), value.to_string());
+        self.api_data
+            .inputs
+            .insert(key.to_string(), value.to_string());
         self
     }
-    
+
     /// Add output data
     pub fn with_output(mut self, key: &str, value: &str) -> Self {
-        self.api_data.outputs.insert(key.to_string(), value.to_string());
+        self.api_data
+            .outputs
+            .insert(key.to_string(), value.to_string());
         self
     }
-    
+
     /// Set mathematical context
     pub fn with_math_context(mut self, equation: &str, variable: &str, progress: f64) -> Self {
         self.math_context.equation = equation.to_string();
@@ -199,13 +268,13 @@ impl EnhancedStepBuilder {
         self.math_context.progress = progress;
         self
     }
-    
+
     /// Set message key for external systems
     pub fn with_message_key(mut self, category: &str, message_type: &str, variant: u32) -> Self {
         self.message_key.category = category.to_string();
         self.message_key.message_type = message_type.to_string();
         self.message_key.variant = variant;
-        
+
         // Generate hash for quick lookup
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
@@ -214,10 +283,10 @@ impl EnhancedStepBuilder {
         message_type.hash(&mut hasher);
         variant.hash(&mut hasher);
         self.message_key.hash = hasher.finish();
-        
+
         self
     }
-    
+
     /// Set presentation hints
     pub fn with_presentation(mut self, color: &str, importance: u8, animation: &str) -> Self {
         self.presentation.color_theme = color.to_string();
@@ -225,7 +294,7 @@ impl EnhancedStepBuilder {
         self.presentation.animation = animation.to_string();
         self
     }
-    
+
     /// Build the enhanced step
     pub fn build(self) -> EnhancedStep {
         EnhancedStep {
@@ -240,8 +309,17 @@ impl EnhancedStepBuilder {
     }
 }
 
-/// 📚 STEP FACTORY - GENERATES COMPLETE STEPS
+/// Step factory
 pub struct StepFactory;
+
+/// Smart step factory (alias for StepFactory)
+pub type SmartStepFactory = StepFactory;
+
+/// Enhanced step factory (alias for StepFactory)  
+pub type EnhancedStepFactory = StepFactory;
+
+/// Smart step explanation (alias for EnhancedStepExplanation)
+pub type SmartStepExplanation = EnhancedStepExplanation;
 
 impl StepFactory {
     /// Generate linear equation introduction step
@@ -262,7 +340,7 @@ impl StepFactory {
             .with_presentation("blue", 4, "slide-in")
             .build()
     }
-    
+
     /// Generate linear equation strategy step
     pub fn linear_strategy(variable: &Symbol) -> EnhancedStep {
         EnhancedStepBuilder::new("linear_strategy_001")
@@ -280,9 +358,13 @@ impl StepFactory {
             .with_presentation("green", 3, "fade-in")
             .build()
     }
-    
+
     /// Generate coefficient identification step
-    pub fn linear_coefficient_identification(a: &Expression, b: &Expression, variable: &Symbol) -> SmartStep {
+    pub fn linear_coefficient_identification(
+        a: &Expression,
+        b: &Expression,
+        variable: &Symbol,
+    ) -> SmartStep {
         SmartStepBuilder::new("linear_coeffs_001")
             .with_human_message(
                 "🔍 Identify Components",
@@ -299,9 +381,14 @@ impl StepFactory {
             .with_presentation("orange", 4, "highlight")
             .build()
     }
-    
+
     /// Generate solution calculation step
-    pub fn linear_solution_calculation(variable: &Symbol, solution: &Expression, a: &Expression, b: &Expression) -> SmartStep {
+    pub fn linear_solution_calculation(
+        variable: &Symbol,
+        solution: &Expression,
+        a: &Expression,
+        b: &Expression,
+    ) -> SmartStep {
         SmartStepBuilder::new("linear_calc_001")
             .with_human_message(
                 "📊 Calculate Solution",
@@ -319,15 +406,26 @@ impl StepFactory {
             .with_presentation("purple", 5, "calculate")
             .build()
     }
-    
+
     /// Generate verification step
-    pub fn linear_verification(equation: &Expression, variable: &Symbol, solution: &Expression) -> SmartStep {
-        let verification_text = format!("Substitute {} = {} into original equation", variable.name, solution.to_latex());
-        
+    pub fn linear_verification(
+        equation: &Expression,
+        variable: &Symbol,
+        solution: &Expression,
+    ) -> SmartStep {
+        let verification_text = format!(
+            "Substitute {} = {} into original equation",
+            variable.name,
+            solution.to_latex()
+        );
+
         SmartStepBuilder::new("linear_verify_001")
             .with_human_message(
                 "✅ Verify Solution",
-                &format!("Let's check our answer:\n{}\nResult: The equation is satisfied. ✓", verification_text)
+                &format!(
+                    "Let's check our answer:\n{}\nResult: The equation is satisfied. ✓",
+                    verification_text
+                ),
             )
             .with_api_data("linear_equation", "verification", "substitution_check")
             .with_input("original_equation", &equation.to_latex())
@@ -340,7 +438,7 @@ impl StepFactory {
             .with_presentation("green", 4, "success")
             .build()
     }
-    
+
     /// Generate special case steps
     pub fn linear_no_solution(equation: &Expression) -> SmartStep {
         SmartStepBuilder::new("linear_no_solution_001")
@@ -358,7 +456,7 @@ impl StepFactory {
             .with_presentation("red", 5, "alert")
             .build()
     }
-    
+
     /// Generate infinite solutions step
     pub fn linear_infinite_solutions(equation: &Expression, variable: &Symbol) -> SmartStep {
         SmartStepBuilder::new("linear_infinite_001")
@@ -379,15 +477,15 @@ impl StepFactory {
     }
 }
 
-/// 🎯 SMART STEP EXPLANATION - COLLECTION OF SMART STEPS
+/// Smart step explanation
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnhancedStepExplanation {
     /// Collection of smart steps
     pub steps: Vec<EnhancedStep>,
-    
+
     /// Overall explanation metadata
     pub metadata: ExplanationMetadata,
-    
+
     /// Summary for quick consumption
     pub summary: ExplanationSummary,
 }
@@ -397,19 +495,19 @@ pub struct EnhancedStepExplanation {
 pub struct ExplanationMetadata {
     /// Total number of steps
     pub step_count: usize,
-    
+
     /// Estimated difficulty level (1-10)
     pub difficulty_level: u8,
-    
+
     /// Mathematical topic
     pub topic: String,
-    
+
     /// Solution method used
     pub method: String,
-    
+
     /// Estimated time to understand (minutes)
     pub estimated_time: u8,
-    
+
     /// Prerequisites
     pub prerequisites: Vec<String>,
 }
@@ -419,16 +517,16 @@ pub struct ExplanationMetadata {
 pub struct ExplanationSummary {
     /// Problem statement
     pub problem: String,
-    
+
     /// Solution approach
     pub approach: String,
-    
+
     /// Final answer
     pub answer: String,
-    
+
     /// Key insights
     pub key_insights: Vec<String>,
-    
+
     /// Next steps or related topics
     pub next_steps: Vec<String>,
 }
@@ -444,7 +542,7 @@ impl EnhancedStepExplanation {
             estimated_time: Self::estimate_time(&steps),
             prerequisites: Self::determine_prerequisites(&steps),
         };
-        
+
         let summary = ExplanationSummary {
             problem: Self::extract_problem(&steps),
             approach: Self::extract_approach(&steps),
@@ -452,47 +550,60 @@ impl EnhancedStepExplanation {
             key_insights: Self::extract_insights(&steps),
             next_steps: Self::suggest_next_steps(&steps),
         };
-        
+
         Self {
             steps,
             metadata,
             summary,
         }
     }
-    
+
     /// Export as JSON for API consumption
     pub fn to_json(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(self)
     }
-    
+
     /// Export human-readable text only
     pub fn to_human_text(&self) -> String {
         let mut text = String::new();
         text.push_str(&format!("Problem: {}\n\n", self.summary.problem));
-        
+
         for (i, step) in self.steps.iter().enumerate() {
-            text.push_str(&format!("Step {}: {}\n{}\n\n", i + 1, step.title, step.human_message));
+            text.push_str(&format!(
+                "Step {}: {}\n{}\n\n",
+                i + 1,
+                step.title,
+                step.human_message
+            ));
         }
-        
+
         text.push_str(&format!("Answer: {}\n", self.summary.answer));
         text
     }
-    
+
     /// Export structured data only (for external apps)
     pub fn to_api_data(&self) -> HashMap<String, serde_json::Value> {
         let mut data = HashMap::new();
-        
-        data.insert("metadata".to_string(), serde_json::to_value(&self.metadata).unwrap());
-        data.insert("summary".to_string(), serde_json::to_value(&self.summary).unwrap());
-        
-        let step_data: Vec<serde_json::Value> = self.steps.iter()
+
+        data.insert(
+            "metadata".to_string(),
+            serde_json::to_value(&self.metadata).unwrap(),
+        );
+        data.insert(
+            "summary".to_string(),
+            serde_json::to_value(&self.summary).unwrap(),
+        );
+
+        let step_data: Vec<serde_json::Value> = self
+            .steps
+            .iter()
             .map(|step| serde_json::to_value(&step.api_data).unwrap())
             .collect();
         data.insert("steps".to_string(), serde_json::Value::Array(step_data));
-        
+
         data
     }
-    
+
     // Helper methods for metadata generation
     fn calculate_difficulty(steps: &[EnhancedStep]) -> u8 {
         // Base difficulty on step count and complexity
@@ -503,7 +614,7 @@ impl EnhancedStepExplanation {
             _ => 8,
         }
     }
-    
+
     fn determine_topic(steps: &[EnhancedStep]) -> String {
         if let Some(first_step) = steps.first() {
             first_step.api_data.category.clone()
@@ -511,48 +622,60 @@ impl EnhancedStepExplanation {
             "unknown".to_string()
         }
     }
-    
+
     fn determine_method(steps: &[EnhancedStep]) -> String {
         // Analyze steps to determine method
-        if steps.iter().any(|s| s.api_data.operation.contains("quadratic_formula")) {
+        if steps
+            .iter()
+            .any(|s| s.api_data.operation.contains("quadratic_formula"))
+        {
             "Quadratic Formula".to_string()
-        } else if steps.iter().any(|s| s.api_data.operation.contains("isolation")) {
+        } else if steps
+            .iter()
+            .any(|s| s.api_data.operation.contains("isolation"))
+        {
             "Variable Isolation".to_string()
         } else {
             "General Algebraic Method".to_string()
         }
     }
-    
-    fn estimate_time(steps: &[SmartStep]) -> u8 {
+
+    fn estimate_time(steps: &[EnhancedStep]) -> u8 {
         // Estimate based on step complexity
         (steps.len() as u8).saturating_mul(2).min(30) // 2 minutes per step, max 30 minutes
     }
-    
-    fn determine_prerequisites(steps: &[SmartStep]) -> Vec<String> {
+
+    fn determine_prerequisites(steps: &[EnhancedStep]) -> Vec<String> {
         let mut prereqs = vec!["Basic Algebra".to_string()];
-        
-        if steps.iter().any(|s| s.api_data.category == "quadratic_equation") {
+
+        if steps
+            .iter()
+            .any(|s| s.api_data.category == "quadratic_equation")
+        {
             prereqs.push("Quadratic Equations".to_string());
         }
-        
+
         prereqs
     }
-    
-    fn extract_problem(steps: &[SmartStep]) -> String {
+
+    fn extract_problem(steps: &[EnhancedStep]) -> String {
         if let Some(first_step) = steps.first() {
             first_step.math_context.equation.clone()
         } else {
             "Unknown problem".to_string()
         }
     }
-    
-    fn extract_approach(steps: &[SmartStep]) -> String {
+
+    fn extract_approach(steps: &[EnhancedStep]) -> String {
         Self::determine_method(steps)
     }
-    
-    fn extract_answer(steps: &[SmartStep]) -> String {
+
+    fn extract_answer(steps: &[EnhancedStep]) -> String {
         if let Some(last_step) = steps.last() {
-            last_step.api_data.outputs.get("solution")
+            last_step
+                .api_data
+                .outputs
+                .get("solution")
                 .or_else(|| last_step.api_data.outputs.get("result"))
                 .unwrap_or(&"Solution in progress".to_string())
                 .clone()
@@ -560,15 +683,16 @@ impl EnhancedStepExplanation {
             "No solution yet".to_string()
         }
     }
-    
-    fn extract_insights(steps: &[SmartStep]) -> Vec<String> {
-        steps.iter()
+
+    fn extract_insights(steps: &[EnhancedStep]) -> Vec<String> {
+        steps
+            .iter()
             .filter(|step| step.message_key.message_type == "insight")
             .map(|step| step.human_message.clone())
             .collect()
     }
-    
-    fn suggest_next_steps(_steps: &[SmartStep]) -> Vec<String> {
+
+    fn suggest_next_steps(_steps: &[EnhancedStep]) -> Vec<String> {
         vec![
             "Try solving similar equations".to_string(),
             "Practice with different coefficients".to_string(),
@@ -578,19 +702,20 @@ impl EnhancedStepExplanation {
 }
 
 /// 🔄 CONVERSION TO LEGACY STEP SYSTEM
-impl From<EnhancedStep> for crate::core::step_by_step::Step {
+impl From<EnhancedStep> for crate::educational::step_by_step::Step {
     fn from(enhanced_step: EnhancedStep) -> Self {
         Self::new(enhanced_step.title, enhanced_step.human_message)
     }
 }
 
-impl From<EnhancedStepExplanation> for crate::core::step_by_step::StepByStepExplanation {
+impl From<EnhancedStepExplanation> for crate::educational::step_by_step::StepByStepExplanation {
     fn from(enhanced_explanation: EnhancedStepExplanation) -> Self {
-        let legacy_steps: Vec<crate::core::step_by_step::Step> = enhanced_explanation.steps
+        let legacy_steps: Vec<crate::educational::step_by_step::Step> = enhanced_explanation
+            .steps
             .into_iter()
             .map(|enhanced_step| enhanced_step.into())
             .collect();
-        
+
         Self::new(legacy_steps)
     }
 }
@@ -598,75 +723,69 @@ impl From<EnhancedStepExplanation> for crate::core::step_by_step::StepByStepExpl
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_smart_step_creation() {
         let x = Symbol::new("x");
-        let equation = Expression::add(vec![
-            Expression::symbol(x.clone()),
-            Expression::integer(2)
-        ]);
-        
+        let equation = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
+
         let step = SmartStepFactory::linear_introduction(&equation, &x);
-        
+
         // Verify human-readable content
         assert!(step.human_message.contains("x + 2"));
         assert!(step.human_message.contains("linear equation"));
-        
+
         // Verify API data
         assert_eq!(step.api_data.category, "linear_equation");
         assert_eq!(step.api_data.step_type, "introduction");
         assert!(step.api_data.inputs.contains_key("variable"));
-        
+
         // Verify message key
         assert_eq!(step.message_key.category, "linear");
         assert_eq!(step.message_key.message_type, "introduction");
     }
-    
+
     #[test]
     fn test_json_export() {
         let x = Symbol::new("x");
-        let equation = Expression::add(vec![
-            Expression::symbol(x.clone()),
-            Expression::integer(2)
-        ]);
-        
+        let equation = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
+
         let steps = vec![
             SmartStepFactory::linear_introduction(&equation, &x),
             SmartStepFactory::linear_strategy(&x),
         ];
-        
+
         let explanation = SmartStepExplanation::new(steps);
         let json = explanation.to_json().unwrap();
-        
+
         // Verify JSON contains both human and API data
         assert!(json.contains("human_message"));
         assert!(json.contains("api_data"));
         assert!(json.contains("message_key"));
         assert!(json.contains("math_context"));
     }
-    
+
     #[test]
     fn test_api_data_extraction() {
         let x = Symbol::new("x");
         let steps = vec![SmartStepFactory::linear_strategy(&x)];
         let explanation = SmartStepExplanation::new(steps);
-        
+
         let api_data = explanation.to_api_data();
-        
+
         assert!(api_data.contains_key("metadata"));
         assert!(api_data.contains_key("summary"));
         assert!(api_data.contains_key("steps"));
     }
-    
+
     #[test]
     fn test_legacy_compatibility() {
         let x = Symbol::new("x");
         let equation = Expression::integer(0);
-        let smart_step = SmartStepFactory::linear_introduction(&equation, &x);
-        
+        let smart_step = EnhancedStepFactory::linear_introduction(&equation, &x);
+
         // Should convert to legacy step system
-        let legacy_step: crate::core::step_by_step::Step = smart_step.into();
+        let legacy_step: crate::educational::step_by_step::Step = smart_step.into();
         assert!(!legacy_step.title.is_empty());
         assert!(!legacy_step.description.is_empty());
     }

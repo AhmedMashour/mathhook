@@ -113,12 +113,12 @@ impl QuadraticSolver {
                                     has_x_squared = true;
                                 } else if let Expression::Number(Number::Integer(1)) = **exp {
                                     // x^1 = x (linear term)
-                                    b_coeff = coeff.clone();
+                                    has_x_linear = true;
                                 }
                             }
                         } else if *factor == Expression::symbol(variable.clone()) {
                             // Linear term: coefficient * x
-                            b_coeff = coeff.clone();
+                            has_x_linear = true;
                         } else {
                             coeff = Expression::mul(vec![coeff, factor.clone()]);
                         }

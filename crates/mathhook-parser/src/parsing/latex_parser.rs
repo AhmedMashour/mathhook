@@ -2,8 +2,8 @@
 //!
 //! Handles LaTeX-specific syntax including fractions, functions, and commands.
 
-use crate::core::{Expression, Number, Symbol};
 use crate::parsing::{constants::*, ParseError};
+use mathhook_core::{Expression, Number, Symbol};
 use std::collections::HashMap;
 
 /// LaTeX-specific parser
@@ -31,9 +31,9 @@ impl LaTeXParser {
 
         let cleaned = self.preprocess(input);
 
-        // Fall back to existing parser for basic expressions
-        let mut old_parser = crate::parsing::ExpressionParser::new();
-        old_parser.parse_latex(&cleaned)
+        // Fall back to basic parser for simple expressions
+        let parser = crate::MathParser::new();
+        parser.parse_latex(&cleaned)
     }
 
     /// Preprocess LaTeX input
@@ -96,7 +96,7 @@ impl LaTeXParser {
 
     /// Parse LaTeX constants like \pi, \infty, etc.
     fn parse_constants(&self, input: &str) -> Result<Option<Expression>, ParseError> {
-        use crate::core::MathConstant;
+        use mathhook_core::core::MathConstant;
 
         // Check for LaTeX constants
         if input == "\\pi" {
@@ -559,40 +559,40 @@ impl LaTeXParser {
 
         // Find the matrix type (pmatrix, bmatrix, etc.)
         let after_begin = &input[7..]; // Skip "\\begin{"
-        let type_end = after_begin.find('}').ok_or_else(|| {
-            ParseError::SyntaxError("Malformed matrix begin".to_string())
-        })?;
-        
+        let type_end = after_begin
+            .find('}')
+            .ok_or_else(|| ParseError::SyntaxError("Malformed matrix begin".to_string()))?;
+
         let matrix_type = &after_begin[..type_end];
         let after_type = &after_begin[type_end + 1..];
-        
+
         // Find the end of the matrix
         let end_pattern = format!("\\end{{{}}}", matrix_type);
-        let content_end = after_type.find(&end_pattern).ok_or_else(|| {
-            ParseError::SyntaxError("Missing matrix end".to_string())
-        })?;
-        
+        let content_end = after_type
+            .find(&end_pattern)
+            .ok_or_else(|| ParseError::SyntaxError("Missing matrix end".to_string()))?;
+
         let matrix_content = &after_type[..content_end].trim();
-        
+
         // Parse matrix rows separated by \\
         let rows: Vec<&str> = matrix_content.split("\\\\").collect();
         let mut matrix_rows = Vec::new();
-        
+
         for row_str in rows {
             // Parse elements separated by &
             let elements: Vec<&str> = row_str.split('&').collect();
             let mut row_elements = Vec::new();
-            
+
             for element_str in elements {
                 let element_expr = self.parse(element_str.trim())?;
                 row_elements.push(element_expr);
             }
-            
+
             if !row_elements.is_empty() {
                 matrix_rows.push(row_elements);
             }
         }
-        
+
         Ok(Expression::matrix(matrix_rows))
     }
 
@@ -602,21 +602,21 @@ impl LaTeXParser {
             return Err(ParseError::SyntaxError("Not a set".to_string()));
         }
 
-        let content = &input[2..input.len()-2]; // Remove \{ and \}
-        
+        let content = &input[2..input.len() - 2]; // Remove \{ and \}
+
         if content.trim().is_empty() {
             return Ok(Expression::set(vec![])); // Empty set
         }
-        
+
         // Parse elements separated by commas
         let element_strings: Vec<&str> = content.split(',').collect();
         let mut elements = Vec::new();
-        
+
         for element_str in element_strings {
             let element_expr = self.parse(element_str.trim())?;
             elements.push(element_expr);
         }
-        
+
         Ok(Expression::set(elements))
     }
 }

@@ -2,8 +2,8 @@
 //!
 //! Handles Wolfram Language (Mathematica) syntax including functions and operators.
 
-use crate::core::{Expression, Number, Symbol};
 use crate::parsing::{constants::*, ParseError};
+use mathhook_core::{Expression, Number, Symbol};
 use std::collections::HashMap;
 
 /// Wolfram Language specific parser

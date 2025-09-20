@@ -19,3 +19,7 @@ harness = false
 [[bench]]
 name = "symbolica_challenge"
 harness = false
+
+[[bench]]
+name = "mathhook_iq_test_suite"
+harness = false

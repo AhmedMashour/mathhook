@@ -2,12 +2,16 @@
 
 #[path = "expression/constructors.rs"]
 pub mod constructors;
+#[path = "expression/conversion.rs"]
+pub mod conversion;
 #[path = "expression/data_types.rs"]
 pub mod data_types;
 #[path = "expression/display.rs"]
 pub mod display;
 #[path = "expression/methods.rs"]
 pub mod methods;
+#[path = "expression/operations.rs"]
+pub mod operations;
 #[path = "expression/operators.rs"]
 pub mod operators;
 

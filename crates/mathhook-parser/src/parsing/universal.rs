@@ -3,8 +3,8 @@
 //! Provides format-aware parsing with automatic language detection for LaTeX,
 //! Wolfram Language, and simple mathematical notation.
 
-use crate::core::{Expression, Number, Symbol};
 use crate::parsing::ParseError;
+use mathhook_core::{Expression, Number, Symbol};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -85,8 +85,8 @@ impl UniversalParser {
 
     /// Parse simple mathematical expression
     fn parse_simple(&mut self, input: &str) -> Result<Expression, ParseError> {
-        let mut parser = crate::parsing::ExpressionParser::new();
-        parser.parse(input)
+        let parser = crate::MathParser::new();
+        parser.parse_standard(input)
     }
 
     /// Parse LaTeX mathematical expression
@@ -180,9 +180,8 @@ impl UniversalParser {
             return Ok(expr);
         }
 
-        // Fall back to existing parser for basic expressions
-        let mut old_parser = crate::parsing::ExpressionParser::new();
-        old_parser.parse_latex(input)
+        // If no LaTeX commands found, fall back to basic parsing
+        self.parse_simple(input)
     }
 
     /// Parse LaTeX commands like \frac{}{}, \sin(), etc.
@@ -734,7 +733,7 @@ impl UniversalParser {
             Expression::Interval { .. } => "\\text{interval}".to_string(),
             // Calculus expressions with proper LaTeX formatting
             Expression::Calculus(calculus_data) => {
-                use crate::core::expression::CalculusData;
+                use mathhook_core::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,
@@ -778,13 +777,17 @@ impl UniversalParser {
                     CalculusData::Limit {
                         expression,
                         variable,
-                        approach,
+                        direction,
                         ..
                     } => {
                         format!(
                             "\\lim_{{{}\\to{}}} {}",
                             variable.name(),
-                            self.expression_to_latex(approach, context),
+                            match direction {
+                                mathhook_core::core::expression::LimitDirection::Left => "0^-",
+                                mathhook_core::core::expression::LimitDirection::Right => "0^+",
+                                mathhook_core::core::expression::LimitDirection::Both => "0",
+                            },
                             self.expression_to_latex(expression, context)
                         )
                     }
@@ -890,7 +893,7 @@ impl UniversalParser {
             Expression::Interval(_) => "interval".to_string(),
             // Calculus expressions with proper Wolfram formatting
             Expression::Calculus(calculus_data) => {
-                use crate::core::expression::CalculusData;
+                use mathhook_core::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,
@@ -933,14 +936,19 @@ impl UniversalParser {
                     CalculusData::Limit {
                         expression,
                         variable,
-                        approach,
+                        direction,
                         ..
                     } => {
                         format!(
                             "Limit[{}, {} -> {}]",
                             self.expression_to_wolfram(expression, context),
                             variable.name(),
-                            self.expression_to_wolfram(approach, context)
+                            match direction {
+                                mathhook_core::core::expression::LimitDirection::Left => "-1",
+                                mathhook_core::core::expression::LimitDirection::Right => "+1",
+                                mathhook_core::core::expression::LimitDirection::Both =>
+                                    "Direction -> \"TwoSided\"",
+                            }
                         )
                     }
                     CalculusData::Sum {
@@ -1216,36 +1224,6 @@ impl Default for WolframFunctionStyle {
 impl Default for UniversalParser {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-/// Convenience functions for the universal parser
-impl Expression {
-    /// Parse from any mathematical notation (auto-detect)
-    pub fn parse_universal(input: &str) -> Result<Expression, ParseError> {
-        let mut parser = UniversalParser::new();
-        parser.parse(input)
-    }
-
-    /// Parse with explicit language
-    pub fn parse_with_language(
-        input: &str,
-        language: MathLanguage,
-    ) -> Result<Expression, ParseError> {
-        let mut parser = UniversalParser::new();
-        parser.parse_with_language(input, language)
-    }
-
-    /// Convert to LaTeX notation
-    pub fn to_latex_universal(&self) -> String {
-        let parser = UniversalParser::new();
-        parser.to_latex(self)
-    }
-
-    /// Convert to Wolfram Language notation
-    pub fn to_wolfram(&self) -> String {
-        let parser = UniversalParser::new();
-        parser.to_wolfram(self)
     }
 }
 

@@ -167,7 +167,7 @@ impl Expression {
         if let (Some(n1), Some(n2)) = (num1, num2) {
             let gcd_num = n1.gcd(&n2);
             if !gcd_num.is_one() {
-                common.push(Expression::integer(gcd_num));
+                common.push(Expression::big_integer(gcd_num));
             }
         }
 

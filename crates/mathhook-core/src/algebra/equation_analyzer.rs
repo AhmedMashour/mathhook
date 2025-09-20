@@ -160,28 +160,27 @@ impl SmartEquationSolver {
 
         // 4. Route to appropriate solver with step-by-step
         match eq_type {
-            EquationType::Linear => Ok(self
+            EquationType::Linear => self
                 .linear_solver
-                .solve_with_explanation(&equation, primary_var)),
-            EquationType::Quadratic => Ok(self
+                .solve_with_explanation(&equation, primary_var),
+            EquationType::Quadratic => self
                 .quadratic_solver
-                .solve_with_explanation(&equation, primary_var)),
-            EquationType::Cubic | EquationType::Quartic => Ok(self
+                .solve_with_explanation(&equation, primary_var),
+            EquationType::Cubic | EquationType::Quartic => self
                 .polynomial_solver
-                .solve_with_explanation(&equation, primary_var)),
+                .solve_with_explanation(&equation, primary_var),
             EquationType::System => {
                 // For systems, we'd need multiple equations
                 // For now, treat as single equation
-                Ok(self
-                    .linear_solver
-                    .solve_with_explanation(&equation, primary_var))
+                self.linear_solver
+                    .solve_with_explanation(&equation, primary_var)
             }
             _ => {
                 let steps = vec![
                     Step::new("Analysis", format!("Detected equation type: {:?}", eq_type)),
                     Step::new("Status", "This equation type is not yet implemented"),
                 ];
-                Ok((SolverResult::NoSolution, StepByStepExplanation::new(steps)))
+                (SolverResult::NoSolution, StepByStepExplanation::new(steps))
             }
         }
     }
@@ -230,12 +229,12 @@ mod tests {
         let mut solver = SmartEquationSolver::new();
         let result = solver.solve_latex("2x + 3 = 0");
         match result {
-            Ok((solution, _steps)) => {
+            (solution, _steps) => {
                 println!("Solution: {:?}", solution);
                 assert!(true);
             }
-            Err(e) => {
-                println!("Parse error: {:?}", e);
+            _ => {
+                println!("No solution found");
                 // For now, just check that we get a parse error, not a crash
                 assert!(true);
             }

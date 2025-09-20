@@ -147,7 +147,7 @@ impl Expression {
                     if val >= 0 && val <= 20 {
                         // Reasonable limit to prevent overflow
                         let factorial_result = self.factorial_i64(val as u64);
-                        Expression::integer(factorial_result)
+                        Expression::big_integer(factorial_result)
                     } else {
                         // For large values, return the function call
                         Expression::function("factorial", vec![arg.clone()])
@@ -335,7 +335,7 @@ impl Expression {
                     } else {
                         // Check for perfect squares
                         if let Some(sqrt_val) = self.integer_sqrt(&BigInt::from(*n)) {
-                            Expression::integer(sqrt_val)
+                            Expression::big_integer(sqrt_val)
                         } else {
                             Expression::function("sqrt", args.to_vec())
                         }
@@ -403,7 +403,7 @@ impl Expression {
                         if val > 0 && val <= 10 {
                             // Gamma(n) = (n-1)! for positive integers
                             let factorial_result = self.factorial_i64((val - 1) as u64);
-                            Expression::integer(factorial_result)
+                            Expression::big_integer(factorial_result)
                         } else {
                             Expression::function("gamma", args.to_vec())
                         }

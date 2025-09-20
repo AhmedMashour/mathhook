@@ -4,10 +4,11 @@ build-backend = "maturin"
 
 [project]
 name = "mathhook"
+version = "0.1.0"
 description = "High-performance educational computer algebra system"
 authors = [{name = "Ahmed Mashhour", email = "mpghknown@gmail.com"}]
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "MIT OR Apache-2.0"}
 keywords = ["mathematics", "algebra", "symbolic", "education", "calculus"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -32,4 +33,6 @@ Documentation = "https://docs.rs/mathhook"
 "Bug Tracker" = "https://github.com/ahmedmashhour/mathhook/issues"
 
 [tool.maturin]
-features = ["pyo3/extension-module"]
+module-name = "mathhook"
+python-source = "python"
+strip = true

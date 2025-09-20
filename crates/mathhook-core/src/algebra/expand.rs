@@ -51,20 +51,20 @@ impl Expression {
         let mut result = factors[0].expand();
 
         for factor in &factors[1..] {
-            result = self.distribute_mul(vec![&result, &factor.expand());
+            result = self.distribute_multiply(&result, &factor.expand());
         }
 
         result
     }
 
     /// Distribute multiplication: (a + b) * c = a*c + b*c
-    fn distribute_mul(vec![&self, left: &Expression, right: &Expression) -> Expression {
+    fn distribute_multiply(&self, left: &Expression, right: &Expression) -> Expression {
         match (left, right) {
             // Distribute over left addition: (a + b) * c = a*c + b*c
             (Expression::Add(left_terms), _) => {
                 let distributed_terms: Vec<Expression> = left_terms
                     .iter()
-                    .map(|term| self.distribute_mul(vec![term, right))
+                    .map(|term| self.distribute_multiply(term, right))
                     .collect();
                 Expression::add(distributed_terms)
             }
@@ -73,7 +73,7 @@ impl Expression {
             (_, Expression::Add(right_terms)) => {
                 let distributed_terms: Vec<Expression> = right_terms
                     .iter()
-                    .map(|term| self.distribute_mul(vec![left, term))
+                    .map(|term| self.distribute_multiply(left, term))
                     .collect();
                 Expression::add(distributed_terms)
             }
@@ -120,7 +120,7 @@ impl Expression {
                     _ => {
                         // General case: multiply base by itself
                         let expanded_base = base.expand();
-                        self.distribute_mul(vec![&expanded_base, &expanded_base)
+                        self.distribute_multiply(&expanded_base, &expanded_base)
                     }
                 }
             }
@@ -130,7 +130,7 @@ impl Expression {
                 let mut result = expanded_base.clone();
 
                 for _ in 1..exp {
-                    result = self.distribute_mul(vec![&result, &expanded_base);
+                    result = self.distribute_multiply(&result, &expanded_base);
                 }
 
                 result

@@ -6,6 +6,20 @@
 use mathhook_core::Expression;
 use serde::{Deserialize, Serialize};
 
+pub mod parsing {
+    pub mod constants;
+    pub mod latex_parser;
+    pub mod serialize;
+    pub mod universal;
+    pub mod wolfram_parser;
+
+    // Re-export ParseError for internal use
+    pub use crate::ParseError;
+}
+
+// Re-export commonly used items
+pub use parsing::universal::UniversalParser;
+
 /// Supported mathematical input formats
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum MathLanguage {
@@ -24,6 +38,7 @@ pub enum ParseError {
     InvalidNumber(String),
     EmptyInput,
     UnsupportedOperation(String),
+    SyntaxError(String),
 }
 
 impl std::fmt::Display for ParseError {
@@ -35,6 +50,7 @@ impl std::fmt::Display for ParseError {
             ParseError::InvalidNumber(num) => write!(f, "Invalid number: {}", num),
             ParseError::EmptyInput => write!(f, "Empty input"),
             ParseError::UnsupportedOperation(op) => write!(f, "Unsupported operation: {}", op),
+            ParseError::SyntaxError(msg) => write!(f, "Syntax error: {}", msg),
         }
     }
 }

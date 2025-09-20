@@ -168,7 +168,7 @@ impl Expression {
             }
             Expression::Piecewise(piecewise_data) => {
                 piecewise_data
-                    .cases
+                    .pieces
                     .iter()
                     .all(|(cond, val)| cond.is_valid_expression() && val.is_valid_expression())
                     && piecewise_data
@@ -188,9 +188,9 @@ impl Expression {
                     CalculusData::Integral { integrand, .. } => integrand.is_valid_expression(),
                     CalculusData::Limit {
                         expression,
-                        approach,
+                        direction,
                         ..
-                    } => expression.is_valid_expression() && approach.is_valid_expression(),
+                    } => expression.is_valid_expression(),
                     CalculusData::Sum {
                         expression,
                         start,

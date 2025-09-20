@@ -44,8 +44,8 @@ impl RationalSimplify for Expression {
     fn to_rational_form(&self) -> (Expression, Expression) {
         match self {
             Expression::Number(Number::Rational(r)) => (
-                Expression::integer(r.numer().clone()),
-                Expression::integer(r.denom().clone()),
+                Expression::big_integer(r.numer().clone()),
+                Expression::big_integer(r.denom().clone()),
             ),
 
             Expression::Mul(factors) => {
@@ -201,7 +201,7 @@ impl Expression {
                 if !b.is_zero() {
                     let rational = BigRational::new(BigInt::from(*a), BigInt::from(*b));
                     if rational.denom().is_one() {
-                        Expression::integer(rational.numer().clone())
+                        Expression::big_integer(rational.numer().clone())
                     } else {
                         Expression::number(Number::rational(rational))
                     }

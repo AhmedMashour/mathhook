@@ -286,7 +286,7 @@ impl Expression {
                 let mut has_numeric = false;
 
                 for term in terms.iter() {
-                    if let Expression::Number(Number::Integer(n)) = term {
+                    if let Expression::Number(Number::SmallInt(n)) = term {
                         numeric_sum += BigInt::from(*n);
                         has_numeric = true;
                     } else {
@@ -309,7 +309,7 @@ impl Expression {
                 let mut has_numeric = false;
 
                 for factor in factors.iter() {
-                    if let Expression::Number(Number::Integer(n)) = factor {
+                    if let Expression::Number(Number::SmallInt(n)) = factor {
                         numeric_product *= BigInt::from(*n);
                         has_numeric = true;
                     } else {
@@ -398,7 +398,7 @@ impl Expression {
     /// Convert expression to LaTeX format
     pub fn to_latex(&self) -> String {
         match self {
-            Expression::Number(Number::Integer(n)) => n.to_string(),
+            Expression::Number(Number::SmallInt(n)) => n.to_string(),
             Expression::Number(Number::Rational(r)) => {
                 if r.denom().is_one() {
                     r.numer().to_string()

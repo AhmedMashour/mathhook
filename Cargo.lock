@@ -314,6 +314,7 @@ dependencies = [
  "num-integer",
  "num-rational",
  "num-traits",
+ "once_cell",
  "serde",
  "serde_json",
 ]
@@ -337,6 +338,9 @@ version = "0.1.0"
 dependencies = [
  "criterion",
  "mathhook-core",
+ "num-bigint",
+ "num-rational",
+ "num-traits",
  "once_cell",
  "regex",
  "serde",

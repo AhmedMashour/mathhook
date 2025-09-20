@@ -113,3 +113,20 @@ impl From<i32> for Number {
         Self::Integer(value as i64)
     }
 }
+
+impl std::fmt::Display for Number {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Number::Integer(i) => write!(f, "{}", i),
+            Number::Float(fl) => write!(f, "{}", fl),
+            Number::BigInteger(bi) => write!(f, "{}", bi),
+            Number::Rational(r) => {
+                if r.denom().is_one() {
+                    write!(f, "{}", r.numer())
+                } else {
+                    write!(f, "{}/{}", r.numer(), r.denom())
+                }
+            }
+        }
+    }
+}

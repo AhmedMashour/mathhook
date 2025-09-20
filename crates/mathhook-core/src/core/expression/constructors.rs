@@ -5,6 +5,8 @@ use super::{
     RelationType,
 };
 use crate::core::{MathConstant, Number, Symbol};
+use num_bigint::BigInt;
+use num_traits::ToPrimitive;
 
 impl Expression {
     /// Create a number expression
@@ -32,6 +34,25 @@ impl Expression {
     /// ```
     pub fn integer(value: i64) -> Self {
         Self::Number(Number::integer(value))
+    }
+
+    /// Create an integer expression from BigInt
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    /// use num_bigint::BigInt;
+    ///
+    /// let big_val = BigInt::from(42);
+    /// let expr = Expression::big_integer(big_val);
+    /// ```
+    pub fn big_integer(value: BigInt) -> Self {
+        if let Some(small_val) = value.to_i64() {
+            Self::Number(Number::integer(small_val))
+        } else {
+            Self::Number(Number::BigInteger(Box::new(value)))
+        }
     }
 
     /// Create a symbol expression
