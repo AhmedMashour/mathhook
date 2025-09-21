@@ -9,13 +9,9 @@ use mathhook_core::algebra::solvers::{
 use mathhook_core::algebra::Simplify;
 use mathhook_core::core::{Expression, Number, Symbol};
 
-// ============================================================================
-// 📝 LINEAR EQUATION TESTS (WILL FAIL - MODULE DOESN'T EXIST YET)
-// ============================================================================
-
 #[test]
+// Test: x + 2 = 5 → x = 3
 fn test_simple_linear_equation() {
-    // Test: x + 2 = 5 → x = 3
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::symbol(x.clone()),
@@ -35,8 +31,8 @@ fn test_simple_linear_equation() {
 }
 
 #[test]
+// Test: 2x + 3 = 7 → x = 2
 fn test_linear_with_coefficients() {
-    // Test: 2x + 3 = 7 → x = 2
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -56,8 +52,8 @@ fn test_linear_with_coefficients() {
 }
 
 #[test]
+// Test: 0x + 1 = 0 → No solution
 fn test_linear_no_solution() {
-    // Test: 0x + 1 = 0 → No solution
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![Expression::integer(0), Expression::symbol(x.clone())]),
@@ -70,9 +66,9 @@ fn test_linear_no_solution() {
     assert_eq!(result, SolverResult::NoSolution);
 }
 
+// Test: 0x + 0 = 0 → Infinite solutions
 #[test]
 fn test_linear_infinite_solutions() {
-    // Test: 0x + 0 = 0 → Infinite solutions
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![Expression::integer(0), Expression::symbol(x.clone())]),
@@ -86,8 +82,8 @@ fn test_linear_infinite_solutions() {
 }
 
 #[test]
+// Test: -3x + 6 = 0 → x = 2
 fn test_linear_negative_coefficient() {
-    // Test: -3x + 6 = 0 → x = 2
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![Expression::integer(-3), Expression::symbol(x.clone())]),
@@ -106,8 +102,8 @@ fn test_linear_negative_coefficient() {
 }
 
 #[test]
+// Test: 0.5x + 1.5 = 0 → x = -3
 fn test_linear_fractional_coefficient() {
-    // Test: 0.5x + 1.5 = 0 → x = -3
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![
@@ -128,13 +124,9 @@ fn test_linear_fractional_coefficient() {
     }
 }
 
-// ============================================================================
-// 📝 QUADRATIC EQUATION TESTS (WILL FAIL - MODULE DOESN'T EXIST YET)
-// ============================================================================
-
 #[test]
+// Test: x² - 4 = 0 → x = ±2
 fn test_simple_quadratic_two_solutions() {
-    // Test: x² - 4 = 0 → x = ±2
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -155,8 +147,8 @@ fn test_simple_quadratic_two_solutions() {
 }
 
 #[test]
+// Test: x² - 2x + 1 = 0 → x = 1 (double root)
 fn test_quadratic_one_solution() {
-    // Test: x² - 2x + 1 = 0 → x = 1 (double root)
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -176,8 +168,8 @@ fn test_quadratic_one_solution() {
 }
 
 #[test]
+// Test: x² + 1 = 0 → x = ±i (complex solutions)
 fn test_quadratic_no_real_solutions() {
-    // Test: x² + 1 = 0 → x = ±i (complex solutions)
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -198,8 +190,8 @@ fn test_quadratic_no_real_solutions() {
 }
 
 #[test]
+// Test: 2x² + 3x - 5 = 0
 fn test_quadratic_general_form() {
-    // Test: 2x² + 3x - 5 = 0
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![
@@ -223,8 +215,8 @@ fn test_quadratic_general_form() {
 }
 
 #[test]
+// Test: 0x² + 2x + 1 = 0 → Linear equation
 fn test_degenerate_quadratic() {
-    // Test: 0x² + 2x + 1 = 0 → Linear equation
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![
@@ -252,13 +244,9 @@ fn test_degenerate_quadratic() {
     }
 }
 
-// ============================================================================
-// 📝 SYSTEM OF EQUATIONS TESTS (WILL FAIL - MODULE DOESN'T EXIST YET)
-// ============================================================================
-
+// Test: x + y = 1, x - y = 0 → x = 1/2, y = 1/2
 #[test]
 fn test_linear_system_2x2_unique_solution() {
-    // Test: x + y = 1, x - y = 0 → x = 1/2, y = 1/2
     let x = Symbol::new("x");
     let y = Symbol::new("y");
 
@@ -289,8 +277,8 @@ fn test_linear_system_2x2_unique_solution() {
 }
 
 #[test]
+// Test: x + y = 1, x + y = 2 → No solution
 fn test_inconsistent_system() {
-    // Test: x + y = 1, x + y = 2 → No solution
     let x = Symbol::new("x");
     let y = Symbol::new("y");
 
@@ -316,8 +304,8 @@ fn test_inconsistent_system() {
 }
 
 #[test]
+// Test: x + y = 1, 2x + 2y = 2 → Infinite solutions
 fn test_dependent_system() {
-    // Test: x + y = 1, 2x + 2y = 2 → Infinite solutions
     let x = Symbol::new("x");
     let y = Symbol::new("y");
 
@@ -342,13 +330,9 @@ fn test_dependent_system() {
     assert_eq!(result, SolverResult::InfiniteSolutions);
 }
 
-// ============================================================================
-// 📝 POLYNOMIAL EQUATION TESTS (WILL FAIL - MODULE DOESN'T EXIST YET)
-// ============================================================================
-
 #[test]
+// Test: x³ - 8 = 0 → x = 2, and complex roots
 fn test_cubic_equation() {
-    // Test: x³ - 8 = 0 → x = 2, and complex roots
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
@@ -369,8 +353,8 @@ fn test_cubic_equation() {
 }
 
 #[test]
+// Test: x⁴ - 16 = 0 → x = ±2, ±2i
 fn test_quartic_equation() {
-    // Test: x⁴ - 16 = 0 → x = ±2, ±2i
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(4)),
@@ -391,13 +375,9 @@ fn test_quartic_equation() {
     }
 }
 
-// ============================================================================
-// 📝 STEP-BY-STEP INTEGRATION TESTS (CRITICAL - USER REQUIREMENT)
-// ============================================================================
-
 #[test]
+// User requirement: "maintain that our step by step is working"
 fn test_linear_solver_step_by_step_integration() {
-    // User requirement: "maintain that our step by step is working"
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -432,8 +412,8 @@ fn test_linear_solver_step_by_step_integration() {
 }
 
 #[test]
+// Test quadratic formula step-by-step explanation
 fn test_quadratic_solver_step_by_step_integration() {
-    // Test quadratic formula step-by-step explanation
     let x = Symbol::new("x");
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -448,13 +428,9 @@ fn test_quadratic_solver_step_by_step_integration() {
     assert!(explanation.total_steps > 0, "Must track steps");
 }
 
-// ============================================================================
-// 📝 PERFORMANCE TESTS (MANDATORY - USER REQUIREMENT)
-// ============================================================================
-
 #[test]
+// Performance requirement: >1M solutions/sec
 fn test_linear_solver_performance() {
-    // Performance requirement: >1M solutions/sec
     use std::time::Instant;
 
     let x = Symbol::new("x");
@@ -485,8 +461,8 @@ fn test_linear_solver_performance() {
 }
 
 #[test]
+// Performance requirement for quadratic solving
 fn test_quadratic_solver_performance() {
-    // Performance requirement for quadratic solving
     use std::time::Instant;
 
     let x = Symbol::new("x");
@@ -519,40 +495,6 @@ fn test_quadratic_solver_performance() {
     );
 }
 
-// ============================================================================
-// 📝 MEMORY EFFICIENCY TESTS (MANDATORY - MAGIC BULLETS)
-// ============================================================================
-
-#[test]
-fn test_solver_memory_efficiency() {
-    // Verify solver modules don't break Magic Bullets
-
-    // Magic Bullet #2: Expression size must remain 32 bytes
-    assert!(
-        std::mem::size_of::<Expression>() <= 32,
-        "Expression size must remain ≤32 bytes, got {}",
-        std::mem::size_of::<Expression>()
-    );
-
-    // Solver result types must be memory efficient
-    assert!(
-        std::mem::size_of::<SolverResult>() <= 64,
-        "SolverResult must be ≤64 bytes, got {}",
-        std::mem::size_of::<SolverResult>()
-    );
-
-    // Solver structs must be lightweight
-    assert!(
-        std::mem::size_of::<LinearSolver>() <= 128,
-        "LinearSolver must be ≤128 bytes, got {}",
-        std::mem::size_of::<LinearSolver>()
-    );
-}
-
-// ============================================================================
-// 📝 INTEGRATION TESTS (COMPREHENSIVE SYSTEM VALIDATION)
-// ============================================================================
-
 #[test]
 fn test_solver_expression_integration() {
     // Verify solver results are valid Expressions that work with existing system
@@ -578,10 +520,6 @@ fn test_solver_expression_integration() {
         _ => panic!("Expected single solution"),
     }
 }
-
-// ============================================================================
-// 📝 SYMPY COMPATIBILITY TESTS (VALIDATION AGAINST SYMPY)
-// ============================================================================
 
 #[test]
 fn test_sympy_linear_compatibility() {

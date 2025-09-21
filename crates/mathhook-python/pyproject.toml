@@ -7,7 +7,6 @@ name = "mathhook"
 version = "0.1.0"
 description = "High-performance educational computer algebra system"
 authors = [{name = "Ahmed Mashhour", email = "mpghknown@gmail.com"}]
-readme = "README.md"
 license = {text = "MIT OR Apache-2.0"}
 keywords = ["mathematics", "algebra", "symbolic", "education", "calculus"]
 classifiers = [
@@ -34,5 +33,4 @@ Documentation = "https://docs.rs/mathhook"
 
 [tool.maturin]
 module-name = "mathhook"
-python-source = "python"
 strip = true

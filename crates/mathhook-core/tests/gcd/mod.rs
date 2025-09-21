@@ -1,5 +1,10 @@
 //! Core GCD functionality tests
 
+mod polynomial;
+mod symbolica_benchmark;
+mod symbolica_cases;
+mod sympy_cases;
+
 use mathhook_core::prelude::*;
 
 #[test]

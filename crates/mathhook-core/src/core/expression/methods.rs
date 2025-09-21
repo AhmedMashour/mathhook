@@ -85,7 +85,7 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// let expr = Expression::add(vec![
-    ///     Expression::mul(vec![Expression::integer(6), Expression::symbol("x")),
+    ///     Expression::mul(vec![Expression::integer(6), Expression::symbol("x")]),
     ///     Expression::integer(9),
     /// ]);
     /// let factored = expr.factor_gcd();

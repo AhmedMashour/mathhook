@@ -468,7 +468,8 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, RelationType};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::core::expression::RelationType;
     ///
     /// let relation = Expression::relation(
     ///     Expression::symbol("x"),
