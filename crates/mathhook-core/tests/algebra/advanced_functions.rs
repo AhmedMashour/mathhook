@@ -125,7 +125,11 @@ fn test_special_function_patterns() {
 
     println!("sin(0) = {}", result);
 
-    assert!(!result.to_string().is_empty());
+    // Should produce valid function result
+    match result {
+        Expression::Function { .. } | Expression::Number(_) => (),
+        _ => panic!("Function evaluation should produce valid result"),
+    }
 }
 
 #[test]

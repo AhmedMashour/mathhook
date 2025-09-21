@@ -1,6 +1,8 @@
 mod advanced_functions;
 mod arithmetic;
 mod calculus_operations;
+mod edge_cases;
+mod equation_verification;
 mod expansion;
 mod factoring_steps;
 mod factorization;
@@ -9,6 +11,7 @@ mod powers;
 mod rational;
 mod rational_pipeline;
 mod rational_simple;
+mod simple_zero;
 mod simplify;
 mod targeted_rational;
 mod zero_detection_steps;
