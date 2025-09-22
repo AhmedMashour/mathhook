@@ -332,13 +332,6 @@ impl Expression {
         }
     }
 
-    /// Collect terms by degree (for polynomials)
-    pub fn collect_by_degree(&self, var: &Symbol) -> Expression {
-        // This would organize terms by their degree in the variable
-        // For now, delegate to the main collect method
-        self.collect(var)
-    }
-
     /// Separate variables and constants
     pub fn separate_constants(&self) -> (Expression, Expression) {
         match self {

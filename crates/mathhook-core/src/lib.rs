@@ -4,14 +4,15 @@
 //! implementing a hybrid API architecture optimized for both performance and usability.
 
 pub mod algebra;
+pub mod calculus;
 pub mod core;
 pub mod educational;
 pub mod solvers;
 
 // Re-export core types for the hybrid API
 pub use algebra::{
-    AdvancedSimplify, Collect, Expand, Factor, PolynomialGcd, RationalSimplify, Simplify,
-    ZeroDetection,
+    AdvancedSimplify, Collect, ComplexOperations, Expand, Factor, MatrixOperations, PolynomialGcd,
+    RationalSimplify, Simplify, ZeroDetection,
 };
 pub use core::{Expression, MathConstant, Number, Symbol};
 pub use solvers::{MathSolver, SolverConfig, SolverResult};
@@ -19,8 +20,8 @@ pub use solvers::{MathSolver, SolverConfig, SolverResult};
 /// Convenience prelude for common imports
 pub mod prelude {
     pub use crate::{
-        AdvancedSimplify, Collect, Expand, Factor, PolynomialGcd, RationalSimplify, Simplify,
-        ZeroDetection,
+        AdvancedSimplify, Collect, ComplexOperations, Expand, Factor, PolynomialGcd,
+        RationalSimplify, Simplify, ZeroDetection,
     };
     pub use crate::{Expression, MathConstant, Number, Symbol};
     pub use crate::{MathSolver, SolverConfig, SolverResult};

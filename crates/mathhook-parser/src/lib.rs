@@ -248,7 +248,7 @@ impl MathFormatter {
     pub fn to_latex(expr: &Expression) -> String {
         match expr {
             Expression::Number(num) => format!("{:?}", num), // Simplified
-            Expression::Symbol(sym) => sym.name.clone(),
+            Expression::Symbol(sym) => sym.name.to_string(),
             Expression::Add(terms) => {
                 let term_strs: Vec<String> = terms.iter().map(|t| Self::to_latex(t)).collect();
                 term_strs.join(" + ")
@@ -282,7 +282,7 @@ impl MathFormatter {
     pub fn to_standard(expr: &Expression) -> String {
         match expr {
             Expression::Number(num) => format!("{:?}", num), // Simplified
-            Expression::Symbol(sym) => sym.name.clone(),
+            Expression::Symbol(sym) => sym.name.to_string(),
             Expression::Add(terms) => {
                 let term_strs: Vec<String> = terms.iter().map(|t| Self::to_standard(t)).collect();
                 term_strs.join(" + ")

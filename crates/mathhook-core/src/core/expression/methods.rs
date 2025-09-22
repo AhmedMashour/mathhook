@@ -123,7 +123,7 @@ impl Expression {
     pub fn to_latex(&self) -> String {
         match self {
             Expression::Number(num) => format!("{}", num),
-            Expression::Symbol(sym) => sym.name.clone(),
+            Expression::Symbol(sym) => sym.name.to_string(),
             Expression::Add(terms) => {
                 let term_strs: Vec<String> = terms.iter().map(|t| t.to_latex()).collect();
                 term_strs.join(" + ")

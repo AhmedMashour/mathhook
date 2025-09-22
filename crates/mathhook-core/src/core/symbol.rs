@@ -1,15 +1,16 @@
 //! Symbol type for variables and identifiers
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::sync::Arc;
 
-/// Mathematical symbol/variable
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Mathematical symbol/variable with efficient string sharing
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Symbol {
-    pub name: String,
+    pub name: Arc<str>,
 }
 
 impl Symbol {
-    /// Create a new symbol
+    /// Create a new symbol with string interning
     ///
     /// # Examples
     ///
@@ -19,8 +20,10 @@ impl Symbol {
     /// let x = Symbol::new("x");
     /// let alpha = Symbol::new("α");
     /// ```
-    pub fn new<S: Into<String>>(name: S) -> Self {
-        Self { name: name.into() }
+    pub fn new<S: AsRef<str>>(name: S) -> Self {
+        Self {
+            name: name.as_ref().into(),
+        }
     }
 
     /// Get the symbol name
@@ -38,6 +41,25 @@ impl Symbol {
     }
 }
 
+impl Serialize for Symbol {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.name.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Symbol {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let name = String::deserialize(deserializer)?;
+        Ok(Symbol::new(name))
+    }
+}
+
 impl From<&str> for Symbol {
     fn from(name: &str) -> Self {
         Self::new(name)
@@ -46,6 +68,6 @@ impl From<&str> for Symbol {
 
 impl From<String> for Symbol {
     fn from(name: String) -> Self {
-        Self { name }
+        Self::new(name)
     }
 }

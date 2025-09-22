@@ -6,6 +6,7 @@ use super::{
 };
 use crate::core::{MathConstant, Number, Symbol};
 use num_bigint::BigInt;
+use num_rational::BigRational;
 use num_traits::ToPrimitive;
 
 impl Expression {
@@ -53,6 +54,34 @@ impl Expression {
         } else {
             Self::Number(Number::BigInteger(Box::new(value)))
         }
+    }
+
+    /// Create a rational number expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let expr = Expression::rational(3, 4); // 3/4
+    /// let expr = Expression::rational(-1, 2); // -1/2
+    /// ```
+    pub fn rational(numerator: i64, denominator: i64) -> Self {
+        let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
+        Self::Number(Number::rational(rational))
+    }
+
+    /// Create a float expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let expr = Expression::float(3.14159);
+    /// ```
+    pub fn float(value: f64) -> Self {
+        Self::Number(Number::float(value))
     }
 
     /// Create a symbol expression

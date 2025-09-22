@@ -220,7 +220,7 @@ impl Expression {
     pub fn solver_to_latex(&self) -> String {
         match self {
             Expression::Number(n) => format!("{}", n),
-            Expression::Symbol(s) => s.name.clone(),
+            Expression::Symbol(s) => s.name.to_string(),
             Expression::Add(terms) => {
                 let term_strs: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
                 term_strs.join(" + ")
