@@ -14,12 +14,19 @@ mod power_rule;
 mod product_rule;
 
 use crate::core::{Expression, Symbol};
-pub use advanced_differentiation::AdvancedDifferentiation;
+pub use advanced_differentiation::{
+    AdvancedDifferentiation, ImplicitCurveAnalysis, ImplicitDifferentiation,
+    ParametricCurveAnalysis, ParametricDifferentiation, VectorValuedDifferentiation,
+};
 pub use basic::BasicDerivatives;
 pub use chain_rule::{ChainRule, FunctionDerivatives};
 pub use checker::DifferentiabilityChecker;
 pub use higher_order::HigherOrderDerivatives;
-pub use partial::{PartialDerivatives, PartialUtils, VectorFieldOperations};
+pub use partial::{
+    ConservativeFields, DirectionalDerivatives, FluidDynamicsOperations, GradientOperations,
+    HessianOperations, JacobianDeterminant, JacobianOperations, MatrixUtils, PartialDerivatives,
+    PartialUtils, VectorFieldOperations,
+};
 pub use power_rule::PowerRule;
 pub use product_rule::{GeneralProductRule, ProductRule};
 
@@ -34,7 +41,7 @@ pub trait Derivative {
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::pow(Expression::symbol(x), Expression::integer(2));
+    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = expr.derivative(x);
     /// ```
     fn derivative(&self, variable: Symbol) -> Expression;
@@ -48,7 +55,7 @@ pub trait Derivative {
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::pow(Expression::symbol(x), Expression::integer(4));
+    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(4));
     /// let second_derivative = expr.nth_derivative(x, 2);
     /// ```
     fn nth_derivative(&self, variable: Symbol, order: u32) -> Expression;
@@ -62,7 +69,7 @@ pub trait Derivative {
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::function("sin", vec![Expression::symbol(x)]);
+    /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let is_diff = expr.is_differentiable(x);
     /// ```
     fn is_differentiable(&self, variable: Symbol) -> bool;

@@ -14,6 +14,7 @@ impl GradientOperations {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::GradientOperations;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
@@ -41,6 +42,7 @@ impl GradientOperations {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::GradientOperations;
     /// use std::collections::HashMap;
     ///
     /// let x = Symbol::new("x");
@@ -81,6 +83,7 @@ impl DirectionalDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
@@ -126,6 +129,7 @@ impl DirectionalDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");

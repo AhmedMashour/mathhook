@@ -101,17 +101,14 @@ impl LimitMethods {
         let num_derivative = numerator.derivative(variable.clone());
         let den_derivative = denominator.derivative(variable.clone());
 
-        Expression::function(
-            "limit",
-            vec![
-                Expression::mul(vec![
-                    num_derivative,
-                    Expression::pow(den_derivative, Expression::integer(-1)),
-                ]),
-                Expression::symbol(variable.clone()),
-                point.clone(),
-            ],
-        )
+        // Create the derivative ratio and recursively evaluate the limit
+        let derivative_ratio = Expression::mul(vec![
+            num_derivative,
+            Expression::pow(den_derivative, Expression::integer(-1)),
+        ]);
+        
+        // Recursively call limit to evaluate the derivative ratio
+        derivative_ratio.limit(variable, point)
     }
 
     /// Compute polynomial limit
@@ -215,7 +212,18 @@ impl LimitMethods {
                     .iter()
                     .map(|factor| Self::substitute_and_evaluate(factor, variable, point))
                     .collect();
-                Expression::mul(substituted).simplify()
+                
+                // Check if we have a potential indeterminate form (0 with undefined)
+                let has_zero = substituted.iter().any(|f| f.is_zero());
+                let has_undefined = substituted.iter().any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+                
+                if has_zero && has_undefined {
+                    // Don't simplify to preserve indeterminate form detection
+                    Expression::mul(substituted)
+                } else {
+                    // Safe to simplify normal cases
+                    Expression::mul(substituted).simplify()
+                }
             }
             Expression::Pow(base, exp) => {
                 let sub_base = Self::substitute_and_evaluate(base, variable, point);
@@ -227,7 +235,7 @@ impl LimitMethods {
                     .iter()
                     .map(|arg| Self::substitute_and_evaluate(arg, variable, point))
                     .collect();
-                Expression::function(name.clone(), substituted_args)
+                Expression::function(name.clone(), substituted_args).simplify()
             }
             _ => expr.clone(),
         }
@@ -244,6 +252,15 @@ impl LimitMethods {
                 // Check for 0 * ∞ form
                 (factors[0].is_zero() && Self::is_infinite(&factors[1]))
                     || (factors[1].is_zero() && Self::is_infinite(&factors[0]))
+                    // Check for 0 * 0^(-1) form (which is 0/0)
+                    || (factors[0].is_zero() && matches!(&factors[1], Expression::Pow(base, exp) if base.is_zero() && **exp == Expression::integer(-1)))
+                    // Check for 0 * undefined form (which is 0/0)
+                    || (factors[0].is_zero() && matches!(&factors[1], Expression::Function { name, .. } if name == "undefined"))
+                    || (factors[1].is_zero() && matches!(&factors[0], Expression::Function { name, .. } if name == "undefined"))
+            }
+            // Check for 0^(-1) form directly
+            Expression::Pow(base, exp) if base.is_zero() && **exp == Expression::integer(-1) => {
+                true
             }
             _ => false,
         }

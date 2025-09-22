@@ -176,7 +176,7 @@ mod tests {
         use crate::{expr, symbol};
 
         let x = symbol!(x);
-        assert_eq!(x.name, "x");
+        assert_eq!(x.name, std::sync::Arc::from("x"));
 
         let two = expr!(2);
         match two {

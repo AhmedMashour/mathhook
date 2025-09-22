@@ -1,0 +1,59 @@
+---
+description: # Project structure rules
+globs:
+alwaysApply: true
+# MathHook Project Structure Rules
+
+## Comments and Documentation
+
+- Use only documentation comments (`///` for functions, `//!` for modules)
+
+- Exception: Inline comments allowed for mathematical equations/expressions (e.g., `// 2x + 1`, `// ax^2 + bx + c`)
+
+- No emojis in code, comments, or documentation
+
+- No ALL CAPS text in code or documentation
+
+- Always include testable examples in `///` documentation that compile and run as doctests
+
+## Code Quality
+
+- Keep code clean, professional, and self-documenting through good naming and structure
+
+- Focus on functionality over visual flair in documentation
+
+- Write meaningful variable and function names that explain intent
+
+- DONT MAKE TODO OR SAYING FOR NOW - IF SOMETHING NEEDS IMPLEMENTATION YOU IMPLEMENT IT
+
+## File Organization
+- Core mathematical types in `src/core/`
+- Algebraic operations in `src/algebra/`
+- Calculus operations in `src/calculus/`
+- Educational features in `src/educational/`
+- Equation solvers in `src/algebra/solvers/`
+- Tests mirror source structure in `tests/`
+
+## Module Size Limits
+- Maximum 500 lines per module file
+- Split larger modules into focused sub-modules
+- Each sub-module should have a single responsibility
+- Avoid mod.rs pattern for sub-modules
+
+## Documentation Structure
+- Session notes in `.mathhook_sessions/`
+- Technical documentation with examples
+- Performance benchmarks documented
+- Complete API documentation with doctests
+
+## Testing Strategy
+- Unit tests in each module
+- Integration tests in `tests/` directory
+- Performance tests for critical paths
+- TDD approach for equation solvers
+- Maintain 100% solver test success rate
+- Add meaningful unit tests in each module
+- Test core functionality without being brittle
+- Avoid tests that are overly specific to implementation details
+- Focus on behavior verification over implementation testing
+---

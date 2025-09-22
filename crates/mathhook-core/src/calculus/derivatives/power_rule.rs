@@ -13,7 +13,7 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, PowerRule};
     ///
     /// let x = Symbol::new("x");
     /// let base = Expression::symbol(x.clone());
@@ -36,7 +36,7 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, PowerRule};
     ///
     /// let x = Symbol::new("x");
     /// let result = PowerRule::simple_power_rule(3, x);
@@ -57,11 +57,11 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, PowerRule};
     ///
     /// let x = Symbol::new("x");
     /// let base = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let exponent = Expression::symbol(x);
+    /// let exponent = Expression::symbol(x.clone());
     /// let result = PowerRule::logarithmic_differentiation(&base, &exponent, x);
     /// ```
     pub fn logarithmic_differentiation(

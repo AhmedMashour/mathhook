@@ -3,7 +3,7 @@
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::algebra::Simplify;
-use crate::core::{Number, Expression, Symbol};
+use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 
 /// Polynomial equation solver
@@ -92,10 +92,8 @@ impl PolynomialSolver {
         // Check if it's the form x³ + constant = 0
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
-                if let (
-                    Expression::Pow(base, exp),
-                    Expression::Number(Number::Integer(constant)),
-                ) = (&terms[0], &terms[1])
+                if let (Expression::Pow(base, exp), Expression::Number(Number::Integer(constant))) =
+                    (&terms[0], &terms[1])
                 {
                     if **base == Expression::symbol(variable.clone())
                         && **exp == Expression::integer(3)
@@ -114,9 +112,7 @@ impl PolynomialSolver {
                                 Expression::function(
                                     "complex",
                                     vec![
-                                        Expression::Number(Number::float(
-                                            -cube_root_value / 2.0,
-                                        )),
+                                        Expression::Number(Number::float(-cube_root_value / 2.0)),
                                         Expression::Number(Number::float(
                                             cube_root_value * 3.0_f64.sqrt() / 2.0,
                                         )),
@@ -125,9 +121,7 @@ impl PolynomialSolver {
                                 Expression::function(
                                     "complex",
                                     vec![
-                                        Expression::Number(Number::float(
-                                            -cube_root_value / 2.0,
-                                        )),
+                                        Expression::Number(Number::float(-cube_root_value / 2.0)),
                                         Expression::Number(Number::float(
                                             -cube_root_value * 3.0_f64.sqrt() / 2.0,
                                         )),
@@ -176,10 +170,8 @@ impl PolynomialSolver {
         // Check if it's the form x⁴ + constant = 0
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
-                if let (
-                    Expression::Pow(base, exp),
-                    Expression::Number(Number::Integer(constant)),
-                ) = (&terms[0], &terms[1])
+                if let (Expression::Pow(base, exp), Expression::Number(Number::Integer(constant))) =
+                    (&terms[0], &terms[1])
                 {
                     if **base == Expression::symbol(variable.clone())
                         && **exp == Expression::integer(4)
@@ -281,26 +273,26 @@ impl PolynomialSolver {
                     .iter()
                     .map(|t| self.substitute_variable(t, variable, value))
                     .collect();
-                Expression::add(new_terms)
+                Expression::add(new_terms).simplify()
             }
             Expression::Mul(factors) => {
                 let new_factors: Vec<Expression> = factors
                     .iter()
                     .map(|f| self.substitute_variable(f, variable, value))
                     .collect();
-                Expression::mul(new_factors)
+                Expression::mul(new_factors).simplify()
             }
             Expression::Pow(base, exp) => {
                 let new_base = self.substitute_variable(base, variable, value);
                 let new_exp = self.substitute_variable(exp, variable, value);
-                Expression::pow(new_base, new_exp)
+                Expression::pow(new_base, new_exp).simplify()
             }
             Expression::Function { name, args } => {
                 let new_args: Vec<Expression> = args
                     .iter()
                     .map(|a| self.substitute_variable(a, variable, value))
                     .collect();
-                Expression::function(name, new_args)
+                Expression::function(name, new_args).simplify()
             }
             _ => expr.clone(),
         }

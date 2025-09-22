@@ -34,7 +34,7 @@ pub trait Integration {
     /// use mathhook_core::calculus::integrals::Integration;
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::pow(Expression::symbol(x), Expression::integer(2));
+    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = expr.integrate(x);
     /// ```
     fn integrate(&self, variable: Symbol) -> Expression;
@@ -48,7 +48,7 @@ pub trait Integration {
     /// use mathhook_core::calculus::integrals::Integration;
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::symbol(x);
+    /// let expr = Expression::symbol(x.clone());
     /// let lower = Expression::integer(0);
     /// let upper = Expression::integer(1);
     /// let result = expr.definite_integrate(x, lower, upper);

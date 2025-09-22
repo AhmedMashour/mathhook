@@ -1,0 +1,27 @@
+---
+description: # Rust Code Style Rules
+alwaysApply: true
+
+## Comments and Documentation
+- Use only documentation comments (`///` for functions, `//!` for modules)
+- Exception: Inline comments allowed for mathematical equations/expressions (e.g., `// 2x + 1`, `// ax^2 + bx + c`)
+- No emojis in code, comments, or documentation
+- No ALL CAPS text in code or documentation
+- Always include testable examples in `///` documentation that compile and run as doctests
+
+## Code Quality
+- Keep code clean, professional, and self-documenting through good naming and structure
+- Focus on functionality over visual flair in documentation
+- Write meaningful variable and function names that explain intent
+
+## Module Organization
+- Split modules into individual files when they exceed 500 lines
+- Use individual file approach (e.g., `derivatives/power_rule.rs`, `derivatives/chain_rule.rs`)
+- Avoid mod.rs pattern for sub-modules
+
+## Testing
+- Add meaningful unit tests in each module
+- Test core functionality without being brittle
+- Avoid tests that are overly specific to implementation details
+- Focus on behavior verification over implementation testing
+---

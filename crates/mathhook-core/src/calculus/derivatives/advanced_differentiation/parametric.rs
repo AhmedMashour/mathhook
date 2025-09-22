@@ -19,6 +19,7 @@ impl ParametricDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
@@ -42,6 +43,7 @@ impl ParametricDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::symbol(t.clone());
@@ -70,6 +72,7 @@ impl ParametricDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::symbol(t.clone());
@@ -99,6 +102,7 @@ impl ParametricDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
@@ -203,6 +207,7 @@ impl ParametricCurveAnalysis {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricCurveAnalysis;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(2));
@@ -225,6 +230,7 @@ impl ParametricCurveAnalysis {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::ParametricCurveAnalysis;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::symbol(t.clone());

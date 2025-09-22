@@ -15,11 +15,11 @@ fn test_simplify_basic_arithmetic() {
         Expression::pow(Expression::integer(3), Expression::integer(-1)),
     ]);
     let result2 = expr2.simplify();
-    // Our system represents division as multiplication by inverse
-    let result_str = result2.to_string();
-    assert!(
-        result_str.contains("6") && result_str.contains("3"),
-        "Expected 6*3^(-1) structure, got: {}",
+    // Our CAS correctly simplifies 6*3^(-1) to 2 (mathematically superior)
+    assert_eq!(
+        result2,
+        Expression::integer(2),
+        "6*3^(-1) should simplify to 2, got: {}",
         result2
     );
 }

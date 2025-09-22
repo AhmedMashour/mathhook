@@ -152,13 +152,10 @@ pub trait ComplexOperations {
 impl ComplexOperations for Expression {
     fn complex_add(&self, other: &Expression) -> Expression {
         match (self, other) {
-            (Expression::Complex(a), Expression::Complex(b)) => {
-                // ✅ Direct construction without intermediate expressions
-                Expression::complex(
-                    Expression::add(vec![a.real.clone(), b.real.clone()]),
-                    Expression::add(vec![a.imag.clone(), b.imag.clone()]),
-                )
-            }
+            (Expression::Complex(a), Expression::Complex(b)) => Expression::complex(
+                Expression::add(vec![a.real.clone(), b.real.clone()]).simplify(),
+                Expression::add(vec![a.imag.clone(), b.imag.clone()]).simplify(),
+            ),
             _ => Expression::function("undefined", vec![]),
         }
     }
@@ -206,15 +203,15 @@ impl ComplexOperations for Expression {
     fn complex_multiply(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Complex(a), Expression::Complex(b)) => {
-                // ✅ Cache intermediate results
-                let ac = Expression::mul(vec![a.real.clone(), b.real.clone()]);
-                let bd = Expression::mul(vec![a.imag.clone(), b.imag.clone()]);
-                let ad = Expression::mul(vec![a.real.clone(), b.imag.clone()]);
-                let bc = Expression::mul(vec![a.imag.clone(), b.real.clone()]);
+                let ac = Expression::mul(vec![a.real.clone(), b.real.clone()]).simplify();
+                let bd = Expression::mul(vec![a.imag.clone(), b.imag.clone()]).simplify();
+                let ad = Expression::mul(vec![a.real.clone(), b.imag.clone()]).simplify();
+                let bc = Expression::mul(vec![a.imag.clone(), b.real.clone()]).simplify();
 
                 Expression::complex(
-                    Expression::add(vec![ac, Expression::mul(vec![Expression::integer(-1), bd])]),
-                    Expression::add(vec![ad, bc]),
+                    Expression::add(vec![ac, Expression::mul(vec![Expression::integer(-1), bd]).simplify()])
+                        .simplify(),
+                    Expression::add(vec![ad, bc]).simplify(),
                 )
             }
 

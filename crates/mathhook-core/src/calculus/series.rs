@@ -144,7 +144,8 @@ impl SeriesMethods {
                             Expression::integer(n as i64),
                         ),
                         Expression::pow(Self::factorial(n), Expression::integer(-1)),
-                    ]);
+                    ])
+                    .simplify();
                     terms.push(term);
                 }
                 Some(Expression::add(terms))
@@ -154,7 +155,7 @@ impl SeriesMethods {
                 let mut terms = Vec::new();
                 for n in 0..=order {
                     let power = 2 * n + 1;
-                    if power > order * 2 + 1 {
+                    if power > order {
                         break;
                     }
 
@@ -166,7 +167,8 @@ impl SeriesMethods {
                             Expression::integer(power as i64),
                         ),
                         Expression::pow(Self::factorial(power), Expression::integer(-1)),
-                    ]);
+                    ])
+                    .simplify();
                     terms.push(term);
                 }
                 Some(Expression::add(terms))
@@ -176,7 +178,7 @@ impl SeriesMethods {
                 let mut terms = Vec::new();
                 for n in 0..=order {
                     let power = 2 * n;
-                    if power > order * 2 {
+                    if power > order {
                         break;
                     }
 
@@ -192,6 +194,7 @@ impl SeriesMethods {
                             ),
                             Expression::pow(Self::factorial(power), Expression::integer(-1)),
                         ])
+                        .simplify()
                     };
                     terms.push(term);
                 }

@@ -16,10 +16,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
     ///
     /// let x = Symbol::new("x");
-    /// let args = vec![Expression::symbol(x)];
+    /// let args = vec![Expression::symbol(x.clone())];
     /// let result = FunctionIntegrals::integrate("sin", &args, x);
     /// ```
     pub fn integrate(name: &str, args: &[Expression], variable: Symbol) -> Expression {
@@ -50,7 +50,7 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
     ///
     /// let x = Symbol::new("x");
     /// let result = FunctionIntegrals::integrate_simple_function("sin", x);
@@ -234,10 +234,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
     ///
     /// let x = Symbol::new("x");
-    /// let inner = Expression::pow(Expression::symbol(x), Expression::integer(2));
+    /// let inner = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = FunctionIntegrals::integrate_composite_function("sin", &inner, x);
     /// ```
     pub fn integrate_composite_function(
@@ -275,7 +275,7 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
     ///
     /// let x = Symbol::new("x");
     /// let a = Expression::integer(3);

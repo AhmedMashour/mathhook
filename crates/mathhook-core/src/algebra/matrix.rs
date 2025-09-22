@@ -227,8 +227,7 @@ impl MatrixOperations for Expression {
                         .iter()
                         .zip(row_b)
                         .map(|(a_elem, b_elem)| {
-                            // ✅ Use operator overloading if available
-                            Expression::add(vec![a_elem.clone(), b_elem.clone()])
+                            Expression::add(vec![a_elem.clone(), b_elem.clone()]).simplify()
                         })
                         .collect();
 
@@ -302,9 +301,10 @@ impl MatrixOperations for Expression {
                         let sum = (0..inner)
                             .map(|k| {
                                 Expression::mul(vec![a.rows[i][k].clone(), b.rows[k][j].clone()])
+                                    .simplify()
                             })
                             .fold(Expression::integer(0), |acc, term| {
-                                Expression::add(vec![acc, term])
+                                Expression::add(vec![acc, term]).simplify()
                             });
 
                         row.push(sum);
@@ -357,14 +357,10 @@ impl MatrixOperations for Expression {
                         let c = &matrix.rows[1][0];
                         let d = &matrix.rows[1][1];
 
-                        Expression::add(vec![
-                            Expression::mul(vec![a.clone(), d.clone()]),
-                            Expression::mul(vec![
-                                Expression::integer(-1),
-                                Expression::mul(vec![b.clone(), c.clone()]),
-                            ]),
-                        ])
-                        .simplify()
+                        let ad = Expression::mul(vec![a.clone(), d.clone()]).simplify();
+                        let bc = Expression::mul(vec![b.clone(), c.clone()]).simplify();
+                        let neg_bc = Expression::mul(vec![Expression::integer(-1), bc]).simplify();
+                        Expression::add(vec![ad, neg_bc]).simplify()
                     }
                     3 => {
                         let elements = &matrix.rows;

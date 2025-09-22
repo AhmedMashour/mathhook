@@ -13,10 +13,10 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
-    /// let expr = Expression::integral(Expression::symbol(x), x);
+    /// let expr = Expression::integral(Expression::symbol(x.clone()), x.clone());
     /// let result = expr.integrate(x);
     /// ```
     pub fn handle_calculus(
@@ -45,7 +45,7 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
     /// let expr = Expression::integer(5);
@@ -60,7 +60,7 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
@@ -89,11 +89,11 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     /// use mathhook_core::calculus::integrals::Integration;
     ///
     /// let x = Symbol::new("x");
-    /// let terms = vec![Expression::symbol(x), Expression::integer(5)];
+    /// let terms = vec![Expression::symbol(x.clone()), Expression::integer(5)];
     /// let result = BasicIntegrals::handle_sum(&terms, x);
     /// ```
     pub fn handle_sum(terms: &[Expression], variable: Symbol) -> Expression {
@@ -109,10 +109,10 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
-    /// let factors = vec![Expression::integer(3), Expression::symbol(x)];
+    /// let factors = vec![Expression::integer(3), Expression::symbol(x.clone())];
     /// let result = BasicIntegrals::handle_product(&factors, x);
     /// ```
     pub fn handle_product(factors: &[Expression], variable: Symbol) -> Expression {
@@ -144,10 +144,10 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
-    /// let base = Expression::symbol(x);
+    /// let base = Expression::symbol(x.clone());
     /// let exp = Expression::integer(3);
     /// let result = BasicIntegrals::handle_power(&base, &exp, x);
     /// ```
@@ -190,7 +190,7 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, BasicIntegrals};
     ///
     /// let x = Symbol::new("x");
     /// let expr = Expression::integer(5);

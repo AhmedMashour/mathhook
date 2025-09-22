@@ -16,7 +16,7 @@ impl PartialUtils {
     ///
     /// let x = Symbol::new("x");
     /// let expr1 = Expression::symbol(x.clone());
-    /// let expr2 = Expression::symbol(x);
+    /// let expr2 = Expression::symbol(x.clone());
     /// let equal = PartialUtils::expressions_equal(&expr1, &expr2);
     /// ```
     pub fn expressions_equal(expr1: &Expression, expr2: &Expression) -> bool {
@@ -88,8 +88,20 @@ impl MatrixUtils {
     /// ```
     pub fn determinant(matrix: &[Vec<Expression>]) -> Expression {
         let n = matrix.len();
-        if n == 0 || matrix[0].len() != n {
+        if n == 0 {
             panic!("Matrix must be square and non-empty");
+        }
+
+        // Check that all rows have the same length and that the matrix is square
+        let expected_cols = matrix[0].len();
+        if expected_cols != n {
+            panic!("Matrix must be square and non-empty");
+        }
+
+        for row in matrix.iter() {
+            if row.len() != expected_cols {
+                panic!("Matrix must be square and non-empty");
+            }
         }
 
         match n {
@@ -103,14 +115,11 @@ impl MatrixUtils {
     /// Optimized 2×2 determinant: |a b| = ad - bc
     ///                            |c d|
     fn det_2x2(matrix: &[Vec<Expression>]) -> Expression {
-        Expression::add(vec![
-            Expression::mul(vec![matrix[0][0].clone(), matrix[1][1].clone()]), // ad
-            Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::mul(vec![matrix[0][1].clone(), matrix[1][0].clone()]), // -bc
-            ]),
-        ])
-        .simplify()
+        let ad = Expression::mul(vec![matrix[0][0].clone(), matrix[1][1].clone()]).simplify();
+        let bc = Expression::mul(vec![matrix[0][1].clone(), matrix[1][0].clone()]).simplify();
+        let neg_bc = Expression::mul(vec![Expression::integer(-1), bc]).simplify();
+
+        Expression::add(vec![ad, neg_bc]).simplify()
     }
 
     /// Optimized 3×3 determinant using cofactor expansion
@@ -147,13 +156,11 @@ impl MatrixUtils {
         }
 
         // 2×2 determinant: ad - bc
-        Expression::add(vec![
-            Expression::mul(vec![elements[0].clone(), elements[3].clone()]), // ad
-            Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::mul(vec![elements[1].clone(), elements[2].clone()]), // -bc
-            ]),
-        ])
+        let ad = Expression::mul(vec![elements[0].clone(), elements[3].clone()]).simplify();
+        let bc = Expression::mul(vec![elements[1].clone(), elements[2].clone()]).simplify();
+        let neg_bc = Expression::mul(vec![Expression::integer(-1), bc]).simplify();
+
+        Expression::add(vec![ad, neg_bc]).simplify()
     }
 
     /// Symbolic determinant for large matrices

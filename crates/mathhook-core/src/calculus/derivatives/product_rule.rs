@@ -13,13 +13,13 @@ impl ProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = Symbol::new("x");
     /// let expr = Expression::mul(vec![
     ///     Expression::symbol(x.clone()),
-    ///     Expression::function("sin", vec![Expression::symbol(x)])
+    ///     Expression::function("sin", vec![Expression::symbol(x.clone())])
     /// ]);
     /// let result = expr.derivative(x);
     /// ```
@@ -37,11 +37,11 @@ impl ProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
     ///
     /// let x = Symbol::new("x");
     /// let u = Expression::symbol(x.clone());
-    /// let v = Expression::function("sin", vec![Expression::symbol(x)]);
+    /// let v = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let result = ProductRule::apply(&u, &v, x);
     /// ```
     pub fn apply(u: &Expression, v: &Expression, variable: Symbol) -> Expression {
@@ -65,13 +65,13 @@ impl GeneralProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
     ///
     /// let x = Symbol::new("x");
     /// let factors = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())]),
-    ///     Expression::function("cos", vec![Expression::symbol(x)])
+    ///     Expression::function("cos", vec![Expression::symbol(x.clone())])
     /// ];
     /// let result = GeneralProductRule::apply(&factors, x);
     /// ```

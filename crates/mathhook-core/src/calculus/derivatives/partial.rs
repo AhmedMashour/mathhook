@@ -12,8 +12,8 @@ mod vector_fields;
 pub use gradient::{DirectionalDerivatives, GradientOperations};
 pub use hessian::HessianOperations;
 pub use jacobian::{JacobianDeterminant, JacobianOperations};
-pub use utils::PartialUtils;
-pub use vector_fields::{ConservativeFields, VectorFieldOperations};
+pub use utils::{MatrixUtils, PartialUtils};
+pub use vector_fields::{ConservativeFields, FluidDynamicsOperations, VectorFieldOperations};
 
 use crate::algebra::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
@@ -29,12 +29,13 @@ impl PartialDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::PartialDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let expr = Expression::mul(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(3))
+    ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+    ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(3))
     /// ]);
     /// let mixed = PartialDerivatives::mixed_partial(&expr, vec![x, y]);
     /// ```
@@ -56,12 +57,13 @@ impl PartialDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::PartialDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let expr = Expression::add(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(2))
+    ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+    ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
     /// ]);
     /// let grad = PartialDerivatives::gradient(&expr, vec![x, y]);
     /// ```
@@ -75,13 +77,14 @@ impl PartialDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::PartialDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let expr = Expression::add(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::mul(vec![Expression::symbol(x), Expression::symbol(y)]),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(2))
+    ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+    ///     Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]),
+    ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
     /// ]);
     /// let hessian = PartialDerivatives::hessian(&expr, vec![x, y]);
     /// ```
@@ -95,12 +98,13 @@ impl PartialDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::PartialDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let expr = Expression::add(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(2))
+    ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+    ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
     /// ]);
     /// let direction = vec![Expression::integer(1), Expression::integer(1)];
     /// let dir_deriv = PartialDerivatives::directional_derivative(&expr, vec![x, y], direction);

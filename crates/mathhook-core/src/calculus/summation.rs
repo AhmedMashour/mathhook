@@ -112,21 +112,21 @@ impl SummationMethods {
         num_terms: &Expression,
     ) -> Expression {
         // Sum = a * (1 - r^n) / (1 - r) for r ≠ 1
-        let numerator = Expression::mul(vec![
-            first_term.clone(),
-            Expression::add(vec![
-                Expression::integer(1),
-                Expression::mul(vec![
-                    Expression::integer(-1),
-                    Expression::pow(common_ratio.clone(), num_terms.clone()),
-                ]),
-            ]),
-        ]);
+        let simplified_ratio = common_ratio.simplify();
+        let ratio_power = Expression::pow(simplified_ratio.clone(), num_terms.clone()).simplify();
+        let one_minus_ratio_power = Expression::add(vec![
+            Expression::integer(1),
+            Expression::mul(vec![Expression::integer(-1), ratio_power]),
+        ])
+        .simplify();
+
+        let numerator = Expression::mul(vec![first_term.clone(), one_minus_ratio_power]).simplify();
 
         let denominator = Expression::add(vec![
             Expression::integer(1),
-            Expression::mul(vec![Expression::integer(-1), common_ratio.clone()]),
-        ]);
+            Expression::mul(vec![Expression::integer(-1), simplified_ratio]),
+        ])
+        .simplify();
 
         Expression::mul(vec![
             numerator,
@@ -141,15 +141,15 @@ impl SummationMethods {
         common_ratio: &Expression,
     ) -> Expression {
         // Sum = a / (1 - r) for |r| < 1
+        let one_minus_r = Expression::add(vec![
+            Expression::integer(1),
+            Expression::mul(vec![Expression::integer(-1), common_ratio.clone()]).simplify(),
+        ])
+        .simplify();
+
         Expression::mul(vec![
             first_term.clone(),
-            Expression::pow(
-                Expression::add(vec![
-                    Expression::integer(1),
-                    Expression::mul(vec![Expression::integer(-1), common_ratio.clone()]),
-                ]),
-                Expression::integer(-1),
-            ),
+            Expression::pow(one_minus_r, Expression::integer(-1)),
         ])
         .simplify()
     }
@@ -163,31 +163,41 @@ impl SummationMethods {
                     1 => Expression::mul(vec![
                         // Σi = n(n+1)/2
                         upper_limit.clone(),
-                        Expression::add(vec![upper_limit.clone(), Expression::integer(1)]),
+                        Expression::add(vec![upper_limit.clone(), Expression::integer(1)])
+                            .simplify(),
                         Expression::rational(1, 2),
-                    ]),
+                    ])
+                    .simplify(),
                     2 => Expression::mul(vec![
                         // Σi² = n(n+1)(2n+1)/6
                         upper_limit.clone(),
-                        Expression::add(vec![upper_limit.clone(), Expression::integer(1)]),
+                        Expression::add(vec![upper_limit.clone(), Expression::integer(1)])
+                            .simplify(),
                         Expression::add(vec![
-                            Expression::mul(vec![Expression::integer(2), upper_limit.clone()]),
+                            Expression::mul(vec![Expression::integer(2), upper_limit.clone()])
+                                .simplify(),
                             Expression::integer(1),
-                        ]),
+                        ])
+                        .simplify(),
                         Expression::rational(1, 6),
-                    ]),
+                    ])
+                    .simplify(),
                     3 => Expression::pow(
                         // Σi³ = [n(n+1)/2]²
                         Expression::mul(vec![
                             upper_limit.clone(),
-                            Expression::add(vec![upper_limit.clone(), Expression::integer(1)]),
+                            Expression::add(vec![upper_limit.clone(), Expression::integer(1)])
+                                .simplify(),
                             Expression::mul(vec![
                                 Expression::integer(1),
                                 Expression::pow(Expression::integer(2), Expression::integer(-1)),
-                            ]),
-                        ]),
+                            ])
+                            .simplify(),
+                        ])
+                        .simplify(),
                         Expression::integer(2),
-                    ),
+                    )
+                    .simplify(),
                     _ => {
                         Expression::function("power_sum", vec![power.clone(), upper_limit.clone()])
                     }
@@ -369,13 +379,7 @@ mod tests {
 
         let result = SummationMethods::geometric_series(&first, &ratio, &n);
         // 1 + 1/2 + 1/4 = 7/4
-        assert_eq!(
-            result.simplify(),
-            Expression::mul(vec![
-                Expression::integer(7),
-                Expression::pow(Expression::integer(4), Expression::integer(-1))
-            ])
-        );
+        assert_eq!(result.simplify(), Expression::rational(7, 4));
     }
 
     #[test]

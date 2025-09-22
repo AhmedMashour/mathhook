@@ -10,8 +10,8 @@ mod vector_valued;
 
 use crate::core::{Expression, Symbol};
 
-pub use implicit::ImplicitDifferentiation;
-pub use parametric::ParametricDifferentiation;
+pub use implicit::{ImplicitCurveAnalysis, ImplicitDifferentiation};
+pub use parametric::{ParametricCurveAnalysis, ParametricDifferentiation};
 pub use vector_valued::VectorValuedDifferentiation;
 
 /// Advanced differentiation methods with performance optimization
@@ -26,6 +26,7 @@ impl AdvancedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
@@ -47,6 +48,7 @@ impl AdvancedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
@@ -65,6 +67,7 @@ impl AdvancedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let components = vec![
@@ -86,6 +89,7 @@ impl AdvancedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
@@ -108,6 +112,7 @@ impl AdvancedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
     /// let t = Symbol::new("t");
     /// let components = vec![

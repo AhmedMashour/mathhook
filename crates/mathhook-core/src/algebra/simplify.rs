@@ -1,6 +1,15 @@
 //! Minimal overhead, maximum performance implementation
+//!
+//! Uses modular architecture for specialized simplification of different expression types.
+//! Individual modules handle specific aspects following project guidelines.
 
-use crate::core::{Expression, Number};
+use crate::core::Expression;
+
+mod arithmetic;
+mod complex;
+mod constants;
+mod functions;
+mod matrix;
 
 /// Trait for simplifying expressions
 pub trait Simplify {
@@ -12,241 +21,136 @@ impl Simplify for Expression {
     fn simplify(&self) -> Self {
         match self {
             Expression::Number(_) | Expression::Symbol(_) => self.clone(),
-            Expression::Add(terms) => self.simplify_addition(terms),
-            Expression::Mul(factors) => self.simplify_multiplication(factors),
-            Expression::Pow(base, exp) => self.simplify_power(base, exp),
-            Expression::Function { .. } => self.clone(),
-            Expression::Complex(_) => self.clone(),
-            Expression::Matrix(_) => self.clone(),
-            Expression::Constant(_) => self.clone(),
-            Expression::Relation(_) => self.clone(),
-            Expression::Piecewise(_) => self.clone(),
-            Expression::Set(_) => self.clone(),
-            Expression::Interval(_) => self.clone(),
-            Expression::Calculus(_) => self.clone(),
-        }
-    }
-}
 
-impl Expression {
-    #[inline(always)]
-    fn simplify_addition(&self, terms: &[Expression]) -> Self {
-        if terms.is_empty() {
-            return Expression::integer(0);
-        }
-        if terms.len() == 1 {
-            return terms[0].clone();
-        }
+            // Delegate arithmetic operations to specialized arithmetic module
+            Expression::Add(terms) => arithmetic::simplify_addition(terms),
+            Expression::Mul(factors) => arithmetic::simplify_multiplication(factors),
+            Expression::Pow(base, exp) => arithmetic::simplify_power(base, exp),
 
-        let mut int_sum = 0i64;
-        let mut float_sum = 0.0f64;
-        let mut has_float = false;
-        let mut non_numeric_count = 0;
-        let mut first_non_numeric = None;
+            // Delegate function simplification to functions module
+            Expression::Function { name, args } => functions::simplify_function(name, args),
 
-        // Single pass - count and accumulate
-        for term in terms {
-            match term {
-                Expression::Number(Number::Integer(n)) => {
-                    int_sum += n;
-                }
-                Expression::Number(Number::Float(f)) => {
-                    float_sum += f;
-                    has_float = true;
-                }
-                _ => {
-                    non_numeric_count += 1;
-                    if first_non_numeric.is_none() {
-                        first_non_numeric = Some(term.clone());
+            // Delegate constant simplification to constants module
+            Expression::Constant(constant) => constants::simplify_constant(constant),
+
+            // Delegate complex and matrix operations to specialized modules
+            Expression::Complex(_) => complex::simplify_complex(self),
+            Expression::Matrix(_) => matrix::simplify_matrix(self),
+
+            // Handle remaining expression types with proper simplification
+            Expression::Relation(relation) => {
+                // Simplify both sides of relations (equations, inequalities)
+                let simplified_left = relation.left.simplify();
+                let simplified_right = relation.right.simplify();
+                Expression::relation(simplified_left, simplified_right, relation.relation_type)
+            }
+            Expression::Piecewise(piecewise) => {
+                // Simplify each piece's expression and condition
+                let simplified_pieces: Vec<_> = piecewise
+                    .pieces
+                    .iter()
+                    .map(|piece| (piece.0.simplify(), piece.1.simplify()))
+                    .collect();
+                let simplified_default = piecewise.default.as_ref().map(|expr| expr.simplify());
+                Expression::piecewise(simplified_pieces, simplified_default)
+            }
+            Expression::Set(set_elements) => {
+                // Simplify each element in the set
+                let simplified_elements: Vec<_> =
+                    set_elements.iter().map(|elem| elem.simplify()).collect();
+                Expression::set(simplified_elements)
+            }
+            Expression::Interval(interval) => {
+                // Simplify interval bounds
+                let simplified_start = interval.start.simplify();
+                let simplified_end = interval.end.simplify();
+                Expression::interval(
+                    simplified_start,
+                    simplified_end,
+                    interval.start_inclusive,
+                    interval.end_inclusive,
+                )
+            }
+            Expression::Calculus(calc_op) => {
+                // Simplify calculus operations by simplifying their sub-expressions
+                use crate::core::expression::data_types::CalculusData;
+                match calc_op.as_ref() {
+                    CalculusData::Derivative {
+                        expression,
+                        variable,
+                        order,
+                    } => {
+                        let simplified_expr = expression.simplify();
+                        Expression::Calculus(Box::new(CalculusData::Derivative {
+                            expression: simplified_expr,
+                            variable: variable.clone(),
+                            order: *order,
+                        }))
+                    }
+                    CalculusData::Integral {
+                        integrand,
+                        variable,
+                        bounds,
+                    } => {
+                        let simplified_integrand = integrand.simplify();
+                        let simplified_bounds = bounds
+                            .as_ref()
+                            .map(|(start, end)| (start.simplify(), end.simplify()));
+                        Expression::Calculus(Box::new(CalculusData::Integral {
+                            integrand: simplified_integrand,
+                            variable: variable.clone(),
+                            bounds: simplified_bounds,
+                        }))
+                    }
+                    CalculusData::Limit {
+                        expression,
+                        variable,
+                        point,
+                        direction,
+                    } => {
+                        let simplified_expr = expression.simplify();
+                        let simplified_point = point.simplify();
+                        Expression::Calculus(Box::new(CalculusData::Limit {
+                            expression: simplified_expr,
+                            variable: variable.clone(),
+                            point: simplified_point,
+                            direction: *direction,
+                        }))
+                    }
+                    CalculusData::Sum {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        let simplified_expr = expression.simplify();
+                        let simplified_start = start.simplify();
+                        let simplified_end = end.simplify();
+                        Expression::Calculus(Box::new(CalculusData::Sum {
+                            expression: simplified_expr,
+                            variable: variable.clone(),
+                            start: simplified_start,
+                            end: simplified_end,
+                        }))
+                    }
+                    CalculusData::Product {
+                        expression,
+                        variable,
+                        start,
+                        end,
+                    } => {
+                        let simplified_expr = expression.simplify();
+                        let simplified_start = start.simplify();
+                        let simplified_end = end.simplify();
+                        Expression::Calculus(Box::new(CalculusData::Product {
+                            expression: simplified_expr,
+                            variable: variable.clone(),
+                            start: simplified_start,
+                            end: simplified_end,
+                        }))
                     }
                 }
             }
-        }
-
-        let numeric_result = if has_float {
-            let total = float_sum + int_sum as f64;
-            if total != 0.0 {
-                Some(Expression::Number(Number::float(total)))
-            } else {
-                None
-            }
-        } else if int_sum != 0 {
-            Some(Expression::integer(int_sum))
-        } else {
-            None
-        };
-
-        match (numeric_result.as_ref(), non_numeric_count) {
-            (None, 0) => Expression::integer(0),
-            (Some(num), 0) => num.clone(),
-            (None, 1) => {
-                // Ensure single remaining term is fully simplified
-                first_non_numeric.unwrap().simplify()
-            }
-            (Some(num), 1) => {
-                // Ensure non-numeric term is simplified
-                let simplified_non_numeric = first_non_numeric.unwrap().simplify();
-                Expression::add(vec![num.clone(), simplified_non_numeric])
-            }
-            _ => {
-                // Multiple non-numeric terms - build result efficiently with recursive simplification
-                let mut result_terms = Vec::with_capacity(non_numeric_count + 1);
-                if let Some(num) = numeric_result {
-                    result_terms.push(num);
-                }
-                for term in terms {
-                    if !matches!(term, Expression::Number(_)) {
-                        // Each non-numeric term
-                        result_terms.push(term.simplify());
-                    }
-                }
-                Expression::Add(Box::new(result_terms))
-            }
-        }
-    }
-
-    /// Multiplication with minimal overhead
-    #[inline(always)]
-    fn simplify_multiplication(&self, factors: &[Expression]) -> Self {
-        if factors.is_empty() {
-            return Expression::integer(1);
-        }
-        if factors.len() == 1 {
-            return factors[0].clone();
-        }
-
-        // Handle simple 2-factor numeric multiplication directly
-        if factors.len() == 2 {
-            match (&factors[0], &factors[1]) {
-                (
-                    Expression::Number(Number::Integer(a)),
-                    Expression::Number(Number::Integer(b)),
-                ) => {
-                    return Expression::integer(a * b);
-                }
-                (Expression::Number(Number::Float(a)), Expression::Number(Number::Float(b))) => {
-                    return Expression::Number(Number::float(a * b));
-                }
-                _ => {} // Fall through to general case
-            }
-        }
-
-        // Zero detection first - early termination
-        for factor in factors {
-            if let Expression::Number(Number::Integer(0)) = factor {
-                return Expression::integer(0);
-            }
-        }
-
-        // Direct numeric combination
-        let mut int_product = 1i64;
-        let mut float_product = 1.0f64;
-        let mut has_float = false;
-        let mut non_numeric_count = 0;
-        let mut first_non_numeric = None;
-
-        for factor in factors {
-            match factor {
-                Expression::Number(Number::Integer(n)) => {
-                    int_product *= n;
-                }
-                Expression::Number(Number::Float(f)) => {
-                    float_product *= f;
-                    has_float = true;
-                }
-                _ => {
-                    non_numeric_count += 1;
-                    if first_non_numeric.is_none() {
-                        first_non_numeric = Some(factor.clone());
-                    }
-                }
-            }
-        }
-
-        let numeric_result = if has_float {
-            let total = float_product * int_product as f64;
-            if total != 1.0 {
-                Some(Expression::Number(Number::float(total)))
-            } else {
-                None
-            }
-        } else if int_product != 1 {
-            Some(Expression::integer(int_product))
-        } else {
-            None
-        };
-
-        match (numeric_result.as_ref(), non_numeric_count) {
-            (None, 0) => Expression::integer(1),
-            (Some(num), 0) => num.clone(),
-            (None, 1) => first_non_numeric.unwrap(),
-            (Some(num), 1) => {
-                // Only multiply if the numeric factor isn't 1
-                match num {
-                    Expression::Number(Number::Integer(1)) => first_non_numeric.unwrap(),
-                    Expression::Number(Number::Float(f)) if *f == 1.0 => first_non_numeric.unwrap(),
-                    _ => Expression::mul(vec![num.clone(), first_non_numeric.unwrap()]),
-                }
-            }
-            _ => {
-                // Multiple factors - build result efficiently
-                let mut result_factors = Vec::with_capacity(non_numeric_count + 1);
-                if let Some(num) = numeric_result {
-                    // Only include numeric factor if it's not 1
-                    match num {
-                        Expression::Number(Number::Integer(1)) => {}
-                        Expression::Number(Number::Float(f)) if f == 1.0 => {}
-                        _ => result_factors.push(num),
-                    }
-                }
-                for factor in factors {
-                    if !matches!(factor, Expression::Number(_)) {
-                        result_factors.push(factor.clone());
-                    }
-                }
-                match result_factors.len() {
-                    0 => Expression::integer(1),
-                    1 => result_factors.into_iter().next().unwrap(),
-                    _ => Expression::Mul(Box::new(result_factors)),
-                }
-            }
-        }
-    }
-
-    /// Power simplification
-    #[inline(always)]
-    fn simplify_power(&self, base: &Expression, exp: &Expression) -> Self {
-        match (base, exp) {
-            // x^0 = 1
-            (_, Expression::Number(Number::Integer(0))) => Expression::integer(1),
-            // x^1 = x
-            (_, Expression::Number(Number::Integer(1))) => base.clone(),
-            // 0^n = 0 (for n > 0)
-            (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(n)))
-                if *n > 0 =>
-            {
-                Expression::integer(0)
-            }
-            // 1^n = 1
-            (Expression::Number(Number::Integer(1)), _) => Expression::integer(1),
-            // Direct numeric powers for small integers
-            (
-                Expression::Number(Number::Integer(base_val)),
-                Expression::Number(Number::Integer(exp_val)),
-            ) => {
-                if *exp_val >= 0 && *exp_val <= 10 && base_val.abs() <= 100 {
-                    // Safe to compute directly
-                    let result = (*base_val as f64).powi(*exp_val as i32);
-                    if result.fract() == 0.0 && result.abs() <= i64::MAX as f64 {
-                        Expression::integer(result as i64)
-                    } else {
-                        Expression::Number(Number::float(result))
-                    }
-                } else {
-                    Expression::pow(base.clone(), exp.clone())
-                }
-            }
-            _ => Expression::pow(base.clone(), exp.clone()),
         }
     }
 }
@@ -254,29 +158,33 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::Symbol;
 
     #[test]
-    fn test_ultra_fast_addition() {
-        // Test direct numeric addition
+    fn test_basic_simplification() {
+        // Test integer addition
         let expr = Expression::add(vec![Expression::integer(2), Expression::integer(3)]);
-        let result = expr.simplify();
-        assert_eq!(result, Expression::integer(5));
-    }
+        assert_eq!(expr.simplify(), Expression::integer(5));
 
-    #[test]
-    fn test_ultra_fast_multiplication() {
-        // Test direct numeric multiplication
+        // Test multiplication
         let expr = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
-        let result = expr.simplify();
-        assert_eq!(result, Expression::integer(6));
+        assert_eq!(expr.simplify(), Expression::integer(6));
+
+        // Test power
+        let x = Symbol::new("x");
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(1));
+        assert_eq!(expr.simplify(), Expression::symbol(x));
     }
 
     #[test]
-    fn test_ultra_fast_power() {
-        // Test direct power computation
-        let expr = Expression::pow(Expression::integer(2), Expression::integer(3));
-        let result = expr.simplify();
-        assert_eq!(result, Expression::integer(8));
+    fn test_function_simplification() {
+        // Test sin(0) = 0
+        let expr = Expression::function("sin", vec![Expression::integer(0)]);
+        assert_eq!(expr.simplify(), Expression::integer(0));
+
+        // Test cos(0) = 1
+        let expr = Expression::function("cos", vec![Expression::integer(0)]);
+        assert_eq!(expr.simplify(), Expression::integer(1));
     }
 
     #[test]

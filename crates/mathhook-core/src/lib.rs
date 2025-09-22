@@ -7,6 +7,7 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+
 pub mod solvers;
 
 // Re-export core types for the hybrid API
@@ -25,7 +26,6 @@ pub mod prelude {
     pub use crate::{MathSolver, SolverConfig, SolverResult};
 }
 
-#[cfg(test)]
 mod tests {
     use super::*;
 

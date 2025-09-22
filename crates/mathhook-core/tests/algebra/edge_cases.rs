@@ -300,9 +300,9 @@ mod rational_edge_cases {
         /// Test that rational arithmetic maintains exact precision
         let test_cases = vec![
             // (a_num, a_den, b_num, b_den, expected_num, expected_den)
-            (1, 3, 1, 6, 1, 2),  // 1/3 + 1/6 = 1/2
-            (2, 5, 3, 10, 1, 2), // 2/5 + 3/10 = 1/2
-            (1, 4, 1, 4, 1, 2),  // 1/4 + 1/4 = 1/2
+            (1, 3, 1, 6, 1, 2),   // 1/3 + 1/6 = 1/2
+            (2, 5, 3, 10, 7, 10), // 2/5 + 3/10 = 7/10
+            (1, 4, 1, 4, 1, 2),   // 1/4 + 1/4 = 1/2
         ];
 
         for (a_num, a_den, b_num, b_den, exp_num, exp_den) in test_cases {
