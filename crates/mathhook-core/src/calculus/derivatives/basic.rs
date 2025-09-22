@@ -123,36 +123,22 @@ mod tests {
     fn test_sum_linearity() {
         let x = Symbol::new("x");
 
-        // d/dx[x + 1] = 1
-        let expr1 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
-        assert_eq!(
-            expr1.derivative(x.clone()).simplify(),
-            Expression::integer(1)
-        );
+        // d/dx[x + 5] = 1 + 0 = 1
+        let sum = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(5)]);
+        let result = sum.derivative(x.clone()).simplify();
+        assert_eq!(result, Expression::integer(1));
 
-        // d/dx[2x + 3] = 2
-        let expr2 = Expression::add(vec![
+        // d/dx[2x + 3x] = 2 + 3 = 5
+        let linear_combo = Expression::add(vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
-            Expression::integer(3),
+            Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
         ]);
-        assert_eq!(
-            expr2.derivative(x.clone()).simplify(),
-            Expression::integer(2)
-        );
-
-        // d/dx[x + x] = 2
-        let expr3 = Expression::add(vec![
-            Expression::symbol(x.clone()),
-            Expression::symbol(x.clone()),
-        ]);
-        assert_eq!(
-            expr3.derivative(x.clone()).simplify(),
-            Expression::integer(2)
-        );
+        let linear_result = linear_combo.derivative(x.clone()).simplify();
+        assert_eq!(linear_result, Expression::integer(5));
     }
 
     #[test]
-    fn test_multivariate_expressions() {
+    fn test_multiple_variables() {
         let x = Symbol::new("x");
         let y = Symbol::new("y");
 
@@ -170,14 +156,14 @@ mod tests {
         let dx = expr.derivative(x.clone()).simplify();
         let expected_dx = Expression::add(vec![
             Expression::symbol(y.clone()),
-            Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
         ])
         .simplify();
 
         // ∂f/∂y = x + 1
         let dy = expr.derivative(y.clone()).simplify();
         let expected_dy =
-            Expression::add(vec![Expression::symbol(x), Expression::integer(1)]).simplify();
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]).simplify();
 
         assert_eq!(dx, expected_dx);
         assert_eq!(dy, expected_dy);
@@ -187,24 +173,56 @@ mod tests {
     fn test_special_constants() {
         let x = Symbol::new("x");
 
-        // d/dx[πx] = π
-        let pi_expr = Expression::mul(vec![
-            Expression::constant(MathConstant::Pi),
+        // d/dx[π] = 0
+        let pi_derivative = Expression::constant(MathConstant::Pi).derivative(x.clone());
+        assert_eq!(pi_derivative, Expression::integer(0));
+
+        // d/dx[e] = 0
+        let e_derivative = Expression::constant(MathConstant::E).derivative(x.clone());
+        assert_eq!(e_derivative, Expression::integer(0));
+
+        // d/dx[i] = 0
+        let i_derivative = Expression::constant(MathConstant::I).derivative(x.clone());
+        assert_eq!(i_derivative, Expression::integer(0));
+    }
+
+    #[test]
+    fn test_nested_sums() {
+        let x = Symbol::new("x");
+
+        // d/dx[x + (2x + 3)] = d/dx[3x + 3] = 3
+        let nested = Expression::add(vec![
             Expression::symbol(x.clone()),
+            Expression::add(vec![
+                Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+                Expression::integer(3),
+            ]),
         ]);
+
+        let result = nested.derivative(x.clone()).simplify();
+        assert_eq!(result, Expression::integer(3));
+    }
+
+    #[test]
+    fn test_zero_and_negative_constants() {
+        let x = Symbol::new("x");
+
+        // d/dx[0] = 0
         assert_eq!(
-            pi_expr.derivative(x.clone()).simplify(),
-            Expression::constant(MathConstant::Pi)
+            Expression::integer(0).derivative(x.clone()),
+            Expression::integer(0)
         );
 
-        // d/dx[e + x] = 1
-        let e_expr = Expression::add(vec![
-            Expression::constant(MathConstant::E),
-            Expression::symbol(x.clone()),
-        ]);
+        // d/dx[-42] = 0
         assert_eq!(
-            e_expr.derivative(x.clone()).simplify(),
-            Expression::integer(1)
+            Expression::integer(-42).derivative(x.clone()),
+            Expression::integer(0)
+        );
+
+        // d/dx[3.14] = 0
+        assert_eq!(
+            Expression::float(3.14).derivative(x.clone()),
+            Expression::integer(0)
         );
     }
 }

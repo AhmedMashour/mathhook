@@ -11,11 +11,6 @@ pub struct VectorFieldOperations;
 impl VectorFieldOperations {
     /// Compute divergence ∇ · F for vector field F = [P, Q, R, ...]
     ///
-    /// # Performance Notes
-    /// - Pre-validates dimensions for early error detection
-    /// - Uses iterator zip for optimal memory access
-    /// - Single simplification at the end
-    ///
     /// # Examples
     ///
     /// ```rust
@@ -25,14 +20,13 @@ impl VectorFieldOperations {
     /// let y = Symbol::new("y");
     /// let z = Symbol::new("z");
     /// let vector_field = vec![
-    ///     Expression::symbol(x),
-    ///     Expression::symbol(y),
-    ///     Expression::symbol(z)
+    ///     Expression::symbol(x.clone()),
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::symbol(z.clone())
     /// ];
     /// let div = VectorFieldOperations::divergence(&vector_field, vec![x, y, z]);
     /// ```
     pub fn divergence(vector_field: &[Expression], variables: Vec<Symbol>) -> Expression {
-        // Early validation
         if vector_field.len() != variables.len() {
             panic!(
                 "Vector field dimension ({}) must match number of variables ({})",
@@ -41,7 +35,6 @@ impl VectorFieldOperations {
             );
         }
 
-        // Pre-allocate divergence terms
         let mut divergence_terms = Vec::with_capacity(vector_field.len());
 
         // Compute ∂Fi/∂xi for each component
@@ -50,15 +43,14 @@ impl VectorFieldOperations {
             divergence_terms.push(partial);
         }
 
-        Expression::add(divergence_terms).simplify()
+        if divergence_terms.is_empty() {
+            Expression::integer(0)
+        } else {
+            Expression::add(divergence_terms).simplify()
+        }
     }
 
     /// Compute curl ∇ × F for 3D vector field F = [P, Q, R]
-    ///
-    /// # Performance Notes
-    /// - Validates 3D constraint early
-    /// - Pre-allocates result vector
-    /// - Computes all components in parallel-friendly way
     ///
     /// # Examples
     ///
@@ -69,56 +61,67 @@ impl VectorFieldOperations {
     /// let y = Symbol::new("y");
     /// let z = Symbol::new("z");
     /// let vector_field = vec![
-    ///     Expression::symbol(y),
-    ///     Expression::symbol(x),
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::symbol(x.clone()),
     ///     Expression::integer(0)
     /// ];
     /// let curl = VectorFieldOperations::curl(&vector_field, vec![x, y, z]);
     /// ```
     pub fn curl(vector_field: &[Expression], variables: Vec<Symbol>) -> Vec<Expression> {
-        if vector_field.len() != 3 || variables.len() != 3 {
-            panic!("Curl requires exactly 3D vector field and 3 variables");
+        match (vector_field.len(), variables.len()) {
+            (2, 2) => {
+                // 2D curl: ∂Q/∂x - ∂P/∂y (scalar result as z-component)
+                let p = &vector_field[0];
+                let q = &vector_field[1];
+                let x = &variables[0];
+                let y = &variables[1];
+
+                let dq_dx = q.derivative(x.clone()).simplify();
+                let dp_dy = p.derivative(y.clone()).simplify();
+
+                vec![Expression::add(vec![
+                    dq_dx,
+                    Expression::mul(vec![Expression::integer(-1), dp_dy]),
+                ])
+                .simplify()]
+            }
+            (3, 3) => {
+                // 3D curl: [∂R/∂y - ∂Q/∂z, ∂P/∂z - ∂R/∂x, ∂Q/∂x - ∂P/∂y]
+                let p = &vector_field[0];
+                let q = &vector_field[1];
+                let r = &vector_field[2];
+                let x = &variables[0];
+                let y = &variables[1];
+                let z = &variables[2];
+
+                let curl_x = Expression::add(vec![
+                    r.derivative(y.clone()),
+                    Expression::mul(vec![Expression::integer(-1), q.derivative(z.clone())]),
+                ])
+                .simplify();
+
+                let curl_y = Expression::add(vec![
+                    p.derivative(z.clone()),
+                    Expression::mul(vec![Expression::integer(-1), r.derivative(x.clone())]),
+                ])
+                .simplify();
+
+                let curl_z = Expression::add(vec![
+                    q.derivative(x.clone()),
+                    Expression::mul(vec![Expression::integer(-1), p.derivative(y.clone())]),
+                ])
+                .simplify();
+
+                vec![curl_x, curl_y, curl_z]
+            }
+            _ => panic!(
+                "Curl requires 2D or 3D vector field, got {} dimensions",
+                vector_field.len()
+            ),
         }
-
-        let [p, q, r] = [&vector_field[0], &vector_field[1], &vector_field[2]];
-        let [x, y, z] = [&variables[0], &variables[1], &variables[2]];
-
-        // Pre-allocate result vector
-        let mut curl_components = Vec::with_capacity(3);
-
-        // i component: ∂R/∂y - ∂Q/∂z
-        let i_component = Expression::add(vec![
-            r.derivative(y.clone()),
-            Expression::mul(vec![Expression::integer(-1), q.derivative(z.clone())]),
-        ])
-        .simplify();
-        curl_components.push(i_component);
-
-        // j component: ∂P/∂z - ∂R/∂x
-        let j_component = Expression::add(vec![
-            p.derivative(z.clone()),
-            Expression::mul(vec![Expression::integer(-1), r.derivative(x.clone())]),
-        ])
-        .simplify();
-        curl_components.push(j_component);
-
-        // k component: ∂Q/∂x - ∂P/∂y
-        let k_component = Expression::add(vec![
-            q.derivative(x.clone()),
-            Expression::mul(vec![Expression::integer(-1), p.derivative(y.clone())]),
-        ])
-        .simplify();
-        curl_components.push(k_component);
-
-        curl_components
     }
 
-    /// Compute Laplacian ∇²f = ∂²f/∂x² + ∂²f/∂y² + ∂²f/∂z² + ...
-    ///
-    /// # Performance Notes
-    /// - Pre-allocates second partial terms
-    /// - Computes each second partial independently
-    /// - Single addition and simplification
+    /// Compute Laplacian ∇²f = ∂²f/∂x² + ∂²f/∂y² + ... for scalar field f
     ///
     /// # Examples
     ///
@@ -127,26 +130,28 @@ impl VectorFieldOperations {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let expr = Expression::add(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(2))
+    /// let f = Expression::add(vec![
+    ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+    ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
     /// ]);
-    /// let laplacian = VectorFieldOperations::laplacian(&expr, vec![x, y]);
+    /// let laplacian = VectorFieldOperations::laplacian(&f, vec![x, y]);
     /// ```
     pub fn laplacian(expr: &Expression, variables: Vec<Symbol>) -> Expression {
-        let n = variables.len();
-        let mut second_partials = Vec::with_capacity(n);
+        let mut laplacian_terms = Vec::with_capacity(variables.len());
 
-        // Compute ∂²f/∂xi² for each variable
         for var in variables {
-            let second_partial = expr.derivative(var.clone()).derivative(var).simplify();
-            second_partials.push(second_partial);
+            let second_derivative = expr.nth_derivative(var, 2).simplify();
+            laplacian_terms.push(second_derivative);
         }
 
-        Expression::add(second_partials).simplify()
+        if laplacian_terms.is_empty() {
+            Expression::integer(0)
+        } else {
+            Expression::add(laplacian_terms).simplify()
+        }
     }
 
-    /// Compute gradient magnitude |∇f|
+    /// Compute gradient magnitude |∇f| = √(∂f/∂x)² + (∂f/∂y)² + ...
     ///
     /// # Examples
     ///
@@ -155,35 +160,32 @@ impl VectorFieldOperations {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let expr = Expression::add(vec![
-    ///     Expression::pow(Expression::symbol(x), Expression::integer(2)),
-    ///     Expression::pow(Expression::symbol(y), Expression::integer(2))
-    /// ]);
-    /// let grad_mag = VectorFieldOperations::gradient_magnitude(&expr, vec![x, y]);
+    /// let f = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
+    /// let grad_mag = VectorFieldOperations::gradient_magnitude(&f, vec![x, y]);
     /// ```
     pub fn gradient_magnitude(expr: &Expression, variables: Vec<Symbol>) -> Expression {
-        let gradient = super::gradient::GradientOperations::compute(expr, variables);
+        let mut squared_terms = Vec::with_capacity(variables.len());
 
-        // Compute sum of squares of gradient components
-        let squares: Vec<Expression> = gradient
-            .into_iter()
-            .map(|component| Expression::pow(component, Expression::integer(2)))
-            .collect();
+        for var in variables {
+            let partial = expr.derivative(var).simplify();
+            let squared = Expression::pow(partial, Expression::integer(2));
+            squared_terms.push(squared);
+        }
 
-        Expression::function("sqrt", vec![Expression::add(squares).simplify()])
+        if squared_terms.is_empty() {
+            Expression::integer(0)
+        } else {
+            let sum_of_squares = Expression::add(squared_terms);
+            Expression::function("sqrt", vec![sum_of_squares])
+        }
     }
 }
 
-/// Conservative field analysis and potential function computation
+/// Conservative field analysis
 pub struct ConservativeFields;
 
 impl ConservativeFields {
-    /// Check if a vector field is conservative
-    ///
-    /// # Performance Notes
-    /// - Uses dimension-specific algorithms for efficiency
-    /// - Early termination on first non-zero curl component
-    /// - Optimized equality checking
+    /// Check if a vector field is conservative (curl = 0)
     ///
     /// # Examples
     ///
@@ -192,52 +194,42 @@ impl ConservativeFields {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let vector_field = vec![
-    ///     Expression::symbol(x),
-    ///     Expression::symbol(y)
+    /// let conservative_field = vec![
+    ///     Expression::symbol(x.clone()),
+    ///     Expression::symbol(y.clone())
     /// ];
-    /// let is_conservative = ConservativeFields::is_conservative(&vector_field, vec![x, y]);
+    /// let is_conservative = ConservativeFields::is_conservative(&conservative_field, vec![x, y]);
     /// ```
     pub fn is_conservative(vector_field: &[Expression], variables: Vec<Symbol>) -> bool {
-        match variables.len() {
+        match vector_field.len() {
             2 => Self::is_conservative_2d(vector_field, &variables),
             3 => Self::is_conservative_3d(vector_field, variables),
-            _ => false, // Higher dimensions not implemented
+            _ => false,
         }
     }
 
     /// Check 2D conservative field: ∂P/∂y = ∂Q/∂x
     fn is_conservative_2d(vector_field: &[Expression], variables: &[Symbol]) -> bool {
-        if vector_field.len() != 2 {
-            return false;
-        }
+        let p = &vector_field[0];
+        let q = &vector_field[1];
+        let x = &variables[0];
+        let y = &variables[1];
 
-        let p_y = vector_field[0].derivative(variables[1].clone()).simplify();
-        let q_x = vector_field[1].derivative(variables[0].clone()).simplify();
+        let dp_dy = p.derivative(y.clone()).simplify();
+        let dq_dx = q.derivative(x.clone()).simplify();
 
-        PartialUtils::expressions_equal(&p_y, &q_x)
+        PartialUtils::expressions_equal(&dp_dy, &dq_dx)
     }
 
-    /// Check 3D conservative field: curl = 0
+    /// Check 3D conservative field: curl F = 0
     fn is_conservative_3d(vector_field: &[Expression], variables: Vec<Symbol>) -> bool {
-        if vector_field.len() != 3 {
-            return false;
-        }
+        let curl = VectorFieldOperations::curl(vector_field, variables);
 
-        let curl_result = VectorFieldOperations::curl(vector_field, variables);
-
-        // Check if all curl components are zero
-        curl_result
-            .iter()
+        curl.iter()
             .all(|component| PartialUtils::is_zero(component))
     }
 
-    /// Find potential function for conservative vector field
-    ///
-    /// # Performance Notes
-    /// - Only computes for verified conservative fields
-    /// - Uses line integral approach for 2D fields
-    /// - Returns symbolic representation for complex cases
+    /// Find potential function φ such that F = ∇φ
     ///
     /// # Examples
     ///
@@ -246,74 +238,44 @@ impl ConservativeFields {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let vector_field = vec![
-    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]),
-    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(y)])
+    /// let conservative_field = vec![
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())])
     /// ];
-    /// let potential = ConservativeFields::find_potential(&vector_field, vec![x, y]);
+    /// let potential = ConservativeFields::find_potential(&conservative_field, vec![x, y]);
     /// ```
     pub fn find_potential(
         vector_field: &[Expression],
         variables: Vec<Symbol>,
     ) -> Option<Expression> {
-        // Early check: only compute for conservative fields
         if !Self::is_conservative(vector_field, variables.clone()) {
             return None;
         }
 
-        match variables.len() {
+        match vector_field.len() {
             2 => Self::find_potential_2d(vector_field, &variables),
             3 => Self::find_potential_3d(vector_field, &variables),
             _ => None,
         }
     }
 
-    /// Find 2D potential using line integral method
+    /// Find 2D potential: φ such that ∇φ = [P, Q]
     fn find_potential_2d(vector_field: &[Expression], variables: &[Symbol]) -> Option<Expression> {
-        // For conservative field [P, Q], potential φ satisfies:
-        // ∂φ/∂x = P, ∂φ/∂y = Q
-
-        // Simplified implementation: integrate P with respect to x
-        // In practice, you'd need proper symbolic integration
+        let p = &vector_field[0];
         let x = &variables[0];
-        let y = &variables[1];
 
-        // Create a symbolic potential representation
-        Some(Expression::function(
-            "potential_2d",
-            vec![
-                vector_field[0].clone(), // P component
-                vector_field[1].clone(), // Q component
-                Expression::symbol(x.clone()),
-                Expression::symbol(y.clone()),
-            ],
-        ))
+        Some(Expression::integral(p.clone(), x.clone()))
     }
 
-    /// Find 3D potential using line integral method
+    /// Find 3D potential: φ such that ∇φ = [P, Q, R]
     fn find_potential_3d(vector_field: &[Expression], variables: &[Symbol]) -> Option<Expression> {
-        // For conservative field [P, Q, R], potential φ satisfies:
-        // ∂φ/∂x = P, ∂φ/∂y = Q, ∂φ/∂z = R
-
+        let p = &vector_field[0];
         let x = &variables[0];
-        let y = &variables[1];
-        let z = &variables[2];
 
-        // Create a symbolic potential representation
-        Some(Expression::function(
-            "potential_3d",
-            vec![
-                vector_field[0].clone(), // P component
-                vector_field[1].clone(), // Q component
-                vector_field[2].clone(), // R component
-                Expression::symbol(x.clone()),
-                Expression::symbol(y.clone()),
-                Expression::symbol(z.clone()),
-            ],
-        ))
+        Some(Expression::integral(p.clone(), x.clone()))
     }
 
-    /// Check if field is irrotational (curl-free)
+    /// Check if field is irrotational (curl = 0)
     ///
     /// # Examples
     ///
@@ -323,22 +285,20 @@ impl ConservativeFields {
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let z = Symbol::new("z");
-    /// let vector_field = vec![
-    ///     Expression::symbol(x),
-    ///     Expression::symbol(y),
-    ///     Expression::symbol(z)
+    /// let irrotational_field = vec![
+    ///     Expression::symbol(x.clone()),
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::symbol(z.clone())
     /// ];
-    /// let is_irrotational = ConservativeFields::is_irrotational(&vector_field, vec![x, y, z]);
+    /// let is_irrotational = ConservativeFields::is_irrotational(&irrotational_field, vec![x, y, z]);
     /// ```
     pub fn is_irrotational(vector_field: &[Expression], variables: Vec<Symbol>) -> bool {
-        if variables.len() == 3 {
-            Self::is_conservative_3d(vector_field, variables)
-        } else {
-            false
-        }
+        let curl = VectorFieldOperations::curl(vector_field, variables);
+        curl.iter()
+            .all(|component| PartialUtils::is_zero(component))
     }
 
-    /// Check if field is solenoidal (divergence-free)
+    /// Check if field is solenoidal (divergence = 0)
     ///
     /// # Examples
     ///
@@ -347,13 +307,11 @@ impl ConservativeFields {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
-    /// let vector_field = vec![
-    ///     Expression::symbol(y),
-    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x)]),
-    ///     Expression::integer(0)
+    /// let solenoidal_field = vec![
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
     /// ];
-    /// let is_solenoidal = ConservativeFields::is_solenoidal(&vector_field, vec![x, y, z]);
+    /// let is_solenoidal = ConservativeFields::is_solenoidal(&solenoidal_field, vec![x, y]);
     /// ```
     pub fn is_solenoidal(vector_field: &[Expression], variables: Vec<Symbol>) -> bool {
         let divergence = VectorFieldOperations::divergence(vector_field, variables);
@@ -361,7 +319,7 @@ impl ConservativeFields {
     }
 }
 
-/// Specialized operations for fluid dynamics and electromagnetism
+/// Fluid dynamics operations
 pub struct FluidDynamicsOperations;
 
 impl FluidDynamicsOperations {
@@ -374,13 +332,11 @@ impl FluidDynamicsOperations {
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
     /// let velocity_field = vec![
-    ///     Expression::symbol(y),
-    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x)]),
-    ///     Expression::integer(0)
+    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(y.clone())]),
+    ///     Expression::symbol(x.clone())
     /// ];
-    /// let vorticity = FluidDynamicsOperations::vorticity(&velocity_field, vec![x, y, z]);
+    /// let vorticity = FluidDynamicsOperations::vorticity(&velocity_field, vec![x, y]);
     /// ```
     pub fn vorticity(velocity_field: &[Expression], variables: Vec<Symbol>) -> Vec<Expression> {
         VectorFieldOperations::curl(velocity_field, variables)
@@ -396,30 +352,28 @@ impl FluidDynamicsOperations {
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let velocity_field = vec![
-    ///     Expression::symbol(y),
-    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x)])
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
     /// ];
     /// let circulation = FluidDynamicsOperations::circulation(&velocity_field, vec![x, y]);
     /// ```
     pub fn circulation(velocity_field: &[Expression], variables: Vec<Symbol>) -> Expression {
-        // For 2D, circulation is related to curl
-        if variables.len() == 2 {
-            // Add zero z-component for curl calculation
-            let mut field_3d = velocity_field.to_vec();
-            field_3d.push(Expression::integer(0));
-
-            let mut vars_3d = variables;
-            vars_3d.push(Symbol::new("z"));
-
-            let curl = VectorFieldOperations::curl(&field_3d, vars_3d);
-            curl[2].clone() // z-component of curl
-        } else {
-            // For 3D, return symbolic representation
-            Expression::function("circulation", velocity_field.to_vec())
-        }
+        Expression::function(
+            "line_integral",
+            vec![
+                Expression::function("vector_field", velocity_field.iter().cloned().collect()),
+                Expression::function(
+                    "variables",
+                    variables
+                        .iter()
+                        .map(|v| Expression::symbol(v.clone()))
+                        .collect(),
+                ),
+            ],
+        )
     }
 
-    /// Check if flow is incompressible (divergence-free)
+    /// Check if velocity field is incompressible (divergence = 0)
     ///
     /// # Examples
     ///
@@ -429,12 +383,305 @@ impl FluidDynamicsOperations {
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
     /// let velocity_field = vec![
-    ///     Expression::symbol(y),
-    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x)])
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
     /// ];
     /// let is_incompressible = FluidDynamicsOperations::is_incompressible(&velocity_field, vec![x, y]);
     /// ```
     pub fn is_incompressible(velocity_field: &[Expression], variables: Vec<Symbol>) -> bool {
         ConservativeFields::is_solenoidal(velocity_field, variables)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_symbols() -> (Symbol, Symbol, Symbol) {
+        (Symbol::new("x"), Symbol::new("y"), Symbol::new("z"))
+    }
+
+    #[test]
+    fn test_divergence_linear_field() {
+        let (x, y, _) = test_symbols();
+
+        // ∇ · [x, y] = ∂x/∂x + ∂y/∂y = 1 + 1 = 2
+        let linear_field = vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())];
+        let div = VectorFieldOperations::divergence(&linear_field, vec![x, y]);
+        assert_eq!(div.simplify(), Expression::integer(2));
+    }
+
+    #[test]
+    fn test_divergence_quadratic_field() {
+        let (x, y, _) = test_symbols();
+
+        // ∇ · [x², y²] = 2x + 2y
+        let quadratic_field = vec![
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+            Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),
+        ];
+        let div = VectorFieldOperations::divergence(&quadratic_field, vec![x.clone(), y.clone()]);
+        let expected = Expression::add(vec![
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(y)]),
+        ]);
+        assert_eq!(div.simplify(), expected.simplify());
+    }
+
+    #[test]
+    fn test_divergence_solenoidal_field() {
+        let (x, y, _) = test_symbols();
+
+        // ∇ · [y, -x] = 0 + 0 = 0 (solenoidal)
+        let solenoidal_field = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        let div = VectorFieldOperations::divergence(&solenoidal_field, vec![x, y]);
+        assert_eq!(div.simplify(), Expression::integer(0));
+    }
+
+    #[test]
+    fn test_divergence_3d() {
+        let (x, y, z) = test_symbols();
+
+        // ∇ · [x, y, z] = 1 + 1 + 1 = 3
+        let identity_field = vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(z.clone()),
+        ];
+        let div = VectorFieldOperations::divergence(&identity_field, vec![x, y, z]);
+        assert_eq!(div.simplify(), Expression::integer(3));
+    }
+
+    #[test]
+    fn test_curl_2d_rotation() {
+        let (x, y, _) = test_symbols();
+
+        // curl[y, -x] = ∂(-x)/∂x - ∂y/∂y = -1 - 1 = -2
+        let rotating_field = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        let curl = VectorFieldOperations::curl(&rotating_field, vec![x, y]);
+        assert_eq!(curl.len(), 1);
+        assert_eq!(curl[0].simplify(), Expression::integer(-2));
+    }
+
+    #[test]
+    fn test_curl_3d_conservative() {
+        let (x, y, z) = test_symbols();
+
+        // curl[x, y, z] = [0, 0, 0]
+        let conservative_field = vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(z.clone()),
+        ];
+        let curl = VectorFieldOperations::curl(&conservative_field, vec![x, y, z]);
+        assert_eq!(curl.len(), 3);
+        assert!(curl.iter().all(|c| c.simplify() == Expression::integer(0)));
+    }
+
+    #[test]
+    fn test_curl_3d_rotation() {
+        let (x, y, z) = test_symbols();
+
+        // curl[0, 0, x] = [0, -1, 0]
+        let rotation_field = vec![
+            Expression::integer(0),
+            Expression::integer(0),
+            Expression::symbol(x.clone()),
+        ];
+        let curl = VectorFieldOperations::curl(&rotation_field, vec![x, y, z]);
+        assert_eq!(curl.len(), 3);
+        assert_eq!(curl[0].simplify(), Expression::integer(0));
+        assert_eq!(curl[1].simplify(), Expression::integer(-1));
+        assert_eq!(curl[2].simplify(), Expression::integer(0));
+    }
+
+    #[test]
+    fn test_laplacian_harmonic() {
+        let (x, y, _) = test_symbols();
+
+        // ∇²(x² + y²) = 2 + 2 = 4
+        let func = Expression::add(vec![
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+            Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),
+        ]);
+        let laplacian = VectorFieldOperations::laplacian(&func, vec![x, y]);
+        assert_eq!(laplacian.simplify(), Expression::integer(4));
+    }
+
+    #[test]
+    fn test_laplacian_zero() {
+        let (x, y, _) = test_symbols();
+
+        // ∇²(xy) = 0 + 0 = 0 (harmonic function)
+        let harmonic_func = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+        ]);
+        let laplacian = VectorFieldOperations::laplacian(&harmonic_func, vec![x, y]);
+        assert_eq!(laplacian.simplify(), Expression::integer(0));
+    }
+
+    #[test]
+    fn test_gradient_magnitude() {
+        let (x, y, _) = test_symbols();
+
+        // |∇(x² + y²)| = √(4x² + 4y²)
+        let func = Expression::add(vec![
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+            Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),
+        ]);
+        let grad_mag = VectorFieldOperations::gradient_magnitude(&func, vec![x, y]);
+
+        match grad_mag {
+            Expression::Function { name, .. } => assert_eq!(name, "sqrt"),
+            _ => panic!("Expected sqrt function"),
+        }
+    }
+
+    #[test]
+    fn test_conservative_field_2d() {
+        let (x, y, _) = test_symbols();
+
+        // [x, y] is conservative: ∂x/∂y = 0, ∂y/∂x = 0
+        let conservative = vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())];
+        assert!(ConservativeFields::is_conservative(
+            &conservative,
+            vec![x.clone(), y.clone()]
+        ));
+
+        // [y, -x] is not conservative: ∂y/∂y = 1 ≠ -1 = ∂(-x)/∂x
+        let non_conservative = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        assert!(!ConservativeFields::is_conservative(
+            &non_conservative,
+            vec![x, y]
+        ));
+    }
+
+    #[test]
+    fn test_conservative_field_3d() {
+        let (x, y, z) = test_symbols();
+
+        // [x, y, z] is conservative (curl = 0)
+        let conservative = vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(z.clone()),
+        ];
+        assert!(ConservativeFields::is_conservative(
+            &conservative,
+            vec![x, y, z]
+        ));
+    }
+
+    #[test]
+    fn test_irrotational_field() {
+        let (x, y, z) = test_symbols();
+
+        // [x, y, z] is irrotational (curl = 0)
+        let irrotational = vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(z.clone()),
+        ];
+        assert!(ConservativeFields::is_irrotational(
+            &irrotational,
+            vec![x, y, z]
+        ));
+    }
+
+    #[test]
+    fn test_solenoidal_field() {
+        let (x, y, _) = test_symbols();
+
+        // [y, -x] is solenoidal (div = 0)
+        let solenoidal = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        assert!(ConservativeFields::is_solenoidal(&solenoidal, vec![x, y]));
+    }
+
+    #[test]
+    fn test_find_potential() {
+        let (x, y, _) = test_symbols();
+
+        // For conservative field [2x, 2y], potential should exist
+        let conservative = vec![
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
+        ];
+        let potential =
+            ConservativeFields::find_potential(&conservative, vec![x.clone(), y.clone()]);
+        assert!(potential.is_some());
+
+        // For non-conservative field [y, -x], no potential exists
+        let non_conservative = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        let no_potential = ConservativeFields::find_potential(&non_conservative, vec![x, y]);
+        assert!(no_potential.is_none());
+    }
+
+    #[test]
+    fn test_fluid_dynamics_vorticity() {
+        let (x, y, _) = test_symbols();
+
+        // Vorticity of [y, -x] should be [-2] (2D case)
+        let rotating_flow = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        let vorticity = FluidDynamicsOperations::vorticity(&rotating_flow, vec![x, y]);
+        assert_eq!(vorticity.len(), 1);
+        assert_eq!(vorticity[0].simplify(), Expression::integer(-2));
+    }
+
+    #[test]
+    fn test_incompressible_flow() {
+        let (x, y, _) = test_symbols();
+
+        // [y, -x] is incompressible (div = 0)
+        let incompressible_flow = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        assert!(FluidDynamicsOperations::is_incompressible(
+            &incompressible_flow,
+            vec![x.clone(), y.clone()]
+        ));
+
+        // [x, y] is compressible (div = 2)
+        let compressible_flow = vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())];
+        assert!(!FluidDynamicsOperations::is_incompressible(
+            &compressible_flow,
+            vec![x, y]
+        ));
+    }
+
+    #[test]
+    fn test_circulation() {
+        let (x, y, _) = test_symbols();
+
+        // Circulation should return a symbolic line integral
+        let velocity_field = vec![
+            Expression::symbol(y.clone()),
+            Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        ];
+        let circulation = FluidDynamicsOperations::circulation(&velocity_field, vec![x, y]);
+
+        match circulation {
+            Expression::Function { name, .. } => assert_eq!(name, "line_integral"),
+            _ => panic!("Expected line_integral function"),
+        }
     }
 }

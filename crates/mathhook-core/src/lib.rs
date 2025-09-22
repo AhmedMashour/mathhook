@@ -10,12 +10,10 @@ pub mod educational;
 pub mod solvers;
 
 // Re-export core types for the hybrid API
-pub use algebra::{
-    AdvancedSimplify, Collect, ComplexOperations, Expand, Factor, MatrixOperations, PolynomialGcd,
-    RationalSimplify, Simplify, ZeroDetection,
-};
-pub use core::{Expression, MathConstant, Number, Symbol};
-pub use solvers::{MathSolver, SolverConfig, SolverResult};
+pub use algebra::*;
+pub use calculus::*;
+pub use core::*;
+pub use solvers::*;
 
 /// Convenience prelude for common imports
 pub mod prelude {

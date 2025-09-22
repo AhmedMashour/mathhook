@@ -13,15 +13,15 @@ mod partial;
 mod power_rule;
 mod product_rule;
 
+use crate::core::{Expression, Symbol};
 pub use advanced_differentiation::AdvancedDifferentiation;
 pub use basic::BasicDerivatives;
 pub use chain_rule::{ChainRule, FunctionDerivatives};
 pub use checker::DifferentiabilityChecker;
 pub use higher_order::HigherOrderDerivatives;
+pub use partial::{PartialDerivatives, PartialUtils, VectorFieldOperations};
 pub use power_rule::PowerRule;
 pub use product_rule::{GeneralProductRule, ProductRule};
-
-use crate::core::{Expression, Symbol};
 
 /// Trait for derivative operations
 pub trait Derivative {
