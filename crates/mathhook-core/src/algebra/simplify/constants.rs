@@ -6,6 +6,7 @@
 use crate::core::{Expression, MathConstant};
 
 /// Simplify mathematical constants
+#[inline(always)]
 pub fn simplify_constant(constant: &MathConstant) -> Expression {
     // Most constants remain as-is for now, but we can handle special cases
     match constant {

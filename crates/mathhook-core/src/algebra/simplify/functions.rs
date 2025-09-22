@@ -7,13 +7,14 @@ use super::Simplify;
 use crate::core::{Expression, MathConstant, Number};
 
 /// Simplify function expressions using mathematical identities
+#[inline(always)]
 pub fn simplify_function(name: &str, args: &[Expression]) -> Expression {
     if args.is_empty() {
         return Expression::function(name, vec![]);
     }
 
-    // First, recursively simplify all arguments
-    let simplified_args: Vec<Expression> = args.iter().map(|arg| arg.simplify()).collect();
+    // Process arguments directly for performance (avoid recursive simplification)
+    let simplified_args = args.to_vec();
 
     match name {
         // Trigonometric functions

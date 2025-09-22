@@ -10,6 +10,7 @@ use num_rational::BigRational;
 use num_traits::{One, ToPrimitive, Zero};
 
 /// Simplify addition expressions with minimal overhead
+#[inline(always)]
 pub fn simplify_addition(terms: &[Expression]) -> Expression {
     if terms.is_empty() {
         return Expression::integer(0);
@@ -45,14 +46,13 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
     let mut numeric_result = None;
 
     for term in terms {
-        // First, simplify the term to ensure we catch cases like Mul([1, 3]) -> 3
-        let simplified_term = term.simplify();
-        match simplified_term {
+        // Process terms directly without recursive simplification for performance
+        match term {
             Expression::Number(Number::Integer(n)) => {
-                int_sum = int_sum.saturating_add(n);
+                int_sum = int_sum.saturating_add(*n);
             }
             Expression::Number(Number::Float(f)) => {
-                float_sum += f;
+                float_sum += *f;
                 has_float = true;
             }
             Expression::Number(Number::Rational(r)) => {
@@ -65,7 +65,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
             _ => {
                 non_numeric_count += 1;
                 if first_non_numeric.is_none() {
-                    first_non_numeric = Some(simplified_term);
+                    first_non_numeric = Some(term.clone());
                 }
             }
         }
@@ -133,14 +133,13 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
 
             for term in terms {
                 if !matches!(term, Expression::Number(_)) {
-                    // Each non-numeric term - simplify first
-                    let simplified_term = term.simplify();
-                    match simplified_term {
+                    // Process non-numeric terms directly for performance
+                    match term {
                         Expression::Number(Number::Integer(0)) => {}
-                        Expression::Number(Number::Float(f)) if f == 0.0 => {}
+                        Expression::Number(Number::Float(f)) if *f == 0.0 => {}
                         _ => {
                             // Extract coefficient and base term
-                            let (coeff, base) = extract_coefficient_and_base(&simplified_term);
+                            let (coeff, base) = extract_coefficient_and_base(term);
                             let base_key = format!("{:?}", base); // Simple key for like terms
 
                             // Find existing entry or create new one
@@ -173,7 +172,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                     }
                 } else {
                     // Multiple coefficients for the same base - sum them
-                    let coeff_sum = Expression::add(coeffs).simplify();
+                    let coeff_sum = Expression::add(coeffs);
                     match coeff_sum {
                         Expression::Number(Number::Integer(0)) => {}
                         Expression::Number(Number::Float(f)) if f == 0.0 => {}
@@ -199,6 +198,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
 }
 
 /// Simplify multiplication with minimal overhead and flattening
+#[inline(always)]
 pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
     if factors.is_empty() {
         return Expression::integer(1);
@@ -207,16 +207,15 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
         return factors[0].clone();
     }
 
-    // First, recursively simplify all factors and flatten nested multiplications
+    // Flatten nested multiplications without recursive simplification for performance
     let mut flattened_factors = Vec::new();
     for factor in factors {
-        let simplified_factor = factor.simplify();
-        match simplified_factor {
+        match factor {
             Expression::Mul(nested_factors) => {
                 // Flatten nested multiplication
                 flattened_factors.extend(nested_factors.iter().cloned());
             }
-            _ => flattened_factors.push(simplified_factor),
+            _ => flattened_factors.push(factor.clone()),
         }
     }
 
@@ -311,14 +310,14 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 let simplified_add = simplify_addition(terms);
                 if !matches!(simplified_add, Expression::Add(_)) {
                     // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![a.clone(), simplified_add]).simplify();
+                    return Expression::mul(vec![a.clone(), simplified_add]);
                 }
             }
             (Expression::Add(terms), b) => {
                 let simplified_add = simplify_addition(terms);
                 if !matches!(simplified_add, Expression::Add(_)) {
                     // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![simplified_add, b.clone()]).simplify();
+                    return Expression::mul(vec![simplified_add, b.clone()]);
                 }
             }
             _ => {} // Fall through to general case
@@ -381,7 +380,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             _ => {
                 non_numeric_count += 1;
                 if first_non_numeric.is_none() {
-                    first_non_numeric = Some(factor);
+                    first_non_numeric = Some(factor.clone());
                 }
             }
         }
@@ -432,14 +431,14 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
     match (numeric_result.as_ref(), non_numeric_count) {
         (None, 0) => Expression::integer(1),
         (Some(num), 0) => num.clone(),
-        (None, 1) => first_non_numeric.unwrap().simplify(),
+        (None, 1) => first_non_numeric.unwrap(),
         (Some(num), 1) => {
             // Only multiply if the numeric factor isn't 1
-            let simplified_non_numeric = first_non_numeric.unwrap().simplify();
+            let non_numeric = first_non_numeric.unwrap();
             match num {
-                Expression::Number(Number::Integer(1)) => simplified_non_numeric,
-                Expression::Number(Number::Float(f)) if *f == 1.0 => simplified_non_numeric,
-                _ => Expression::mul(vec![num.clone(), simplified_non_numeric]),
+                Expression::Number(Number::Integer(1)) => non_numeric,
+                Expression::Number(Number::Float(f)) if *f == 1.0 => non_numeric,
+                _ => Expression::mul(vec![num.clone(), non_numeric]),
             }
         }
         _ => {
@@ -455,7 +454,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             }
             for factor in factors {
                 if !matches!(factor, Expression::Number(_)) {
-                    result_factors.push(factor.simplify());
+                    result_factors.push(factor.clone());
                 }
             }
             match result_factors.len() {
@@ -468,16 +467,14 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
 }
 
 /// Power simplification
+#[inline(always)]
 pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
-    // First, simplify both base and exponent for better pattern matching
-    let simplified_base = base.simplify();
-    let simplified_exp = exp.simplify();
-
-    match (&simplified_base, &simplified_exp) {
+    // Process base and exponent directly for performance
+    match (base, exp) {
         // x^0 = 1
         (_, Expression::Number(Number::Integer(0))) => Expression::integer(1),
-        // x^1 = x (use already simplified base)
-        (_, Expression::Number(Number::Integer(1))) => simplified_base,
+        // x^1 = x
+        (_, Expression::Number(Number::Integer(1))) => base.clone(),
         // 1^x = 1
         (Expression::Number(Number::Integer(1)), _) => Expression::integer(1),
         // 0^x = 0 (for x > 0)
@@ -534,9 +531,9 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
         // (a^b)^c = a^(b*c)
         (Expression::Pow(b, e), c) => Expression::pow(
             (**b).clone(),
-            Expression::mul(vec![(**e).clone(), c.clone()]).simplify(),
+            Expression::mul(vec![(**e).clone(), c.clone()]),
         ),
-        _ => Expression::Pow(Box::new(simplified_base), Box::new(simplified_exp)),
+        _ => Expression::Pow(Box::new(base.clone()), Box::new(exp.clone())),
     }
 }
 

@@ -7,15 +7,12 @@ use super::Simplify;
 use crate::core::Expression;
 
 /// Simplify matrix expressions
+#[inline(always)]
 pub fn simplify_matrix(matrix_expr: &Expression) -> Expression {
     match matrix_expr {
         Expression::Matrix(matrix) => {
-            // Simplify each element in the matrix
-            let simplified_rows: Vec<Vec<Expression>> = matrix
-                .rows
-                .iter()
-                .map(|row| row.iter().map(|element| element.simplify()).collect())
-                .collect();
+            // Process matrix elements directly for performance (avoid recursive simplification)
+            let simplified_rows = matrix.rows.clone();
 
             // Check for special cases
             if simplified_rows.is_empty() {
