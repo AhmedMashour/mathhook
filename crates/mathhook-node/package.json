@@ -6,20 +6,19 @@
   "main": "index.js",
   "types": "index.d.ts",
   "napi": {
-    "name": "mathhook-node",
-    "triples": {
-      "defaults": true,
-      "additional": [
-        "x86_64-unknown-linux-musl",
-        "aarch64-unknown-linux-gnu",
-        "i686-pc-windows-msvc",
-        "armv7-unknown-linux-gnueabihf",
-        "aarch64-apple-darwin",
-        "aarch64-pc-windows-msvc",
-        "aarch64-unknown-linux-musl",
-        "universal-apple-darwin"
-      ]
-    }
+    "binaryName": "mathhook-node",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-gnu",
+      "aarch64-unknown-linux-musl",
+      "aarch64-apple-darwin",
+      "universal-apple-darwin",
+      "armv7-unknown-linux-gnueabihf",
+      "i686-pc-windows-msvc",
+      "x86_64-pc-windows-msvc",
+      "aarch64-pc-windows-msvc"
+    ]
   },
   "license": "MIT OR Apache-2.0",
   "devDependencies": {

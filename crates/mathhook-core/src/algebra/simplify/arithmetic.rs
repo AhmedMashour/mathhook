@@ -140,7 +140,8 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                         Expression::Number(Number::Float(f)) if f == 0.0 => {}
                         _ => {
                             // Extract coefficient and base term
-                            let (coeff, base) = extract_coefficient_and_base(&simplified_term);
+                            let (coeff, base) =
+                                extract_arithmetic_coefficient_and_base(&simplified_term);
                             let base_key = format!("{:?}", base); // Simple key for like terms
 
                             // Find existing entry or create new one
@@ -540,9 +541,9 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
     }
 }
 
-/// Extract coefficient and base term from an expression
+/// Extract coefficient and base term from an expression for arithmetic operations
 /// For example: 3*x -> (3, x), -2*y -> (-2, y), x -> (1, x)
-fn extract_coefficient_and_base(expr: &Expression) -> (Expression, Expression) {
+fn extract_arithmetic_coefficient_and_base(expr: &Expression) -> (Expression, Expression) {
     match expr {
         Expression::Mul(factors) if factors.len() >= 2 => {
             // Check if first factor is numeric
