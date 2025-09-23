@@ -1254,8 +1254,8 @@ mod tests {
         );
         assert_eq!(parser.detect_language("Power[x, 2]"), MathLanguage::Wolfram);
 
-        // Ambiguous cases default to LaTeX
-        assert_eq!(parser.detect_language("x + y"), MathLanguage::LaTeX);
+        // Ambiguous cases default to Simple (no special patterns detected)
+        assert_eq!(parser.detect_language("x + y"), MathLanguage::Simple);
     }
 
     #[test]
