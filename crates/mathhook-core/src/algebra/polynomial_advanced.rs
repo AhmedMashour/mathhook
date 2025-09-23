@@ -2,7 +2,7 @@
 //! Implements high-performance polynomial arithmetic, division, and advanced algorithms
 
 use crate::algebra::gcd::PolynomialGcd;
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::core::{Number, Expression, Symbol};
 
 /// Trait for advanced polynomial operations

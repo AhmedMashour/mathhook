@@ -4,8 +4,8 @@
 //! and help determine optimal thresholds for SIMD activation.
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mathhook_core::algebra::Simplify;
 use mathhook_core::core::Expression;
+use mathhook_core::simplify::Simplify;
 use num_traits::ToPrimitive;
 use std::hint::black_box;
 use std::time::Duration;

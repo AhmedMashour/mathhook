@@ -4,8 +4,8 @@
 //! Provides comprehensive complex arithmetic including addition, multiplication,
 //! division, conjugation, and polar form conversions.
 
-use crate::algebra::simplify::Simplify;
 use crate::core::Expression;
+use crate::simplify::Simplify;
 
 /// Trait for complex number operations
 ///
@@ -378,6 +378,41 @@ impl ComplexOperations for Expression {
     }
 }
 
+impl<T> dyn ComplexOperations {
+    /// Simplify complex expressions by removing zero parts
+    ///
+    /// Converts complex numbers to their simplest form by removing zero
+    /// real or imaginary components.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let z = Expression::complex(Expression::integer(3), Expression::integer(0));
+    /// let simplified = z.simplify(); // or z.simplify_complex() (same result)
+    /// ```
+    pub fn simplify_complex(expr: T) -> T {
+        match expr {
+            Expression::Complex(data) => {
+                let real_simplified = data.real.simplify();
+                let imag_simplified = data.imag.simplify();
+
+                if imag_simplified.is_zero() {
+                    return real_simplified;
+                }
+
+                if real_simplified.is_zero() {
+                    return Expression::mul(vec![imag_simplified, Expression::i()]).simplify();
+                }
+
+                Expression::complex(real_simplified, imag_simplified)
+            }
+            _ => expr.clone(),
+        }
+    }
+}
+
 impl Expression {
     /// Create a complex number from polar form
     ///
@@ -401,39 +436,6 @@ impl Expression {
             .simplify(),
             Expression::mul(vec![magnitude, Expression::function("sin", vec![angle])]).simplify(),
         )
-    }
-
-    /// Simplify complex expressions by removing zero parts
-    ///
-    /// Converts complex numbers to their simplest form by removing zero
-    /// real or imaginary components.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let z = Expression::complex(Expression::integer(3), Expression::integer(0));
-    /// let simplified = z.simplify(); // or z.simplify_complex() (same result)
-    /// ```
-    pub fn simplify_complex(&self) -> Expression {
-        match self {
-            Expression::Complex(data) => {
-                let real_simplified = data.real.simplify();
-                let imag_simplified = data.imag.simplify();
-
-                if imag_simplified.is_zero() {
-                    return real_simplified;
-                }
-
-                if real_simplified.is_zero() {
-                    return Expression::mul(vec![imag_simplified, Expression::i()]).simplify();
-                }
-
-                Expression::complex(real_simplified, imag_simplified)
-            }
-            _ => self.clone(),
-        }
     }
 }
 

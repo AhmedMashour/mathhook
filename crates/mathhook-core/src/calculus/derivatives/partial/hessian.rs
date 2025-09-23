@@ -1,6 +1,6 @@
 //! Hessian matrix operations for second-order partial derivatives
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

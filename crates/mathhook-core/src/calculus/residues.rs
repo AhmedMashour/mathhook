@@ -3,7 +3,7 @@
 //! Implements residue computation, contour integration,
 //! and complex analysis operations for symbolic computation.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::calculus::series::SeriesExpansion;
 use crate::core::{Expression, Symbol};

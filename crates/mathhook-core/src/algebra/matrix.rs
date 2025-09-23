@@ -4,7 +4,7 @@
 //! Provides comprehensive matrix arithmetic including addition, multiplication,
 //! determinant calculation, inverse, and eigenvalue computation.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::core::Expression;
 
 /// Trait for matrix operations

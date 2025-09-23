@@ -3,7 +3,7 @@
 //! Implements symbolic limit computation including one-sided limits,
 //! limits at infinity, and indeterminate form resolution.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

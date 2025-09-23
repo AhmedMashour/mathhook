@@ -3,7 +3,7 @@
 //! Handles differentiation of implicitly defined functions where y is defined
 //! implicitly as a function of x through an equation F(x,y) = 0.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

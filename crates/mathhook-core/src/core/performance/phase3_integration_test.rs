@@ -6,7 +6,6 @@
 //! - Background precomputation for common expressions
 //! - Integration with existing performance systems
 
-use crate::algebra::Simplify;
 use crate::core::performance::{
     clear_background_compute, clear_persistent_cache, get_adaptive_thresholds,
     get_background_compute_statistics, get_persistent_cache_statistics,
@@ -14,6 +13,7 @@ use crate::core::performance::{
     record_performance, store_persistent_cached_result, submit_background_task, ComputePriority,
 };
 use crate::core::Expression;
+use crate::simplify::Simplify;
 use std::time::{Duration, Instant};
 
 /// Demonstrates Phase 3 advanced integration with comprehensive features

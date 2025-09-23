@@ -1,6 +1,6 @@
 //! Chain rule implementation for function derivatives
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 use crate::MathConstant;

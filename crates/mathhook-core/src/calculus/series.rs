@@ -3,7 +3,7 @@
 //! Implements Taylor series, Laurent series, Maclaurin series,
 //! and other infinite series expansions for symbolic computation.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

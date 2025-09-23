@@ -43,8 +43,8 @@ mod macros;
 pub use mathhook_core as core;
 
 pub use mathhook_core::{
-    algebra::{Expand, Factor, Simplify},
-    Expression, MathConstant, MathSolver, Number, SolverConfig, SolverResult, Symbol,
+    algebra::{Expand, Factor},
+    Expression, MathConstant, MathSolver, Number, Simplify, SolverConfig, SolverResult, Symbol,
 };
 
 pub use core::{MathFormatter, MathLanguage, MathParser, ParseError};
@@ -66,8 +66,8 @@ pub use serde_json;
 pub mod prelude {
     pub use crate::core::parser::{MathFormatter, MathLanguage, MathParser, ParseError};
     pub use crate::core::{
-        algebra::{Expand, Factor, Simplify},
-        Expression, MathConstant, Number, Symbol,
+        algebra::{Expand, Factor},
+        Expression, MathConstant, Number, Simplify, Symbol,
     };
     pub use crate::core::{MathSolver, SolverConfig, SolverResult};
 }

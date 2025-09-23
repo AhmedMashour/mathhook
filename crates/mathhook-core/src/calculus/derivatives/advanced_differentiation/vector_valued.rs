@@ -2,7 +2,7 @@
 //!
 //! Handles differentiation of vector-valued functions r(t) = [x(t), y(t), z(t)]
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

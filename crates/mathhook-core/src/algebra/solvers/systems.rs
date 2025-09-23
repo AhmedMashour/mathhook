@@ -1,11 +1,10 @@
-//! 🎯 SYSTEM EQUATION SOLVER - TDD IMPLEMENTATION
 //! Solves systems of linear equations using elimination/substitution
 //! Includes step-by-step explanations for educational value
 
 use crate::algebra::solvers::{EquationSolver, SolverResult, SystemEquationSolver};
-use crate::algebra::Simplify;
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use crate::simplify::Simplify;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 

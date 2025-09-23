@@ -1,10 +1,11 @@
 //! Realistic CAS benchmarks that reflect actual mathematical workflows
 //! These benchmarks guide SIMD integration by measuring real-world performance patterns
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use mathhook_core::{Expression, Number, Simplify, Symbol};
 use num_bigint::BigInt;
 use num_rational::BigRational;
+use std::hint::black_box;
 use std::time::Duration;
 
 /// Benchmark bulk numeric operations (prime SIMD candidates)

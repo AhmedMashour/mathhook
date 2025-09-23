@@ -154,7 +154,7 @@ cat .mathhook_sessions/SESSION_076_COMPLETE_CONTEXT_DUMP.md
 cargo test --lib core::compact_number::tests::test_compact_number_size --release
 cargo test --lib core::compact_expression::tests::test_compact_expression_size --release  
 cargo test --lib core::simd_ops::tests::test_simd_benefits --release
-cargo test --lib algebra::simplify::tests::test_performance_benchmark --release
+cargo test --lib simplify::tests::test_performance_benchmark --release
 
 # Check current test count
 find tests/ -name "*.rs" | wc -l

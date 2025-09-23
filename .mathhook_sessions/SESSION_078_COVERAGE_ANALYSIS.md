@@ -31,7 +31,6 @@
 ✅ algebra::gcd - 6/6 tests passing
 ✅ algebra::polynomial_advanced - 3/3 tests passing
 ✅ algebra::rational - 6/6 tests passing
-✅ algebra::simplify - 4/4 tests passing
 ✅ algebra::zero_detection - 6/6 tests passing
 ```
 

@@ -15,7 +15,7 @@ pub use jacobian::{JacobianDeterminant, JacobianOperations};
 pub use utils::{MatrixUtils, PartialUtils};
 pub use vector_fields::{ConservativeFields, FluidDynamicsOperations, VectorFieldOperations};
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

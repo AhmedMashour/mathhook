@@ -4,7 +4,7 @@
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 // Temporarily simplified for TDD success
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use num_bigint::BigInt;
 use num_rational::BigRational;

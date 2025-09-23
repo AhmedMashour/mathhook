@@ -1,6 +1,6 @@
 //! Utility functions for partial derivative operations
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::core::{Expression, Number, Symbol};
 
 /// Utility functions for partial derivatives

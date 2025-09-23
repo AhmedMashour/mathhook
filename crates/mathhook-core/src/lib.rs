@@ -8,13 +8,15 @@ pub mod calculus;
 pub mod core;
 pub mod educational;
 pub mod parser;
+pub mod simplify;
 pub mod solvers;
 
-// Re-export core types for the hybrid API
+// Re-export
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
 pub use parser::*;
+pub use simplify::*;
 pub use solvers::*;
 
 /// Convenience prelude for common imports

@@ -8,17 +8,18 @@
 //! - Adaptive thresholds
 //! - Background precomputation
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use mathhook_core::{
     core::performance::{
         clear_cache, get_adaptive_thresholds, get_gpu_capabilities, get_performance_metrics,
         is_gpu_available, record_performance, submit_background_task, ComputePriority,
     },
-    Expression, Number, Simplify, Symbol,
+    Expression, Number, Simplify,
 };
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use std::time::{Duration, Instant};
+use std::hint::black_box;
+use std::time::Instant;
 
 /// Benchmark SIMD-optimized bulk operations
 fn bench_simd_operations(c: &mut Criterion) {

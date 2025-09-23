@@ -3,7 +3,7 @@
 //! Handles differentiation of curves defined parametrically as x = f(t), y = g(t)
 //! using the chain rule: dy/dx = (dy/dt) / (dx/dt)
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

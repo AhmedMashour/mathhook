@@ -4,9 +4,10 @@
 //! our optimized operations provide consistent, predictable performance.
 //! All operations are now optimized by default.
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use mathhook_core::algebra::Simplify;
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use mathhook_core::core::Expression;
+use mathhook_core::simplify::Simplify;
+use std::hint::black_box;
 use std::time::Duration;
 
 /// Test optimized addition for consistent performance

@@ -1,6 +1,6 @@
 //! Basic differentiation rules for constants, symbols, and sums
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

@@ -130,7 +130,7 @@ Status: ✅ 3/3 passing
 
 #### Algebra Module Tests (`src/algebra/`)
 
-**Simplification Tests (`algebra::simplify`):**
+**Simplification Tests (`src/simplify`):**
 ```rust
 #[test]
 fn test_ultra_fast_addition()         // Addition simplification

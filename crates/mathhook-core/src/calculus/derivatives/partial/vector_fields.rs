@@ -1,7 +1,7 @@
 //! Vector field operations including divergence, curl, Laplacian, and conservative field analysis
 
 use super::utils::PartialUtils;
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 

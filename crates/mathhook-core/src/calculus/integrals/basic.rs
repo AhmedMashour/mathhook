@@ -1,6 +1,6 @@
 //! Basic integration rules for constants, symbols, sums, and simple powers
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::calculus::integrals::Integration;
 use crate::core::{Expression, Number, Symbol};
 

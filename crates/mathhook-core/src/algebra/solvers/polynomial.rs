@@ -2,9 +2,10 @@
 //! Includes step-by-step explanations for educational value
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
-use crate::algebra::Simplify;
+
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use crate::simplify::Simplify;
 
 /// Polynomial equation solver
 #[derive(Debug, Clone)]

@@ -10,7 +10,6 @@ pub mod gcd;
 pub mod matrix;
 pub mod polynomial_advanced;
 pub mod rational;
-pub mod simplify;
 pub mod solvers;
 pub mod zero_detection;
 
@@ -24,7 +23,6 @@ pub use gcd::PolynomialGcd;
 pub use matrix::MatrixOperations;
 pub use polynomial_advanced::AdvancedPolynomial;
 pub use rational::RationalSimplify;
-pub use simplify::Simplify;
 pub use zero_detection::ZeroDetection;
 
 // Re-export solver types

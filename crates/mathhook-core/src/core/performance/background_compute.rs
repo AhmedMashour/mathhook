@@ -3,8 +3,8 @@
 //! This module implements background precomputation of common expressions
 //! to improve interactive performance by predicting and caching likely operations.
 
-use crate::algebra::Simplify;
 use crate::core::Expression;
+use crate::simplify::Simplify;
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, Mutex, OnceLock};
 use std::thread;

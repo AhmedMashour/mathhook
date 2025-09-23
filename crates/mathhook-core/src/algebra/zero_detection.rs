@@ -1,8 +1,8 @@
 //! Advanced zero detection and algebraic simplification
 //! Handles complex expressions that should simplify to zero
 
-use crate::algebra::simplify::Simplify;
 use crate::core::{Expression, Number};
+use crate::simplify::Simplify;
 use num_bigint::BigInt;
 use num_traits::{One, Zero};
 
@@ -120,10 +120,8 @@ impl Expression {
                         (&factors[0], &factors[1])
                     {
                         *n == -1 && s1 == s2
-                    } else if let (
-                        Expression::Symbol(s2),
-                        Expression::Number(Number::Integer(n)),
-                    ) = (&factors[0], &factors[1])
+                    } else if let (Expression::Symbol(s2), Expression::Number(Number::Integer(n))) =
+                        (&factors[0], &factors[1])
                     {
                         *n == -1 && s1 == s2
                     } else {

@@ -3,8 +3,8 @@
 //! This module provides stateful solver objects that complement the Expression-centric API.
 //! These are separate objects that maintain state and configuration for complex solving operations.
 
-use crate::algebra::Simplify;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 use serde::{Deserialize, Serialize};
 
 /// Result of a solving operation

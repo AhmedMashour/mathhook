@@ -3,7 +3,7 @@
 //! Implements symbolic summation including finite sums, infinite series,
 //! products, and convergence analysis.
 
-use crate::algebra::simplify::Simplify;
+use crate::simplify::Simplify;
 use crate::core::{Expression, Symbol};
 
 /// Trait for summation and product operations
