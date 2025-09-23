@@ -66,26 +66,26 @@
 macro_rules! parse {
     // Auto-detect format
     ($input:expr) => {{
-        let mut parser = $crate::parsing::UniversalParser::new();
+        let mut parser = $crate::core::parser::UniversalParser::new();
         parser.parse($input)
     }};
 
     // Explicit LaTeX format
     (latex: $input:expr) => {{
-        let mut parser = $crate::parsing::UniversalParser::new();
-        parser.parse_with_language($input, $crate::parsing::MathLanguage::LaTeX)
+        let mut parser = $crate::core::parser::UniversalParser::new();
+        parser.parse_with_language($input, $crate::core::parser::MathLanguage::LaTeX)
     }};
 
     // Explicit Wolfram format
     (wolfram: $input:expr) => {{
-        let mut parser = $crate::parsing::UniversalParser::new();
-        parser.parse_with_language($input, $crate::parsing::MathLanguage::Wolfram)
+        let mut parser = $crate::core::parser::UniversalParser::new();
+        parser.parse_with_language($input, $crate::core::parser::MathLanguage::Wolfram)
     }};
 
     // Explicit Simple format
     (simple: $input:expr) => {{
-        let mut parser = $crate::parsing::UniversalParser::new();
-        parser.parse_with_language($input, $crate::parsing::MathLanguage::Simple)
+        let mut parser = $crate::core::parser::UniversalParser::new();
+        parser.parse_with_language($input, $crate::core::parser::MathLanguage::Simple)
     }};
 }
 
@@ -106,19 +106,19 @@ macro_rules! parse {
 macro_rules! to_format {
     // Simple format
     (simple: $expr:expr) => {{
-        let parser = $crate::parsing::UniversalParser::new();
+        let parser = $crate::core::parser::UniversalParser::new();
         parser.to_simple(&$expr)
     }};
 
     // LaTeX format
     (latex: $expr:expr) => {{
-        let parser = $crate::parsing::UniversalParser::new();
+        let parser = $crate::core::parser::UniversalParser::new();
         parser.to_latex(&$expr)
     }};
 
     // Wolfram format
     (wolfram: $expr:expr) => {{
-        let parser = $crate::parsing::UniversalParser::new();
+        let parser = $crate::core::parser::UniversalParser::new();
         parser.to_wolfram(&$expr)
     }};
 }

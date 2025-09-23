@@ -3,22 +3,14 @@
 //! This crate provides parsing capabilities for various mathematical formats
 //! including LaTeX, Wolfram Language, and standard mathematical notation.
 
-use mathhook_core::Expression;
+use crate::core::Expression;
 use serde::{Deserialize, Serialize};
 
-pub mod parsing {
-    pub mod constants;
-    pub mod latex_parser;
-    pub mod serialize;
-    pub mod universal;
-    pub mod wolfram_parser;
-
-    // Re-export ParseError for internal use
-    pub use crate::ParseError;
-}
-
-// Re-export commonly used items
-pub use parsing::universal::UniversalParser;
+pub mod constants;
+pub mod latex_parser;
+pub mod serialize;
+pub mod universal;
+pub mod wolfram_parser;
 
 /// Supported mathematical input formats
 #[derive(Debug, Clone, Copy, PartialEq)]

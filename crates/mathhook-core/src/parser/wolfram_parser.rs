@@ -2,8 +2,8 @@
 //!
 //! Handles Wolfram Language (Mathematica) syntax including functions and operators.
 
-use crate::parsing::{constants::*, ParseError};
-use mathhook_core::{Expression, Number, Symbol};
+use crate::core::{Expression, Number, Symbol};
+use crate::parser::{constants::*, ParseError};
 use std::collections::HashMap;
 
 /// Wolfram Language specific parser
@@ -43,7 +43,7 @@ impl WolframParser {
 
         // Fall back to conversion and existing parser
         let converted = self.convert_to_latex_syntax(&cleaned);
-        let mut latex_parser = crate::parsing::latex_parser::LaTeXParser::new();
+        let mut latex_parser = crate::parser::latex_parser::LaTeXParser::new();
         latex_parser.parse(&converted)
     }
 

@@ -13,7 +13,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 mathhook-core = { path = "../mathhook-core" }
-mathhook-parser = { path = "../mathhook-parser" }
 pyo3 = { workspace = true, features = ["extension-module"] }
 serde.workspace = true
 serde_json.workspace = true

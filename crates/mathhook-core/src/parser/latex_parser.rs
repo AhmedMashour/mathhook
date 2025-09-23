@@ -2,8 +2,8 @@
 //!
 //! Handles LaTeX-specific syntax including fractions, functions, and commands.
 
-use crate::parsing::{constants::*, ParseError};
-use mathhook_core::{Expression, Number, Symbol};
+use crate::core::{Expression, Number, Symbol};
+use crate::parser::{constants::*, ParseError};
 use std::collections::HashMap;
 
 /// LaTeX-specific parser
@@ -96,7 +96,7 @@ impl LaTeXParser {
 
     /// Parse LaTeX constants like \pi, \infty, etc.
     fn parse_constants(&self, input: &str) -> Result<Option<Expression>, ParseError> {
-        use mathhook_core::core::MathConstant;
+        use crate::core::MathConstant;
 
         // Check for LaTeX constants
         if input == "\\pi" {

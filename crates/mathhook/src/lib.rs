@@ -39,15 +39,15 @@
 //! # Ok::<(), mathhook_parser::ParseError>(())
 //! ```
 
+mod macros;
 pub use mathhook_core as core;
-pub use mathhook_parser as parser;
 
 pub use mathhook_core::{
     algebra::{Expand, Factor, Simplify},
     Expression, MathConstant, MathSolver, Number, SolverConfig, SolverResult, Symbol,
 };
 
-pub use mathhook_parser::{MathFormatter, MathLanguage, MathParser, ParseError};
+pub use core::{MathFormatter, MathLanguage, MathParser, ParseError};
 
 pub use num_bigint;
 pub use num_rational;
@@ -64,77 +64,12 @@ pub use serde_json;
 /// let simplified = expr.simplify();
 /// ```
 pub mod prelude {
+    pub use crate::core::parser::{MathFormatter, MathLanguage, MathParser, ParseError};
     pub use crate::core::{
         algebra::{Expand, Factor, Simplify},
         Expression, MathConstant, Number, Symbol,
     };
     pub use crate::core::{MathSolver, SolverConfig, SolverResult};
-    pub use crate::parser::{MathFormatter, MathLanguage, MathParser, ParseError};
-}
-
-/// Macro support for ergonomic expression creation
-pub mod macros {
-    /// Create mathematical expressions using natural syntax
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook::expr;
-    ///
-    /// let result = expr!(x^2 + 2*x + 1);
-    /// ```
-    #[macro_export]
-    macro_rules! expr {
-        ($var:ident) => {
-            $crate::Expression::symbol(stringify!($var))
-        };
-        ($num:literal) => {
-            $crate::Expression::integer($num)
-        };
-        ($left:tt + $right:tt) => {
-            $crate::Expression::add(vec![expr!($left), expr!($right)])
-        };
-        ($left:tt * $right:tt) => {
-            $crate::Expression::mul(vec![expr!($left), expr!($right)])
-        };
-        ($base:tt ^ $exp:tt) => {
-            $crate::Expression::pow(expr!($base), expr!($exp))
-        };
-    }
-
-    /// Create symbols easily
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook::symbol;
-    ///
-    /// let x = symbol!(x);
-    /// let alpha = symbol!(α);
-    /// ```
-    #[macro_export]
-    macro_rules! symbol {
-        ($name:ident) => {
-            $crate::Symbol::new(stringify!($name))
-        };
-    }
-
-    /// Parse expressions from strings
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook::parse;
-    ///
-    /// let expr = parse!("x + 2", standard);
-    /// ```
-    #[macro_export]
-    macro_rules! parse {
-        ($input:expr, $lang:ident) => {{
-            let parser = $crate::MathParser::new();
-            parser.parse($input, $crate::MathLanguage::$lang)
-        }};
-    }
 }
 
 #[cfg(test)]

@@ -3,8 +3,8 @@
 //! Provides format-aware parsing with automatic language detection for LaTeX,
 //! Wolfram Language, and simple mathematical notation.
 
-use crate::parsing::ParseError;
-use mathhook_core::{Expression, Number, Symbol};
+use crate::core::{Expression, Number, Symbol};
+use crate::parser::ParseError;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -56,7 +56,7 @@ impl UniversalParser {
 
     /// Detect mathematical notation language from input
     pub fn detect_language(&self, input: &str) -> MathLanguage {
-        use crate::parsing::constants::*;
+        use crate::parser::constants::*;
 
         let latex_score = LATEX_DETECTION_PATTERNS
             .iter()
@@ -91,13 +91,13 @@ impl UniversalParser {
 
     /// Parse LaTeX mathematical expression
     fn parse_latex(&mut self, latex: &str) -> Result<Expression, ParseError> {
-        let mut latex_parser = crate::parsing::latex_parser::LaTeXParser::new();
+        let mut latex_parser = crate::parser::latex_parser::LaTeXParser::new();
         latex_parser.parse(latex)
     }
 
     /// Parse Wolfram Language mathematical expression
     fn parse_wolfram(&mut self, wolfram: &str) -> Result<Expression, ParseError> {
-        let mut wolfram_parser = crate::parsing::wolfram_parser::WolframParser::new();
+        let mut wolfram_parser = crate::parser::wolfram_parser::WolframParser::new();
         wolfram_parser.parse(wolfram)
     }
 
@@ -733,7 +733,7 @@ impl UniversalParser {
             Expression::Interval { .. } => "\\text{interval}".to_string(),
             // Calculus expressions with proper LaTeX formatting
             Expression::Calculus(calculus_data) => {
-                use mathhook_core::core::expression::CalculusData;
+                use crate::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,
@@ -784,9 +784,9 @@ impl UniversalParser {
                             "\\lim_{{{}\\to{}}} {}",
                             variable.name(),
                             match direction {
-                                mathhook_core::core::expression::LimitDirection::Left => "0^-",
-                                mathhook_core::core::expression::LimitDirection::Right => "0^+",
-                                mathhook_core::core::expression::LimitDirection::Both => "0",
+                                crate::core::expression::LimitDirection::Left => "0^-",
+                                crate::core::expression::LimitDirection::Right => "0^+",
+                                crate::core::expression::LimitDirection::Both => "0",
                             },
                             self.expression_to_latex(expression, context)
                         )
@@ -893,7 +893,7 @@ impl UniversalParser {
             Expression::Interval(_) => "interval".to_string(),
             // Calculus expressions with proper Wolfram formatting
             Expression::Calculus(calculus_data) => {
-                use mathhook_core::core::expression::CalculusData;
+                use crate::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,
@@ -944,9 +944,9 @@ impl UniversalParser {
                             self.expression_to_wolfram(expression, context),
                             variable.name(),
                             match direction {
-                                mathhook_core::core::expression::LimitDirection::Left => "-1",
-                                mathhook_core::core::expression::LimitDirection::Right => "+1",
-                                mathhook_core::core::expression::LimitDirection::Both =>
+                                crate::core::expression::LimitDirection::Left => "-1",
+                                crate::core::expression::LimitDirection::Right => "+1",
+                                crate::core::expression::LimitDirection::Both =>
                                     "Direction -> \"TwoSided\"",
                             }
                         )

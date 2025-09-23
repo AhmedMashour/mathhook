@@ -3,8 +3,7 @@
 //! This crate provides Python bindings using PyO3, exposing the hybrid API
 //! for Python users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
-use mathhook_parser::{MathLanguage, MathParser};
+use mathhook_core::{Expression, MathLanguage, MathParser, MathSolver, Simplify, Symbol};
 use pyo3::prelude::*;
 
 /// Python wrapper for Expression

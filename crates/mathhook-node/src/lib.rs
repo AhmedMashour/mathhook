@@ -3,8 +3,7 @@
 //! This crate provides Node.js bindings using NAPI-RS, exposing the hybrid API
 //! for JavaScript/TypeScript users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
-use mathhook_parser::{MathLanguage, MathParser};
+use mathhook_core::{Expression, MathLanguage, MathParser, MathSolver, Simplify, Symbol};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 

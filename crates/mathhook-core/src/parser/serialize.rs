@@ -1,7 +1,7 @@
 //! Clean parse and stringify API for mathematical expressions
 
-use mathhook_core::core::expression::LimitDirection;
-use mathhook_core::{Expression, MathConstant, Number, Symbol};
+use crate::core::expression::LimitDirection;
+use crate::core::{Expression, MathConstant, Number, Symbol};
 use num_traits::ToPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_json;
@@ -165,7 +165,7 @@ impl MathSerializer {
             },
 
             Expression::Calculus(calculus_data) => {
-                use mathhook_core::core::expression::CalculusData;
+                use crate::core::expression::CalculusData;
                 match calculus_data.as_ref() {
                     CalculusData::Derivative {
                         expression,

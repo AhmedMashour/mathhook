@@ -12,7 +12,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 mathhook-core = { path = "../mathhook-core" }
-mathhook-parser = { path = "../mathhook-parser" }
 napi = { workspace = true, features = ["napi4"] }
 napi-derive.workspace = true
 serde.workspace = true

@@ -18,6 +18,8 @@ once_cell.workspace = true
 tempfile.workspace = true
 rayon.workspace = true
 dirs.workspace = true
+regex.workspace = true
+
 [dev-dependencies]
 criterion.workspace = true
 proptest.workspace = true
