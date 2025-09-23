@@ -14,6 +14,7 @@ impl HigherOrderDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = Symbol::new("x");
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(4));

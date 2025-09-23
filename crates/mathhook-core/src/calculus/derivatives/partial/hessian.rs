@@ -138,6 +138,7 @@ impl HessianOperations {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
@@ -181,6 +182,7 @@ impl HessianOperations {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
     /// let x = Symbol::new("x");
     /// let y = Symbol::new("y");
