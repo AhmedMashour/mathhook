@@ -4,10 +4,11 @@
 //! storing frequently used expression simplifications to disk for faster startup.
 
 use crate::core::Expression;
+use dirs;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::{Arc, OnceLock, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -335,7 +336,6 @@ fn get_default_cache_directory() -> PathBuf {
     if let Some(cache_dir) = dirs::cache_dir() {
         cache_dir.join("mathhook")
     } else {
-        // Fallback to current directory
         PathBuf::from(".mathhook_cache")
     }
 }

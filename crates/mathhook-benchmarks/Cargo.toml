@@ -11,6 +11,9 @@ description = "Performance benchmarks for MathHook ecosystem"
 mathhook-core = { path = "../mathhook-core" }
 mathhook-parser = { path = "../mathhook-parser" }
 criterion.workspace = true
+num-rational.workspace = true
+num-traits.workspace = true
+rayon.workspace = true
 
 [[bench]]
 name = "core_performance"
