@@ -109,37 +109,4 @@ impl Expression {
         let gcd = self.gcd(other);
         (gcd.clone(), self.clone(), other.clone())
     }
-
-    /// Convert expression to LaTeX format
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let expr = Expression::pow(Expression::symbol("x"), Expression::integer(2));
-    /// let latex = expr.to_latex();
-    /// ```
-    pub fn to_latex(&self) -> String {
-        match self {
-            Expression::Number(num) => format!("{}", num),
-            Expression::Symbol(sym) => sym.name.to_string(),
-            Expression::Add(terms) => {
-                let term_strs: Vec<String> = terms.iter().map(|t| t.to_latex()).collect();
-                term_strs.join(" + ")
-            }
-            Expression::Mul(factors) => {
-                let factor_strs: Vec<String> = factors.iter().map(|f| f.to_latex()).collect();
-                factor_strs.join(" \\cdot ")
-            }
-            Expression::Pow(base, exp) => {
-                format!("{}^{{{}}}", base.to_latex(), exp.to_latex())
-            }
-            Expression::Function { name, args } => {
-                let arg_strs: Vec<String> = args.iter().map(|a| a.to_latex()).collect();
-                format!("\\{}({})", name, arg_strs.join(", "))
-            }
-            _ => format!("{}", self),
-        }
-    }
 }

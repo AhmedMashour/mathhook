@@ -7,6 +7,10 @@ pub mod display;
 pub mod methods;
 pub mod operations;
 pub mod operators;
+pub mod parser_integration;
+
+#[cfg(test)]
+pub mod parser_integration_test;
 
 pub use constructors::*;
 pub use data_types::*;

@@ -3,7 +3,7 @@
 //! This crate provides Python bindings using PyO3, exposing the hybrid API
 //! for Python users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{Expression, MathLanguage, MathParser, MathSolver, Simplify, Symbol};
+use mathhook_core::{parser::universal::MathLanguage, Expression, MathSolver, Simplify, Symbol};
 use pyo3::prelude::*;
 
 /// Python wrapper for Expression
@@ -103,6 +103,87 @@ impl PyExpression {
         }
     }
 
+    /// Parse a mathematical expression from string
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// expr = PyExpression.parse("x^2 + 2*x + 1")
+    /// latex_expr = PyExpression.parse("\\frac{x^2}{2}")
+    /// wolfram_expr = PyExpression.parse("Sin[x] + Cos[y]")
+    /// ```
+    #[staticmethod]
+    pub fn parse(input: &str) -> PyResult<Self> {
+        match Expression::parse(input) {
+            Ok(expr) => Ok(Self { inner: expr }),
+            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Parse error: {}", e)
+            )),
+        }
+    }
+
+    /// Parse with explicit language specification
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// latex = PyExpression.parse_with_language("\\sin(x)", "latex")
+    /// wolfram = PyExpression.parse_with_language("Sin[x]", "wolfram")
+    /// simple = PyExpression.parse_with_language("x + 1", "simple")
+    /// ```
+    #[staticmethod]
+    pub fn parse_with_language(input: &str, language: &str) -> PyResult<Self> {
+        let lang = match language {
+            "latex" => MathLanguage::LaTeX,
+            "wolfram" => MathLanguage::Wolfram,
+            "simple" => MathLanguage::Simple,
+            _ => MathLanguage::Simple,
+        };
+
+        match Expression::parse_with_language(input, lang) {
+            Ok(expr) => Ok(Self { inner: expr }),
+            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Parse error: {}", e)
+            )),
+        }
+    }
+
+    /// Convert expression to LaTeX format
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// expr = PyExpression.symbol("x").pow(PyExpression.integer(2))
+    /// latex = expr.to_latex()  # Returns "x^{2}"
+    /// ```
+    pub fn to_latex(&self) -> String {
+        self.inner.to_latex()
+    }
+
+    /// Convert expression to simple mathematical notation
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// expr = PyExpression.symbol("x").pow(PyExpression.integer(2))
+    /// simple = expr.to_simple()  # Returns "x^2"
+    /// ```
+    pub fn to_simple(&self) -> String {
+        self.inner.to_simple()
+    }
+
+    /// Convert expression to Wolfram Language format
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// expr = PyExpression.function("sin", [PyExpression.symbol("x")])
+    /// wolfram = expr.to_wolfram()  # Returns "Sin[x]"
+    /// ```
+    pub fn to_wolfram(&self) -> String {
+        self.inner.to_wolfram()
+    }
+
     /// Create an equation (equality relation)
     ///
     /// # Examples
@@ -172,60 +253,11 @@ impl PyMathSolver {
     }
 }
 
-/// Python wrapper for MathParser
-#[pyclass]
-pub struct PyMathParser {
-    inner: MathParser,
-}
-
-#[pymethods]
-impl PyMathParser {
-    /// Create a new parser
-    ///
-    /// # Examples
-    ///
-    /// ```python
-    /// parser = PyMathParser()
-    /// ```
-    #[new]
-    pub fn new() -> Self {
-        Self {
-            inner: MathParser::new(),
-        }
-    }
-
-    /// Parse a mathematical expression
-    ///
-    /// # Examples
-    ///
-    /// ```python
-    /// parser = PyMathParser()
-    /// expr = parser.parse("x + 2", "standard")
-    /// latex_expr = parser.parse("\\frac{x}{2}", "latex")
-    /// ```
-    pub fn parse(&self, input: &str, language: &str) -> PyResult<PyExpression> {
-        let lang = match language {
-            "latex" => MathLanguage::LaTeX,
-            "wolfram" => MathLanguage::Wolfram,
-            "standard" => MathLanguage::Standard,
-            _ => MathLanguage::Standard,
-        };
-
-        match self.inner.parse(input, lang) {
-            Ok(expr) => Ok(PyExpression { inner: expr }),
-            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
-                "Parse error: {}",
-                e
-            ))),
-        }
-    }
-}
 
 /// Python module
 #[pymodule]
 fn mathhook_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyExpression>()?;
     m.add_class::<PyMathSolver>()?;
-    m.add_class::<PyMathParser>()?;
     Ok(())
 }

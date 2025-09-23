@@ -173,7 +173,27 @@ impl MathParser {
             return Ok(Expression::symbol(input));
         }
 
-        // Handle basic addition: "a + b"
+        // Handle function calls: "func(args)"
+        if let Some(paren_pos) = input.find('(') {
+            if input.ends_with(')') {
+                let func_name = &input[..paren_pos];
+                let args_str = &input[paren_pos + 1..input.len() - 1];
+
+                // Check if it's a valid function name (alphabetic characters)
+                if func_name.chars().all(|c| c.is_alphabetic()) {
+                    if args_str.trim().is_empty() {
+                        // Function with no arguments
+                        return Ok(Expression::function(func_name, vec![]));
+                    } else {
+                        // Parse the argument
+                        let arg_expr = self.parse_basic(args_str)?;
+                        return Ok(Expression::function(func_name, vec![arg_expr]));
+                    }
+                }
+            }
+        }
+
+        // Handle basic addition: "a + b" (with or without spaces)
         if let Some(plus_pos) = input.find(" + ") {
             let left = &input[..plus_pos];
             let right = &input[plus_pos + 3..];
@@ -184,7 +204,21 @@ impl MathParser {
             return Ok(Expression::add(vec![left_expr, right_expr]));
         }
 
-        // Handle basic multiplication: "a * b"
+        // Handle addition without spaces: "a+b"
+        if let Some(plus_pos) = input.find('+') {
+            // Make sure it's not part of a number (like +5)
+            if plus_pos > 0 && plus_pos < input.len() - 1 {
+                let left = &input[..plus_pos];
+                let right = &input[plus_pos + 1..];
+
+                let left_expr = self.parse_basic(left)?;
+                let right_expr = self.parse_basic(right)?;
+
+                return Ok(Expression::add(vec![left_expr, right_expr]));
+            }
+        }
+
+        // Handle basic multiplication: "a * b" (with spaces)
         if let Some(mul_pos) = input.find(" * ") {
             let left = &input[..mul_pos];
             let right = &input[mul_pos + 3..];
@@ -193,6 +227,34 @@ impl MathParser {
             let right_expr = self.parse_basic(right)?;
 
             return Ok(Expression::mul(vec![left_expr, right_expr]));
+        }
+
+        // Handle multiplication without spaces: "a*b" or "2*x"
+        if let Some(mul_pos) = input.find('*') {
+            let left = &input[..mul_pos];
+            let right = &input[mul_pos + 1..];
+
+            let left_expr = self.parse_basic(left)?;
+            let right_expr = self.parse_basic(right)?;
+
+            return Ok(Expression::mul(vec![left_expr, right_expr]));
+        }
+
+        // Handle implicit multiplication: "2x" (number followed by letter)
+        for (i, c) in input.char_indices() {
+            if c.is_alphabetic() && i > 0 {
+                let num_part = &input[..i];
+                let var_part = &input[i..];
+
+                // Check if the number part is a valid number and var part is a valid symbol
+                if let Ok(_) = num_part.parse::<i64>() {
+                    if var_part.chars().all(|c| c.is_alphabetic() || c == '_') {
+                        let num_expr = self.parse_basic(num_part)?;
+                        let var_expr = self.parse_basic(var_part)?;
+                        return Ok(Expression::mul(vec![num_expr, var_expr]));
+                    }
+                }
+            }
         }
 
         // Handle basic powers: "a^b"
