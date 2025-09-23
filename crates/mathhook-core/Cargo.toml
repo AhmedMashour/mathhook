@@ -7,13 +7,6 @@ repository.workspace = true
 homepage.workspace = true
 description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
 
-[features]
-default = []
-# GPU acceleration features (optional)
-webgpu = ["wgpu", "bytemuck"]
-cuda = ["cudarc"]
-gpu = ["webgpu"]  # Enable WebGPU by default for GPU feature
-
 [dependencies]
 num-bigint = { workspace = true, features = ["serde"] }
 num-rational = { workspace = true, features = ["serde"] }
@@ -22,15 +15,7 @@ num-integer.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 once_cell.workspace = true
-rayon.workspace = true
-dirs.workspace = true
-
-# Optional GPU acceleration dependencies
-wgpu = { version = "0.19", optional = true }
-bytemuck = { version = "1.14", optional = true }
-cudarc = { version = "0.10", optional = true }
 
 [dev-dependencies]
 criterion.workspace = true
 proptest.workspace = true
-tempfile = "3.8"

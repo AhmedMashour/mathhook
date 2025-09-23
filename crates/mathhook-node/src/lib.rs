@@ -3,9 +3,6 @@
 //! This crate provides Node.js bindings using NAPI-RS, exposing the hybrid API
 //! for JavaScript/TypeScript users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::core::performance::{
-    get_performance_summary, set_binding_config, BindingContext,
-};
 use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
 use mathhook_parser::{MathLanguage, MathParser};
 use napi::bindgen_prelude::*;
@@ -230,50 +227,4 @@ impl JsMathParser {
             )),
         }
     }
-}
-
-/// Initialize MathHook with Node.js-optimized performance settings
-///
-/// This function should be called once when the module is loaded to configure
-/// MathHook for optimal performance in Node.js environments.
-///
-/// # Examples
-///
-/// ```javascript
-/// const { initMathHook } = require('mathhook-node');
-///
-/// // Call once during module initialization
-/// initMathHook();
-///
-/// // Now all MathHook operations use Node.js-optimized settings
-/// const expr = JsExpression.integer(42);
-/// const result = expr.simplify(); // Uses Node.js config automatically
-/// ```
-#[napi]
-pub fn init_mathhook() -> Result<()> {
-    // Configure MathHook for Node.js-specific optimizations
-    // This sets up thread-friendly performance settings globally
-    set_binding_config(BindingContext::NodeJs);
-    Ok(())
-}
-
-/// Get performance monitoring information
-///
-/// Returns a human-readable summary of MathHook's current performance configuration
-/// and cache statistics for monitoring and debugging purposes.
-///
-/// # Examples
-///
-/// ```javascript
-/// const { initMathHook, getPerformanceInfo } = require('mathhook-node');
-///
-/// initMathHook();
-///
-/// // Get performance summary
-/// const summary = getPerformanceInfo();
-/// console.log(summary);
-/// ```
-#[napi]
-pub fn get_performance_info() -> String {
-    get_performance_summary()
 }

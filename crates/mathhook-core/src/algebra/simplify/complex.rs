@@ -7,13 +7,12 @@ use super::Simplify;
 use crate::core::Expression;
 
 /// Simplify complex expressions
-#[inline(always)]
 pub fn simplify_complex(complex_expr: &Expression) -> Expression {
     match complex_expr {
         Expression::Complex(complex) => {
-            // Process real and imaginary parts directly for performance
-            let simplified_real = complex.real.clone();
-            let simplified_imag = complex.imag.clone();
+            // Simplify both real and imaginary parts
+            let simplified_real = complex.real.simplify();
+            let simplified_imag = complex.imag.simplify();
 
             // Check for special cases
             match (&simplified_real, &simplified_imag) {

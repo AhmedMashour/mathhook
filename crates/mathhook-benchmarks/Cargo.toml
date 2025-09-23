@@ -11,9 +11,6 @@ description = "Performance benchmarks for MathHook ecosystem"
 mathhook-core = { path = "../mathhook-core" }
 mathhook-parser = { path = "../mathhook-parser" }
 criterion.workspace = true
-num-bigint.workspace = true
-num-rational.workspace = true
-num-traits.workspace = true
 
 [[bench]]
 name = "core_performance"
@@ -23,19 +20,6 @@ harness = false
 name = "symbolica_challenge"
 harness = false
 
-
 [[bench]]
-name = "realistic_cas_benchmarks"
-harness = false
-
-[[bench]]
-name = "simd_performance_analysis"
-harness = false
-
-[[bench]]
-name = "comprehensive_performance_suite"
-harness = false
-
-[[bench]]
-name = "performance_consistency"
+name = "mathhook_iq_test_suite"
 harness = false

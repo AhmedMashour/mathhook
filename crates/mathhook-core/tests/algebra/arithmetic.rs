@@ -15,7 +15,7 @@ fn test_simplify_basic_arithmetic() {
         Expression::pow(Expression::integer(3), Expression::integer(-1)),
     ]);
     let result2 = expr2.simplify();
-    // Our CAS correctly simplifies 6*3^(-1) to 2 (mathematically superior rational representation)
+    // Our CAS correctly simplifies 6*3^(-1) to 2 (mathematically superior)
     assert_eq!(
         result2,
         Expression::integer(2),
