@@ -66,26 +66,32 @@
 macro_rules! parse {
     // Auto-detect format
     ($input:expr) => {{
-        let mut parser = $crate::core::parser::UniversalParser::new();
+        let mut parser = $crate::core::parser::universal::UniversalParser::new();
         parser.parse($input)
     }};
 
     // Explicit LaTeX format
     (latex: $input:expr) => {{
-        let mut parser = $crate::core::parser::UniversalParser::new();
-        parser.parse_with_language($input, $crate::core::parser::MathLanguage::LaTeX)
+        let mut parser = $crate::core::parser::universal::UniversalParser::new();
+        parser.parse_with_language($input, $crate::core::parser::universal::MathLanguage::LaTeX)
     }};
 
     // Explicit Wolfram format
     (wolfram: $input:expr) => {{
-        let mut parser = $crate::core::parser::UniversalParser::new();
-        parser.parse_with_language($input, $crate::core::parser::MathLanguage::Wolfram)
+        let mut parser = $crate::core::parser::universal::UniversalParser::new();
+        parser.parse_with_language(
+            $input,
+            $crate::core::parser::universal::MathLanguage::Wolfram,
+        )
     }};
 
     // Explicit Simple format
     (simple: $input:expr) => {{
         let mut parser = $crate::core::parser::UniversalParser::new();
-        parser.parse_with_language($input, $crate::core::parser::MathLanguage::Simple)
+        parser.parse_with_language(
+            $input,
+            $crate::core::parser::universal::MathLanguage::Simple,
+        )
     }};
 }
 
