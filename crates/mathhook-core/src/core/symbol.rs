@@ -1,7 +1,11 @@
 //! Symbol type for variables and identifiers
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+/// Global symbol interning cache to avoid duplicate Arc allocations
+static SYMBOL_CACHE: Mutex<Option<HashMap<String, Arc<str>>>> = Mutex::new(None);
 
 /// Mathematical symbol/variable with efficient string sharing
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -21,8 +25,53 @@ impl Symbol {
     /// let alpha = Symbol::new("α");
     /// ```
     pub fn new<S: AsRef<str>>(name: S) -> Self {
+        let name_str = name.as_ref();
+
+        // Fast path for common single-character symbols
+        let interned_name = match name_str {
+            "x" | "y" | "z" | "a" | "b" | "c" | "t" | "n" | "i" | "j" | "k" => {
+                // Use a static Arc for very common symbols to avoid cache lookup
+                match name_str {
+                    "x" => {
+                        static X_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                        X_SYMBOL.get_or_init(|| "x".into()).clone()
+                    }
+                    "y" => {
+                        static Y_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                        Y_SYMBOL.get_or_init(|| "y".into()).clone()
+                    }
+                    "z" => {
+                        static Z_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                        Z_SYMBOL.get_or_init(|| "z".into()).clone()
+                    }
+                    _ => {
+                        // Fall back to cache for other common symbols
+                        Self::intern_symbol(name_str)
+                    }
+                }
+            }
+            _ => {
+                // Use cache for all other symbols
+                Self::intern_symbol(name_str)
+            }
+        };
+
         Self {
-            name: name.as_ref().into(),
+            name: interned_name,
+        }
+    }
+
+    /// Internal method to intern symbols using the global cache
+    fn intern_symbol(name: &str) -> Arc<str> {
+        let mut cache_guard = SYMBOL_CACHE.lock().unwrap();
+        let cache = cache_guard.get_or_insert_with(HashMap::new);
+
+        if let Some(existing) = cache.get(name) {
+            existing.clone()
+        } else {
+            let arc_str: Arc<str> = name.into();
+            cache.insert(name.to_string(), arc_str.clone());
+            arc_str
         }
     }
 

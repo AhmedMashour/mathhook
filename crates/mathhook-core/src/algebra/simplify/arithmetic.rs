@@ -8,6 +8,25 @@ use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::{One, ToPrimitive, Zero};
+use std::cmp::Ordering;
+use std::collections::VecDeque;
+
+fn expression_order(a: &Expression, b: &Expression) -> Ordering {
+    match (a, b) {
+        // Numbers come first
+        (Expression::Number(_), Expression::Number(_)) => Ordering::Equal,
+        (Expression::Number(_), _) => Ordering::Less,
+        (_, Expression::Number(_)) => Ordering::Greater,
+
+        // Then symbols (alphabetically)
+        (Expression::Symbol(s1), Expression::Symbol(s2)) => s1.name().cmp(s2.name()),
+        (Expression::Symbol(_), _) => Ordering::Less,
+        (_, Expression::Symbol(_)) => Ordering::Greater,
+
+        // Then other expressions by type
+        _ => format!("{:?}", a).cmp(&format!("{:?}", b)),
+    }
+}
 
 /// Simplify addition expressions with minimal overhead
 pub fn simplify_addition(terms: &[Expression]) -> Expression {
@@ -18,22 +37,23 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
         return terms[0].clone();
     }
 
-    // First, flatten nested Add expressions
-    let mut flattened_terms = Vec::new();
-    for term in terms {
+    // Iteratively flatten nested Add expressions to avoid stack overflow
+    let mut flattened_terms: Vec<Expression> = Vec::new();
+    let mut to_process: VecDeque<&Expression> = terms.iter().collect();
+
+    while let Some(term) = to_process.pop_front() {
         match term {
             Expression::Add(nested_terms) => {
-                // Recursively flatten nested additions
-                flattened_terms.extend_from_slice(nested_terms);
+                for nested_term in nested_terms.iter().rev() {
+                    to_process.push_front(nested_term);
+                }
             }
             _ => flattened_terms.push(term.clone()),
         }
     }
 
-    // If we flattened anything, recursively call with flattened terms
-    if flattened_terms.len() != terms.len() {
-        return simplify_addition(&flattened_terms);
-    }
+    // Use flattened terms for the rest of the function
+    let terms = &flattened_terms;
 
     // Ultra-fast path for numeric addition
     let mut int_sum = 0i64;
@@ -45,8 +65,17 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
     let mut numeric_result = None;
 
     for term in terms {
-        // First, simplify the term to ensure we catch cases like Mul([1, 3]) -> 3
-        let simplified_term = term.simplify();
+        // Simplify the term, but avoid recursive calls for Add expressions (already flattened)
+        let simplified_term = match term {
+            Expression::Add(_) => {
+                // Add expressions should already be flattened, so this shouldn't happen
+                // But if it does, just use the term as-is to avoid recursion
+                term.clone()
+            }
+            Expression::Mul(factors) => simplify_multiplication(factors),
+            Expression::Pow(base, exp) => simplify_power(base, exp),
+            _ => term.clone(),
+        };
         match simplified_term {
             Expression::Number(Number::Integer(n)) => {
                 int_sum = int_sum.saturating_add(n);
@@ -133,8 +162,13 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
 
             for term in terms {
                 if !matches!(term, Expression::Number(_)) {
-                    // Each non-numeric term - simplify first
-                    let simplified_term = term.simplify();
+                    // Each non-numeric term - use controlled simplification to avoid recursion
+                    let simplified_term = match term {
+                        Expression::Add(_) => term.clone(), // Already flattened
+                        Expression::Mul(factors) => simplify_multiplication(factors),
+                        Expression::Pow(base, exp) => simplify_power(base, exp),
+                        _ => term.clone(),
+                    };
                     match simplified_term {
                         Expression::Number(Number::Integer(0)) => {}
                         Expression::Number(Number::Float(f)) if f == 0.0 => {}
@@ -174,7 +208,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                     }
                 } else {
                     // Multiple coefficients for the same base - sum them
-                    let coeff_sum = Expression::add(coeffs).simplify();
+                    let coeff_sum = simplify_addition(&coeffs);
                     match coeff_sum {
                         Expression::Number(Number::Integer(0)) => {}
                         Expression::Number(Number::Float(f)) if f == 0.0 => {}
@@ -190,6 +224,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                 }
             }
 
+            result_terms.sort_by(expression_order);
             match result_terms.len() {
                 0 => Expression::integer(0),
                 1 => result_terms.into_iter().next().unwrap(),
@@ -208,16 +243,17 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
         return factors[0].clone();
     }
 
-    // First, recursively simplify all factors and flatten nested multiplications
+    // Iteratively flatten nested multiplications to avoid stack overflow
     let mut flattened_factors = Vec::new();
-    for factor in factors {
-        let simplified_factor = factor.simplify();
-        match simplified_factor {
+    let mut to_process: Vec<&Expression> = factors.iter().collect();
+
+    while let Some(factor) = to_process.pop() {
+        match factor {
             Expression::Mul(nested_factors) => {
-                // Flatten nested multiplication
-                flattened_factors.extend(nested_factors.iter().cloned());
+                // Add nested factors to the processing queue
+                to_process.extend(nested_factors.iter());
             }
-            _ => flattened_factors.push(simplified_factor),
+            _ => flattened_factors.push(factor.clone()),
         }
     }
 
@@ -312,14 +348,14 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 let simplified_add = simplify_addition(terms);
                 if !matches!(simplified_add, Expression::Add(_)) {
                     // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![a.clone(), simplified_add]).simplify();
+                    return simplify_multiplication(&[a.clone(), simplified_add]);
                 }
             }
             (Expression::Add(terms), b) => {
                 let simplified_add = simplify_addition(terms);
                 if !matches!(simplified_add, Expression::Add(_)) {
                     // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![simplified_add, b.clone()]).simplify();
+                    return simplify_multiplication(&[simplified_add, b.clone()]);
                 }
             }
             _ => {} // Fall through to general case
@@ -433,10 +469,23 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
     match (numeric_result.as_ref(), non_numeric_count) {
         (None, 0) => Expression::integer(1),
         (Some(num), 0) => num.clone(),
-        (None, 1) => first_non_numeric.unwrap().simplify(),
+        (None, 1) => {
+            // Simplify the single non-numeric factor without recursion
+            let factor = first_non_numeric.unwrap();
+            match factor {
+                Expression::Add(terms) => simplify_addition(terms),
+                Expression::Pow(base, exp) => simplify_power(base, exp),
+                _ => factor.clone(),
+            }
+        }
         (Some(num), 1) => {
             // Only multiply if the numeric factor isn't 1
-            let simplified_non_numeric = first_non_numeric.unwrap().simplify();
+            let factor = first_non_numeric.unwrap();
+            let simplified_non_numeric = match factor {
+                Expression::Add(terms) => simplify_addition(terms),
+                Expression::Pow(base, exp) => simplify_power(base, exp),
+                _ => factor.clone(),
+            };
             match num {
                 Expression::Number(Number::Integer(1)) => simplified_non_numeric,
                 Expression::Number(Number::Float(f)) if *f == 1.0 => simplified_non_numeric,
@@ -446,6 +495,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
         _ => {
             // Multiple factors - build result efficiently
             let mut result_factors = Vec::with_capacity(non_numeric_count + 1);
+            result_factors.sort_by(expression_order);
             if let Some(num) = numeric_result {
                 // Only include numeric factor if it's not 1
                 match num {
@@ -456,7 +506,12 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             }
             for factor in factors {
                 if !matches!(factor, Expression::Number(_)) {
-                    result_factors.push(factor.simplify());
+                    let simplified_factor = match factor {
+                        Expression::Add(terms) => simplify_addition(terms),
+                        Expression::Pow(base, exp) => simplify_power(base, exp),
+                        _ => factor.clone(),
+                    };
+                    result_factors.push(simplified_factor);
                 }
             }
             match result_factors.len() {

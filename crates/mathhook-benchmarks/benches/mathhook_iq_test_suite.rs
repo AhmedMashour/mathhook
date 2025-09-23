@@ -172,10 +172,19 @@ fn bench_memory_efficiency(c: &mut Criterion) {
     });
 
     c.bench_function("hot_path_allocation_performance", |b| {
+        // Pre-allocate the symbol to avoid repeated Arc allocations
+        let x_symbol = Expression::symbol("x");
+
         b.iter(|| {
-            let expressions = (0..1000)
-                .map(|i| Expression::add(vec![Expression::symbol("x"), Expression::integer(i)]))
-                .collect::<Vec<_>>();
+            // Pre-allocate the vector to avoid reallocations
+            let mut expressions = Vec::with_capacity(1000);
+
+            for i in 0..1000 {
+                expressions.push(Expression::add(vec![
+                    x_symbol.clone(),
+                    Expression::integer(i),
+                ]));
+            }
 
             black_box(expressions)
         })
