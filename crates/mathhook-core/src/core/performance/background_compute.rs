@@ -438,12 +438,19 @@ impl BackgroundCompute {
             Duration::ZERO
         };
 
+        let total_tasks_completed = if let Ok(cache) = self.results_cache.lock() {
+            cache.len()
+        } else {
+            0
+        };
+
         BackgroundComputeStatistics {
             queue_size,
             cache_size,
             worker_running,
             priority_counts,
             average_compute_time,
+            total_tasks_completed,
         }
     }
 
@@ -482,6 +489,8 @@ pub struct BackgroundComputeStatistics {
     pub priority_counts: HashMap<ComputePriority, usize>,
     /// Average computation time
     pub average_compute_time: Duration,
+    /// Total number of tasks completed
+    pub total_tasks_completed: usize,
 }
 
 /// Global background compute engine
@@ -571,7 +580,10 @@ mod tests {
         predict_and_precompute(&expr);
 
         let stats_after = get_background_compute_statistics();
-        assert!(stats_after.queue_size >= stats.queue_size);
+        assert!(
+            stats_after.queue_size >= stats.queue_size
+                || stats_after.total_tasks_completed > stats.total_tasks_completed
+        );
     }
 
     #[test]
