@@ -209,8 +209,11 @@ impl ComplexOperations for Expression {
                 let bc = Expression::mul(vec![a.imag.clone(), b.real.clone()]).simplify();
 
                 Expression::complex(
-                    Expression::add(vec![ac, Expression::mul(vec![Expression::integer(-1), bd]).simplify()])
-                        .simplify(),
+                    Expression::add(vec![
+                        ac,
+                        Expression::mul(vec![Expression::integer(-1), bd]).simplify(),
+                    ])
+                    .simplify(),
                     Expression::add(vec![ad, bc]).simplify(),
                 )
             }
@@ -411,7 +414,7 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// let z = Expression::complex(Expression::integer(3), Expression::integer(0));
-    /// let simplified = z.simplify_complex();
+    /// let simplified = z.simplify(); // or z.simplify_complex() (same result)
     /// ```
     pub fn simplify_complex(&self) -> Expression {
         match self {

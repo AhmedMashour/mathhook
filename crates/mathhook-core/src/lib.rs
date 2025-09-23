@@ -13,7 +13,7 @@ pub mod solvers;
 // Re-export core types for the hybrid API
 pub use algebra::*;
 pub use calculus::*;
-pub use core::*;
+pub use core::{Expression, MathConstant, Number, Symbol};
 pub use parser::*;
 pub use solvers::*;
 
