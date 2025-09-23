@@ -11,19 +11,20 @@ use num_traits::{One, ToPrimitive, Zero};
 use std::cmp::Ordering;
 use std::collections::VecDeque;
 
+/// Canonical ordering for expressions to ensure consistent output
 fn expression_order(a: &Expression, b: &Expression) -> Ordering {
     match (a, b) {
-        // Numbers come first
+        // Numbers come first, ordered by value
         (Expression::Number(_), Expression::Number(_)) => Ordering::Equal,
         (Expression::Number(_), _) => Ordering::Less,
         (_, Expression::Number(_)) => Ordering::Greater,
 
-        // Then symbols (alphabetically)
+        // Symbols come next, ordered alphabetically
         (Expression::Symbol(s1), Expression::Symbol(s2)) => s1.name().cmp(s2.name()),
         (Expression::Symbol(_), _) => Ordering::Less,
         (_, Expression::Symbol(_)) => Ordering::Greater,
 
-        // Then other expressions by type
+        // For other expressions, use debug representation for consistent ordering
         _ => format!("{:?}", a).cmp(&format!("{:?}", b)),
     }
 }
@@ -224,11 +225,14 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                 }
             }
 
-            result_terms.sort_by(expression_order);
             match result_terms.len() {
                 0 => Expression::integer(0),
                 1 => result_terms.into_iter().next().unwrap(),
-                _ => Expression::Add(Box::new(result_terms)),
+                _ => {
+                    // Sort terms for canonical ordering
+                    result_terms.sort_by(expression_order);
+                    Expression::Add(Box::new(result_terms))
+                }
             }
         }
     }
@@ -253,7 +257,15 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 // Add nested factors to the processing queue
                 to_process.extend(nested_factors.iter());
             }
-            _ => flattened_factors.push(factor.clone()),
+            _ => {
+                // Simplify non-Mul expressions during flattening (same pattern as addition)
+                let simplified = match factor {
+                    Expression::Add(terms) => simplify_addition(terms),
+                    Expression::Pow(base, exp) => simplify_power(base, exp),
+                    _ => factor.clone(),
+                };
+                flattened_factors.push(simplified);
+            }
         }
     }
 
@@ -517,7 +529,11 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             match result_factors.len() {
                 0 => Expression::integer(1),
                 1 => result_factors.into_iter().next().unwrap(),
-                _ => Expression::Mul(Box::new(result_factors)),
+                _ => {
+                    // Sort factors for canonical ordering
+                    result_factors.sort_by(expression_order);
+                    Expression::Mul(Box::new(result_factors))
+                }
             }
         }
     }
