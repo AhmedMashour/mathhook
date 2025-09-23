@@ -80,10 +80,24 @@ solver = MathSolver()
 equation = Expression.equation(x, Expression.integer(5))
 solution = solver.solve(equation, 'x')
 
-# Parsing
-parser = MathParser()
-parsed = parser.parse('x + 2*y', 'standard')
-latex_parsed = parser.parse(r'\frac{x}{2} + y^2', 'latex')
+# 🆕 INTEGRATED PARSING (No separate parser needed!)
+parsed = Expression.parse('2*x + sin(y)')           # Automatic detection
+latex_parsed = Expression.parse(r'\frac{x}{2} + y^2')  # LaTeX auto-detected
+wolfram_parsed = Expression.parse('Sin[x] + Cos[y]')   # Wolfram auto-detected
+
+# 🆕 EXPLICIT LANGUAGE PARSING
+latex_expr = Expression.parse_with_language(r'\sin(x)', 'latex')
+wolfram_expr = Expression.parse_with_language('Sin[x]', 'wolfram')
+simple_expr = Expression.parse_with_language('sin(x)', 'simple')
+
+# 🆕 OUTPUT FORMATS
+expr = Expression.parse('x^2')
+latex_output = expr.to_latex()      # Returns "x^{2}"
+simple_output = expr.to_simple()    # Returns "x^2"
+wolfram_output = expr.to_wolfram()  # Returns "Power[x, 2]"
+
+# 🆕 FLUENT CHAINING
+result = Expression.parse('2*x + 1').simplify().to_latex()
 ```
 
 ### Advanced Features

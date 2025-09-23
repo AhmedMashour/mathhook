@@ -71,6 +71,63 @@ export declare class JsExpression {
    */
   simplify(): JsExpression
   /**
+   * Parse a mathematical expression from string with automatic language detection
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const expr1 = JsExpression.parse("2*x + sin(y)");
+   * const expr2 = JsExpression.parse("\\frac{x^2}{2}");    // LaTeX auto-detected
+   * const expr3 = JsExpression.parse("Sin[x] + Cos[y]");   // Wolfram auto-detected
+   * ```
+   */
+  static parse(input: string): JsExpression
+  /**
+   * Parse with explicit language specification
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const latex = JsExpression.parseWithLanguage("\\sin(x)", "latex");
+   * const wolfram = JsExpression.parseWithLanguage("Sin[x]", "wolfram");
+   * const simple = JsExpression.parseWithLanguage("sin(x)", "simple");
+   * ```
+   */
+  static parseWithLanguage(input: string, language: string): JsExpression
+  /**
+   * Convert expression to LaTeX format
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const expr = JsExpression.symbol("x").pow(JsExpression.integer(2));
+   * const latex = expr.toLatex();  // Returns "x^{2}"
+   * ```
+   */
+  toLatex(): string
+  /**
+   * Convert expression to simple mathematical notation
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const expr = JsExpression.symbol("x").pow(JsExpression.integer(2));
+   * const simple = expr.toSimple();  // Returns "x^2"
+   * ```
+   */
+  toSimple(): string
+  /**
+   * Convert expression to Wolfram Language format
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const expr = JsExpression.function("sin", [JsExpression.symbol("x")]);
+   * const wolfram = expr.toWolfram();  // Returns "Sin[x]"
+   * ```
+   */
+  toWolfram(): string
+  /**
    * Create an equation (equality relation)
    *
    * # Examples
@@ -93,32 +150,6 @@ export declare class JsExpression {
    * ```
    */
   toString(): string
-}
-
-/** JavaScript wrapper for MathParser */
-export declare class JsMathParser {
-  /**
-   * Create a new parser
-   *
-   * # Examples
-   *
-   * ```javascript
-   * const parser = new JsMathParser();
-   * ```
-   */
-  constructor()
-  /**
-   * Parse a mathematical expression
-   *
-   * # Examples
-   *
-   * ```javascript
-   * const parser = new JsMathParser();
-   * const expr = parser.parse("x + 2", "standard");
-   * const latexExpr = parser.parse("\\frac{x}{2}", "latex");
-   * ```
-   */
-  parse(input: string, language: string): JsExpression
 }
 
 /** JavaScript wrapper for MathSolver */

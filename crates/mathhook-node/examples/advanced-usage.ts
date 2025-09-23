@@ -78,9 +78,9 @@ try {
 console.log('📚 Advanced Parsing Examples:');
 
 try {
-    const parser = new JsMathParser();
+    // 🆕 INTEGRATED PARSING (No separate parser needed!)
     
-    // Complex LaTeX expressions
+    // Complex LaTeX expressions - automatic detection
     const latexExpressions = [
         '\\sqrt{x^2 + y^2}',
         '\\frac{a^2 + b^2}{c^2}',
@@ -88,17 +88,18 @@ try {
         '\\sum_{i=1}^{n} x_i^2'
     ];
     
-    console.log('LaTeX Expressions:');
+    console.log('LaTeX Expressions (Auto-detected):');
     latexExpressions.forEach((expr, index) => {
         try {
-            const parsed = parser.parse(expr, 'latex');
+            const parsed = JsExpression.parse(expr);  // 🆕 Auto-detects LaTeX
             console.log(`  ${index + 1}. "${expr}" → ${parsed.toString()}`);
+            console.log(`    LaTeX output: ${parsed.toLatex()}`);
         } catch (e: any) {
             console.log(`  ${index + 1}. "${expr}" → Parse Error: ${e.message}`);
         }
     });
     
-    // Complex Wolfram expressions
+    // Complex Wolfram expressions - automatic detection
     const wolframExpressions = [
         'Expand[(x + y)^3]',
         'Simplify[x^2 - 2*x + 1]',
@@ -106,15 +107,42 @@ try {
         'D[x^3 + 2*x^2 + x, x]'
     ];
     
-    console.log('\nWolfram Expressions:');
+    console.log('\nWolfram Expressions (Auto-detected):');
     wolframExpressions.forEach((expr, index) => {
         try {
-            const parsed = parser.parse(expr, 'wolfram');
+            const parsed = JsExpression.parse(expr);  // 🆕 Auto-detects Wolfram
             console.log(`  ${index + 1}. "${expr}" → ${parsed.toString()}`);
+            console.log(`    Wolfram output: ${parsed.toWolfram()}`);
         } catch (e: any) {
             console.log(`  ${index + 1}. "${expr}" → Parse Error: ${e.message}`);
         }
     });
+    
+    // 🆕 EXPLICIT LANGUAGE PARSING
+    console.log('\n🎯 Explicit Language Parsing:');
+    try {
+        const latexSin = JsExpression.parseWithLanguage("\\sin(x)", "latex");
+        const wolframSin = JsExpression.parseWithLanguage("Sin[x]", "wolfram");
+        const simpleSin = JsExpression.parseWithLanguage("sin(x)", "simple");
+        
+        console.log(`LaTeX sin: ${latexSin.toString()}`);
+        console.log(`Wolfram sin: ${wolframSin.toString()}`);
+        console.log(`Simple sin: ${simpleSin.toString()}`);
+    } catch (e: any) {
+        console.log(`Explicit parsing error: ${e.message}`);
+    }
+    
+    // 🆕 FORMAT CONVERSION DEMO
+    console.log('\n🔄 Format Conversion:');
+    try {
+        const expr = JsExpression.parse("x^2 + 2*x + 1");
+        console.log(`Expression: ${expr.toString()}`);
+        console.log(`LaTeX: ${expr.toLatex()}`);
+        console.log(`Simple: ${expr.toSimple()}`);
+        console.log(`Wolfram: ${expr.toWolfram()}`);
+    } catch (e: any) {
+        console.log(`Format conversion error: ${e.message}`);
+    }
     
 } catch (error: any) {
     console.error(`❌ Advanced parser error: ${error.message}`);

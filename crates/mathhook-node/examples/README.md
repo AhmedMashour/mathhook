@@ -77,9 +77,37 @@ This directory contains comprehensive examples demonstrating how to use the Math
 
 The examples use these main classes:
 
-- `JsExpression` - Core mathematical expression type
-- `JsMathSolver` - Equation solving functionality  
-- `JsMathParser` - Parse mathematical notation from strings
+- `JsExpression` - Core mathematical expression type with integrated parsing
+  - `JsExpression.parse(input)` - Parse with automatic language detection
+  - `JsExpression.parseWithLanguage(input, language)` - Explicit language parsing
+  - `expr.toLatex()` - Convert to LaTeX format
+  - `expr.toSimple()` - Convert to simple notation
+  - `expr.toWolfram()` - Convert to Wolfram format
+- `JsMathSolver` - Equation solving functionality
+
+### 🆕 Integrated Parser Features
+
+**Automatic Language Detection:**
+```typescript
+const expr1 = JsExpression.parse("2*x + sin(y)");      // Simple notation
+const expr2 = JsExpression.parse("\\frac{x^2}{2}");    // LaTeX auto-detected
+const expr3 = JsExpression.parse("Sin[x] + Cos[y]");   // Wolfram auto-detected
+```
+
+**Explicit Language Parsing:**
+```typescript
+const latex = JsExpression.parseWithLanguage("\\sin(x)", "latex");
+const wolfram = JsExpression.parseWithLanguage("Sin[x]", "wolfram");
+const simple = JsExpression.parseWithLanguage("sin(x)", "simple");
+```
+
+**Format Conversion:**
+```typescript
+const expr = JsExpression.parse("x^2");
+const latex = expr.toLatex();      // "x^{2}"
+const simple = expr.toSimple();    // "x^2"
+const wolfram = expr.toWolfram();  // "Power[x, 2]"
+```
 
 ## 🎯 Example Output
 

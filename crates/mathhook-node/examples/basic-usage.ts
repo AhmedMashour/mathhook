@@ -81,26 +81,40 @@ try {
   console.error(`❌ Solver error: ${error.message}\n`);
 }
 
-// ===== Mathematical Expression Parsing =====
-console.log("📖 Parsing Mathematical Expressions:");
+// ===== 🆕 INTEGRATED PARSING (No separate parser needed!) =====
+console.log("📖 Integrated Mathematical Expression Parsing:");
 
 try {
-  const parser = new JsMathParser();
-
-  // Standard mathematical notation
-  const parsed1: JsExpression = parser.parse("x + 2*y", "standard");
-  console.log(`Standard "x + 2*y": ${parsed1.toString()}`);
+  // 🆕 Direct parsing with automatic language detection
+  const parsed1: JsExpression = JsExpression.parse("2*x + sin(y)");
+  console.log(`Auto-detect "2*x + sin(y)": ${parsed1.toString()}`);
   console.log(`Simplified: ${parsed1.simplify().toString()}`);
 
-  // LaTeX mathematical notation
-  const parsed2: JsExpression = parser.parse("\\frac{x}{2} + y^2", "latex");
+  // 🆕 LaTeX automatic detection
+  const parsed2: JsExpression = JsExpression.parse("\\frac{x}{2} + y^2");
   console.log(`LaTeX "\\frac{x}{2} + y^2": ${parsed2.toString()}`);
-  console.log(`Simplified: ${parsed2.simplify().toString()}`);
+  console.log(`LaTeX output: ${parsed2.toLatex()}`);
 
-  // Wolfram mathematical notation
-  const parsed3: JsExpression = parser.parse("x^2 + 2*x + 1", "wolfram");
-  console.log(`Wolfram "x^2 + 2*x + 1": ${parsed3.toString()}`);
-  console.log(`Simplified: ${parsed3.simplify().toString()}\n`);
+  // 🆕 Wolfram automatic detection
+  const parsed3: JsExpression = JsExpression.parse("Sin[x] + Cos[y]");
+  console.log(`Wolfram "Sin[x] + Cos[y]": ${parsed3.toString()}`);
+  console.log(`Wolfram output: ${parsed3.toWolfram()}`);
+
+  // 🆕 Explicit language parsing
+  const latexExpr = JsExpression.parseWithLanguage("\\sin(x)", "latex");
+  const wolframExpr = JsExpression.parseWithLanguage("Sin[x]", "wolfram");
+  const simpleExpr = JsExpression.parseWithLanguage("sin(x)", "simple");
+  
+  console.log(`Explicit LaTeX: ${latexExpr.toString()}`);
+  console.log(`Explicit Wolfram: ${wolframExpr.toString()}`);
+  console.log(`Explicit Simple: ${simpleExpr.toString()}`);
+
+  // 🆕 Format conversion
+  const expr = JsExpression.parse("x^2");
+  console.log(`Expression: ${expr.toString()}`);
+  console.log(`LaTeX: ${expr.toLatex()}`);
+  console.log(`Simple: ${expr.toSimple()}`);
+  console.log(`Wolfram: ${expr.toWolfram()}\n`);
 } catch (error: any) {
   console.error(`❌ Parser error: ${error.message}\n`);
 }

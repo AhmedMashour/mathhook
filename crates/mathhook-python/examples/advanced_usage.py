@@ -49,10 +49,9 @@ try:
     eq1 = Expression.equation(2*x + 3*y, 12)  # 2x + 3y = 12
     eq2 = Expression.equation(x - y, 1)       # x - y = 1
     
-    # Advanced parsing
-    parser = MathParser()
+    # 🆕 INTEGRATED PARSING (No separate parser needed!)
     
-    # LaTeX expressions
+    # LaTeX expressions - automatic detection
     latex_exprs = [
         r'\\sqrt{x^2 + y^2}',
         r'\\frac{a^2 + b^2}{c^2}',
@@ -62,10 +61,36 @@ try:
     
     for expr in latex_exprs:
         try:
-            parsed = parser.parse(expr, 'latex')
+            parsed = PyExpression.parse(expr)  # 🆕 Auto-detects LaTeX
             print(f"LaTeX '{expr}' → {parsed}")
+            print(f"  LaTeX output: {parsed.to_latex()}")
         except Exception as e:
             print(f"LaTeX '{expr}' → Parse Error: {e}")
+    
+    # 🆕 EXPLICIT LANGUAGE PARSING
+    print("\\n🎯 Explicit Language Parsing:")
+    try:
+        # Force specific language interpretation
+        latex_sin = PyExpression.parse_with_language('\\\\sin(x)', 'latex')
+        wolfram_sin = PyExpression.parse_with_language('Sin[x]', 'wolfram')
+        simple_sin = PyExpression.parse_with_language('sin(x)', 'simple')
+        
+        print(f"LaTeX sin: {latex_sin}")
+        print(f"Wolfram sin: {wolfram_sin}")
+        print(f"Simple sin: {simple_sin}")
+    except Exception as e:
+        print(f"Explicit parsing error: {e}")
+    
+    # 🆕 OUTPUT FORMAT CONVERSION
+    print("\\n🔄 Format Conversion:")
+    try:
+        expr = PyExpression.parse('x^2 + 2*x + 1')
+        print(f"Expression: {expr}")
+        print(f"LaTeX: {expr.to_latex()}")
+        print(f"Simple: {expr.to_simple()}")
+        print(f"Wolfram: {expr.to_wolfram()}")
+    except Exception as e:
+        print(f"Format conversion error: {e}")
     
     # Performance testing
     import time
