@@ -3,6 +3,7 @@
 pub mod constants;
 pub mod expression;
 pub mod number;
+pub mod performance;
 pub mod symbol;
 
 pub use constants::MathConstant;

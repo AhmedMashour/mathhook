@@ -3,6 +3,9 @@
 //! This crate provides Python bindings using PyO3, exposing the hybrid API
 //! for Python users with both Expression-centric and object-oriented interfaces.
 
+use mathhook_core::core::performance::{
+    get_performance_summary, set_binding_config, BindingContext, PerformanceMetrics,
+};
 use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
 use mathhook_parser::{MathLanguage, MathParser};
 use pyo3::prelude::*;
@@ -222,11 +225,35 @@ impl PyMathParser {
     }
 }
 
+/// Get performance monitoring information
+///
+/// Returns a human-readable summary of MathHook's current performance configuration
+/// and cache statistics for monitoring and debugging purposes.
+///
+/// # Examples
+///
+/// ```python
+/// import mathhook_python as mh
+///
+/// # Get performance summary
+/// summary = mh.get_performance_info()
+/// print(summary)
+/// ```
+#[pyfunction]
+fn get_performance_info() -> String {
+    get_performance_summary()
+}
+
 /// Python module
 #[pymodule]
 fn mathhook_python(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Configure MathHook for Python-specific optimizations
+    // This sets up GIL-aware performance settings globally
+    set_binding_config(BindingContext::Python);
+
     m.add_class::<PyExpression>()?;
     m.add_class::<PyMathSolver>()?;
     m.add_class::<PyMathParser>()?;
+    m.add_function(wrap_pyfunction!(get_performance_info, m)?)?;
     Ok(())
 }

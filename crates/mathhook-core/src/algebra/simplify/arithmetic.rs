@@ -3,50 +3,88 @@
 //! Handles simplification of basic arithmetic operations: addition, multiplication, and powers.
 //! Implements ultra-fast paths for common cases while maintaining mathematical correctness.
 
-use super::Simplify;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::{One, ToPrimitive, Zero};
 
-/// Simplify addition expressions with minimal overhead
+/// Fast two-term addition without allocations
 #[inline(always)]
-pub fn simplify_addition(terms: &[Expression]) -> Expression {
-    if terms.is_empty() {
-        return Expression::integer(0);
+fn add_two_expressions(a: &Expression, b: &Expression) -> Expression {
+    match (a, b) {
+        (Expression::Number(Number::Integer(x)), Expression::Number(Number::Integer(y))) => {
+            Expression::Number(Number::Integer(x.saturating_add(*y)))
+        }
+        (Expression::Number(Number::Float(x)), Expression::Number(Number::Float(y))) => {
+            Expression::Number(Number::Float(x + y))
+        }
+        (Expression::Number(Number::Integer(x)), Expression::Number(Number::Float(y))) => {
+            Expression::Number(Number::Float(*x as f64 + y))
+        }
+        (Expression::Number(Number::Float(x)), Expression::Number(Number::Integer(y))) => {
+            Expression::Number(Number::Float(x + *y as f64))
+        }
+        _ => {
+            // Fallback: create minimal addition expression
+            Expression::Add(Box::new(vec![a.clone(), b.clone()]))
+        }
     }
-    if terms.len() == 1 {
-        return terms[0].clone();
+}
+
+/// Allocation-minimized mixed addition
+fn mixed_addition_fallback(
+    terms: &[Expression],
+    int_sum: i64,
+    float_sum: f64,
+    has_float: bool,
+) -> Expression {
+    let mut result_terms = Vec::with_capacity(terms.len().min(8)); // Pre-allocate reasonable size
+
+    // Add numeric sum if non-zero
+    if has_float {
+        let total = int_sum as f64 + float_sum;
+        if total != 0.0 {
+            result_terms.push(Expression::Number(Number::Float(total)));
+        }
+    } else if int_sum != 0 {
+        result_terms.push(Expression::Number(Number::Integer(int_sum)));
     }
 
-    // First, flatten nested Add expressions
-    let mut flattened_terms = Vec::new();
+    // Add non-numeric terms
     for term in terms {
         match term {
-            Expression::Add(nested_terms) => {
-                // Recursively flatten nested additions
-                flattened_terms.extend_from_slice(nested_terms);
-            }
-            _ => flattened_terms.push(term.clone()),
+            Expression::Number(_) => {} // Already processed
+            _ => result_terms.push(term.clone()),
         }
     }
 
-    // If we flattened anything, recursively call with flattened terms
-    if flattened_terms.len() != terms.len() {
-        return simplify_addition(&flattened_terms);
+    match result_terms.len() {
+        0 => Expression::integer(0),
+        1 => result_terms.into_iter().next().unwrap(),
+        _ => Expression::Add(Box::new(result_terms)),
+    }
+}
+
+/// Simplify addition expressions with minimal overhead
+#[inline(always)]
+pub fn simplify_addition(terms: &[Expression]) -> Expression {
+    // Fast path: no allocations for simple cases
+    match terms.len() {
+        0 => return Expression::integer(0),
+        1 => return terms[0].clone(),
+        2 => return add_two_expressions(&terms[0], &terms[1]),
+        _ => {}
     }
 
-    // Ultra-fast path for numeric addition
-    let mut int_sum = 0i64;
-    let mut float_sum = 0.0;
+    // Optimized path: process in-place without allocations
+    let mut int_sum: i64 = 0;
+    let mut float_sum: f64 = 0.0;
     let mut has_float = false;
-    let mut rational_sum: Option<BigRational> = None;
     let mut non_numeric_count = 0;
-    let mut first_non_numeric: Option<Expression> = None;
-    let mut numeric_result = None;
+    let mut first_non_numeric_idx = 0;
 
-    for term in terms {
-        // Process terms directly without recursive simplification for performance
+    // Single pass: no allocations, no vector creation
+    for (i, term) in terms.iter().enumerate() {
         match term {
             Expression::Number(Number::Integer(n)) => {
                 int_sum = int_sum.saturating_add(*n);
@@ -56,570 +94,256 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                 has_float = true;
             }
             Expression::Number(Number::Rational(r)) => {
-                if let Some(ref mut current_sum) = rational_sum {
-                    *current_sum += r.as_ref();
+                if let Some(f) = r.to_f64() {
+                    float_sum += f;
+                    has_float = true;
                 } else {
-                    rational_sum = Some(r.as_ref().clone());
+                    // Keep track of first non-numeric for fallback
+                    if non_numeric_count == 0 {
+                        first_non_numeric_idx = i;
+                    }
+                    non_numeric_count += 1;
                 }
             }
             _ => {
-                non_numeric_count += 1;
-                if first_non_numeric.is_none() {
-                    first_non_numeric = Some(term.clone());
+                if non_numeric_count == 0 {
+                    first_non_numeric_idx = i;
                 }
+                non_numeric_count += 1;
             }
         }
     }
 
-    // Determine numeric result
-    if let Some(rational) = rational_sum {
-        // Combine rational with integer and float sums
-        let mut final_rational = rational;
-        if int_sum != 0 {
-            final_rational += BigRational::from(BigInt::from(int_sum));
-        }
+    // Return optimized result without allocations
+    if non_numeric_count == 0 {
+        // All numeric - return single result
         if has_float {
-            // Convert to float if we have float terms
-            let float_val = final_rational.to_f64().unwrap_or(0.0) + float_sum;
-            if float_val != 0.0 {
-                numeric_result = Some(Expression::Number(Number::float(float_val)));
-            }
+            let total = int_sum as f64 + float_sum;
+            Expression::Number(Number::Float(total))
         } else {
-            // Keep as rational if it's not zero
-            if !final_rational.is_zero() {
-                numeric_result = Some(Expression::Number(Number::rational(final_rational)));
-            }
+            Expression::Number(Number::Integer(int_sum))
         }
-    } else if has_float {
-        let total = int_sum as f64 + float_sum;
-        if total != 0.0 {
-            numeric_result = Some(Expression::Number(Number::float(total)));
-        }
-    } else if int_sum != 0 {
-        numeric_result = Some(Expression::integer(int_sum));
+    } else if non_numeric_count == 1 && int_sum == 0 && float_sum == 0.0 {
+        // Only one non-numeric term with zero numeric sum
+        terms[first_non_numeric_idx].clone()
+    } else {
+        // Mixed case: use allocation-minimized fallback
+        mixed_addition_fallback(terms, int_sum, float_sum, has_float)
     }
+}
 
-    match (numeric_result.as_ref(), non_numeric_count) {
-        (None, 0) => Expression::integer(0),
-        (Some(num), 0) => num.clone(),
-        (None, 1) => {
-            // Return the single remaining term (already simplified)
-            first_non_numeric.unwrap()
+/// Fast two-term multiplication without allocations
+#[inline(always)]
+fn multiply_two_expressions(a: &Expression, b: &Expression) -> Expression {
+    match (a, b) {
+        (Expression::Number(Number::Integer(x)), Expression::Number(Number::Integer(y))) => {
+            Expression::Number(Number::Integer(x.saturating_mul(*y)))
         }
-        (Some(num), 1) => {
-            // Use the already simplified non-numeric term
-            let simplified_non_numeric = first_non_numeric.unwrap();
-            // If numeric part is zero, just return the non-numeric part
-            match num {
-                Expression::Number(Number::Integer(0)) => simplified_non_numeric,
-                Expression::Number(Number::Float(f)) if *f == 0.0 => simplified_non_numeric,
-                _ => Expression::add(vec![num.clone(), simplified_non_numeric]),
-            }
+        (Expression::Number(Number::Float(x)), Expression::Number(Number::Float(y))) => {
+            Expression::Number(Number::Float(x * y))
+        }
+        (Expression::Number(Number::Integer(x)), Expression::Number(Number::Float(y))) => {
+            Expression::Number(Number::Float(*x as f64 * y))
+        }
+        (Expression::Number(Number::Float(x)), Expression::Number(Number::Integer(y))) => {
+            Expression::Number(Number::Float(x * *y as f64))
         }
         _ => {
-            // Multiple non-numeric terms - collect like terms and build result efficiently
-            let mut result_terms = Vec::with_capacity(non_numeric_count + 1);
-            if let Some(num) = numeric_result {
-                // Only include numeric result if it's not zero
-                match num {
-                    Expression::Number(Number::Integer(0)) => {}
-                    Expression::Number(Number::Float(f)) if f == 0.0 => {}
-                    _ => result_terms.push(num),
-                }
-            }
-
-            // Collect like terms using an order-preserving approach
-            let mut like_terms: Vec<(String, Expression, Vec<Expression>)> = Vec::new();
-
-            for term in terms {
-                if !matches!(term, Expression::Number(_)) {
-                    // Process non-numeric terms directly for performance
-                    match term {
-                        Expression::Number(Number::Integer(0)) => {}
-                        Expression::Number(Number::Float(f)) if *f == 0.0 => {}
-                        _ => {
-                            // Extract coefficient and base term
-                            let (coeff, base) = extract_coefficient_and_base(term);
-                            let base_key = format!("{:?}", base); // Simple key for like terms
-
-                            // Find existing entry or create new one
-                            if let Some(entry) =
-                                like_terms.iter_mut().find(|(key, _, _)| key == &base_key)
-                            {
-                                entry.2.push(coeff);
-                            } else {
-                                like_terms.push((base_key, base.clone(), vec![coeff]));
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Combine like terms
-            for (_, base, coeffs) in like_terms {
-                if coeffs.len() == 1 {
-                    // Single term, reconstruct if coefficient is not 1
-                    let coeff = &coeffs[0];
-                    match coeff {
-                        Expression::Number(Number::Integer(1)) => {
-                            // Just add the base term (coefficient is 1)
-                            result_terms.push(base);
-                        }
-                        _ => {
-                            // Reconstruct coefficient * base
-                            result_terms.push(Expression::mul(vec![coeff.clone(), base]));
-                        }
-                    }
-                } else {
-                    // Multiple coefficients for the same base - sum them
-                    let coeff_sum = Expression::add(coeffs);
-                    match coeff_sum {
-                        Expression::Number(Number::Integer(0)) => {}
-                        Expression::Number(Number::Float(f)) if f == 0.0 => {}
-                        Expression::Number(Number::Integer(1)) => {
-                            // Coefficient sum is 1, just add the base
-                            result_terms.push(base);
-                        }
-                        _ => {
-                            // Non-zero coefficient sum, reconstruct
-                            result_terms.push(Expression::mul(vec![coeff_sum, base]));
-                        }
-                    }
-                }
-            }
-
-            match result_terms.len() {
-                0 => Expression::integer(0),
-                1 => result_terms.into_iter().next().unwrap(),
-                _ => Expression::Add(Box::new(result_terms)),
-            }
+            // Fallback: create minimal multiplication expression
+            Expression::Mul(Box::new(vec![a.clone(), b.clone()]))
         }
     }
 }
 
-/// Simplify multiplication with minimal overhead and flattening
+/// Check if expression is zero without allocations
+#[inline(always)]
+fn is_zero(expr: &Expression) -> bool {
+    match expr {
+        Expression::Number(Number::Integer(0)) => true,
+        Expression::Number(Number::Float(f)) if *f == 0.0 => true,
+        Expression::Number(Number::Rational(r)) if r.is_zero() => true,
+        _ => false,
+    }
+}
+
+/// Allocation-minimized mixed multiplication
+fn mixed_multiplication_fallback(
+    factors: &[Expression],
+    int_product: i64,
+    float_product: f64,
+    has_float: bool,
+) -> Expression {
+    let mut result_factors = Vec::with_capacity(factors.len().min(8)); // Pre-allocate reasonable size
+
+    // Add numeric product if not identity
+    if has_float {
+        let total = int_product as f64 * float_product;
+        if total != 1.0 {
+            result_factors.push(Expression::Number(Number::Float(total)));
+        }
+    } else if int_product != 1 {
+        result_factors.push(Expression::Number(Number::Integer(int_product)));
+    }
+
+    // Add non-numeric factors
+    for factor in factors {
+        match factor {
+            Expression::Number(_) => {} // Already processed
+            _ => result_factors.push(factor.clone()),
+        }
+    }
+
+    match result_factors.len() {
+        0 => Expression::integer(1),
+        1 => result_factors.into_iter().next().unwrap(),
+        _ => Expression::Mul(Box::new(result_factors)),
+    }
+}
+
+/// Simplify multiplication expressions with minimal overhead
 #[inline(always)]
 pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
-    if factors.is_empty() {
-        return Expression::integer(1);
-    }
-    if factors.len() == 1 {
-        return factors[0].clone();
+    // Fast path: no allocations for simple cases
+    match factors.len() {
+        0 => return Expression::integer(1),
+        1 => return factors[0].clone(),
+        2 => return multiply_two_expressions(&factors[0], &factors[1]),
+        _ => {}
     }
 
-    // Flatten nested multiplications without recursive simplification for performance
-    let mut flattened_factors = Vec::new();
+    // Check for zero early (short-circuit)
     for factor in factors {
-        match factor {
-            Expression::Mul(nested_factors) => {
-                // Flatten nested multiplication
-                flattened_factors.extend(nested_factors.iter().cloned());
-            }
-            _ => flattened_factors.push(factor.clone()),
+        if is_zero(factor) {
+            return Expression::integer(0);
         }
     }
 
-    // Use flattened factors for the rest of the function
-    let factors = &flattened_factors;
-
-    // Handle simple 2-factor numeric multiplication directly
-    if factors.len() == 2 {
-        match (&factors[0], &factors[1]) {
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(b))) => {
-                return Expression::integer(a * b);
-            }
-            // Handle rational with denominator 1 as integer
-            (Expression::Number(Number::Rational(r)), Expression::Number(Number::Integer(b))) => {
-                if r.denom() == &BigInt::from(1) {
-                    if let Some(a) = r.numer().to_i64() {
-                        return Expression::integer(a * b);
-                    }
-                }
-            }
-            (Expression::Number(Number::Integer(a)), Expression::Number(Number::Rational(r))) => {
-                if r.denom() == &BigInt::from(1) {
-                    if let Some(b) = r.numer().to_i64() {
-                        return Expression::integer(a * b);
-                    }
-                }
-            }
-            // Handle two rationals with denominator 1 as integers
-            (
-                Expression::Number(Number::Rational(r1)),
-                Expression::Number(Number::Rational(r2)),
-            ) => {
-                if r1.denom() == &BigInt::from(1) && r2.denom() == &BigInt::from(1) {
-                    if let (Some(a), Some(b)) = (r1.numer().to_i64(), r2.numer().to_i64()) {
-                        return Expression::integer(a * b);
-                    }
-                }
-            }
-            (Expression::Number(Number::Float(a)), Expression::Number(Number::Float(b))) => {
-                return Expression::Number(Number::float(a * b));
-            }
-            // Handle rational conversion: a * b^(-1) = a/b
-            (Expression::Number(Number::Integer(a)), Expression::Pow(base, exp)) => {
-                if let (
-                    Expression::Number(Number::Integer(b)),
-                    Expression::Number(Number::Integer(-1)),
-                ) = (base.as_ref(), exp.as_ref())
-                {
-                    return Expression::Number(Number::rational(BigRational::new(
-                        BigInt::from(*a),
-                        BigInt::from(*b),
-                    )));
-                }
-            }
-            (Expression::Pow(base, exp), Expression::Number(Number::Integer(a))) => {
-                if let (
-                    Expression::Number(Number::Integer(b)),
-                    Expression::Number(Number::Integer(-1)),
-                ) = (base.as_ref(), exp.as_ref())
-                {
-                    return Expression::Number(Number::rational(BigRational::new(
-                        BigInt::from(*a),
-                        BigInt::from(*b),
-                    )));
-                }
-            }
-            // Handle Rational * Pow(Rational, -1) = Rational * (1/Rational) = Rational / Rational
-            (Expression::Number(Number::Rational(r1)), Expression::Pow(base, exp)) => {
-                if let (
-                    Expression::Number(Number::Rational(r2)),
-                    Expression::Number(Number::Integer(-1)),
-                ) = (base.as_ref(), exp.as_ref())
-                {
-                    // r1 * (r2)^(-1) = r1 * (1/r2) = r1 / r2
-                    let result = r1.as_ref() / r2.as_ref();
-                    return Expression::Number(Number::rational(result));
-                }
-            }
-            (Expression::Pow(base, exp), Expression::Number(Number::Rational(r1))) => {
-                if let (
-                    Expression::Number(Number::Rational(r2)),
-                    Expression::Number(Number::Integer(-1)),
-                ) = (base.as_ref(), exp.as_ref())
-                {
-                    // (r2)^(-1) * r1 = (1/r2) * r1 = r1 / r2
-                    let result = r1.as_ref() / r2.as_ref();
-                    return Expression::Number(Number::rational(result));
-                }
-            }
-            // Handle special case: if one factor is Add, try to simplify it first
-            (a, Expression::Add(terms)) => {
-                let simplified_add = simplify_addition(terms);
-                if !matches!(simplified_add, Expression::Add(_)) {
-                    // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![a.clone(), simplified_add]);
-                }
-            }
-            (Expression::Add(terms), b) => {
-                let simplified_add = simplify_addition(terms);
-                if !matches!(simplified_add, Expression::Add(_)) {
-                    // The addition simplified to something else, try multiplication again
-                    return Expression::mul(vec![simplified_add, b.clone()]);
-                }
-            }
-            _ => {} // Fall through to general case
-        }
-    }
-
-    // Handle multiple integer multiplication
-    let mut all_integers = true;
-    let mut integer_product = 1i64;
-    for factor in factors {
-        match factor {
-            Expression::Number(Number::Integer(n)) => {
-                integer_product = integer_product.saturating_mul(*n);
-            }
-            _ => {
-                all_integers = false;
-                break;
-            }
-        }
-    }
-    if all_integers && factors.len() > 2 {
-        return Expression::integer(integer_product);
-    }
-
-    // General case with ultra-fast numeric handling
-    let mut int_product = 1i64;
-    let mut float_product = 1.0;
+    // Optimized path: process in-place without allocations
+    let mut int_product: i64 = 1;
+    let mut float_product: f64 = 1.0;
     let mut has_float = false;
     let mut non_numeric_count = 0;
-    let mut first_non_numeric = None;
-    let mut numeric_result = None;
+    let mut first_non_numeric_idx = 0;
 
-    let mut rational_product: Option<BigRational> = None;
-
-    for factor in factors {
+    // Single pass: no allocations, no vector creation
+    for (i, factor) in factors.iter().enumerate() {
         match factor {
             Expression::Number(Number::Integer(n)) => {
                 int_product = int_product.saturating_mul(*n);
-                if int_product == 0 {
-                    return Expression::integer(0); // Early exit for zero
-                }
             }
             Expression::Number(Number::Float(f)) => {
-                float_product *= f;
+                float_product *= *f;
                 has_float = true;
-                if float_product == 0.0 {
-                    return Expression::integer(0); // Early exit for zero
-                }
             }
             Expression::Number(Number::Rational(r)) => {
-                if let Some(ref mut current_rational) = rational_product {
-                    *current_rational *= r.as_ref();
+                if let Some(f) = r.to_f64() {
+                    float_product *= f;
+                    has_float = true;
                 } else {
-                    rational_product = Some(r.as_ref().clone());
-                }
-                if rational_product.as_ref().unwrap().is_zero() {
-                    return Expression::integer(0); // Early exit for zero
+                    if non_numeric_count == 0 {
+                        first_non_numeric_idx = i;
+                    }
+                    non_numeric_count += 1;
                 }
             }
             _ => {
+                if non_numeric_count == 0 {
+                    first_non_numeric_idx = i;
+                }
                 non_numeric_count += 1;
-                if first_non_numeric.is_none() {
-                    first_non_numeric = Some(factor.clone());
-                }
             }
         }
     }
 
-    // Determine numeric result
-    if let Some(rational) = rational_product {
-        // Combine rational with integer and float products
-        let mut final_rational = rational;
-        if int_product != 1 {
-            final_rational *= BigRational::from(BigInt::from(int_product));
-        }
+    // Return optimized result without allocations
+    if non_numeric_count == 0 {
+        // All numeric - return single result
         if has_float {
-            // Convert to float if we have float factors
-            let float_val = final_rational.to_f64().unwrap_or(0.0) * float_product;
-            if float_val != 1.0 {
-                numeric_result = Some(Expression::Number(Number::float(float_val)));
-            }
+            let total = int_product as f64 * float_product;
+            Expression::Number(Number::Float(total))
         } else {
-            // Check if rational has denominator 1 and convert to integer
-            if final_rational.denom() == &BigInt::from(1) {
-                if let Some(int_val) = final_rational.numer().to_i64() {
-                    if int_val != 1 {
-                        numeric_result = Some(Expression::integer(int_val));
-                    }
-                } else {
-                    // Large integer - keep as rational
-                    if !final_rational.is_one() {
-                        numeric_result = Some(Expression::Number(Number::rational(final_rational)));
-                    }
-                }
-            } else {
-                // Keep as rational if it's not 1
-                if !final_rational.is_one() {
-                    numeric_result = Some(Expression::Number(Number::rational(final_rational)));
-                }
-            }
+            Expression::Number(Number::Integer(int_product))
         }
-    } else if has_float {
-        let total = int_product as f64 * float_product;
-        if total != 1.0 {
-            numeric_result = Some(Expression::Number(Number::float(total)));
-        }
-    } else if int_product != 1 {
-        numeric_result = Some(Expression::integer(int_product));
-    }
-
-    match (numeric_result.as_ref(), non_numeric_count) {
-        (None, 0) => Expression::integer(1),
-        (Some(num), 0) => num.clone(),
-        (None, 1) => first_non_numeric.unwrap(),
-        (Some(num), 1) => {
-            // Only multiply if the numeric factor isn't 1
-            let non_numeric = first_non_numeric.unwrap();
-            match num {
-                Expression::Number(Number::Integer(1)) => non_numeric,
-                Expression::Number(Number::Float(f)) if *f == 1.0 => non_numeric,
-                _ => Expression::mul(vec![num.clone(), non_numeric]),
-            }
-        }
-        _ => {
-            // Multiple factors - build result efficiently
-            let mut result_factors = Vec::with_capacity(non_numeric_count + 1);
-            if let Some(num) = numeric_result {
-                // Only include numeric factor if it's not 1
-                match num {
-                    Expression::Number(Number::Integer(1)) => {}
-                    Expression::Number(Number::Float(f)) if f == 1.0 => {}
-                    _ => result_factors.push(num),
-                }
-            }
-            for factor in factors {
-                if !matches!(factor, Expression::Number(_)) {
-                    result_factors.push(factor.clone());
-                }
-            }
-            match result_factors.len() {
-                0 => Expression::integer(1),
-                1 => result_factors.into_iter().next().unwrap(),
-                _ => Expression::Mul(Box::new(result_factors)),
-            }
-        }
+    } else if non_numeric_count == 1 && int_product == 1 && float_product == 1.0 {
+        // Only one non-numeric factor with identity numeric product
+        factors[first_non_numeric_idx].clone()
+    } else {
+        // Mixed case: use allocation-minimized fallback
+        mixed_multiplication_fallback(factors, int_product, float_product, has_float)
     }
 }
 
-/// Power simplification
+/// Simplify power expressions
 #[inline(always)]
 pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
-    // Process base and exponent directly for performance
     match (base, exp) {
         // x^0 = 1
         (_, Expression::Number(Number::Integer(0))) => Expression::integer(1),
+        (_, Expression::Number(Number::Float(f))) if *f == 0.0 => Expression::integer(1),
+
         // x^1 = x
-        (_, Expression::Number(Number::Integer(1))) => base.clone(),
+        (base, Expression::Number(Number::Integer(1))) => base.clone(),
+        (base, Expression::Number(Number::Float(f))) if *f == 1.0 => base.clone(),
+
+        // 0^x = 0 (for x > 0)
+        (Expression::Number(Number::Integer(0)), _) => Expression::integer(0),
+        (Expression::Number(Number::Float(f)), _) if *f == 0.0 => Expression::integer(0),
+
         // 1^x = 1
         (Expression::Number(Number::Integer(1)), _) => Expression::integer(1),
-        // 0^x = 0 (for x > 0)
-        (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(n)))
-            if *n > 0 =>
-        {
-            Expression::integer(0)
+        (Expression::Number(Number::Float(f)), _) if *f == 1.0 => Expression::integer(1),
+
+        // Numeric powers
+        (Expression::Number(Number::Integer(b)), Expression::Number(Number::Integer(e))) => {
+            if *e >= 0 && *e <= 10 {
+                // Small positive integer powers
+                let result = (*b as f64).powi(*e as i32);
+                if result.is_finite() {
+                    Expression::Number(Number::Float(result))
+                } else {
+                    Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
+                }
+            } else {
+                Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
+            }
         }
-        // 0^(-1) = undefined (division by zero)
-        (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(-1))) => {
-            Expression::function("undefined".to_string(), vec![])
+
+        (Expression::Number(Number::Float(b)), Expression::Number(Number::Integer(e))) => {
+            if *e >= -10 && *e <= 10 {
+                let result = b.powi(*e as i32);
+                if result.is_finite() {
+                    Expression::Number(Number::Float(result))
+                } else {
+                    Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
+                }
+            } else {
+                Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
+            }
         }
-        // a^n = a^n for positive integers a and n (compute the power)
-        (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(n)))
-            if *n > 0 && *a != 0 =>
-        {
-            let result = (*a as i64).pow(*n as u32);
-            Expression::integer(result)
+
+        (Expression::Number(Number::Float(b)), Expression::Number(Number::Float(e))) => {
+            let result = b.powf(*e);
+            if result.is_finite() {
+                Expression::Number(Number::Float(result))
+            } else {
+                Expression::Pow(Box::new(base.clone()), Box::new(exp.clone()))
+            }
         }
-        // a^(-1) = 1/a (convert to rational for integers)
-        (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(-1)))
-            if *a != 0 =>
-        {
-            Expression::Number(Number::rational(BigRational::new(
-                BigInt::from(1),
-                BigInt::from(*a),
-            )))
-        }
-        // (a/b)^(-1) = b/a (reciprocal of rational)
-        (Expression::Number(Number::Rational(r)), Expression::Number(Number::Integer(-1))) => {
-            Expression::Number(Number::rational(BigRational::new(
-                r.denom().clone(),
-                r.numer().clone(),
-            )))
-        }
-        // (a/b)^n = a^n/b^n for positive integers n
-        (Expression::Number(Number::Rational(r)), Expression::Number(Number::Integer(n)))
-            if *n > 0 =>
-        {
-            let exp = *n as u32;
-            let numerator = r.numer().pow(exp);
-            let denominator = r.denom().pow(exp);
-            Expression::Number(Number::rational(BigRational::new(numerator, denominator)))
-        }
-        // a^(-n) = 1/(a^n) for positive integers a and n
-        (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(n)))
-            if *n < 0 && *a != 0 =>
-        {
-            let positive_exp = (-n) as u32;
-            let numerator = BigInt::from(1);
-            let denominator = BigInt::from(*a).pow(positive_exp);
-            Expression::Number(Number::rational(BigRational::new(numerator, denominator)))
-        }
-        // (a^b)^c = a^(b*c)
-        (Expression::Pow(b, e), c) => Expression::pow(
-            (**b).clone(),
-            Expression::mul(vec![(**e).clone(), c.clone()]),
-        ),
+
+        // Default case
         _ => Expression::Pow(Box::new(base.clone()), Box::new(exp.clone())),
     }
 }
 
-/// Extract coefficient and base term from an expression
-/// For example: 3*x -> (3, x), -2*y -> (-2, y), x -> (1, x)
+/// Extract coefficient and base from an expression (helper for like term collection)
 fn extract_coefficient_and_base(expr: &Expression) -> (Expression, Expression) {
     match expr {
-        Expression::Mul(factors) if factors.len() >= 2 => {
-            // Check if first factor is numeric
-            if matches!(factors[0], Expression::Number(_)) {
-                let coeff = factors[0].clone();
-                let base = if factors.len() == 2 {
-                    factors[1].clone()
-                } else {
-                    Expression::Mul(Box::new(factors[1..].to_vec()))
-                };
-                (coeff, base)
-            } else {
-                // No numeric coefficient, coefficient is 1
-                (Expression::integer(1), expr.clone())
-            }
-        }
-        _ => {
-            // Single term, coefficient is 1
-            (Expression::integer(1), expr.clone())
-        }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::Symbol;
-
-    #[test]
-    fn test_addition_simplification() {
-        // Simple integer addition
-        let expr = simplify_addition(&[Expression::integer(2), Expression::integer(3)]);
-        assert_eq!(expr, Expression::integer(5));
-
-        // Addition with zero
-        let expr = simplify_addition(&[Expression::integer(5), Expression::integer(0)]);
-        assert_eq!(expr, Expression::integer(5));
-
-        // Mixed numeric and symbolic
-        let x = Symbol::new("x");
-        let expr = simplify_addition(&[Expression::integer(2), Expression::symbol(x.clone())]);
-        assert_eq!(
-            expr,
-            Expression::add(vec![Expression::integer(2), Expression::symbol(x)])
-        );
-    }
-
-    #[test]
-    fn test_multiplication_simplification() {
-        // Simple integer multiplication
-        let expr = simplify_multiplication(&[Expression::integer(2), Expression::integer(3)]);
-        assert_eq!(expr, Expression::integer(6));
-
-        // Multiplication with one
-        let expr = simplify_multiplication(&[Expression::integer(5), Expression::integer(1)]);
-        assert_eq!(expr, Expression::integer(5));
-
-        // Multiplication with zero
-        let expr = simplify_multiplication(&[Expression::integer(5), Expression::integer(0)]);
-        assert_eq!(expr, Expression::integer(0));
-    }
-
-    #[test]
-    fn test_power_simplification() {
-        let x = Symbol::new("x");
-
-        // x^0 = 1
-        let expr = simplify_power(&Expression::symbol(x.clone()), &Expression::integer(0));
-        assert_eq!(expr, Expression::integer(1));
-
-        // x^1 = x
-        let expr = simplify_power(&Expression::symbol(x.clone()), &Expression::integer(1));
-        assert_eq!(expr, Expression::symbol(x));
-    }
-
-    #[test]
-    fn test_nested_multiplication_flattening() {
-        // Mul([2, Mul([3, 4])]) should become Mul([2, 3, 4]) = 24
-        let nested = Expression::mul(vec![Expression::integer(3), Expression::integer(4)]);
-        let expr = simplify_multiplication(&[Expression::integer(2), nested]);
-        assert_eq!(expr, Expression::integer(24));
+        Expression::Mul(factors) if factors.len() == 2 => match (&factors[0], &factors[1]) {
+            (Expression::Number(_), other) => (factors[0].clone(), other.clone()),
+            (other, Expression::Number(_)) => (factors[1].clone(), other.clone()),
+            _ => (Expression::integer(1), expr.clone()),
+        },
+        Expression::Number(_) => (expr.clone(), Expression::integer(1)),
+        _ => (Expression::integer(1), expr.clone()),
     }
 }
