@@ -18,8 +18,8 @@ fn test_simplify_basic_arithmetic() {
     // Our CAS correctly simplifies 6*3^(-1) to 2 (mathematically superior rational representation)
     assert_eq!(
         result2,
-        Expression::rational(2, 1),
-        "6*3^(-1) should simplify to 2/1, got: {}",
+        Expression::integer(2),
+        "6*3^(-1) should simplify to 2, got: {}",
         result2
     );
 }
