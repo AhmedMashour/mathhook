@@ -1,0 +1,8 @@
+# Cargo configuration for MathHook bindings
+# This ensures proper linking for Python and Node.js bindings on macOS
+
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-args=-Wl,-undefined,dynamic_lookup"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-args=-Wl,-undefined,dynamic_lookup"]
