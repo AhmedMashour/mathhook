@@ -1,1 +1,3 @@
 /target
+/crates/mathhook-python/.venv/*
+/crates/mathhook-node/examples/node_modules/*

@@ -406,6 +406,7 @@ dependencies = [
  "criterion",
  "mathhook-core",
  "mathhook-parser",
+ "num-bigint",
  "num-rational",
  "num-traits",
  "rayon",
