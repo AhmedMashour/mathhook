@@ -4,8 +4,8 @@
 //! Provides comprehensive matrix arithmetic including addition, multiplication,
 //! determinant calculation, inverse, and eigenvalue computation.
 
-use crate::simplify::Simplify;
 use crate::core::Expression;
+use crate::simplify::Simplify;
 
 /// Trait for matrix operations
 ///
@@ -659,10 +659,10 @@ impl Expression {
     ///     vec![Expression::integer(1), Expression::integer(2)],
     ///     vec![Expression::integer(3), Expression::integer(4)]
     /// ]);
-    /// let simplified = matrix.simplify(); // or matrix.simplify_matrix() (same result)
+    /// let simplified = matrix.simplify(); // or Expression::simplify_matrix(&matrix) (same result)
     /// ```
-    pub fn simplify_matrix(&self) -> Expression {
-        match self {
+    pub fn simplify_matrix(expr: &Expression) -> Expression {
+        match expr {
             Expression::Matrix(matrix) => {
                 // Simplify each element in the matrix
                 let simplified_rows: Vec<Vec<Expression>> = matrix
@@ -727,7 +727,7 @@ impl Expression {
 
                 Expression::matrix(simplified_rows)
             }
-            _ => self.clone(),
+            _ => expr.clone(),
         }
     }
 }
@@ -858,7 +858,7 @@ mod tests {
             ],
         ]);
 
-        let simplified = matrix.simplify_matrix();
+        let simplified = Expression::simplify_matrix(&matrix);
 
         // Should simplify to [[3, 3], [0, 4]]
         if let Expression::Matrix(result_matrix) = simplified {

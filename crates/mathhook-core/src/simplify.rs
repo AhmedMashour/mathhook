@@ -32,8 +32,8 @@ impl Simplify for Expression {
             Expression::Constant(constant) => constants::simplify_constant(constant),
 
             // Delegate complex and matrix operations to specialized modules
-            Expression::Complex(_) => Self::simplify_complex(self),
-            Expression::Matrix(_) => Self::simplify_matrix(self),
+            Expression::Complex(_) => Expression::simplify_complex(self),
+            Expression::Matrix(_) => Expression::simplify_matrix(self),
 
             // Handle remaining expression types with proper simplification
             Expression::Relation(relation) => {
