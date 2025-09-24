@@ -162,6 +162,9 @@ impl Expression {
                 .iter()
                 .all(|row| row.iter().all(|e| e.is_valid_expression())),
             Expression::Constant(_) => true,
+            Expression::IdentityMatrix(identity_data) => {
+                identity_data.size > 0 && identity_data.size <= 1000
+            }
             Expression::Relation(relation_data) => {
                 relation_data.left.is_valid_expression()
                     && relation_data.right.is_valid_expression()

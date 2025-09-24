@@ -384,12 +384,12 @@ impl Expression {
             // New expression types - implement later
             Expression::Complex(_) => true,
             Expression::Matrix(_) => false,
+            Expression::IdentityMatrix(_) => false,
             Expression::Constant(_) => true,
             Expression::Relation(_) => false,
             Expression::Piecewise(_) => false,
             Expression::Set(_) => false,
             Expression::Interval(_) => true,
-            // New calculus types - implement later
             Expression::Calculus(_) => false,
         }
     }

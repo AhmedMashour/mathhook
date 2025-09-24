@@ -37,6 +37,7 @@ pub enum Expression {
     Set(Box<Vec<Expression>>),
     Complex(Box<ComplexData>),
     Matrix(Box<MatrixData>),
+    IdentityMatrix(Box<IdentityMatrixData>),
     Relation(Box<RelationData>),
     Piecewise(Box<PiecewiseData>),
     Interval(Box<IntervalData>),

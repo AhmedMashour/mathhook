@@ -565,33 +565,6 @@ impl MatrixOperations for Expression {
 }
 
 impl Expression {
-    /// Create an identity matrix of given size
-    ///
-    /// Creates an n×n identity matrix with 1s on the diagonal and 0s elsewhere.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let identity = Expression::identity_matrix(3);
-    /// ```
-    pub fn identity_matrix(size: usize) -> Expression {
-        let mut elements = Vec::new();
-        for i in 0..size {
-            let mut row = Vec::new();
-            for j in 0..size {
-                if i == j {
-                    row.push(Expression::integer(1));
-                } else {
-                    row.push(Expression::integer(0));
-                }
-            }
-            elements.push(row);
-        }
-        Expression::matrix(elements)
-    }
-
     /// Create a zero matrix of given dimensions
     ///
     /// Creates an m×n matrix filled with zeros.
@@ -648,6 +621,50 @@ impl Expression {
         }
 
         Expression::matrix(elements)
+    }
+
+    /// Convert IdentityMatrix to regular Matrix when needed
+    /// Example:
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let identity = Expression::identity_matrix(3);
+    /// let matrix = identity.as_matrix();
+    /// ```
+    pub fn as_matrix(&self) -> Expression {
+        match self {
+            Expression::IdentityMatrix(data) => {
+                let size = data.size;
+                let rows: Vec<Vec<Expression>> = (0..size)
+                    .map(|i| {
+                        (0..size)
+                            .map(|j| {
+                                if i == j {
+                                    Expression::integer(1)
+                                } else {
+                                    Expression::integer(0)
+                                }
+                            })
+                            .collect()
+                    })
+                    .collect();
+                Expression::matrix(rows)
+            }
+            Expression::Matrix(_) => self.clone(),
+            _ => panic!("Not a matrix expression"),
+        }
+    }
+
+    /// Check if expression is any kind of matrix
+    /// Example:
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let identity = Expression::identity_matrix(3);
+    /// assert!(identity.is_matrix());
+    /// ```
+    pub fn is_matrix(&self) -> bool {
+        matches!(self, Expression::Matrix(_) | Expression::IdentityMatrix(_))
     }
 
     /// Simplify a matrix expression
@@ -720,8 +737,7 @@ impl Expression {
                     });
 
                     if is_identity {
-                        // Could return a special identity matrix representation
-                        // For now, just return the simplified matrix
+                        return Expression::identity_matrix(simplified_rows.len());
                     }
                 }
 

@@ -1,8 +1,8 @@
 //! Expression constructor methods
 
 use super::{
-    CalculusData, ComplexData, Expression, IntervalData, MatrixData, PiecewiseData, RelationData,
-    RelationType,
+    CalculusData, ComplexData, Expression, IdentityMatrixData, IntervalData, MatrixData,
+    PiecewiseData, RelationData, RelationType,
 };
 use crate::core::{MathConstant, Number, Symbol};
 use num_bigint::BigInt;
@@ -247,6 +247,19 @@ impl Expression {
     /// ```
     pub fn matrix(rows: Vec<Vec<Expression>>) -> Self {
         Self::Matrix(Box::new(MatrixData { rows }))
+    }
+
+    /// Create an identity matrix expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let identity = Expression::identity_matrix(3);
+    /// ```
+    pub fn identity_matrix(size: usize) -> Self {
+        Self::IdentityMatrix(Box::new(IdentityMatrixData { size }))
     }
 
     /// Create a complex number expression

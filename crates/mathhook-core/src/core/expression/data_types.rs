@@ -17,6 +17,12 @@ pub struct MatrixData {
     pub rows: Vec<Vec<Expression>>,
 }
 
+/// Identity matrix data
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct IdentityMatrixData {
+    pub size: usize,
+}
+
 /// Relation data (boxed for memory optimization)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RelationData {
