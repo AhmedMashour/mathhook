@@ -384,7 +384,8 @@ impl Expression {
             // New expression types - implement later
             Expression::Complex(_) => true,
             Expression::Matrix(_) => false,
-            Expression::IdentityMatrix(_) => false,
+            // All matrix types are handled by the Matrix variant
+            // Expression::IdentityMatrix(_) => false, // Removed - now unified
             Expression::Constant(_) => true,
             Expression::Relation(_) => false,
             Expression::Piecewise(_) => false,

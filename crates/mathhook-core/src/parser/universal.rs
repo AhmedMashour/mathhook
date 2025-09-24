@@ -700,17 +700,19 @@ impl UniversalParser {
                 self.expression_to_latex(&complex_data.real, context),
                 self.expression_to_latex(&complex_data.imag, context)
             ),
-            Expression::Matrix(matrix_data) => {
-                let row_strs: Vec<String> = matrix_data
-                    .rows
-                    .iter()
-                    .map(|row| {
-                        row.iter()
-                            .map(|elem| self.expression_to_latex(elem, context))
-                            .collect::<Vec<_>>()
-                            .join(" & ")
-                    })
-                    .collect();
+            Expression::Matrix(matrix) => {
+                let (rows, cols) = matrix.dimensions();
+                let mut row_strs = Vec::with_capacity(rows);
+
+                for i in 0..rows {
+                    let mut col_strs = Vec::with_capacity(cols);
+                    for j in 0..cols {
+                        let elem = matrix.get_element(i, j);
+                        col_strs.push(self.expression_to_latex(&elem, context));
+                    }
+                    row_strs.push(col_strs.join(" & "));
+                }
+
                 format!(
                     "\\begin{{pmatrix}} {} \\end{{pmatrix}}",
                     row_strs.join(" \\\\ ")

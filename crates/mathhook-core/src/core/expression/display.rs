@@ -36,15 +36,18 @@ impl fmt::Display for Expression {
                 write!(f, "{{{}}}", elem_strs.join(", "))
             }
             Expression::Complex(data) => write!(f, "{} + {}i", data.real, data.imag),
-            Expression::Matrix(data) => {
-                let row_strs: Vec<String> = data
-                    .rows
-                    .iter()
-                    .map(|row| {
-                        let col_strs: Vec<String> = row.iter().map(|e| format!("{}", e)).collect();
-                        format!("[{}]", col_strs.join(", "))
-                    })
-                    .collect();
+            Expression::Matrix(matrix) => {
+                let (rows, cols) = matrix.dimensions();
+                let mut row_strs = Vec::with_capacity(rows);
+
+                for i in 0..rows {
+                    let mut col_strs = Vec::with_capacity(cols);
+                    for j in 0..cols {
+                        col_strs.push(format!("{}", matrix.get_element(i, j)));
+                    }
+                    row_strs.push(format!("[{}]", col_strs.join(", ")));
+                }
+
                 write!(f, "[{}]", row_strs.join(", "))
             }
             Expression::Relation(data) => {

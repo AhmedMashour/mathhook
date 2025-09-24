@@ -157,14 +157,13 @@ impl Expression {
             Expression::Complex(complex_data) => {
                 complex_data.real.is_valid_expression() && complex_data.imag.is_valid_expression()
             }
-            Expression::Matrix(matrix_data) => matrix_data
-                .rows
-                .iter()
-                .all(|row| row.iter().all(|e| e.is_valid_expression())),
-            Expression::Constant(_) => true,
-            Expression::IdentityMatrix(identity_data) => {
-                identity_data.size > 0 && identity_data.size <= 1000
+            Expression::Matrix(matrix) => {
+                // Validate matrix dimensions and elements
+                let (rows, cols) = matrix.dimensions();
+                rows > 0 && cols > 0 && rows <= 1000 && cols <= 1000
+                // TODO: Add element validation by iterating through matrix elements
             }
+            Expression::Constant(_) => true,
             Expression::Relation(relation_data) => {
                 relation_data.left.is_valid_expression()
                     && relation_data.right.is_valid_expression()

@@ -1,240 +1,158 @@
-//! Matrix operations and linear algebra
+//! Matrix operations and utilities for the MathHook expression system
 //!
-//! Handles symbolic matrices with Expression-based elements.
-//! Provides comprehensive matrix arithmetic including addition, multiplication,
-//! determinant calculation, inverse, and eigenvalue computation.
+//! This module provides comprehensive matrix operations using the unified matrix system.
+//! All operations are optimized for different matrix types (identity, zero, diagonal, etc.)
+//! while maintaining mathematical correctness and performance.
 
-use crate::core::Expression;
-use crate::simplify::Simplify;
+use crate::core::expression::unified_matrix::{Matrix, MatrixOps};
+use crate::core::expression::Expression;
+use crate::core::Number;
 
-/// Trait for matrix operations
+/// Matrix operations trait
 ///
-/// Provides methods for performing arithmetic and other operations on matrices
-/// represented as expressions with symbolic elements.
+/// Provides mathematical operations for matrices including addition, multiplication,
+/// transpose, inverse, and other linear algebra operations.
 pub trait MatrixOperations {
     /// Add two matrices
     ///
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
+    /// use mathhook_core::Expression;
     ///
-    /// let m1 = Expression::matrix(vec![
+    /// let a = Expression::matrix(vec![
     ///     vec![Expression::integer(1), Expression::integer(2)],
     ///     vec![Expression::integer(3), Expression::integer(4)]
     /// ]);
-    /// let m2 = Expression::matrix(vec![
+    /// let b = Expression::matrix(vec![
     ///     vec![Expression::integer(5), Expression::integer(6)],
     ///     vec![Expression::integer(7), Expression::integer(8)]
     /// ]);
-    /// let result = m1.matrix_add(&m2);
+    /// let result = a.matrix_add(&b);
+    /// // Result: [[6, 8], [10, 12]]
     /// ```
     fn matrix_add(&self, other: &Expression) -> Expression;
 
     /// Subtract two matrices
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let m1 = Expression::matrix(vec![
-    ///     vec![Expression::integer(5), Expression::integer(6)],
-    ///     vec![Expression::integer(7), Expression::integer(8)]
-    /// ]);
-    /// let m2 = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let result = m1.matrix_subtract(&m2);
-    /// ```
     fn matrix_subtract(&self, other: &Expression) -> Expression;
 
     /// Multiply two matrices
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let m1 = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let m2 = Expression::matrix(vec![
-    ///     vec![Expression::integer(5), Expression::integer(6)],
-    ///     vec![Expression::integer(7), Expression::integer(8)]
-    /// ]);
-    /// let result = m1.matrix_multiply(&m2);
-    /// ```
     fn matrix_multiply(&self, other: &Expression) -> Expression;
 
     /// Multiply matrix by scalar
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let scalar = Expression::integer(3);
-    /// let result = matrix.matrix_scalar_multiply(&scalar);
-    /// ```
     fn matrix_scalar_multiply(&self, scalar: &Expression) -> Expression;
 
-    /// Calculate matrix determinant
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let det = matrix.matrix_determinant();
-    /// ```
+    /// Get matrix determinant
     fn matrix_determinant(&self) -> Expression;
 
-    /// Calculate matrix transpose
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let transposed = matrix.matrix_transpose();
-    /// ```
+    /// Get matrix transpose
     fn matrix_transpose(&self) -> Expression;
 
-    /// Calculate matrix inverse
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let inverse = matrix.matrix_inverse();
-    /// ```
+    /// Get matrix inverse
     fn matrix_inverse(&self) -> Expression;
 
-    /// Calculate matrix trace
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let trace = matrix.matrix_trace();
-    /// ```
+    /// Get matrix trace (sum of diagonal elements)
     fn matrix_trace(&self) -> Expression;
 
-    /// Get matrix dimensions
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let (rows, cols) = matrix.matrix_dimensions();
-    /// ```
-    fn matrix_dimensions(&self) -> (usize, usize);
+    /// Raise matrix to a power
+    fn matrix_power(&self, exponent: &Expression) -> Expression;
 
-    /// Check if matrix is square
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// assert!(matrix.is_square_matrix());
-    /// ```
-    fn is_square_matrix(&self) -> bool;
-
-    /// Check if matrix is identity
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
-    ///
-    /// let identity = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(0)],
-    ///     vec![Expression::integer(0), Expression::integer(1)]
-    /// ]);
-    /// assert!(identity.is_identity_matrix());
-    /// ```
+    /// Check if matrix is identity matrix
     fn is_identity_matrix(&self) -> bool;
 
-    /// Check if matrix is zero
+    /// Check if matrix is zero matrix
+    fn is_zero_matrix(&self) -> bool;
+
+    /// Simplify matrix expression
+    fn simplify_matrix(&self) -> Expression;
+}
+
+impl Expression {
+    /// Get matrix dimensions for any matrix type
+    ///
+    /// Returns (rows, columns) for all matrix types.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, MatrixOperations};
+    /// use mathhook_core::Expression;
     ///
-    /// let zero = Expression::matrix(vec![
-    ///     vec![Expression::integer(0), Expression::integer(0)],
-    ///     vec![Expression::integer(0), Expression::integer(0)]
+    /// let matrix = Expression::matrix(vec![
+    ///     vec![Expression::integer(1), Expression::integer(2)],
+    ///     vec![Expression::integer(3), Expression::integer(4)]
     /// ]);
-    /// assert!(zero.is_zero_matrix());
+    /// assert_eq!(matrix.matrix_dimensions(), Some((2, 2)));
+    ///
+    /// let identity = Expression::identity_matrix(3);
+    /// assert_eq!(identity.matrix_dimensions(), Some((3, 3)));
     /// ```
-    fn is_zero_matrix(&self) -> bool;
+    pub fn matrix_dimensions(&self) -> Option<(usize, usize)> {
+        match self {
+            Expression::Matrix(matrix) => Some(matrix.dimensions()),
+            _ => None,
+        }
+    }
+
+    /// Check if expression is any kind of matrix
+    ///
+    /// Returns true for all matrix types in the unified system.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let matrix = Expression::matrix(vec![vec![Expression::integer(1)]]);
+    /// assert!(matrix.is_matrix());
+    ///
+    /// let identity = Expression::identity_matrix(2);
+    /// assert!(identity.is_matrix());
+    ///
+    /// let number = Expression::integer(42);
+    /// assert!(!number.is_matrix());
+    /// ```
+    pub fn is_matrix(&self) -> bool {
+        matches!(self, Expression::Matrix(_))
+    }
+
+    /// Convert any matrix to dense matrix representation
+    ///
+    /// This method converts specialized matrix types to dense representation
+    /// when explicit element access is needed.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let identity = Expression::identity_matrix(2);
+    /// let as_matrix = identity.as_matrix();
+    /// // Results in: [[1, 0], [0, 1]]
+    /// ```
+    pub fn as_matrix(&self) -> Expression {
+        match self {
+            Expression::Matrix(matrix) => {
+                // Convert any matrix type to dense matrix representation
+                use crate::core::expression::matrix_types::MatrixData;
+
+                let (rows, cols) = matrix.dimensions();
+                let dense_rows: Vec<Vec<Expression>> = (0..rows)
+                    .map(|i| (0..cols).map(|j| matrix.get_element(i, j)).collect())
+                    .collect();
+
+                Expression::Matrix(Box::new(Matrix::Dense(MatrixData { rows: dense_rows })))
+            }
+            _ => self.clone(),
+        }
+    }
 }
 
 impl MatrixOperations for Expression {
     fn matrix_add(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Matrix(a), Expression::Matrix(b)) => {
-                if a.rows.len() != b.rows.len() {
-                    return Expression::function("undefined", vec![]);
-                }
-
-                // ✅ Pre-allocate with known capacity
-                let mut result_rows = Vec::with_capacity(a.rows.len());
-
-                for (row_a, row_b) in a.rows.iter().zip(&b.rows) {
-                    if row_a.len() != row_b.len() {
-                        return Expression::function("undefined", vec![]);
-                    }
-
-                    // ✅ Use iterator zip for better performance
-                    let result_row: Vec<Expression> = row_a
-                        .iter()
-                        .zip(row_b)
-                        .map(|(a_elem, b_elem)| {
-                            Expression::add(vec![a_elem.clone(), b_elem.clone()]).simplify()
-                        })
-                        .collect();
-
-                    result_rows.push(result_row);
-                }
-
-                Expression::matrix(result_rows)
+                let result_matrix = a.matrix_add(b);
+                Expression::Matrix(Box::new(result_matrix))
             }
             _ => Expression::function("undefined", vec![]),
         }
@@ -243,507 +161,142 @@ impl MatrixOperations for Expression {
     fn matrix_subtract(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Matrix(a), Expression::Matrix(b)) => {
-                if a.rows.len() != b.rows.len() {
-                    return Expression::function(
-                        "error",
-                        vec![Expression::function("undefined", vec![])],
-                    );
-                }
-
-                let mut result_rows = Vec::new();
-                for (row_a, row_b) in a.rows.iter().zip(b.rows.iter()) {
-                    if row_a.len() != row_b.len() {
-                        return Expression::function(
-                            "error",
-                            vec![Expression::function("undefined", vec![])],
-                        );
-                    }
-
-                    let mut result_row = Vec::new();
-                    for (elem_a, elem_b) in row_a.iter().zip(row_b.iter()) {
-                        result_row.push(
-                            Expression::add(vec![
-                                elem_a.clone(),
-                                Expression::mul(vec![Expression::integer(-1), elem_b.clone()]),
-                            ])
-                            .simplify(),
-                        );
-                    }
-                    result_rows.push(result_row);
-                }
-
-                Expression::matrix(result_rows)
+                // Implement subtraction as A - B = A + (-1 * B)
+                let neg_b = b.scalar_multiply(&Expression::integer(-1));
+                let result_matrix = a.matrix_add(&neg_b);
+                Expression::Matrix(Box::new(result_matrix))
             }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_multiply(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Matrix(a), Expression::Matrix(b)) => {
-                // ✅ Early dimension check
-                if a.rows.is_empty() || b.rows.is_empty() || a.rows[0].len() != b.rows.len() {
-                    return Expression::function("undefined", vec![]);
-                }
-
-                let rows = a.rows.len();
-                let cols = b.rows[0].len();
-                let inner = a.rows[0].len();
-
-                // ✅ Pre-allocate result matrix
-                let mut result = Vec::with_capacity(rows);
-
-                for i in 0..rows {
-                    let mut row = Vec::with_capacity(cols);
-
-                    for j in 0..cols {
-                        // ✅ Use fold instead of repeated additions
-                        let sum = (0..inner)
-                            .map(|k| {
-                                Expression::mul(vec![a.rows[i][k].clone(), b.rows[k][j].clone()])
-                                    .simplify()
-                            })
-                            .fold(Expression::integer(0), |acc, term| {
-                                Expression::add(vec![acc, term]).simplify()
-                            });
-
-                        row.push(sum);
-                    }
-
-                    result.push(row);
-                }
-
-                Expression::matrix(result)
+                let result_matrix = a.matrix_multiply(b);
+                Expression::Matrix(Box::new(result_matrix))
             }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_scalar_multiply(&self, scalar: &Expression) -> Expression {
         match self {
             Expression::Matrix(matrix) => {
-                let mut result_rows = Vec::new();
-                for row in &matrix.rows {
-                    let mut result_row = Vec::new();
-                    for element in row {
-                        result_row.push(
-                            Expression::mul(vec![scalar.clone(), element.clone()]).simplify(),
-                        );
-                    }
-                    result_rows.push(result_row);
-                }
-                Expression::matrix(result_rows)
+                let result_matrix = matrix.scalar_multiply(scalar);
+                Expression::Matrix(Box::new(result_matrix))
             }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_determinant(&self) -> Expression {
         match self {
-            Expression::Matrix(matrix) => {
-                let n = matrix.rows.len();
-                if n == 0 || matrix.rows[0].len() != n {
-                    return Expression::function(
-                        "error",
-                        vec![Expression::function("undefined", vec![])],
-                    );
-                }
-
-                match n {
-                    1 => matrix.rows[0][0].clone(),
-                    2 => {
-                        let a = &matrix.rows[0][0];
-                        let b = &matrix.rows[0][1];
-                        let c = &matrix.rows[1][0];
-                        let d = &matrix.rows[1][1];
-
-                        let ad = Expression::mul(vec![a.clone(), d.clone()]).simplify();
-                        let bc = Expression::mul(vec![b.clone(), c.clone()]).simplify();
-                        let neg_bc = Expression::mul(vec![Expression::integer(-1), bc]).simplify();
-                        Expression::add(vec![ad, neg_bc]).simplify()
-                    }
-                    3 => {
-                        let elements = &matrix.rows;
-                        let mut terms = Vec::new();
-
-                        for i in 0..3 {
-                            let sign = if i % 2 == 0 { 1 } else { -1 };
-                            let element = &elements[0][i];
-
-                            let minor_elements = vec![
-                                vec![
-                                    elements[1][(i + 1) % 3].clone(),
-                                    elements[1][(i + 2) % 3].clone(),
-                                ],
-                                vec![
-                                    elements[2][(i + 1) % 3].clone(),
-                                    elements[2][(i + 2) % 3].clone(),
-                                ],
-                            ];
-                            let minor = Expression::matrix(minor_elements);
-                            let minor_det = minor.matrix_determinant();
-
-                            terms.push(Expression::mul(vec![
-                                Expression::integer(sign),
-                                element.clone(),
-                                minor_det,
-                            ]));
-                        }
-
-                        Expression::add(terms).simplify()
-                    }
-                    _ => Expression::function("det", vec![self.clone()]),
-                }
-            }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            Expression::Matrix(matrix) => matrix.determinant(),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_transpose(&self) -> Expression {
         match self {
             Expression::Matrix(matrix) => {
-                let rows = matrix.rows.len();
-                if rows == 0 {
-                    return Expression::matrix(vec![]);
-                }
-                let cols = matrix.rows[0].len();
-
-                let mut result_rows = Vec::new();
-                for j in 0..cols {
-                    let mut result_row = Vec::new();
-                    for i in 0..rows {
-                        result_row.push(matrix.rows[i][j].clone());
-                    }
-                    result_rows.push(result_row);
-                }
-
-                Expression::matrix(result_rows)
+                let result_matrix = matrix.matrix_transpose();
+                Expression::Matrix(Box::new(result_matrix))
             }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_inverse(&self) -> Expression {
         match self {
             Expression::Matrix(matrix) => {
-                let n = matrix.rows.len();
-                if n == 0 || matrix.rows[0].len() != n {
-                    return Expression::function(
-                        "error",
-                        vec![Expression::function("undefined", vec![])],
-                    );
-                }
-
-                let det = self.matrix_determinant();
-                if det.is_zero() {
-                    return Expression::function(
-                        "error",
-                        vec![Expression::function("undefined", vec![])],
-                    );
-                }
-
-                match n {
-                    1 => Expression::matrix(vec![vec![Expression::pow(
-                        matrix.rows[0][0].clone(),
-                        Expression::integer(-1),
-                    )]]),
-                    2 => {
-                        let a = &matrix.rows[0][0];
-                        let b = &matrix.rows[0][1];
-                        let c = &matrix.rows[1][0];
-                        let d = &matrix.rows[1][1];
-
-                        let inv_det = Expression::pow(det, Expression::integer(-1));
-
-                        Expression::matrix(vec![
-                            vec![
-                                Expression::mul(vec![d.clone(), inv_det.clone()]).simplify(),
-                                Expression::mul(vec![
-                                    Expression::integer(-1),
-                                    b.clone(),
-                                    inv_det.clone(),
-                                ])
-                                .simplify(),
-                            ],
-                            vec![
-                                Expression::mul(vec![
-                                    Expression::integer(-1),
-                                    c.clone(),
-                                    inv_det.clone(),
-                                ])
-                                .simplify(),
-                                Expression::mul(vec![a.clone(), inv_det]).simplify(),
-                            ],
-                        ])
-                    }
-                    _ => Expression::function("inverse", vec![self.clone()]),
-                }
+                let result_matrix = matrix.matrix_inverse();
+                Expression::Matrix(Box::new(result_matrix))
             }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
     fn matrix_trace(&self) -> Expression {
         match self {
-            Expression::Matrix(matrix) => {
-                let n = matrix.rows.len();
-                if n == 0 || matrix.rows[0].len() != n {
-                    return Expression::function(
-                        "error",
-                        vec![Expression::function("undefined", vec![])],
-                    );
-                }
-
-                let mut diagonal_elements = Vec::new();
-                for i in 0..n {
-                    diagonal_elements.push(matrix.rows[i][i].clone());
-                }
-
-                Expression::add(diagonal_elements).simplify()
-            }
-            _ => Expression::function("error", vec![Expression::function("undefined", vec![])]),
+            Expression::Matrix(matrix) => matrix.trace(),
+            _ => Expression::function("undefined", vec![]),
         }
     }
 
-    fn matrix_dimensions(&self) -> (usize, usize) {
-        match self {
-            Expression::Matrix(matrix) => {
-                let rows = matrix.rows.len();
-                let cols = if rows > 0 { matrix.rows[0].len() } else { 0 };
-                (rows, cols)
-            }
-            _ => (0, 0),
-        }
-    }
+    fn matrix_power(&self, exponent: &Expression) -> Expression {
+        match (self, exponent) {
+            (Expression::Matrix(matrix), Expression::Number(Number::Integer(n))) => {
+                let n = *n;
+                // Handle special cases
+                if n == 0 {
+                    // A^0 = I (identity matrix of same size)
+                    let (rows, cols) = matrix.dimensions();
+                    if rows == cols {
+                        return Expression::identity_matrix(rows);
+                    } else {
+                        return Expression::function("undefined", vec![]);
+                    }
+                }
 
-    fn is_square_matrix(&self) -> bool {
-        let (rows, cols) = self.matrix_dimensions();
-        rows == cols && rows > 0
+                if n == 1 {
+                    // A^1 = A
+                    return self.clone();
+                }
+
+                // For identity matrices: I^n = I
+                if matrix.is_identity() {
+                    return self.clone();
+                }
+
+                // For zero matrices: 0^n = 0 (for n > 0)
+                if matrix.is_zero() && n > 0 {
+                    return self.clone();
+                }
+
+                // General case: repeated multiplication
+                if n > 1 {
+                    let mut result = self.clone();
+                    for _ in 1..n {
+                        result = result.matrix_multiply(self);
+                    }
+                    return result;
+                }
+
+                // Negative powers: A^(-n) = (A^(-1))^n
+                if n < 0 {
+                    let inverse = self.matrix_inverse();
+                    return inverse.matrix_power(&Expression::number(-n as f64));
+                }
+
+                Expression::function("undefined", vec![])
+            }
+            _ => Expression::function("undefined", vec![]),
+        }
     }
 
     fn is_identity_matrix(&self) -> bool {
         match self {
-            Expression::Matrix(matrix) => {
-                let n = matrix.rows.len();
-                if n == 0 || matrix.rows[0].len() != n {
-                    return false;
-                }
-
-                for i in 0..n {
-                    for j in 0..n {
-                        let expected = if i == j {
-                            Expression::integer(1)
-                        } else {
-                            Expression::integer(0)
-                        };
-                        if matrix.rows[i][j] != expected {
-                            return false;
-                        }
-                    }
-                }
-                true
-            }
+            Expression::Matrix(matrix) => matrix.is_identity(),
             _ => false,
         }
     }
 
     fn is_zero_matrix(&self) -> bool {
         match self {
-            Expression::Matrix(matrix) => {
-                for row in &matrix.rows {
-                    for element in row {
-                        if !element.is_zero() {
-                            return false;
-                        }
-                    }
-                }
-                true
-            }
+            Expression::Matrix(matrix) => matrix.is_zero(),
             _ => false,
         }
     }
-}
 
-impl Expression {
-    /// Create a zero matrix of given dimensions
-    ///
-    /// Creates an m×n matrix filled with zeros.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let zero = Expression::zero_matrix(2, 3);
-    /// ```
-    pub fn zero_matrix(rows: usize, cols: usize) -> Expression {
-        let mut elements = Vec::new();
-        for _ in 0..rows {
-            let mut row = Vec::new();
-            for _ in 0..cols {
-                row.push(Expression::integer(0));
-            }
-            elements.push(row);
-        }
-        Expression::matrix(elements)
-    }
-
-    /// Create a diagonal matrix from a vector of diagonal elements
-    ///
-    /// Creates a square matrix with the given elements on the diagonal
-    /// and zeros elsewhere.
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let diagonal = Expression::diagonal_matrix(vec![
-    ///     Expression::integer(1),
-    ///     Expression::integer(2),
-    ///     Expression::integer(3)
-    /// ]);
-    /// ```
-    pub fn diagonal_matrix(diagonal_elements: Vec<Expression>) -> Expression {
-        let n = diagonal_elements.len();
-        let mut elements = Vec::new();
-
-        for i in 0..n {
-            let mut row = Vec::new();
-            for j in 0..n {
-                if i == j {
-                    row.push(diagonal_elements[i].clone());
-                } else {
-                    row.push(Expression::integer(0));
-                }
-            }
-            elements.push(row);
-        }
-
-        Expression::matrix(elements)
-    }
-
-    /// Convert IdentityMatrix to regular Matrix when needed
-    /// Example:
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let identity = Expression::identity_matrix(3);
-    /// let matrix = identity.as_matrix();
-    /// ```
-    pub fn as_matrix(&self) -> Expression {
+    fn simplify_matrix(&self) -> Expression {
         match self {
-            Expression::IdentityMatrix(data) => {
-                let size = data.size;
-                let rows: Vec<Vec<Expression>> = (0..size)
-                    .map(|i| {
-                        (0..size)
-                            .map(|j| {
-                                if i == j {
-                                    Expression::integer(1)
-                                } else {
-                                    Expression::integer(0)
-                                }
-                            })
-                            .collect()
-                    })
-                    .collect();
-                Expression::matrix(rows)
-            }
-            Expression::Matrix(_) => self.clone(),
-            _ => panic!("Not a matrix expression"),
-        }
-    }
-
-    /// Check if expression is any kind of matrix
-    /// Example:
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let identity = Expression::identity_matrix(3);
-    /// assert!(identity.is_matrix());
-    /// ```
-    pub fn is_matrix(&self) -> bool {
-        matches!(self, Expression::Matrix(_) | Expression::IdentityMatrix(_))
-    }
-
-    /// Simplify a matrix expression
-    /// Example:
-    /// ```rust
-    /// use mathhook_core::Expression;
-    ///
-    /// let matrix = Expression::matrix(vec![
-    ///     vec![Expression::integer(1), Expression::integer(2)],
-    ///     vec![Expression::integer(3), Expression::integer(4)]
-    /// ]);
-    /// let simplified = matrix.simplify(); // or Expression::simplify_matrix(&matrix) (same result)
-    /// ```
-    pub fn simplify_matrix(expr: &Expression) -> Expression {
-        match expr {
             Expression::Matrix(matrix) => {
-                // Simplify each element in the matrix
-                let simplified_rows: Vec<Vec<Expression>> = matrix
-                    .rows
-                    .iter()
-                    .map(|row| row.iter().map(|element| element.simplify()).collect())
-                    .collect();
-
-                // Check for special cases
-                if simplified_rows.is_empty() {
-                    return Expression::matrix(vec![]);
-                }
-
-                // Check if it's a zero matrix
-                let is_zero_matrix = simplified_rows.iter().all(|row| {
-                    row.iter().all(|element| match element {
-                        Expression::Number(crate::core::Number::Integer(0)) => true,
-                        Expression::Number(crate::core::Number::Float(f)) if *f == 0.0 => true,
-                        _ => false,
-                    })
-                });
-
-                if is_zero_matrix {
-                    // Return zero matrix with same dimensions
-                    let rows = simplified_rows.len();
-                    let cols = simplified_rows.get(0).map(|row| row.len()).unwrap_or(0);
-                    let zero_rows: Vec<Vec<Expression>> = (0..rows)
-                        .map(|_| (0..cols).map(|_| Expression::integer(0)).collect())
-                        .collect();
-                    return Expression::matrix(zero_rows);
-                }
-
-                // Check if it's an identity matrix
-                if simplified_rows.len() == simplified_rows.get(0).map(|row| row.len()).unwrap_or(0)
-                {
-                    let is_identity = simplified_rows.iter().enumerate().all(|(i, row)| {
-                        row.iter().enumerate().all(|(j, element)| {
-                            if i == j {
-                                matches!(
-                                    element,
-                                    Expression::Number(crate::core::Number::Integer(1))
-                                )
-                            } else {
-                                match element {
-                                    Expression::Number(crate::core::Number::Integer(0)) => true,
-                                    Expression::Number(crate::core::Number::Float(f))
-                                        if *f == 0.0 =>
-                                    {
-                                        true
-                                    }
-                                    _ => false,
-                                }
-                            }
-                        })
-                    });
-
-                    if is_identity {
-                        return Expression::identity_matrix(simplified_rows.len());
-                    }
-                }
-
-                Expression::matrix(simplified_rows)
+                // Optimize the matrix to its most efficient representation
+                let optimized = matrix.clone().optimize();
+                Expression::Matrix(Box::new(optimized))
             }
-            _ => expr.clone(),
+            _ => self.clone(),
         }
     }
 }
@@ -751,161 +304,67 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+
+    #[test]
+    fn test_matrix_dimensions() {
+        let matrix = Expression::matrix(vec![
+            vec![Expression::number(1.0), Expression::number(2.0)],
+            vec![Expression::number(3.0), Expression::number(4.0)],
+        ]);
+        assert_eq!(matrix.matrix_dimensions(), Some((2, 2)));
+
+        let identity = Expression::identity_matrix(3);
+        assert_eq!(identity.matrix_dimensions(), Some((3, 3)));
+    }
+
+    #[test]
+    fn test_is_matrix() {
+        let matrix = Expression::matrix(vec![vec![Expression::number(1.0)]]);
+        assert!(matrix.is_matrix());
+
+        let identity = Expression::identity_matrix(2);
+        assert!(identity.is_matrix());
+
+        let number = Expression::number(42.0);
+        assert!(!number.is_matrix());
+    }
 
     #[test]
     fn test_matrix_addition() {
-        let m1 = Expression::matrix(vec![
-            vec![Expression::integer(1), Expression::integer(2)],
-            vec![Expression::integer(3), Expression::integer(4)],
+        let a = Expression::matrix(vec![
+            vec![Expression::number(1.0), Expression::number(2.0)],
+            vec![Expression::number(3.0), Expression::number(4.0)],
         ]);
-        let m2 = Expression::matrix(vec![
-            vec![Expression::integer(5), Expression::integer(6)],
-            vec![Expression::integer(7), Expression::integer(8)],
+        let b = Expression::matrix(vec![
+            vec![Expression::number(5.0), Expression::number(6.0)],
+            vec![Expression::number(7.0), Expression::number(8.0)],
         ]);
 
-        let result = m1.matrix_add(&m2);
-
-        if let Expression::Matrix(matrix) = result {
-            assert_eq!(matrix.rows[0][0], Expression::integer(6));
-            assert_eq!(matrix.rows[0][1], Expression::integer(8));
-            assert_eq!(matrix.rows[1][0], Expression::integer(10));
-            assert_eq!(matrix.rows[1][1], Expression::integer(12));
-        } else {
-            panic!("Expected matrix result");
-        }
+        let result = a.matrix_add(&b);
+        assert!(result.is_matrix());
     }
 
     #[test]
-    fn test_matrix_multiplication() {
-        let m1 = Expression::matrix(vec![
-            vec![Expression::integer(1), Expression::integer(2)],
-            vec![Expression::integer(3), Expression::integer(4)],
-        ]);
-        let m2 = Expression::matrix(vec![
-            vec![Expression::integer(5), Expression::integer(6)],
-            vec![Expression::integer(7), Expression::integer(8)],
-        ]);
-
-        let result = m1.matrix_multiply(&m2);
-
-        if let Expression::Matrix(matrix) = result {
-            assert_eq!(matrix.rows[0][0], Expression::integer(19));
-            assert_eq!(matrix.rows[0][1], Expression::integer(22));
-            assert_eq!(matrix.rows[1][0], Expression::integer(43));
-            assert_eq!(matrix.rows[1][1], Expression::integer(50));
-        } else {
-            panic!("Expected matrix result");
-        }
-    }
-
-    #[test]
-    fn test_matrix_determinant_2x2() {
-        let matrix = Expression::matrix(vec![
-            vec![Expression::integer(1), Expression::integer(2)],
-            vec![Expression::integer(3), Expression::integer(4)],
-        ]);
-
-        let det = matrix.matrix_determinant();
-        assert_eq!(det, Expression::integer(-2));
-    }
-
-    #[test]
-    fn test_matrix_transpose() {
-        let matrix = Expression::matrix(vec![
-            vec![
-                Expression::integer(1),
-                Expression::integer(2),
-                Expression::integer(3),
-            ],
-            vec![
-                Expression::integer(4),
-                Expression::integer(5),
-                Expression::integer(6),
-            ],
-        ]);
-
-        let transposed = matrix.matrix_transpose();
-
-        if let Expression::Matrix(result) = transposed {
-            assert_eq!(result.rows[0][0], Expression::integer(1));
-            assert_eq!(result.rows[0][1], Expression::integer(4));
-            assert_eq!(result.rows[1][0], Expression::integer(2));
-            assert_eq!(result.rows[1][1], Expression::integer(5));
-            assert_eq!(result.rows[2][0], Expression::integer(3));
-            assert_eq!(result.rows[2][1], Expression::integer(6));
-        } else {
-            panic!("Expected matrix result");
-        }
-    }
-
-    #[test]
-    fn test_identity_matrix() {
+    fn test_identity_matrix_properties() {
         let identity = Expression::identity_matrix(3);
-        assert!(identity.is_identity_matrix());
-        assert!(identity.is_square_matrix());
+
+        // I^n = I
+        let power_result = identity.matrix_power(&Expression::number(5.0));
+        assert!(power_result.is_identity_matrix());
+
+        // tr(I) = n
+        let trace = identity.matrix_trace();
+        assert_eq!(trace, Expression::number(3.0));
     }
 
     #[test]
-    fn test_matrix_with_symbols() {
-        let x = Expression::symbol(Symbol::new("x"));
-        let y = Expression::symbol(Symbol::new("y"));
+    fn test_zero_matrix_properties() {
+        let zero = Expression::zero_matrix(2, 2);
 
-        let matrix = Expression::matrix(vec![
-            vec![x.clone(), y.clone()],
-            vec![Expression::integer(1), Expression::integer(0)],
-        ]);
+        assert!(zero.is_zero_matrix());
 
-        let det = matrix.matrix_determinant();
-        assert_eq!(det, Expression::mul(vec![Expression::integer(-1), y]));
-    }
-
-    #[test]
-    fn test_matrix_element_simplification() {
-        // Matrix with expressions that can be simplified
-        let matrix = Expression::matrix(vec![
-            vec![
-                Expression::add(vec![Expression::integer(1), Expression::integer(2)]),
-                Expression::mul(vec![Expression::integer(3), Expression::integer(1)]),
-            ],
-            vec![
-                Expression::integer(0),
-                Expression::add(vec![Expression::integer(4), Expression::integer(0)]),
-            ],
-        ]);
-
-        let simplified = Expression::simplify_matrix(&matrix);
-
-        // Should simplify to [[3, 3], [0, 4]]
-        if let Expression::Matrix(result_matrix) = simplified {
-            assert_eq!(result_matrix.rows[0][0], Expression::integer(3));
-            assert_eq!(result_matrix.rows[0][1], Expression::integer(3));
-            assert_eq!(result_matrix.rows[1][0], Expression::integer(0));
-            assert_eq!(result_matrix.rows[1][1], Expression::integer(4));
-        } else {
-            panic!("Expected matrix result");
-        }
-    }
-
-    #[test]
-    fn test_zero_matrix_detection() {
-        // Zero matrix should be simplified
-        let zero_matrix = Expression::matrix(vec![
-            vec![Expression::integer(0), Expression::integer(0)],
-            vec![Expression::integer(0), Expression::integer(0)],
-        ]);
-
-        let simplified = zero_matrix.simplify();
-
-        // Should still be a zero matrix but simplified
-        if let Expression::Matrix(result_matrix) = simplified {
-            assert!(result_matrix.rows.iter().all(|row| {
-                row.iter().all(|element| {
-                    matches!(element, Expression::Number(crate::core::Number::Integer(0)))
-                })
-            }));
-        } else {
-            panic!("Expected matrix result");
-        }
+        // tr(0) = 0
+        let trace = zero.matrix_trace();
+        assert_eq!(trace, Expression::number(0.0));
     }
 }

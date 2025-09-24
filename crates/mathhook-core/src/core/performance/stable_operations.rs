@@ -435,7 +435,8 @@ impl StableMatrix {
 
         if !needs_simplification {
             // Matrix is already simplified
-            return Expression::Matrix(Box::new(matrix.clone()));
+            use crate::core::expression::unified_matrix::Matrix;
+            return Expression::Matrix(Box::new(Matrix::Dense(matrix.clone())));
         }
 
         // Process elements in-place to minimize allocations

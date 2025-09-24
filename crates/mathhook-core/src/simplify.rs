@@ -33,8 +33,9 @@ impl Simplify for Expression {
 
             // Delegate complex and matrix operations to specialized modules
             Expression::Complex(_) => Expression::simplify_complex(self),
-            Expression::Matrix(_) | Expression::IdentityMatrix(_) => {
-                Expression::simplify_matrix(self)
+            Expression::Matrix(_) => {
+                use crate::algebra::matrix::MatrixOperations;
+                self.simplify_matrix()
             }
 
             // Handle remaining expression types with proper simplification
