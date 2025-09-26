@@ -15,7 +15,22 @@ use std::collections::VecDeque;
 fn expression_order(a: &Expression, b: &Expression) -> Ordering {
     match (a, b) {
         // Numbers come first, ordered by value
-        (Expression::Number(_), Expression::Number(_)) => Ordering::Equal,
+        (Expression::Number(n1), Expression::Number(n2)) => {
+            // Convert to f64 for comparison (handles integers, floats, rationals)
+            let val1 = match n1 {
+                Number::Integer(i) => *i as f64,
+                Number::Float(f) => *f,
+                Number::Rational(r) => r.to_f64().unwrap_or(0.0),
+                _ => 0.0,
+            };
+            let val2 = match n2 {
+                Number::Integer(i) => *i as f64,
+                Number::Float(f) => *f,
+                Number::Rational(r) => r.to_f64().unwrap_or(0.0),
+                _ => 0.0,
+            };
+            val1.partial_cmp(&val2).unwrap_or(Ordering::Equal)
+        }
         (Expression::Number(_), _) => Ordering::Less,
         (_, Expression::Number(_)) => Ordering::Greater,
 
@@ -23,6 +38,28 @@ fn expression_order(a: &Expression, b: &Expression) -> Ordering {
         (Expression::Symbol(s1), Expression::Symbol(s2)) => s1.name().cmp(s2.name()),
         (Expression::Symbol(_), _) => Ordering::Less,
         (_, Expression::Symbol(_)) => Ordering::Greater,
+
+        // Add expressions ordered by their first term
+        (Expression::Add(terms1), Expression::Add(terms2)) => {
+            if let (Some(first1), Some(first2)) = (terms1.first(), terms2.first()) {
+                expression_order(first1, first2)
+            } else {
+                terms1.len().cmp(&terms2.len())
+            }
+        }
+        (Expression::Add(_), _) => Ordering::Greater,
+        (_, Expression::Add(_)) => Ordering::Less,
+
+        // Mul expressions ordered by their first factor
+        (Expression::Mul(factors1), Expression::Mul(factors2)) => {
+            if let (Some(first1), Some(first2)) = (factors1.first(), factors2.first()) {
+                expression_order(first1, first2)
+            } else {
+                factors1.len().cmp(&factors2.len())
+            }
+        }
+        (Expression::Mul(_), _) => Ordering::Greater,
+        (_, Expression::Mul(_)) => Ordering::Less,
 
         // For other expressions, use debug representation for consistent ordering
         _ => format!("{:?}", a).cmp(&format!("{:?}", b)),
@@ -507,7 +544,6 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
         _ => {
             // Multiple factors - build result efficiently
             let mut result_factors = Vec::with_capacity(non_numeric_count + 1);
-            result_factors.sort_by(expression_order);
             if let Some(num) = numeric_result {
                 // Only include numeric factor if it's not 1
                 match num {

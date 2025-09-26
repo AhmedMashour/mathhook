@@ -4,7 +4,7 @@
 //! Individual modules handle specific aspects following project guidelines.
 
 use crate::core::Expression;
-
+use crate::matrix::operations::MatrixOperations;
 mod arithmetic;
 mod constants;
 mod functions;
@@ -33,10 +33,7 @@ impl Simplify for Expression {
 
             // Delegate complex and matrix operations to specialized modules
             Expression::Complex(_) => Expression::simplify_complex(self),
-            Expression::Matrix(_) => {
-                use crate::algebra::matrix::MatrixOperations;
-                self.simplify_matrix()
-            }
+            Expression::Matrix(_) => self.simplify_matrix(),
 
             // Handle remaining expression types with proper simplification
             Expression::Relation(relation) => {

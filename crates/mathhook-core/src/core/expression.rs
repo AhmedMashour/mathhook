@@ -4,16 +4,15 @@ pub mod constructors;
 pub mod conversion;
 pub mod data_types;
 pub mod display;
-pub mod matrix_types;
 pub mod methods;
 pub mod operations;
 pub mod operators;
 pub mod parser_integration;
-pub mod unified_matrix;
 
 #[cfg(test)]
 pub mod parser_integration_test;
 
+pub use crate::matrix::unified::Matrix;
 pub use constructors::*;
 pub use data_types::*;
 
@@ -38,7 +37,7 @@ pub enum Expression {
     Constant(MathConstant),
     Set(Box<Vec<Expression>>),
     Complex(Box<ComplexData>),
-    Matrix(Box<unified_matrix::Matrix>),
+    Matrix(Box<Matrix>),
     Relation(Box<RelationData>),
     Piecewise(Box<PiecewiseData>),
     Interval(Box<IntervalData>),

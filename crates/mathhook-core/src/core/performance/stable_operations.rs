@@ -408,7 +408,7 @@ pub struct StableMatrix;
 
 impl StableMatrix {
     /// Process matrix without excessive allocations
-    pub fn process_stable(matrix: &crate::core::expression::MatrixData) -> Expression {
+    pub fn process_stable(matrix: &crate::matrix::types::MatrixData) -> Expression {
         let rows = &matrix.rows;
 
         // Early return for empty matrix
@@ -435,7 +435,7 @@ impl StableMatrix {
 
         if !needs_simplification {
             // Matrix is already simplified
-            use crate::core::expression::unified_matrix::Matrix;
+            use crate::matrix::unified::Matrix;
             return Expression::Matrix(Box::new(Matrix::Dense(matrix.clone())));
         }
 

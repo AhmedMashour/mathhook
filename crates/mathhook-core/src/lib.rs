@@ -7,14 +7,15 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+pub mod matrix;
 pub mod parser;
 pub mod simplify;
 pub mod solvers;
-
 // Re-export
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
+pub use matrix::*;
 pub use parser::*;
 pub use simplify::*;
 pub use solvers::*;

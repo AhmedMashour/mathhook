@@ -4,9 +4,6 @@ use super::Expression;
 use crate::core::Symbol;
 use serde::{Deserialize, Serialize};
 
-// Re-export matrix types from dedicated module
-pub use super::matrix_types::*;
-
 /// Complex number data (boxed for memory optimization)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ComplexData {

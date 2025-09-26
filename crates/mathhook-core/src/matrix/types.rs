@@ -4,7 +4,7 @@
 //! maximum memory efficiency and performance. Each special matrix type
 //! stores only the minimum required data.
 
-use super::Expression;
+use crate::core::Expression;
 use serde::{Deserialize, Serialize};
 
 /// Regular matrix data
@@ -174,4 +174,78 @@ impl PermutationMatrixData {
 
         seen.iter().all(|&x| x) // All positions must be covered
     }
+}
+
+/// Result of LU decomposition: A = LU or PA = LU
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LUDecomposition {
+    /// Lower triangular matrix L
+    pub l: super::unified::Matrix,
+    /// Upper triangular matrix U  
+    pub u: super::unified::Matrix,
+    /// Permutation matrix P (for partial pivoting)
+    pub p: Option<super::unified::Matrix>,
+}
+
+/// Result of QR decomposition: A = QR
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct QRDecomposition {
+    /// Orthogonal matrix Q
+    pub q: super::unified::Matrix,
+    /// Upper triangular matrix R
+    pub r: super::unified::Matrix,
+}
+
+/// Result of Singular Value Decomposition: A = UΣV^T
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SVDDecomposition {
+    /// Left singular vectors U
+    pub u: super::unified::Matrix,
+    /// Singular values (diagonal matrix Σ)
+    pub sigma: super::unified::Matrix,
+    /// Right singular vectors V^T
+    pub vt: super::unified::Matrix,
+}
+
+/// Result of Cholesky decomposition: A = LL^T
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CholeskyDecomposition {
+    /// Lower triangular matrix L
+    pub l: super::unified::Matrix,
+}
+
+/// Result of eigenvalue decomposition: A = PDP^(-1)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EigenDecomposition {
+    /// Eigenvalues (diagonal matrix D)
+    pub eigenvalues: Vec<Expression>,
+    /// Eigenvectors (columns of matrix P)
+    pub eigenvectors: super::unified::Matrix,
+}
+
+/// Complex eigenvalue (for matrices with complex eigenvalues)
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ComplexEigenvalue {
+    /// Real part
+    pub real: Expression,
+    /// Imaginary part
+    pub imaginary: Expression,
+}
+
+/// Result of complex eigenvalue decomposition
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ComplexEigenDecomposition {
+    /// Complex eigenvalues
+    pub eigenvalues: Vec<ComplexEigenvalue>,
+    /// Complex eigenvectors
+    pub eigenvectors: super::unified::Matrix,
+}
+
+/// Characteristic polynomial of a matrix
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CharacteristicPolynomial {
+    /// Coefficients of the polynomial (highest degree first)
+    pub coefficients: Vec<Expression>,
+    /// Variable symbol (usually λ or x)
+    pub variable: Expression,
 }

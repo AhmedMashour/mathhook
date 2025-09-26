@@ -1,13 +1,17 @@
 //! Expression constructor methods
 
 use super::{
-    CalculusData, ComplexData, Expression, IdentityMatrixData, IntervalData, MatrixData,
-    PiecewiseData, RelationData, RelationType,
+    CalculusData, ComplexData, Expression, IntervalData, PiecewiseData, RelationData, RelationType,
 };
 use crate::core::{MathConstant, Number, Symbol};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::ToPrimitive;
+
+use crate::matrix::types::{
+    DiagonalMatrixData, IdentityMatrixData, MatrixData, PermutationMatrixData, ScalarMatrixData,
+    SymmetricMatrixData, UpperTriangularMatrixData,
+};
 
 impl Expression {
     /// Create a number expression
@@ -500,88 +504,100 @@ impl Expression {
 
     // ========== MATRIX CONSTRUCTORS ==========
 
-    /// Create a regular matrix expression
+    /// Create a matrix expression from rows
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let matrix = Expression::matrix(vec![
+    ///     vec![Expression::integer(1), Expression::integer(2)],
+    ///     vec![Expression::integer(3), Expression::integer(4)]
+    /// ]);
+    /// ```
     pub fn matrix(rows: Vec<Vec<Expression>>) -> Self {
-        use crate::core::expression::matrix_types::MatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Dense(MatrixData { rows })))
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::dense(rows)))
     }
 
-    /// Create an identity matrix of given size
-    /// Memory efficient: O(1) storage vs O(n²) for regular matrix
+    /// Create an identity matrix expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let identity = Expression::identity_matrix(3);
+    /// assert!(identity.is_identity_matrix());
+    /// ```
     pub fn identity_matrix(size: usize) -> Self {
-        use crate::core::expression::matrix_types::IdentityMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Identity(IdentityMatrixData { size })))
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::identity(size)))
     }
 
-    /// Create a zero matrix of given dimensions
-    /// Memory efficient: O(1) storage vs O(n*m) for regular matrix
+    /// Create a zero matrix expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let zero = Expression::zero_matrix(2, 3);
+    /// assert!(zero.is_zero_matrix());
+    /// ```
     pub fn zero_matrix(rows: usize, cols: usize) -> Self {
-        use crate::core::expression::matrix_types::ZeroMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Zero(ZeroMatrixData { rows, cols })))
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::zero(rows, cols)))
     }
 
-    /// Create a diagonal matrix from diagonal elements
-    /// Memory efficient: O(n) storage vs O(n²) for regular matrix
+    /// Create a diagonal matrix expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let diag = Expression::diagonal_matrix(vec![
+    ///     Expression::integer(1),
+    ///     Expression::integer(2),
+    ///     Expression::integer(3)
+    /// ]);
+    /// ```
     pub fn diagonal_matrix(diagonal_elements: Vec<Expression>) -> Self {
-        use crate::core::expression::matrix_types::DiagonalMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Diagonal(DiagonalMatrixData {
-            diagonal_elements,
-        })))
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::diagonal(diagonal_elements)))
     }
 
-    /// Create a scalar matrix (diagonal with equal elements)
-    /// Memory efficient: O(1) storage vs O(n²) for regular matrix
+    /// Create a scalar matrix expression (c*I)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let scalar = Expression::scalar_matrix(3, Expression::integer(5));
+    /// // Creates 5*I (5 times the 3x3 identity matrix)
+    /// ```
     pub fn scalar_matrix(size: usize, scalar_value: Expression) -> Self {
-        use crate::core::expression::matrix_types::ScalarMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Scalar(ScalarMatrixData {
-            size,
-            scalar_value,
-        })))
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::scalar(size, scalar_value)))
     }
 
-    /// Create an upper triangular matrix
-    /// Memory efficient: ~50% storage vs regular matrix
-    pub fn upper_triangular_matrix(size: usize, elements: Vec<Expression>) -> Self {
-        use crate::core::expression::matrix_types::UpperTriangularMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::UpperTriangular(
-            UpperTriangularMatrixData { size, elements },
-        )))
-    }
-
-    /// Create a lower triangular matrix
-    /// Memory efficient: ~50% storage vs regular matrix
-    pub fn lower_triangular_matrix(size: usize, elements: Vec<Expression>) -> Self {
-        use crate::core::expression::matrix_types::LowerTriangularMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::LowerTriangular(
-            LowerTriangularMatrixData { size, elements },
-        )))
-    }
-
-    /// Create a symmetric matrix
-    /// Memory efficient: ~50% storage vs regular matrix
-    pub fn symmetric_matrix(size: usize, elements: Vec<Expression>) -> Self {
-        use crate::core::expression::matrix_types::SymmetricMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Symmetric(SymmetricMatrixData {
-            size,
-            elements,
-        })))
-    }
-
-    /// Create a permutation matrix
-    /// Memory efficient: O(n) storage vs O(n²) for regular matrix
-    pub fn permutation_matrix(permutation: Vec<usize>) -> Self {
-        use crate::core::expression::matrix_types::PermutationMatrixData;
-        use crate::core::expression::unified_matrix::Matrix;
-        Self::Matrix(Box::new(Matrix::Permutation(PermutationMatrixData {
-            permutation,
-        })))
+    /// Create matrix from nested arrays (convenience method)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let matrix = Expression::matrix_from_arrays([
+    ///     [1, 2, 3],
+    ///     [4, 5, 6]
+    /// ]);
+    /// ```
+    pub fn matrix_from_arrays<const R: usize, const C: usize>(arrays: [[i64; C]; R]) -> Self {
+        use crate::matrix::Matrix;
+        Self::Matrix(Box::new(Matrix::from_arrays(arrays)))
     }
 }
