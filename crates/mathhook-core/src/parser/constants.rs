@@ -8,6 +8,7 @@ pub const LATEX_SIMPLE_FUNCTIONS: &[(&str, &str)] = &[
     ("\\ln(", "ln"),
     ("\\log(", "log"),
     ("\\exp(", "exp"),
+    ("\\Gamma(", "gamma"),
 ];
 
 /// LaTeX space-separated function patterns (for \sin x format)
@@ -26,6 +27,7 @@ pub const WOLFRAM_SIMPLE_FUNCTIONS: &[(&str, &str)] = &[
     ("Cos[", "cos"),
     ("Tan[", "tan"),
     ("Log[", "ln"),
+    ("Gamma[", "gamma"),
 ];
 
 /// Wolfram operators that become Expression operations
@@ -100,6 +102,9 @@ pub const LATEX_DETECTION_PATTERNS: &[&str] = &[
     "\\partial",
     "\\begin{",
     "\\{",
+    "\\Gamma",
+    "\\left",
+    "\\right",
 ];
 
 /// Patterns for detecting Wolfram Language input
@@ -116,5 +121,7 @@ pub const WOLFRAM_DETECTION_PATTERNS: &[&str] = &[
     "D[",
     "Limit[",
     "Sum[",
+    "Gamma[",
+    "Piecewise[",
     "{{", // Wolfram matrix syntax
 ];

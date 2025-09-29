@@ -122,19 +122,15 @@ impl WolframParser {
                     CalculusData::Limit {
                         expression,
                         variable,
+                        point,
                         direction,
-                        ..
                     } => {
+                        // Simplified Wolfram limit format for roundtrip consistency
                         format!(
                             "Limit[{}, {} -> {}]",
                             self.format(expression, context),
                             variable.name(),
-                            match direction {
-                                crate::core::expression::LimitDirection::Left => "-1",
-                                crate::core::expression::LimitDirection::Right => "+1",
-                                crate::core::expression::LimitDirection::Both =>
-                                    "Direction -> \"TwoSided\"",
-                            }
+                            self.format(point, context)
                         )
                     }
                     CalculusData::Sum {

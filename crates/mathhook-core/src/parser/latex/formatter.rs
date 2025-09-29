@@ -129,6 +129,8 @@ impl LaTeXParser {
                     )
                 }
             }
+            // Special functions
+            "gamma" => format!("\\Gamma({})", self.format(&args[0], context)),
             // Default case
             _ => {
                 if args.is_empty() {
@@ -198,7 +200,23 @@ impl LaTeXParser {
                         }
                     })
                     .collect();
-                factor_strs.join(" \\cdot ")
+                // Use simpler multiplication format for better roundtrip consistency
+                if factors.len() == 2 {
+                    // For simple cases like 2π, use implicit multiplication
+                    let first = self.format(&factors[0], context);
+                    let second = self.format(&factors[1], context);
+
+                    // Check if this is number * constant (like 2π)
+                    if let (Expression::Number(_), Expression::Constant(_)) =
+                        (&factors[0], &factors[1])
+                    {
+                        format!("{}{}", first, second)
+                    } else {
+                        format!("{} * {}", first, second)
+                    }
+                } else {
+                    factor_strs.join(" * ")
+                }
             }
             Expression::Pow(base, exp) => {
                 // Check if this is a square root: x^(1/2) -> \sqrt{x}
@@ -207,6 +225,20 @@ impl LaTeXParser {
                         && r.denom() == &num_bigint::BigInt::from(2)
                     {
                         return format!("\\sqrt{{{}}}", self.format(base, context));
+                    }
+                }
+
+                // Check if this is a function power: sin(x)^2 -> \sin^2(x)
+                if let Expression::Function { name, args } = base.as_ref() {
+                    if args.len() == 1
+                        && matches!(name.as_str(), "sin" | "cos" | "tan" | "ln" | "log")
+                    {
+                        return format!(
+                            "\\{}^{{{}}}({})",
+                            name,
+                            self.format(exp, context),
+                            self.format(&args[0], context)
+                        );
                     }
                 }
 
@@ -219,6 +251,17 @@ impl LaTeXParser {
                 format!("{}^{{{}}}", base_str, self.format(exp, context))
             }
             Expression::Function { name, args } => self.function_to_latex(name, args, context),
+            // Mathematical constants with consistent formatting
+            Expression::Constant(c) => match c {
+                crate::core::MathConstant::Pi => "π".to_string(),
+                crate::core::MathConstant::E => "e".to_string(),
+                crate::core::MathConstant::I => "i".to_string(),
+                crate::core::MathConstant::Infinity => "∞".to_string(),
+                crate::core::MathConstant::NegativeInfinity => "-∞".to_string(),
+                crate::core::MathConstant::Undefined => "\\text{undefined}".to_string(),
+                crate::core::MathConstant::GoldenRatio => "φ".to_string(),
+                crate::core::MathConstant::EulerGamma => "γ".to_string(),
+            },
             // New expression types - implement later
             Expression::Complex(complex_data) => format!(
                 "{} + {}i",
@@ -243,7 +286,6 @@ impl LaTeXParser {
                     row_strs.join(" \\\\ ")
                 )
             }
-            Expression::Constant(c) => format!("{:?}", c),
             Expression::Relation { .. } => "\\text{relation}".to_string(),
             Expression::Piecewise { .. } => "\\text{piecewise}".to_string(),
             Expression::Set(elements) => {
@@ -294,7 +336,7 @@ impl LaTeXParser {
                             variable.name()
                         ),
                         Some((start, end)) => format!(
-                            "\\int_{{{}}}^{{{}}} {} d{}",
+                            "\\int_{}^{} {} d{}",
                             self.format(start, context),
                             self.format(end, context),
                             self.format(integrand, context),
@@ -325,7 +367,7 @@ impl LaTeXParser {
                         end,
                     } => {
                         format!(
-                            "\\sum_{{{}={}}}^{{{}}} {}",
+                            "\\sum_{{{}={}}}^{} {}",
                             variable.name(),
                             self.format(start, context),
                             self.format(end, context),

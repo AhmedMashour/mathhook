@@ -26,7 +26,11 @@ impl LaTeXParser {
 
         let cleaned = self.preprocess(input);
 
-        // Fall back to simple parser for basic expressions
+        // Fall back to simple parser for basic expressions (with Symbolica-inspired error handling)
+        if cleaned.is_empty() {
+            return Err(ParseError::EmptyInput);
+        }
+
         let mut simple_parser = SimpleParser::new();
         simple_parser.parse(&cleaned)
     }
@@ -47,8 +51,129 @@ impl LaTeXParser {
             result = result.replace(latex_symbol, replacement);
         }
 
+        // Convert LaTeX braces in powers and subscripts to parentheses for simple parser
+        // x^{2} -> x^(2), y^{-1} -> y^(-1), \int_{0} -> \int_(0)
+        result = self.convert_power_braces(&result);
+        result = self.convert_subscript_braces(&result);
+
         // Remove spaces
         result.replace(" ", "")
+    }
+
+    /// Convert LaTeX power braces to parentheses that SimpleParser can handle
+    fn convert_power_braces(&self, input: &str) -> String {
+        let mut result = String::new();
+        let chars: Vec<char> = input.chars().collect();
+        let mut i = 0;
+
+        while i < chars.len() {
+            if i + 1 < chars.len() && chars[i] == '^' && chars[i + 1] == '{' {
+                result.push('^');
+                result.push('(');
+                i += 2; // Skip '^{'
+
+                // Find matching closing brace
+                let mut brace_count = 1;
+                while i < chars.len() && brace_count > 0 {
+                    if chars[i] == '{' {
+                        brace_count += 1;
+                    } else if chars[i] == '}' {
+                        brace_count -= 1;
+                    }
+
+                    if brace_count > 0 {
+                        result.push(chars[i]);
+                    }
+                    i += 1;
+                }
+                result.push(')');
+            } else {
+                result.push(chars[i]);
+                i += 1;
+            }
+        }
+
+        result
+    }
+
+    /// Convert LaTeX subscript braces to parentheses that SimpleParser can handle
+    fn convert_subscript_braces(&self, input: &str) -> String {
+        let mut result = String::new();
+        let chars: Vec<char> = input.chars().collect();
+        let mut i = 0;
+
+        while i < chars.len() {
+            if i + 1 < chars.len() && chars[i] == '_' && chars[i + 1] == '{' {
+                result.push('_');
+                result.push('(');
+                i += 2; // Skip '_{'
+
+                // Find matching closing brace
+                let mut brace_count = 1;
+                while i < chars.len() && brace_count > 0 {
+                    if chars[i] == '{' {
+                        brace_count += 1;
+                    } else if chars[i] == '}' {
+                        brace_count -= 1;
+                    }
+
+                    if brace_count > 0 {
+                        result.push(chars[i]);
+                    }
+                    i += 1;
+                }
+                result.push(')');
+            } else {
+                result.push(chars[i]);
+                i += 1;
+            }
+        }
+
+        result
+    }
+
+    /// Parse subscript or superscript content, handling both braced and unbraced formats
+    ///
+    /// Returns (parsed_expression, remaining_text)
+    fn parse_subscript_or_superscript(
+        &mut self,
+        input: &str,
+    ) -> Result<(Expression, String), ParseError> {
+        if input.starts_with('{') {
+            // Braced format: {expr}
+            let mut brace_count = 1;
+            let mut end_pos = 0;
+
+            for (i, ch) in input.chars().enumerate().skip(1) {
+                match ch {
+                    '{' => brace_count += 1,
+                    '}' => {
+                        brace_count -= 1;
+                        if brace_count == 0 {
+                            end_pos = i;
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if brace_count != 0 {
+                return Err(ParseError::SyntaxError("Unmatched braces".to_string()));
+            }
+
+            let content = &input[1..end_pos];
+            let expr = self.parse(content)?;
+            let remaining = input[end_pos + 1..].trim().to_string();
+            Ok((expr, remaining))
+        } else {
+            // Unbraced format: expr (until space or special character)
+            let end_pos = input.find(' ').unwrap_or(input.len());
+            let content = &input[..end_pos];
+            let expr = self.parse(content)?;
+            let remaining = input[end_pos..].trim().to_string();
+            Ok((expr, remaining))
+        }
     }
 
     /// Parse LaTeX commands like \frac{}{}, \sin(), etc.
@@ -68,6 +193,22 @@ impl LaTeXParser {
             return self.parse_fraction(input).map(Some);
         }
 
+        // Handle special functions first - \Gamma(x)
+        if input.starts_with("\\Gamma(") {
+            let after_gamma = &input[7..]; // Skip "\\Gamma(" (7 chars)
+            if let Some(paren_pos) = after_gamma.find(')') {
+                let arg_str = &after_gamma[..paren_pos];
+                // Use SimpleParser directly to avoid recursion issues
+                let mut simple_parser = SimpleParser::new();
+                match simple_parser.parse(arg_str) {
+                    Ok(arg_expr) => return Ok(Some(Expression::function("gamma", vec![arg_expr]))),
+                    Err(_) => {
+                        // If argument parsing fails, fall through to other methods
+                    }
+                }
+            }
+        }
+
         // Handle \sin(x), \cos(x), etc.
         if let Some(func_result) = self.parse_function(input)? {
             return Ok(Some(func_result));
@@ -83,6 +224,11 @@ impl LaTeXParser {
             return Ok(Some(calc_result));
         }
 
+        // Handle \begin{cases} piecewise functions (Symbolica-inspired)
+        if input.starts_with("\\begin{cases}") {
+            return self.parse_piecewise(input).map(Some);
+        }
+
         // Handle matrices
         if input.starts_with("\\begin{") {
             return self.parse_matrix(input).map(Some);
@@ -91,6 +237,31 @@ impl LaTeXParser {
         // Handle sets
         if input.starts_with("\\{") {
             return self.parse_set(input).map(Some);
+        }
+
+        // Handle \left(...\right) delimiters (Symbolica-inspired delimiter stripping)
+        if input.starts_with("\\left(") && input.contains("\\right)") {
+            let start_pos = 6; // Length of "\\left("
+            if let Some(end_pos) = input.find("\\right)") {
+                let content = &input[start_pos..end_pos];
+                let expr = self.parse(content)?;
+                return Ok(Some(expr));
+            }
+        }
+
+        // Handle other \left...\right pairs
+        if input.starts_with("\\left") && input.contains("\\right") {
+            // Find the delimiter after \left
+            let after_left = &input[5..]; // Skip "\\left"
+            if let Some(delim_char) = after_left.chars().next() {
+                let start_pos = 6; // "\\left" + delimiter
+                let right_pattern = format!("\\right{}", delim_char);
+                if let Some(end_pos) = input.find(&right_pattern) {
+                    let content = &input[start_pos..end_pos];
+                    let expr = self.parse(content)?;
+                    return Ok(Some(expr));
+                }
+            }
         }
 
         Ok(None)
@@ -271,6 +442,68 @@ impl LaTeXParser {
         Err(ParseError::SyntaxError("Unmatched braces".to_string()))
     }
 
+    /// Parse content within braces: "{content}" → content
+    ///
+    /// Returns (parsed_expression, remaining_text_after_closing_brace)
+    fn parse_braced_content<'a>(
+        &mut self,
+        text: &'a str,
+    ) -> Result<(Expression, &'a str), ParseError> {
+        if !text.starts_with('{') {
+            return Err(ParseError::SyntaxError(
+                "Expected opening brace".to_string(),
+            ));
+        }
+
+        // Symbolica-inspired robust bracket matching
+        let mut brace_count = 1;
+        let mut pos = 0;
+        let chars: Vec<char> = text.chars().collect();
+
+        for (i, &ch) in chars.iter().enumerate().skip(1) {
+            match ch {
+                '{' => brace_count += 1,
+                '}' => {
+                    brace_count -= 1;
+                    if brace_count == 0 {
+                        pos = i;
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        if brace_count != 0 {
+            return Err(ParseError::SyntaxError("Unmatched braces".to_string()));
+        }
+
+        let content = &text[1..pos];
+        let remaining = &text[pos + 1..];
+
+        let expr = self.parse(content)?;
+        Ok((expr, remaining))
+    }
+
+    /// Parse subscript or superscript with robust brace handling (Symbolica-inspired)
+    fn parse_script_content<'a>(
+        &mut self,
+        text: &'a str,
+    ) -> Result<(Expression, &'a str), ParseError> {
+        if text.starts_with('{') {
+            // Braced format: {content}
+            self.parse_braced_content(text)
+        } else {
+            // Simple format: content (until space or special char)
+            let end_pos = text.find(' ').unwrap_or(text.len());
+            let content = &text[..end_pos];
+            let remaining = &text[end_pos..];
+
+            let expr = self.parse(content)?;
+            Ok((expr, remaining))
+        }
+    }
+
     /// Parse LaTeX functions like \sin(x), \cos(x), or \sin x
     /// # Examples
     /// ```rust
@@ -280,22 +513,81 @@ impl LaTeXParser {
     /// assert_eq!(expr, Expression::function("sin", vec![Expression::symbol("x")]));
     /// ```
     fn parse_function(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
-        // Try parenthesized functions first: \sin(x)
+        // Handle function powers first: \sin^2(x), \sin^{2}(x) (Symbolica-inspired)
         for (latex_pattern, func_name) in LATEX_SIMPLE_FUNCTIONS {
             if input.starts_with(latex_pattern) {
                 let after_func = &input[latex_pattern.len()..];
-                let arg_end = self.find_matching_paren(after_func, 0)?;
-                let arg_str = &after_func[..arg_end];
-                let arg_expr = self.parse(arg_str)?;
-                return Ok(Some(Expression::function(*func_name, vec![arg_expr])));
+
+                // Check for function powers: \sin^2(x) or \sin^{2}(x)
+                if after_func.starts_with("^") {
+                    let after_caret = &after_func[1..];
+
+                    // Handle both \sin^{2}(x) and \sin^2(x) formats
+                    let (power_expr, remaining) = if after_caret.starts_with('{') {
+                        // Braced power: \sin^{2}(x)
+                        self.parse_script_content(after_caret)?
+                    } else {
+                        // Simple power: \sin^2(x) - find where power ends
+                        if let Some(paren_pos) = after_caret.find('(') {
+                            let power_str = &after_caret[..paren_pos];
+                            let remaining = &after_caret[paren_pos..];
+                            let power_expr = self.parse(power_str)?;
+                            (power_expr, remaining)
+                        } else {
+                            continue; // Skip if no parentheses found
+                        }
+                    };
+
+                    // Parse the function arguments
+                    if remaining.starts_with('(') && remaining.ends_with(')') {
+                        let args_str = &remaining[1..remaining.len() - 1];
+                        let arg_expr = self.parse(args_str)?;
+                        let func_expr = Expression::function(*func_name, vec![arg_expr]);
+                        return Ok(Some(Expression::pow(func_expr, power_expr)));
+                    }
+                }
+
+                // Regular parenthesized functions
+                if *func_name == "gamma" {
+                    // Simple approach for Gamma: find the closing parenthesis
+                    if let Some(paren_pos) = after_func.find(')') {
+                        let arg_str = &after_func[..paren_pos];
+                        let arg_expr = self.parse(arg_str)?;
+                        return Ok(Some(Expression::function(*func_name, vec![arg_expr])));
+                    }
+                } else {
+                    // Use existing logic for other functions
+                    let arg_end = self.find_matching_paren(after_func, 0)?;
+                    let arg_str = &after_func[..arg_end];
+                    let arg_expr = self.parse(arg_str)?;
+                    return Ok(Some(Expression::function(*func_name, vec![arg_expr])));
+                }
             }
         }
 
-        // Try space-separated functions: \sin x
+        // Try space-separated functions: \sin x, \sin^2 x (Symbolica-inspired)
         for (latex_pattern, func_name) in LATEX_SPACE_FUNCTIONS {
             if input.starts_with(latex_pattern) {
                 let after_func = &input[latex_pattern.len()..];
-                // Take the next token as the argument
+
+                // Handle function powers: \sin^2(x)
+                if after_func.starts_with('^') {
+                    let after_caret = &after_func[1..];
+                    if let Some(paren_pos) = after_caret.find('(') {
+                        let power_str = &after_caret[..paren_pos];
+                        let after_paren = &after_caret[paren_pos..];
+
+                        if let Some(close_paren) = after_paren.find(')') {
+                            let arg_str = &after_paren[1..close_paren];
+                            let power_expr = self.parse(power_str)?;
+                            let arg_expr = self.parse(arg_str)?;
+                            let func_expr = Expression::function(*func_name, vec![arg_expr]);
+                            return Ok(Some(Expression::pow(func_expr, power_expr)));
+                        }
+                    }
+                }
+
+                // Regular space-separated functions: \sin x
                 let tokens: Vec<&str> = after_func.trim().split_whitespace().collect();
                 if !tokens.is_empty() {
                     let arg_expr = self.parse(tokens[0])?;
@@ -442,15 +734,9 @@ impl LaTeXParser {
         }
     }
 
-    /// Parse integral bounds: _a^b returns (Some((a, b)), remaining_string)
-    /// # Examples
-    /// ```rust
-    /// use mathhook_core::parser::latex::LaTeXParser;
-    /// let mut parser = LaTeXParser::new();
-    /// let (bounds, remaining) = parser.parse_integral_bounds("\\int_0^1 f dx").unwrap();
-    /// assert_eq!(bounds, Some((Expression::symbol("0"), Expression::symbol("1"))));
-    /// assert_eq!(remaining, "f dx");
-    /// ```
+    /// Parse integral bounds: _a^b or _{a}^{b} returns (Some((a, b)), remaining_string)
+    ///
+    /// Handles both simple (_0^1) and braced (_{0}^{1}) formats for roundtrip consistency.
     fn parse_integral_bounds<'a>(
         &mut self,
         input: &'a str,
@@ -459,32 +745,38 @@ impl LaTeXParser {
             return Ok((None, input));
         }
 
-        // For now, implement simplified bounds parsing
-        // Full implementation would need proper subscript/superscript parsing
-
-        // Look for pattern _a^b where a and b can be single characters or {expressions}
         let after_underscore = &input[1..];
 
-        // Simple case: _0^1 (single characters)
-        if let Some(caret_pos) = after_underscore.find('^') {
-            let lower_str = &after_underscore[..caret_pos];
-            let after_caret = &after_underscore[caret_pos + 1..];
-
-            // Find end of upper bound (space or end of string)
-            let upper_end = after_caret.find(' ').unwrap_or(after_caret.len());
-            let upper_str = &after_caret[..upper_end];
-            let remaining = &after_caret[upper_end..];
-
-            let lower_expr = self.parse(lower_str)?;
-            let upper_expr = self.parse(upper_str)?;
-
-            Ok((
-                Some((Box::new(lower_expr), Box::new(upper_expr))),
-                remaining,
-            ))
+        // Use Symbolica-inspired robust script parsing for lower bound
+        let (lower_expr, after_lower_str) = if after_underscore.starts_with('{') {
+            self.parse_script_content(after_underscore)?
         } else {
-            Ok((None, input))
+            // For simple format, need to find the ^ to determine bound end
+            let caret_pos = after_underscore.find('^').ok_or_else(|| {
+                ParseError::SyntaxError("Missing upper bound in integral".to_string())
+            })?;
+            let lower_str = &after_underscore[..caret_pos];
+            let lower_expr = self.parse(lower_str)?;
+            (lower_expr, &after_underscore[caret_pos..])
+        };
+        let after_lower = after_lower_str;
+
+        // Parse upper bound
+        if !after_lower.starts_with('^') {
+            return Err(ParseError::SyntaxError(
+                "Missing ^ in integral bounds".to_string(),
+            ));
         }
+
+        let after_caret = &after_lower[1..]; // Skip '^'
+
+        // Use Symbolica-inspired robust script parsing
+        let (upper_expr, remaining) = self.parse_script_content(after_caret)?;
+
+        Ok((
+            Some((Box::new(lower_expr), Box::new(upper_expr))),
+            remaining,
+        ))
     }
 
     /// Parse LaTeX limit: \lim_{x \to a} f
@@ -569,22 +861,70 @@ impl LaTeXParser {
         let variable = get_or_create_symbol(eq_parts[0].trim());
         let start_expr = self.parse(eq_parts[1].trim())?;
 
-        // Parse end and expression from "^n i^2"
+        // Parse end and expression from "^n i^2" or "^{n} i^{2}"
         if !after_spec.starts_with('^') {
             return Err(ParseError::SyntaxError(
                 "Missing summation upper bound".to_string(),
             ));
         }
 
-        let after_caret = &after_spec[1..]; // "n i^2"
+        let after_caret = &after_spec[1..]; // Skip '^'
+
+        // Parse upper bound (simplified approach for now)
         let end_pos = after_caret.find(' ').unwrap_or(after_caret.len());
-        let end_str = &after_caret[..end_pos]; // "n"
-        let expression_part = &after_caret[end_pos..].trim(); // "i^2"
+        let end_str = &after_caret[..end_pos];
+        let expression_part = &after_caret[end_pos..].trim();
 
         let end_expr = self.parse(end_str)?;
+
         let expression = self.parse(expression_part)?;
 
         Ok(Expression::sum(expression, variable, start_expr, end_expr))
+    }
+
+    /// Parse LaTeX piecewise function: \begin{cases} ... \end{cases}
+    fn parse_piecewise(&mut self, input: &str) -> Result<Expression, ParseError> {
+        if !input.starts_with("\\begin{cases}") || !input.contains("\\end{cases}") {
+            return Err(ParseError::SyntaxError(
+                "Invalid piecewise syntax".to_string(),
+            ));
+        }
+
+        let start_pos = 13; // Length of "\\begin{cases}"
+        let end_pos = input
+            .find("\\end{cases}")
+            .ok_or_else(|| ParseError::SyntaxError("Missing \\end{cases}".to_string()))?;
+
+        let content = &input[start_pos..end_pos].trim();
+
+        // Simple piecewise parsing: split by \\ and parse each case
+        let cases_str = content.split("\\\\").collect::<Vec<_>>();
+        let mut pieces = Vec::new();
+
+        for case_str in cases_str {
+            if case_str.trim().is_empty() {
+                continue;
+            }
+
+            // Parse: "x & \text{if } x > 0" → (condition, expression)
+            if let Some(amp_pos) = case_str.find('&') {
+                let expr_str = case_str[..amp_pos].trim();
+                let condition_str = case_str[amp_pos + 1..].trim();
+
+                // Skip \text{if} and parse the condition
+                let clean_condition = condition_str
+                    .replace("\\text{if }", "")
+                    .replace("\\text{if}", "")
+                    .trim()
+                    .to_string();
+
+                let expr = self.parse(expr_str)?;
+                let condition = self.parse(&clean_condition)?;
+                pieces.push((condition, expr));
+            }
+        }
+
+        Ok(Expression::piecewise(pieces, None))
     }
 
     /// Parse LaTeX derivative: \frac{d}{dx} f

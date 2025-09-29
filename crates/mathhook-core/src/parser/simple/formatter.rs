@@ -24,7 +24,13 @@ impl SimpleParser {
                         if i == 0 {
                             self.format(term)
                         } else {
-                            format!(" + {}", self.format(term))
+                            // Handle negative terms properly
+                            let term_str = self.format(term);
+                            if term_str.starts_with('-') {
+                                format!(" - {}", &term_str[1..])
+                            } else {
+                                format!(" + {}", term_str)
+                            }
                         }
                     })
                     .collect();
@@ -47,7 +53,12 @@ impl SimpleParser {
             Expression::Pow(base, exp) => {
                 let base_simple = self.format(base);
                 let exp_simple = self.format(exp);
-                format!("{}^{}", base_simple, exp_simple)
+                // Add parentheses around negative or complex exponents for clarity
+                if exp_simple.starts_with('-') || exp_simple.contains(' ') {
+                    format!("{}^({})", base_simple, exp_simple)
+                } else {
+                    format!("{}^{}", base_simple, exp_simple)
+                }
             }
             Expression::Function { name, args } => {
                 if args.is_empty() {

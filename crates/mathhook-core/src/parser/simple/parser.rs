@@ -38,6 +38,38 @@ impl SimpleParser {
             return Ok(Expression::number(num));
         }
 
+        // Handle plus-minus operator: ± (Unicode-safe)
+        if input.contains('±') {
+            // Split on the ± character properly handling Unicode
+            let parts: Vec<&str> = input.split('±').collect();
+            if parts.len() == 2 && !parts[0].is_empty() && !parts[1].is_empty() {
+                let before_expr = self.parse(parts[0].trim())?;
+                let after_expr = self.parse(parts[1].trim())?;
+                return Ok(Expression::function("pm", vec![before_expr, after_expr]));
+            }
+        }
+
+        // Handle mathematical constants and LaTeX commands: ∞, π, e, \sin (Symbolica-inspired)
+        match input.trim() {
+            "∞" | "\\infty" | "{∞}" | "{\\infty}" => return Ok(Expression::infinity()),
+            "π" | "\\pi" | "{π}" | "{\\pi}" => return Ok(Expression::pi()),
+            "e" | "\\e" | "{e}" | "{\\e}" => return Ok(Expression::e()),
+            "i" | "\\i" | "{i}" | "{\\i}" => return Ok(Expression::i()),
+            // Handle standalone LaTeX functions (fallback for complex parsing)
+            "\\sin" => return Ok(Expression::function("sin", vec![])),
+            "\\cos" => return Ok(Expression::function("cos", vec![])),
+            "\\tan" => return Ok(Expression::function("tan", vec![])),
+            "\\ln" => return Ok(Expression::function("ln", vec![])),
+            "\\log" => return Ok(Expression::function("log", vec![])),
+            _ => {}
+        }
+
+        // Handle braced expressions: {content} → content (Symbolica pattern)
+        if input.starts_with('{') && input.ends_with('}') && input.len() > 2 {
+            let content = &input[1..input.len() - 1];
+            return self.parse(content);
+        }
+
         // Handle symbols: x, alpha, var_1
         if input.chars().all(|c| c.is_alphanumeric() || c == '_')
             && input.chars().next().unwrap().is_alphabetic()
@@ -45,9 +77,67 @@ impl SimpleParser {
             return Ok(Expression::Symbol(get_or_create_symbol(input)));
         }
 
-        // Handle parentheses: (x + 1) - do this early to handle nested expressions
+        // Handle open intervals: (0, 1) - check BEFORE general parentheses handling
+        if input.starts_with('(') && input.ends_with(')') {
+            let inner = &input[1..input.len() - 1];
+            // Check if this looks like an interval (has comma, simple expressions)
+            if inner.contains(',') && inner.split(',').count() == 2 {
+                let parts: Vec<&str> = inner.split(',').collect();
+                let left_part = parts[0].trim();
+                let right_part = parts[1].trim();
+
+                // If both parts are simple (numbers/symbols), treat as interval
+                if self.looks_like_simple_expression(left_part)
+                    && self.looks_like_simple_expression(right_part)
+                {
+                    let start = self.parse(left_part)?;
+                    let end = self.parse(right_part)?;
+                    return Ok(Expression::interval(start, end, false, false)); // open interval
+                }
+            }
+        }
+
+        // Handle parentheses: (x + 1) - do this after interval check
         if input.starts_with('(') && input.ends_with(')') && self.is_balanced_parentheses(input) {
             return self.parse(&input[1..input.len() - 1]);
+        }
+
+        // Handle intervals: [0, 1] - basic support for roundtrip
+        if input.starts_with('[') && input.ends_with(']') {
+            let inner = &input[1..input.len() - 1];
+            if let Some(comma_pos) = inner.find(',') {
+                let start = self.parse(inner[..comma_pos].trim())?;
+                let end = self.parse(inner[comma_pos + 1..].trim())?;
+                return Ok(Expression::interval(start, end, true, true)); // closed interval
+            }
+        }
+
+        // Handle LaTeX function powers: \sin^2(x) (Symbolica-inspired)
+        if input.contains("^") && input.contains("(") && input.starts_with("\\") {
+            if let Some(caret_pos) = input.find('^') {
+                let func_part = &input[..caret_pos];
+                let after_caret = &input[caret_pos + 1..];
+
+                if let Some(paren_pos) = after_caret.find('(') {
+                    let power_str = &after_caret[..paren_pos];
+                    let remaining = &after_caret[paren_pos..];
+
+                    if remaining.ends_with(')') {
+                        let args_str = &remaining[1..remaining.len() - 1];
+
+                        // Parse the function, power, and arguments
+                        let func_expr = self.parse(func_part)?;
+                        let power_expr = self.parse(power_str)?;
+                        let arg_expr = self.parse(args_str)?;
+
+                        // Create sin(x)^2 structure
+                        if let Expression::Function { name, .. } = func_expr {
+                            let func_with_arg = Expression::function(&name, vec![arg_expr]);
+                            return Ok(Expression::pow(func_with_arg, power_expr));
+                        }
+                    }
+                }
+            }
         }
 
         // Handle function calls: sin(x), log(x, 2)
@@ -56,7 +146,7 @@ impl SimpleParser {
                 let func_name = &input[..paren_pos];
                 let args_str = &input[paren_pos + 1..input.len() - 1];
 
-                if func_name.chars().all(|c| c.is_alphabetic()) {
+                if func_name.chars().all(|c| c.is_alphabetic()) || func_name.starts_with('\\') {
                     if args_str.trim().is_empty() {
                         return Ok(Expression::function(func_name, vec![]));
                     } else {
@@ -70,6 +160,39 @@ impl SimpleParser {
                     }
                 }
             }
+        }
+
+        // Handle equations: x = 5 or x == 5
+        if input.contains("==") {
+            if let Some(eq_pos) = input.find("==") {
+                let left = self.parse(&input[..eq_pos])?;
+                let right = self.parse(&input[eq_pos + 2..])?;
+                return Ok(Expression::equation(left, right));
+            }
+        } else if let Some(eq_pos) = self.find_operator(input, '=') {
+            let left = self.parse(&input[..eq_pos])?;
+            let right = self.parse(&input[eq_pos + 1..])?;
+            return Ok(Expression::equation(left, right));
+        }
+
+        // Handle inequalities: x < y, x > y
+        if let Some(lt_pos) = self.find_operator(input, '<') {
+            let left = self.parse(&input[..lt_pos])?;
+            let right = self.parse(&input[lt_pos + 1..])?;
+            return Ok(Expression::relation(
+                left,
+                right,
+                crate::core::expression::RelationType::Less,
+            ));
+        }
+        if let Some(gt_pos) = self.find_operator(input, '>') {
+            let left = self.parse(&input[..gt_pos])?;
+            let right = self.parse(&input[gt_pos + 1..])?;
+            return Ok(Expression::relation(
+                left,
+                right,
+                crate::core::expression::RelationType::Greater,
+            ));
         }
 
         // Handle addition: x + 2 (right-to-left to handle precedence)
@@ -106,6 +229,16 @@ impl SimpleParser {
             ]));
         }
 
+        // Handle factorial: n! (before powers to handle n!^2 correctly)
+        if input.ends_with('!') && input.len() > 1 {
+            let base_str = &input[..input.len() - 1];
+            // Only handle simple factorials like "n!" or "5!"
+            if base_str.chars().all(|c| c.is_alphanumeric()) {
+                let base_expr = self.parse(base_str)?;
+                return Ok(Expression::function("factorial", vec![base_expr]));
+            }
+        }
+
         // Handle powers: x^2 (right-to-left for right associativity)
         if let Some(pow_pos) = self.find_operator_right_to_left(input, '^') {
             let base = self.parse(&input[..pow_pos])?;
@@ -113,17 +246,51 @@ impl SimpleParser {
             return Ok(Expression::pow(base, exp));
         }
 
-        // Handle implicit multiplication: 2x, 3sin(x)
+        // Handle implicit multiplication: 2x, 3sin(x), 2π (Symbolica-inspired)
         if let Some(pos) = self.find_implicit_multiplication(input) {
             let left = self.parse(&input[..pos])?;
             let right = self.parse(&input[pos..])?;
             return Ok(Expression::mul(vec![left, right]));
         }
 
+        // Handle number-constant multiplication: 2π, 3e, 4i (Enhanced Symbolica pattern)
+        if input.len() > 1 {
+            for (i, ch) in input.char_indices() {
+                if matches!(ch, 'π' | '∞' | 'e' | 'i') && i > 0 {
+                    let number_part = &input[..i];
+                    let constant_part = &input[i..];
+
+                    // Only proceed if the number part looks like a number
+                    if number_part
+                        .chars()
+                        .all(|c| c.is_ascii_digit() || c == '.' || c == '-')
+                    {
+                        if let (Ok(num_expr), Ok(const_expr)) =
+                            (self.parse(number_part), self.parse(constant_part))
+                        {
+                            return Ok(Expression::mul(vec![num_expr, const_expr]));
+                        }
+                    }
+                }
+            }
+        }
+
         Err(ParseError::InvalidSyntax(format!(
             "Cannot parse: {}",
             input
         )))
+    }
+
+    /// Check if a string looks like a simple expression (number, symbol, or basic combination)
+    fn looks_like_simple_expression(&self, input: &str) -> bool {
+        if input.is_empty() {
+            return false;
+        }
+
+        // Allow numbers, symbols, and basic operators
+        input
+            .chars()
+            .all(|c| c.is_alphanumeric() || "._+-*/^()".contains(c))
     }
 
     /// Check if parentheses are balanced in the string

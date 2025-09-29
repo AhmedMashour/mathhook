@@ -23,6 +23,47 @@ impl WolframParser {
             return self.parse_set(&cleaned);
         }
 
+        // Handle special Wolfram functions first
+        if cleaned.starts_with("Gamma[") {
+            let after_gamma = &cleaned[6..]; // Skip "Gamma["
+            if let Some(bracket_pos) = after_gamma.find(']') {
+                let arg_str = &after_gamma[..bracket_pos];
+                // Use SimpleParser to parse the argument
+                let mut simple_parser = crate::parser::simple::SimpleParser::new();
+                let arg_expr = simple_parser.parse(arg_str)?;
+                return Ok(Expression::function("gamma", vec![arg_expr]));
+            }
+        }
+
+        // Handle Piecewise[{{...}}] (Symbolica-inspired nested list parsing)
+        if cleaned.starts_with("Piecewise[") {
+            let after_piecewise = &cleaned[10..]; // Skip "Piecewise["
+            if let Some(bracket_pos) = after_piecewise.find(']') {
+                let args_str = &after_piecewise[..bracket_pos];
+                // Parse nested list structure: {{x, x > 0}, {-x, x <= 0}}
+                if args_str.starts_with("{{") && args_str.ends_with("}}") {
+                    let inner = &args_str[2..args_str.len() - 2]; // Remove outer {{}}
+                    let cases = inner.split("}, {").collect::<Vec<_>>();
+
+                    let mut pieces = Vec::new();
+                    for case in cases {
+                        let case_clean = case.trim_start_matches('{').trim_end_matches('}');
+                        if let Some(comma_pos) = case_clean.find(',') {
+                            let expr_str = case_clean[..comma_pos].trim();
+                            let condition_str = case_clean[comma_pos + 1..].trim();
+
+                            let mut simple_parser = crate::parser::simple::SimpleParser::new();
+                            let expr = simple_parser.parse(expr_str)?;
+                            let condition = simple_parser.parse(condition_str)?;
+                            pieces.push((condition, expr));
+                        }
+                    }
+
+                    return Ok(Expression::piecewise(pieces, None));
+                }
+            }
+        }
+
         // Handle Wolfram functions first
         if let Some(expr) = self.parse_functions(&cleaned)? {
             return Ok(expr);
