@@ -7,6 +7,7 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+pub mod macros;
 pub mod matrix;
 pub mod parser;
 pub mod simplify;
@@ -15,6 +16,7 @@ pub mod solvers;
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
+pub use macros::*;
 pub use matrix::*;
 pub use parser::*;
 pub use simplify::*;
@@ -28,6 +30,8 @@ pub mod prelude {
     };
     pub use crate::{Expression, MathConstant, Number, Symbol};
     pub use crate::{MathSolver, SolverConfig, SolverResult};
+    // Re-export all macros for convenience
+    pub use crate::macros::*;
 }
 
 mod tests {

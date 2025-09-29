@@ -39,15 +39,15 @@
 //! # Ok::<(), mathhook_parser::ParseError>(())
 //! ```
 
-mod macros;
 pub use mathhook_core as core;
 
 pub use mathhook_core::{
     algebra::{Expand, Factor},
+    parser::universal::UniversalParser,
     Expression, MathConstant, MathSolver, Number, Simplify, SolverConfig, SolverResult, Symbol,
 };
 
-pub use core::{MathFormatter, MathLanguage, MathParser, ParseError};
+pub use core::{MathLanguage, ParseError};
 
 pub use num_bigint;
 pub use num_rational;
@@ -64,7 +64,7 @@ pub use serde_json;
 /// let simplified = expr.simplify();
 /// ```
 pub mod prelude {
-    pub use crate::core::parser::{MathFormatter, MathLanguage, MathParser, ParseError};
+    pub use crate::core::parser::{MathLanguage, ParseError};
     pub use crate::core::{
         algebra::{Expand, Factor},
         Expression, MathConstant, Number, Simplify, Symbol,
@@ -101,23 +101,9 @@ mod tests {
 
     #[test]
     fn test_parser_integration() {
-        let parser = MathParser::new();
+        let parser = UniversalParser::new();
         let result = parser.parse("42", MathLanguage::Standard);
         assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_macro_support() {
-        use crate::{expr, symbol};
-
-        let x = symbol!(x);
-        assert_eq!(x.name, std::sync::Arc::from("x"));
-
-        let two = expr!(2);
-        match two {
-            Expression::Number(Number::Integer(2)) => (),
-            _ => panic!("Expected integer 2"),
-        }
     }
 
     #[test]

@@ -1,23 +1,10 @@
-//! Wolfram Language mathematical expression parser
-//!
-//! Handles Wolfram Language (Mathematica) syntax including functions and operators.
-
-use crate::core::{Expression, Number, Symbol};
-use crate::parser::{constants::*, ParseError};
-use std::collections::HashMap;
-
-/// Wolfram Language specific parser
-pub struct WolframParser {
-    variables: HashMap<String, Symbol>,
-}
+use crate::core::Expression;
+use crate::core::Number;
+use crate::parser::constants::*;
+use crate::parser::wolfram::WolframParser;
+use crate::parser::ParseError;
 
 impl WolframParser {
-    pub fn new() -> Self {
-        Self {
-            variables: HashMap::new(),
-        }
-    }
-
     /// Parse Wolfram expression with comprehensive Wolfram support
     pub fn parse(&mut self, input: &str) -> Result<Expression, ParseError> {
         if input.is_empty() {
@@ -28,12 +15,12 @@ impl WolframParser {
 
         // Handle Wolfram matrices first
         if cleaned.starts_with("{{") {
-            return self.parse_wolfram_matrix(&cleaned);
+            return self.parse_matrix(&cleaned);
         }
 
         // Handle Wolfram sets (single-level braces)
         if cleaned.starts_with("{") && !cleaned.starts_with("{{") {
-            return self.parse_wolfram_set(&cleaned);
+            return self.parse_set(&cleaned);
         }
 
         // Handle Wolfram functions first
@@ -43,7 +30,7 @@ impl WolframParser {
 
         // Fall back to conversion and existing parser
         let converted = self.convert_to_latex_syntax(&cleaned);
-        let mut latex_parser = crate::parser::latex_parser::LaTeXParser::new();
+        let mut latex_parser = crate::parser::latex::LaTeXParser::new();
         latex_parser.parse(&converted)
     }
 
@@ -178,11 +165,11 @@ impl WolframParser {
             // Handle Wolfram-specific argument syntax
             if arg_str.trim().starts_with('{') && arg_str.trim().ends_with('}') {
                 // Parse Wolfram list: {x, 0, 1} → flatten into separate arguments
-                let list_args = self.parse_wolfram_list_elements(&arg_str)?;
+                let list_args = self.parse_list_elements(&arg_str)?;
                 args.extend(list_args);
             } else if arg_str.contains(" -> ") {
                 // Parse Wolfram arrow: x -> 0 → flatten into [variable, target]
-                let arrow_args = self.parse_wolfram_arrow_elements(&arg_str)?;
+                let arrow_args = self.parse_arrow_elements(&arg_str)?;
                 args.extend(arrow_args);
             } else {
                 // Parse as Wolfram expression (recursive)
@@ -280,7 +267,7 @@ impl WolframParser {
     }
 
     /// Parse Wolfram list elements: {x, 0, 1} → [x, 0, 1]
-    fn parse_wolfram_list_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
+    fn parse_list_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
         let trimmed = input.trim();
         if !trimmed.starts_with('{') || !trimmed.ends_with('}') {
             return Err(ParseError::SyntaxError("Not a Wolfram list".to_string()));
@@ -299,7 +286,7 @@ impl WolframParser {
     }
 
     /// Parse Wolfram arrow elements: x -> 0 → [x, 0]
-    fn parse_wolfram_arrow_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
+    fn parse_arrow_elements(&mut self, input: &str) -> Result<Vec<Expression>, ParseError> {
         let parts: Vec<&str> = input.split(" -> ").collect();
         if parts.len() != 2 {
             return Err(ParseError::SyntaxError("Invalid arrow syntax".to_string()));
@@ -315,7 +302,7 @@ impl WolframParser {
     }
 
     /// Parse Wolfram matrix syntax: {{1, 2}, {3, 4}}
-    fn parse_wolfram_matrix(&mut self, input: &str) -> Result<Expression, ParseError> {
+    fn parse_matrix(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("{{") || !input.ends_with("}}") {
             return Err(ParseError::SyntaxError("Not a Wolfram matrix".to_string()));
         }
@@ -355,7 +342,7 @@ impl WolframParser {
     }
 
     /// Parse Wolfram set syntax: {1, 2, 3}
-    fn parse_wolfram_set(&mut self, input: &str) -> Result<Expression, ParseError> {
+    fn parse_set(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("{") || !input.ends_with("}") {
             return Err(ParseError::SyntaxError("Not a Wolfram set".to_string()));
         }

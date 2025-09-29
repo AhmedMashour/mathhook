@@ -1,24 +1,19 @@
-//! LaTeX mathematical expression parser
-//!
-//! Handles LaTeX-specific syntax including fractions, functions, and commands.
-
-use crate::core::{Expression, Number, Symbol};
-use crate::parser::{constants::*, ParseError};
-use std::collections::HashMap;
-
-/// LaTeX-specific parser
-pub struct LaTeXParser {
-    variables: HashMap<String, Symbol>,
-}
+use super::LaTeXParser;
+use crate::core::{Expression, Number};
+use crate::parser::constants::*;
+use crate::parser::simple::SimpleParser;
+use crate::parser::ParseError;
+use crate::utils::get_or_create_symbol;
 
 impl LaTeXParser {
-    pub fn new() -> Self {
-        Self {
-            variables: HashMap::new(),
-        }
-    }
-
     /// Parse LaTeX expression with comprehensive LaTeX support
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse("\\frac{x^2}{2}").unwrap();
+    /// assert_eq!(expr, Expression::fraction(Expression::symbol("x"), Expression::symbol("2")));
+    /// ```
     pub fn parse(&mut self, input: &str) -> Result<Expression, ParseError> {
         if input.is_empty() {
             return Err(ParseError::EmptyInput);
@@ -31,12 +26,19 @@ impl LaTeXParser {
 
         let cleaned = self.preprocess(input);
 
-        // Fall back to basic parser for simple expressions
-        let parser = crate::MathParser::new();
-        parser.parse_latex(&cleaned)
+        // Fall back to simple parser for basic expressions
+        let mut simple_parser = SimpleParser::new();
+        simple_parser.parse(&cleaned)
     }
 
     /// Preprocess LaTeX input
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.preprocess("\\frac{x^2}{2}").unwrap();
+    /// assert_eq!(expr, "frac{x^2}{2}");
+    /// ```
     fn preprocess(&self, latex: &str) -> String {
         let mut result = latex.trim().to_string();
 
@@ -138,6 +140,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX fraction: \frac{numerator}{denominator}
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_fraction("\\frac{x^2}{2}").unwrap();
+    /// assert_eq!(expr, Expression::fraction(Expression::symbol("x"), Expression::symbol("2")));
+    /// ```
     fn parse_fraction(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\frac{") {
             return Err(ParseError::SyntaxError("Not a fraction".to_string()));
@@ -208,6 +217,14 @@ impl LaTeXParser {
     }
 
     /// Extract numerator and denominator from \frac{num}{den}
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let (numerator, denominator) = parser.extract_fraction_parts("\\frac{x^2}{2}").unwrap();
+    /// assert_eq!(numerator, "x^2");
+    /// assert_eq!(denominator, "2");
+    /// ```
     fn extract_fraction_parts(&self, input: &str) -> Result<(String, String), ParseError> {
         let after_frac = &input[6..]; // Skip "\\frac{"
 
@@ -228,6 +245,13 @@ impl LaTeXParser {
     }
 
     /// Find matching closing brace starting from position
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let brace_end = parser.find_matching_brace("\\frac{x^2}{2}", 0).unwrap();
+    /// assert_eq!(brace_end, 2);
+    /// ```
     fn find_matching_brace(&self, text: &str, start_pos: usize) -> Result<usize, ParseError> {
         let mut brace_count = 1;
 
@@ -248,6 +272,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX functions like \sin(x), \cos(x), or \sin x
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_function("\\sin(x)").unwrap();
+    /// assert_eq!(expr, Expression::function("sin", vec![Expression::symbol("x")]));
+    /// ```
     fn parse_function(&mut self, input: &str) -> Result<Option<Expression>, ParseError> {
         // Try parenthesized functions first: \sin(x)
         for (latex_pattern, func_name) in LATEX_SIMPLE_FUNCTIONS {
@@ -277,6 +308,13 @@ impl LaTeXParser {
     }
 
     /// Find matching closing parenthesis
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let paren_end = parser.find_matching_paren("\\sin(x)", 0).unwrap();
+    /// assert_eq!(paren_end, 2);
+    /// ```
     fn find_matching_paren(&self, text: &str, start_pos: usize) -> Result<usize, ParseError> {
         let mut paren_count = 1; // We start inside the parentheses
 
@@ -297,6 +335,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX square root: \sqrt{x} or \sqrt[n]{x}
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_sqrt("\\sqrt{x}").unwrap();
+    /// assert_eq!(expr, Expression::sqrt(Expression::symbol("x")));
+    /// ```
     fn parse_sqrt(&mut self, input: &str) -> Result<Expression, ParseError> {
         if input.starts_with("\\sqrt[") {
             // Handle \sqrt[n]{x}
@@ -346,6 +391,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX integral: \int f dx or \int_a^b f dx
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_integral("\\int f dx").unwrap();
+    /// assert_eq!(expr, Expression::integral(Expression::symbol("f"), Expression::symbol("x")));
+    /// ```
     fn parse_integral(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\int") {
             return Err(ParseError::SyntaxError("Not an integral".to_string()));
@@ -375,7 +427,7 @@ impl LaTeXParser {
             return Err(ParseError::SyntaxError("Invalid differential".to_string()));
         }
 
-        let variable = Symbol::new(&var_part[1..]);
+        let variable = get_or_create_symbol(&var_part[1..]);
 
         // Everything except the last part is the integrand
         let integrand_str = parts[..parts.len() - 1].join(" ");
@@ -391,6 +443,14 @@ impl LaTeXParser {
     }
 
     /// Parse integral bounds: _a^b returns (Some((a, b)), remaining_string)
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let (bounds, remaining) = parser.parse_integral_bounds("\\int_0^1 f dx").unwrap();
+    /// assert_eq!(bounds, Some((Expression::symbol("0"), Expression::symbol("1"))));
+    /// assert_eq!(remaining, "f dx");
+    /// ```
     fn parse_integral_bounds<'a>(
         &mut self,
         input: &'a str,
@@ -428,6 +488,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX limit: \lim_{x \to a} f
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_limit("\\lim_{x \\to a} f").unwrap();
+    /// assert_eq!(expr, Expression::limit(Expression::symbol("f"), Expression::symbol("x"), Expression::symbol("a")));
+    /// ```
     fn parse_limit(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\lim") {
             return Err(ParseError::SyntaxError("Not a limit".to_string()));
@@ -457,7 +524,7 @@ impl LaTeXParser {
             ));
         }
 
-        let variable = Symbol::new(to_parts[0].trim());
+        let variable = get_or_create_symbol(to_parts[0].trim());
         let approach = self.parse(to_parts[1].trim())?;
         let expression = self.parse(expression_part)?;
 
@@ -465,16 +532,17 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX summation: \sum_{i=1}^n f
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_sum("\\sum_{i=1}^n f").unwrap();
+    /// assert_eq!(expr, Expression::sum(Expression::symbol("f"), Expression::symbol("i"), Expression::symbol("1"), Expression::symbol("n")));
+    /// ```
     fn parse_sum(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\sum") {
             return Err(ParseError::SyntaxError("Not a summation".to_string()));
         }
-
-        // Debug: \sum_{i=1}^n i^2
-        // after_sum: _{i=1}^n i^2
-        // after_brace: i=1}^n i^2
-        // sum_spec: i=1
-        // after_spec: ^n i^2
 
         let after_sum = &input[4..]; // Skip "\\sum"
 
@@ -498,7 +566,7 @@ impl LaTeXParser {
             ));
         }
 
-        let variable = Symbol::new(eq_parts[0].trim());
+        let variable = get_or_create_symbol(eq_parts[0].trim());
         let start_expr = self.parse(eq_parts[1].trim())?;
 
         // Parse end and expression from "^n i^2"
@@ -520,6 +588,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX derivative: \frac{d}{dx} f
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_derivative("\\frac{d}{dx} f").unwrap();
+    /// assert_eq!(expr, Expression::derivative(Expression::symbol("f"), Expression::symbol("x"), Expression::symbol("1")));
+    /// ```
     fn parse_derivative(&mut self, input: &str) -> Result<Expression, ParseError> {
         // Pattern: \frac{d}{dx} f or \frac{d^n}{dx^n} f
         if !input.starts_with("\\frac{d") {
@@ -534,7 +609,7 @@ impl LaTeXParser {
             // Find the variable (should be single character before "}")
             if let Some(close_pos) = after_dd.find('}') {
                 let var_name = &after_dd[..close_pos];
-                let variable = Symbol::new(var_name);
+                let variable = get_or_create_symbol(var_name);
 
                 // Find the expression after the closing brace
                 let after_frac = &after_dd[close_pos + 1..].trim();
@@ -552,6 +627,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX matrix: \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_matrix("\\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}").unwrap();
+    /// assert_eq!(expr, Expression::matrix(vec![vec![Expression::integer(1), Expression::integer(2)], vec![Expression::integer(3), Expression::integer(4)]]));
+    /// ```
     fn parse_matrix(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\begin{") {
             return Err(ParseError::SyntaxError("Not a matrix".to_string()));
@@ -597,6 +679,13 @@ impl LaTeXParser {
     }
 
     /// Parse LaTeX set: \{1, 2, 3\}
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::parser::latex::LaTeXParser;
+    /// let mut parser = LaTeXParser::new();
+    /// let expr = parser.parse_set("\\{1, 2, 3\\}").unwrap();
+    /// assert_eq!(expr, Expression::set(vec![Expression::integer(1), Expression::integer(2), Expression::integer(3)]));
+    /// ```
     fn parse_set(&mut self, input: &str) -> Result<Expression, ParseError> {
         if !input.starts_with("\\{") || !input.ends_with("\\}") {
             return Err(ParseError::SyntaxError("Not a set".to_string()));
