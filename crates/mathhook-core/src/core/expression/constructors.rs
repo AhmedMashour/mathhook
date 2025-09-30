@@ -237,6 +237,58 @@ impl Expression {
         Self::Constant(MathConstant::Infinity)
     }
 
+    /// Create a negative infinity expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let neg_inf = Expression::negative_infinity();
+    /// ```
+    pub fn negative_infinity() -> Self {
+        Self::Constant(MathConstant::NegativeInfinity)
+    }
+
+    /// Create an undefined expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let undef = Expression::undefined();
+    /// ```
+    pub fn undefined() -> Self {
+        Self::Constant(MathConstant::Undefined)
+    }
+
+    /// Create a golden ratio (phi) expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let phi = Expression::golden_ratio();
+    /// ```
+    pub fn golden_ratio() -> Self {
+        Self::Constant(MathConstant::GoldenRatio)
+    }
+
+    /// Create an Euler-Mascheroni constant (gamma) expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let gamma = Expression::euler_gamma();
+    /// ```
+    pub fn euler_gamma() -> Self {
+        Self::Constant(MathConstant::EulerGamma)
+    }
+
     /// Create a complex number expression
     ///
     /// # Examples

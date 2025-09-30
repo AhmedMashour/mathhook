@@ -13,6 +13,9 @@ pub mod universal;
 pub mod utils;
 pub mod wolfram;
 
+// High-performance parsers
+pub mod nom; // Nom-based parser (active development)
+
 pub use constants::*;
 pub use serialize::*;
 pub use universal::*;

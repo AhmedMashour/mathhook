@@ -13,6 +13,7 @@ pub enum MathConstant {
     Undefined,
     GoldenRatio,
     EulerGamma,
+    TribonacciConstant,
 }
 
 impl MathConstant {
@@ -36,6 +37,7 @@ impl MathConstant {
             MathConstant::Undefined => f64::NAN,
             MathConstant::GoldenRatio => 1.618033988749895,
             MathConstant::EulerGamma => 0.5772156649015329,
+            MathConstant::TribonacciConstant => 1.839286755214161,
         }
     }
 }

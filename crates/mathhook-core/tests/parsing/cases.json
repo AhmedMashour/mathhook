@@ -236,7 +236,7 @@
         "language": "latex",
         "category": "complex_numbers",
         "input": "3 + 4i",
-        "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+        "expected_expr": "Complex(Box(ComplexData{real: Number(SmallInt(3)), imag: Number(SmallInt(4))}))",
         "description": "Complex number"
     },
     {
@@ -244,7 +244,7 @@
         "language": "wolfram",
         "category": "complex_numbers",
         "input": "3 + 4*I",
-        "expected_expr": "Complex{real: Box(Number(SmallInt(3))), imag: Box(Number(SmallInt(4)))}",
+        "expected_expr": "Complex(Box(ComplexData{real: Number(SmallInt(3)), imag: Number(SmallInt(4))}))",
         "description": "Complex number"
     },
     {
@@ -252,7 +252,7 @@
         "language": "latex",
         "category": "calculus_first_class",
         "input": "\\frac{d}{dx} x^2",
-        "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+        "expected_expr": "Calculus(Box(Calculus(Box(Derivative{expression: Pow(Box(Symbol(Symbol{name:x})))), Box(Number(SmallInt(2)))), variable: Symbol{name:x}, order: 1}))",
         "description": "First derivative - FIRST CLASS"
     },
     {
@@ -260,7 +260,7 @@
         "language": "latex",
         "category": "calculus_first_class",
         "input": "\\int x dx",
-        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+        "expected_expr": "Calculus(Box(Calculus(Box(Integral{integrand: Symbol(Symbol{name:x}))), variable: Symbol{name:x}, bounds: None}))",
         "description": "Indefinite integral - FIRST CLASS"
     },
     {
@@ -268,7 +268,7 @@
         "language": "latex",
         "category": "calculus_first_class",
         "input": "\\int_0^1 x dx",
-        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+        "expected_expr": "Calculus(Box(Calculus(Box(Integral{integrand: Symbol(Symbol{name:x}))), variable: Symbol{name:x}, bounds: Some((Number(SmallInt(0)), Number(SmallInt(1))))}))",
         "description": "Definite integral - FIRST CLASS"
     },
     {
@@ -276,7 +276,7 @@
         "language": "latex",
         "category": "calculus_first_class",
         "input": "\\lim_{x \\to 0} \\sin x",
-        "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+        "expected_expr": "Calculus(Box(Calculus(Box(Limit{expression: Function{name:sin, args: Box([Symbol(Symbol{name:x})))])}, variable: Symbol{name:x}, point: Number(SmallInt(0)), direction: Both}))",
         "description": "Limit - FIRST CLASS"
     },
     {
@@ -284,7 +284,7 @@
         "language": "latex",
         "category": "calculus_first_class",
         "input": "\\sum_{i=1}^n i^2",
-        "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+        "expected_expr": "Calculus(Box(Calculus(Box(Sum{expression: Pow(Box(Symbol(Symbol{name:i})))), Box(Number(SmallInt(2)))), variable: Symbol{name:i}, start: Number(SmallInt(1)), end: Symbol(Symbol{name:n})}))",
         "description": "Summation - FIRST CLASS"
     },
     {
@@ -292,7 +292,7 @@
         "language": "wolfram",
         "category": "calculus_first_class",
         "input": "D[x^2, x]",
-        "expected_expr": "Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
+        "expected_expr": "Calculus(Box(Derivative{expression: Box(Pow(Box(Symbol(Symbol{name:x})))), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, order: 1}",
         "description": "First derivative - FIRST CLASS"
     },
     {
@@ -300,7 +300,7 @@
         "language": "wolfram",
         "category": "calculus_first_class",
         "input": "Integrate[x, x]",
-        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: None}",
+        "expected_expr": "Calculus(Box(Integral{integrand: Box(Symbol(Symbol{name:x})))), variable: Symbol{name:x}, bounds: None}",
         "description": "Indefinite integral - FIRST CLASS"
     },
     {
@@ -308,7 +308,7 @@
         "language": "wolfram",
         "category": "calculus_first_class",
         "input": "Integrate[x, {x, 0, 1}]",
-        "expected_expr": "Integral{integrand: Box(Symbol(Symbol{name:x})), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
+        "expected_expr": "Calculus(Box(Integral{integrand: Box(Symbol(Symbol{name:x})))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Number(SmallInt(1)))))}",
         "description": "Definite integral - FIRST CLASS"
     },
     {
@@ -316,7 +316,7 @@
         "language": "wolfram",
         "category": "calculus_first_class",
         "input": "Limit[Sin[x], x -> 0]",
-        "expected_expr": "Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
+        "expected_expr": "Calculus(Box(Limit{expression: Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, approach: Box(Number(SmallInt(0))), direction: Both}",
         "description": "Limit - FIRST CLASS"
     },
     {
@@ -324,7 +324,7 @@
         "language": "wolfram",
         "category": "calculus_first_class",
         "input": "Sum[i^2, {i, 1, n}]",
-        "expected_expr": "Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Pow(Box(Symbol(Symbol{name:i})))), Box(Number(SmallInt(2))))), variable: Symbol{name:i}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}",
         "description": "Summation - FIRST CLASS"
     },
     {
@@ -444,7 +444,7 @@
         "language": "latex",
         "category": "complex_expressions",
         "input": "\\sum_{n=0}^{\\infty} \\frac{x^n}{n!}",
-        "expected_expr": "Sum{expression: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:n}))), Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:x})))), Box(Symbol(Symbol{name:n}))), Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
         "description": "Exponential series - FIRST CLASS SUM"
     },
     {
@@ -452,7 +452,7 @@
         "language": "latex",
         "category": "complex_expressions",
         "input": "\\int_0^{2\\pi} \\sin^2(x) dx",
-        "expected_expr": "Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Mul(Box([Number(SmallInt(2)), Constant(Pi)])))))}",
+        "expected_expr": "Calculus(Box(Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol{name:x})))])}), Box(Number(SmallInt(2))))), variable: Symbol{name:x}, bounds: Some((Box(Number(SmallInt(0))), Box(Mul(Box([Number(SmallInt(2)), Constant(Pi)])))))}",
         "description": "Definite integral with trig - FIRST CLASS"
     },
     {
@@ -460,7 +460,3287 @@
         "language": "latex",
         "category": "complex_expressions",
         "input": "\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n",
-        "expected_expr": "Limit{expression: Box(Pow(Box(Add(Box([Number(SmallInt(1)), Pow(Box(Symbol(Symbol{name:n})), Box(Number(SmallInt(-1))))]))), Box(Symbol(Symbol{name:n})))), variable: Symbol{name:n}, approach: Box(Constant(Infinity)), direction: Both}",
+        "expected_expr": "Calculus(Box(Limit{expression: Box(Pow(Box(Add(Box([Number(SmallInt(1)), Pow(Box(Symbol(Symbol{name:n})))), Box(Number(SmallInt(-1))))]))), Box(Symbol(Symbol{name:n})))), variable: Symbol{name:n}, approach: Box(Constant(Infinity)), direction: Both}",
         "description": "Limit definition of e - FIRST CLASS"
+    },
+    {
+        "id": "partial_derivative_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\frac{\\partial f}{\\partial x}",
+        "expected_expr": "Function{name: \"partial_derivative\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:x}), Number(SmallInt(1))])}",
+        "description": "Partial derivative"
+    },
+    {
+        "id": "mixed_partial_derivative_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\frac{\\partial^2 f}{\\partial x \\partial y}",
+        "expected_expr": "Function{name: \"mixed_partial\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Mixed partial derivative"
+    },
+    {
+        "id": "gradient_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\nabla f",
+        "expected_expr": "Function{name: \"gradient\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Gradient operator"
+    },
+    {
+        "id": "divergence_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\nabla \\cdot \\vec{F}",
+        "expected_expr": "Function{name: \"divergence\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:F})])}])}",
+        "description": "Divergence operator"
+    },
+    {
+        "id": "curl_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\nabla \\times \\vec{F}",
+        "expected_expr": "Function{name: \"curl\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:F})])}])}",
+        "description": "Curl operator"
+    },
+    {
+        "id": "laplacian_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\nabla^2 f",
+        "expected_expr": "Function{name: \"laplacian\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Laplacian operator"
+    },
+    {
+        "id": "double_integral_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\iint_D f(x,y) \\, dx \\, dy",
+        "expected_expr": "Function{name: \"double_integral\", args: Box([Function{name: \"f\", args: Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}, Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:D})])}",
+        "description": "Double integral over region"
+    },
+    {
+        "id": "triple_integral_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\iiint_V f(x,y,z) \\, dx \\, dy \\, dz",
+        "expected_expr": "Function{name: \"triple_integral\", args: Box([Function{name: \"f\", args: Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})])}, Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z}), Symbol(Symbol{name:V})])}",
+        "description": "Triple integral over volume"
+    },
+    {
+        "id": "line_integral_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\int_C \\vec{F} \\cdot d\\vec{r}",
+        "expected_expr": "Function{name: \"line_integral\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:F})])}, Symbol(Symbol{name:C})])}",
+        "description": "Line integral of vector field"
+    },
+    {
+        "id": "surface_integral_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "\\iint_S \\vec{F} \\cdot \\vec{n} \\, dS",
+        "expected_expr": "Function{name: \"surface_integral\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:F})])}, Symbol(Symbol{name:S})])}",
+        "description": "Surface integral of vector field"
+    },
+    {
+        "id": "directional_derivative_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "D_{\\vec{u}} f",
+        "expected_expr": "Function{name: \"directional_derivative\", args: Box([Symbol(Symbol{name:f}), Function{name: \"vector\", args: Box([Symbol(Symbol{name:u})])}])}",
+        "description": "Directional derivative"
+    },
+    {
+        "id": "jacobian_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "J_f",
+        "expected_expr": "Function{name: \"jacobian\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Jacobian matrix"
+    },
+    {
+        "id": "hessian_latex",
+        "language": "latex",
+        "category": "advanced_calculus",
+        "input": "H_f",
+        "expected_expr": "Function{name: \"hessian\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Hessian matrix"
+    },
+    {
+        "id": "partial_derivative_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "D[f[x, y], x]",
+        "expected_expr": "PartialCalculus(Box(Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x}))), Symbol(Symbol{name:y})])}), variable: Symbol{name:x}, order: 1}",
+        "description": "Partial derivative"
+    },
+    {
+        "id": "gradient_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Grad[f[x, y, z], {x, y, z}]",
+        "expected_expr": "Function{name: \"gradient\", args: Box([Function{name: \"f\", args: Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})])}])}",
+        "description": "Gradient operator"
+    },
+    {
+        "id": "divergence_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Div[{Fx, Fy, Fz}, {x, y, z}]",
+        "expected_expr": "Function{name: \"divergence\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:Fx}), Symbol(Symbol{name:Fy}), Symbol(Symbol{name:Fz})])}])}",
+        "description": "Divergence operator"
+    },
+    {
+        "id": "curl_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Curl[{Fx, Fy, Fz}, {x, y, z}]",
+        "expected_expr": "Function{name: \"curl\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:Fx}), Symbol(Symbol{name:Fy}), Symbol(Symbol{name:Fz})])}])}",
+        "description": "Curl operator"
+    },
+    {
+        "id": "taylor_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!} (x-a)^n",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Mul(Box([Calculus(Box(Derivative{expression: Box(Symbol(Symbol{name:f})))))), variable: Symbol{name:x}, order: Symbol{name:n}}, Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))])), Pow(Box(Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:a})]))]))), Box(Symbol(Symbol{name:n})))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Taylor series expansion"
+    },
+    {
+        "id": "maclaurin_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{n=0}^{\\infty} \\frac{f^{(n)}(0)}{n!} x^n",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Mul(Box([Calculus(Box(Derivative{expression: Box(Symbol(Symbol{name:f})))))), variable: Symbol{name:x}, order: Symbol{name:n}}, Pow(Box(Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}), Box(Number(SmallInt(-1))))])), Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:n})))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Maclaurin series expansion"
+    },
+    {
+        "id": "fourier_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\frac{a_0}{2} + \\sum_{n=1}^{\\infty} \\left( a_n \\cos\\left(\\frac{n\\pi x}{L}\\right) + b_n \\sin\\left(\\frac{n\\pi x}{L}\\right) \\right)",
+        "expected_expr": "Add(Box([Mul(Box([Symbol(Symbol{name:a_0}), Number(Rational(1/2))])), Calculus(Box(Sum{expression: Box(Add(Box([Mul(Box([Symbol(Symbol{name:a_n}))), Function{name:cos, args:Box([Mul(Box([Symbol(Symbol{name:n}), Constant(Pi), Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:L})), Box(Number(SmallInt(-1))))]))])}])), Mul(Box([Symbol(Symbol{name:b_n}), Function{name:sin, args:Box([Mul(Box([Symbol(Symbol{name:n}), Constant(Pi), Symbol(Symbol{name:x}), Pow(Box(Symbol(Symbol{name:L})), Box(Number(SmallInt(-1))))]))])}]))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(1))), end: Box(Constant(Infinity))}]))",
+        "description": "Fourier series"
+    },
+    {
+        "id": "power_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{n=0}^{\\infty} a_n (x-c)^n",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Symbol(Symbol{name:a_n}))), Pow(Box(Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:c})]))]))), Box(Symbol(Symbol{name:n})))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Power series"
+    },
+    {
+        "id": "laurent_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{n=-\\infty}^{\\infty} a_n (z-c)^n",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Symbol(Symbol{name:a_n}))), Pow(Box(Add(Box([Symbol(Symbol{name:z}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:c})]))]))), Box(Symbol(Symbol{name:n})))]))), variable: Symbol{name:n}, start: Box(Mul(Box([Number(SmallInt(-1)), Constant(Infinity)]))), end: Box(Constant(Infinity))}",
+        "description": "Laurent series"
+    },
+    {
+        "id": "geometric_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{n=0}^{\\infty} ar^n",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Symbol(Symbol{name:a}))), Pow(Box(Symbol(Symbol{name:r})), Box(Symbol(Symbol{name:n})))]))), variable: Symbol{name:n}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Geometric series"
+    },
+    {
+        "id": "binomial_series_latex",
+        "language": "latex",
+        "category": "series_expansions",
+        "input": "\\sum_{k=0}^{\\infty} \\binom{\\alpha}{k} x^k",
+        "expected_expr": "Calculus(Box(Sum{expression: Box(Mul(Box([Function{name:binomial, args:Box([Symbol(Symbol{name:alpha}))), Symbol(Symbol{name:k})])}, Pow(Box(Symbol(Symbol{name:x})), Box(Symbol(Symbol{name:k})))]))), variable: Symbol{name:k}, start: Box(Number(SmallInt(0))), end: Box(Constant(Infinity))}",
+        "description": "Binomial series"
+    },
+    {
+        "id": "first_order_ode_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\frac{dy}{dx} = f(x, y)",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Derivative{expression: Box(Symbol(Symbol{name:y})))), variable: Symbol{name:x}, order: 1}), right: Box(Function{name:f, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}), relation_type: Equal}",
+        "description": "First-order ODE"
+    },
+    {
+        "id": "second_order_ode_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = g(x)",
+        "expected_expr": "Relation{left: Box(Add(Box([Calculus(Box(Derivative{expression: Box(Symbol(Symbol{name:y})))), variable: Symbol{name:x}, order: 2}, Mul(Box([Function{name:p, args:Box([Symbol(Symbol{name:x})])}, Calculus(Box(Derivative{expression: Box(Symbol(Symbol{name:y})))), variable: Symbol{name:x}, order: 1}])), Mul(Box([Function{name:q, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:y})]))]))), right: Box(Function{name:g, args:Box([Symbol(Symbol{name:x})])}), relation_type: Equal}",
+        "description": "Second-order linear ODE"
+    },
+    {
+        "id": "wave_equation_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\frac{\\partial^2 u}{\\partial t^2} = c^2 \\frac{\\partial^2 u}{\\partial x^2}",
+        "expected_expr": "Relation{left: Box(PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:u})))), variable: Symbol{name:t}, order: 2}), right: Box(Mul(Box([Pow(Box(Symbol(Symbol{name:c})), Box(Number(SmallInt(2)))), PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:u})))), variable: Symbol{name:x}, order: 2}]))), relation_type: Equal}",
+        "description": "Wave equation PDE"
+    },
+    {
+        "id": "heat_equation_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\frac{\\partial u}{\\partial t} = \\alpha \\frac{\\partial^2 u}{\\partial x^2}",
+        "expected_expr": "Relation{left: Box(PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:u})))), variable: Symbol{name:t}, order: 1}), right: Box(Mul(Box([Symbol(Symbol{name:alpha}), PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:u})))), variable: Symbol{name:x}, order: 2}]))), relation_type: Equal}",
+        "description": "Heat equation PDE"
+    },
+    {
+        "id": "laplace_equation_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\nabla^2 u = 0",
+        "expected_expr": "Relation{left: Box(Laplacian{expression: Box(Symbol(Symbol{name:u}))}), right: Box(Number(SmallInt(0))), relation_type: Equal}",
+        "description": "Laplace equation"
+    },
+    {
+        "id": "poisson_equation_latex",
+        "language": "latex",
+        "category": "differential_equations",
+        "input": "\\nabla^2 u = f",
+        "expected_expr": "Relation{left: Box(Laplacian{expression: Box(Symbol(Symbol{name:u}))}), right: Box(Symbol(Symbol{name:f})), relation_type: Equal}",
+        "description": "Poisson equation"
+    },
+    {
+        "id": "eigenvalue_problem_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "A\\vec{v} = \\lambda \\vec{v}",
+        "expected_expr": "Relation{left: Box(Mul(Box([Matrix(Box([[Symbol(Symbol{name:A})]])), Vector{components: Box([Symbol(Symbol{name:v})])}]))), right: Box(Mul(Box([Symbol(Symbol{name:lambda}), Vector{components: Box([Symbol(Symbol{name:v})])}]))), relation_type: Equal}",
+        "description": "Eigenvalue problem"
+    },
+    {
+        "id": "characteristic_polynomial_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "\\det(A - \\lambda I)",
+        "expected_expr": "Function{name:det, args:Box([Add(Box([Matrix(Box([[Symbol(Symbol{name:A})]])), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:lambda}), Matrix(Box([[Symbol(Symbol{name:I})]]))]))]))])}",
+        "description": "Characteristic polynomial"
+    },
+    {
+        "id": "matrix_exponential_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "e^{At}",
+        "expected_expr": "Pow(Box(Constant(E)), Box(Mul(Box([Matrix(Box([[Symbol(Symbol{name:A})]])), Symbol(Symbol{name:t})]))))",
+        "description": "Matrix exponential"
+    },
+    {
+        "id": "svd_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "A = U\\Sigma V^T",
+        "expected_expr": "Relation{left: Box(Matrix(Box([[Symbol(Symbol{name:A})]]))), right: Box(Mul(Box([Matrix(Box([[Symbol(Symbol{name:U})]])), Matrix(Box([[Symbol(Symbol{name:Sigma})]])), Pow(Box(Matrix(Box([[Symbol(Symbol{name:V})]]))), Box(Symbol(Symbol{name:T})))]))), relation_type: Equal}",
+        "description": "Singular Value Decomposition"
+    },
+    {
+        "id": "qr_decomposition_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "A = QR",
+        "expected_expr": "Relation{left: Box(Matrix(Box([[Symbol(Symbol{name:A})]]))), right: Box(Mul(Box([Matrix(Box([[Symbol(Symbol{name:Q})]])), Matrix(Box([[Symbol(Symbol{name:R})]]))]))), relation_type: Equal}",
+        "description": "QR decomposition"
+    },
+    {
+        "id": "lu_decomposition_latex",
+        "language": "latex",
+        "category": "linear_algebra_advanced",
+        "input": "A = LU",
+        "expected_expr": "Relation{left: Box(Matrix(Box([[Symbol(Symbol{name:A})]]))), right: Box(Mul(Box([Matrix(Box([[Symbol(Symbol{name:L})]])), Matrix(Box([[Symbol(Symbol{name:U})]]))]))), relation_type: Equal}",
+        "description": "LU decomposition"
+    },
+    {
+        "id": "complex_conjugate_latex",
+        "language": "latex",
+        "category": "complex_analysis",
+        "input": "\\overline{z}",
+        "expected_expr": "Function{name:conjugate, args:Box([Symbol(Symbol{name:z})])}",
+        "description": "Complex conjugate"
+    },
+    {
+        "id": "complex_modulus_latex",
+        "language": "latex",
+        "category": "complex_analysis",
+        "input": "|z|",
+        "expected_expr": "Function{name:abs, args:Box([Symbol(Symbol{name:z})])}",
+        "description": "Complex modulus"
+    },
+    {
+        "id": "cauchy_riemann_latex",
+        "language": "latex",
+        "category": "complex_analysis",
+        "input": "\\frac{\\partial u}{\\partial x} = \\frac{\\partial v}{\\partial y}",
+        "expected_expr": "Relation{left: Box(PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:u})))), variable: Symbol{name:x}, order: 1}), right: Box(PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:v})))), variable: Symbol{name:y}, order: 1}), relation_type: Equal}",
+        "description": "Cauchy-Riemann equation"
+    },
+    {
+        "id": "contour_integral_latex",
+        "language": "latex",
+        "category": "complex_analysis",
+        "input": "\\oint_C f(z) dz",
+        "expected_expr": "ContourCalculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:z})))])}), contour: Symbol{name:C}}",
+        "description": "Contour integral"
+    },
+    {
+        "id": "residue_theorem_latex",
+        "language": "latex",
+        "category": "complex_analysis",
+        "input": "\\oint_C f(z) dz = 2\\pi i \\sum \\text{Res}(f, z_k)",
+        "expected_expr": "Relation{left: Box(ContourCalculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:z})))])}), contour: Symbol{name:C}}), right: Box(Mul(Box([Number(SmallInt(2)), Constant(Pi), Constant(I), Calculus(Box(Sum{expression: Box(Function{name:residue, args:Box([Symbol(Symbol{name:f}))), Symbol(Symbol{name:z_k})])}), variable: Symbol{name:k}, start: Box(Number(SmallInt(1))), end: Box(Symbol(Symbol{name:n}))}]))), relation_type: Equal}",
+        "description": "Residue theorem"
+    },
+    {
+        "id": "bessel_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "J_n(x)",
+        "expected_expr": "Function{name:bessel_j, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Bessel function of first kind"
+    },
+    {
+        "id": "neumann_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "Y_n(x)",
+        "expected_expr": "Function{name:bessel_y, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Bessel function of second kind (Neumann)"
+    },
+    {
+        "id": "hankel_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "H_n^{(1)}(x)",
+        "expected_expr": "Function{name:hankel_h1, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Hankel function of first kind"
+    },
+    {
+        "id": "legendre_polynomial_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "P_n(x)",
+        "expected_expr": "Function{name:legendre_p, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Legendre polynomial"
+    },
+    {
+        "id": "associated_legendre_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "P_l^m(x)",
+        "expected_expr": "Function{name:assoc_legendre, args:Box([Symbol(Symbol{name:l}), Symbol(Symbol{name:m}), Symbol(Symbol{name:x})])}",
+        "description": "Associated Legendre function"
+    },
+    {
+        "id": "spherical_harmonic_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "Y_l^m(\\theta, \\phi)",
+        "expected_expr": "Function{name:spherical_harmonic, args:Box([Symbol(Symbol{name:l}), Symbol(Symbol{name:m}), Symbol(Symbol{name:theta}), Symbol(Symbol{name:phi})])}",
+        "description": "Spherical harmonic"
+    },
+    {
+        "id": "hermite_polynomial_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "H_n(x)",
+        "expected_expr": "Function{name:hermite, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Hermite polynomial"
+    },
+    {
+        "id": "laguerre_polynomial_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "L_n(x)",
+        "expected_expr": "Function{name:laguerre, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Laguerre polynomial"
+    },
+    {
+        "id": "chebyshev_polynomial_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "T_n(x)",
+        "expected_expr": "Function{name:chebyshev_t, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Chebyshev polynomial of first kind"
+    },
+    {
+        "id": "hypergeometric_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "{}_2F_1(a, b; c; z)",
+        "expected_expr": "Function{name:hypergeometric_2f1, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:c}), Symbol(Symbol{name:z})])}",
+        "description": "Hypergeometric function 2F1"
+    },
+    {
+        "id": "elliptic_integral_first_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "F(\\phi, k)",
+        "expected_expr": "Function{name:elliptic_f, args:Box([Symbol(Symbol{name:phi}), Symbol(Symbol{name:k})])}",
+        "description": "Elliptic integral of first kind"
+    },
+    {
+        "id": "elliptic_integral_second_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "E(\\phi, k)",
+        "expected_expr": "Function{name:elliptic_e, args:Box([Symbol(Symbol{name:phi}), Symbol(Symbol{name:k})])}",
+        "description": "Elliptic integral of second kind"
+    },
+    {
+        "id": "beta_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "B(x, y)",
+        "expected_expr": "Function{name:beta, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Beta function"
+    },
+    {
+        "id": "digamma_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\psi(x)",
+        "expected_expr": "Function{name:digamma, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Digamma function"
+    },
+    {
+        "id": "polygamma_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\psi^{(n)}(x)",
+        "expected_expr": "Function{name:polygamma, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Polygamma function"
+    },
+    {
+        "id": "riemann_zeta_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\zeta(s)",
+        "expected_expr": "Function{name:zeta, args:Box([Symbol(Symbol{name:s})])}",
+        "description": "Riemann zeta function"
+    },
+    {
+        "id": "dirichlet_eta_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\eta(s)",
+        "expected_expr": "Function{name:dirichlet_eta, args:Box([Symbol(Symbol{name:s})])}",
+        "description": "Dirichlet eta function"
+    },
+    {
+        "id": "error_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\text{erf}(x)",
+        "expected_expr": "Function{name:erf, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Error function"
+    },
+    {
+        "id": "complementary_error_function_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "\\text{erfc}(x)",
+        "expected_expr": "Function{name:erfc, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Complementary error function"
+    },
+    {
+        "id": "fresnel_integral_s_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "S(x)",
+        "expected_expr": "Function{name:fresnel_s, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fresnel integral S"
+    },
+    {
+        "id": "fresnel_integral_c_latex",
+        "language": "latex",
+        "category": "special_functions_advanced",
+        "input": "C(x)",
+        "expected_expr": "Function{name:fresnel_c, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fresnel integral C"
+    },
+    {
+        "id": "factorial_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "n!",
+        "expected_expr": "Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Factorial"
+    },
+    {
+        "id": "double_factorial_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "n!!",
+        "expected_expr": "Function{name:double_factorial, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Double factorial"
+    },
+    {
+        "id": "binomial_coefficient_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\binom{n}{k}",
+        "expected_expr": "Function{name:binomial, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Binomial coefficient"
+    },
+    {
+        "id": "multinomial_coefficient_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\binom{n}{k_1, k_2, \\ldots, k_m}",
+        "expected_expr": "Function{name:multinomial, args:Box([Symbol(Symbol{name:n}), Vector{components: Box([Symbol(Symbol{name:k_1}), Symbol(Symbol{name:k_2}), Symbol(Symbol{name:k_m})])}])}",
+        "description": "Multinomial coefficient"
+    },
+    {
+        "id": "stirling_first_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "s(n, k)",
+        "expected_expr": "Function{name:stirling_first, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Stirling number of first kind"
+    },
+    {
+        "id": "stirling_second_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "S(n, k)",
+        "expected_expr": "Function{name:stirling_second, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Stirling number of second kind"
+    },
+    {
+        "id": "bell_number_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "B_n",
+        "expected_expr": "Function{name:bell, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Bell number"
+    },
+    {
+        "id": "catalan_number_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "C_n",
+        "expected_expr": "Function{name:catalan, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Catalan number"
+    },
+    {
+        "id": "fibonacci_number_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "F_n",
+        "expected_expr": "Function{name:fibonacci, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Fibonacci number"
+    },
+    {
+        "id": "lucas_number_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "L_n",
+        "expected_expr": "Function{name:lucas, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Lucas number"
+    },
+    {
+        "id": "euler_totient_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\phi(n)",
+        "expected_expr": "Function{name:euler_phi, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Euler's totient function"
+    },
+    {
+        "id": "mobius_function_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\mu(n)",
+        "expected_expr": "Function{name:mobius, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "M\u00f6bius function"
+    },
+    {
+        "id": "divisor_function_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\sigma_k(n)",
+        "expected_expr": "Function{name:divisor_sigma, args:Box([Symbol(Symbol{name:k}), Symbol(Symbol{name:n})])}",
+        "description": "Divisor function"
+    },
+    {
+        "id": "prime_counting_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\pi(x)",
+        "expected_expr": "Function{name:prime_pi, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Prime counting function"
+    },
+    {
+        "id": "legendre_symbol_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\left(\\frac{a}{p}\\right)",
+        "expected_expr": "Function{name:legendre_symbol, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:p})])}",
+        "description": "Legendre symbol"
+    },
+    {
+        "id": "jacobi_symbol_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\left(\\frac{a}{n}\\right)",
+        "expected_expr": "Function{name:jacobi_symbol, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Jacobi symbol"
+    },
+    {
+        "id": "partition_function_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "p(n)",
+        "expected_expr": "Function{name:partition, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Partition function"
+    },
+    {
+        "id": "ramanujan_tau_latex",
+        "language": "latex",
+        "category": "combinatorics_number_theory",
+        "input": "\\tau(n)",
+        "expected_expr": "Function{name:ramanujan_tau, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Ramanujan tau function"
+    },
+    {
+        "id": "hyperbolic_sin_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\sinh(x)",
+        "expected_expr": "Function{name:sinh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic sine"
+    },
+    {
+        "id": "hyperbolic_cos_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\cosh(x)",
+        "expected_expr": "Function{name:cosh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic cosine"
+    },
+    {
+        "id": "hyperbolic_tan_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\tanh(x)",
+        "expected_expr": "Function{name:tanh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic tangent"
+    },
+    {
+        "id": "inverse_hyperbolic_sin_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\sinh^{-1}(x)",
+        "expected_expr": "Function{name:asinh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic sine"
+    },
+    {
+        "id": "inverse_hyperbolic_cos_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\cosh^{-1}(x)",
+        "expected_expr": "Function{name:acosh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic cosine"
+    },
+    {
+        "id": "inverse_hyperbolic_tan_latex",
+        "language": "latex",
+        "category": "hyperbolic_functions",
+        "input": "\\tanh^{-1}(x)",
+        "expected_expr": "Function{name:atanh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic tangent"
+    },
+    {
+        "id": "inverse_trig_sin_latex",
+        "language": "latex",
+        "category": "inverse_trigonometric",
+        "input": "\\arcsin(x)",
+        "expected_expr": "Function{name:asin, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse sine"
+    },
+    {
+        "id": "inverse_trig_cos_latex",
+        "language": "latex",
+        "category": "inverse_trigonometric",
+        "input": "\\arccos(x)",
+        "expected_expr": "Function{name:acos, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse cosine"
+    },
+    {
+        "id": "inverse_trig_tan_latex",
+        "language": "latex",
+        "category": "inverse_trigonometric",
+        "input": "\\arctan(x)",
+        "expected_expr": "Function{name:atan, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse tangent"
+    },
+    {
+        "id": "atan2_latex",
+        "language": "latex",
+        "category": "inverse_trigonometric",
+        "input": "\\text{atan2}(y, x)",
+        "expected_expr": "Function{name:atan2, args:Box([Symbol(Symbol{name:y}), Symbol(Symbol{name:x})])}",
+        "description": "Two-argument arctangent"
+    },
+    {
+        "id": "secant_latex",
+        "language": "latex",
+        "category": "trigonometric_extended",
+        "input": "\\sec(x)",
+        "expected_expr": "Function{name:sec, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Secant function"
+    },
+    {
+        "id": "cosecant_latex",
+        "language": "latex",
+        "category": "trigonometric_extended",
+        "input": "\\csc(x)",
+        "expected_expr": "Function{name:csc, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cosecant function"
+    },
+    {
+        "id": "cotangent_latex",
+        "language": "latex",
+        "category": "trigonometric_extended",
+        "input": "\\cot(x)",
+        "expected_expr": "Function{name:cot, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cotangent function"
+    },
+    {
+        "id": "probability_density_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "f_X(x)",
+        "expected_expr": "Function{name:pdf, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:x})])}",
+        "description": "Probability density function"
+    },
+    {
+        "id": "cumulative_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "F_X(x)",
+        "expected_expr": "Function{name:cdf, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:x})])}",
+        "description": "Cumulative distribution function"
+    },
+    {
+        "id": "expectation_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "E[X]",
+        "expected_expr": "Function{name:expectation, args:Box([Symbol(Symbol{name:X})])}",
+        "description": "Expected value"
+    },
+    {
+        "id": "variance_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\text{Var}(X)",
+        "expected_expr": "Function{name:variance, args:Box([Symbol(Symbol{name:X})])}",
+        "description": "Variance"
+    },
+    {
+        "id": "standard_deviation_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\sigma_X",
+        "expected_expr": "Function{name:std_dev, args:Box([Symbol(Symbol{name:X})])}",
+        "description": "Standard deviation"
+    },
+    {
+        "id": "covariance_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\text{Cov}(X, Y)",
+        "expected_expr": "Function{name:covariance, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Covariance"
+    },
+    {
+        "id": "correlation_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\rho_{X,Y}",
+        "expected_expr": "Function{name:correlation, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Correlation coefficient"
+    },
+    {
+        "id": "normal_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\mathcal{N}(\\mu, \\sigma^2)",
+        "expected_expr": "Function{name:normal_dist, args:Box([Symbol(Symbol{name:mu}), Pow(Box(Symbol(Symbol{name:sigma})), Box(Number(SmallInt(2))))])}",
+        "description": "Normal distribution"
+    },
+    {
+        "id": "binomial_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\text{Binomial}(n, p)",
+        "expected_expr": "Function{name:binomial_dist, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:p})])}",
+        "description": "Binomial distribution"
+    },
+    {
+        "id": "poisson_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\text{Poisson}(\\lambda)",
+        "expected_expr": "Function{name:poisson_dist, args:Box([Symbol(Symbol{name:lambda})])}",
+        "description": "Poisson distribution"
+    },
+    {
+        "id": "chi_squared_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "\\chi^2(k)",
+        "expected_expr": "Function{name:chi_squared, args:Box([Symbol(Symbol{name:k})])}",
+        "description": "Chi-squared distribution"
+    },
+    {
+        "id": "t_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "t(\\nu)",
+        "expected_expr": "Function{name:t_dist, args:Box([Symbol(Symbol{name:nu})])}",
+        "description": "Student's t-distribution"
+    },
+    {
+        "id": "f_distribution_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "F(d_1, d_2)",
+        "expected_expr": "Function{name:f_dist, args:Box([Symbol(Symbol{name:d_1}), Symbol(Symbol{name:d_2})])}",
+        "description": "F-distribution"
+    },
+    {
+        "id": "conditional_probability_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "P(A|B)",
+        "expected_expr": "Function{name:conditional_prob, args:Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Conditional probability"
+    },
+    {
+        "id": "bayes_theorem_latex",
+        "language": "latex",
+        "category": "probability_statistics",
+        "input": "P(A|B) = \\frac{P(B|A)P(A)}{P(B)}",
+        "expected_expr": "Relation{left: Box(Function{name:conditional_prob, args:Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}), right: Box(Mul(Box([Mul(Box([Function{name:conditional_prob, args:Box([Symbol(Symbol{name:B}), Symbol(Symbol{name:A})])}, Function{name:prob, args:Box([Symbol(Symbol{name:A})])}])), Pow(Box(Function{name:prob, args:Box([Symbol(Symbol{name:B})])}), Box(Number(SmallInt(-1))))]))), relation_type: Equal}",
+        "description": "Bayes' theorem"
+    },
+    {
+        "id": "metric_space_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "d(x, y)",
+        "expected_expr": "Function{name:metric, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Metric function"
+    },
+    {
+        "id": "norm_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\|x\\|",
+        "expected_expr": "Function{name:norm, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Norm"
+    },
+    {
+        "id": "inner_product_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\langle x, y \\rangle",
+        "expected_expr": "Function{name:inner_product, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Inner product"
+    },
+    {
+        "id": "cross_product_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\vec{a} \\times \\vec{b}",
+        "expected_expr": "Function{name:cross_product, args:Box([Vector{components: Box([Symbol(Symbol{name:a})])}, Vector{components: Box([Symbol(Symbol{name:b})])}])}",
+        "description": "Cross product"
+    },
+    {
+        "id": "dot_product_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\vec{a} \\cdot \\vec{b}",
+        "expected_expr": "Function{name:dot_product, args:Box([Vector{components: Box([Symbol(Symbol{name:a})])}, Vector{components: Box([Symbol(Symbol{name:b})])}])}",
+        "description": "Dot product"
+    },
+    {
+        "id": "euclidean_distance_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}",
+        "expected_expr": "Pow(Box(Add(Box([Pow(Box(Add(Box([Symbol(Symbol{name:x_2}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:x_1})]))]))), Box(Number(SmallInt(2)))), Pow(Box(Add(Box([Symbol(Symbol{name:y_2}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:y_1})]))]))), Box(Number(SmallInt(2))))]))), Box(Number(Rational(1/2))))",
+        "description": "Euclidean distance formula"
+    },
+    {
+        "id": "sphere_equation_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "(x-a)^2 + (y-b)^2 + (z-c)^2 = r^2",
+        "expected_expr": "Relation{left: Box(Add(Box([Pow(Box(Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:a})]))]))), Box(Number(SmallInt(2)))), Pow(Box(Add(Box([Symbol(Symbol{name:y}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:b})]))]))), Box(Number(SmallInt(2)))), Pow(Box(Add(Box([Symbol(Symbol{name:z}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:c})]))]))), Box(Number(SmallInt(2))))]))), right: Box(Pow(Box(Symbol(Symbol{name:r})), Box(Number(SmallInt(2))))), relation_type: Equal}",
+        "description": "Sphere equation"
+    },
+    {
+        "id": "circle_equation_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "(x-h)^2 + (y-k)^2 = r^2",
+        "expected_expr": "Relation{left: Box(Add(Box([Pow(Box(Add(Box([Symbol(Symbol{name:x}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:h})]))]))), Box(Number(SmallInt(2)))), Pow(Box(Add(Box([Symbol(Symbol{name:y}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:k})]))]))), Box(Number(SmallInt(2))))]))), right: Box(Pow(Box(Symbol(Symbol{name:r})), Box(Number(SmallInt(2))))), relation_type: Equal}",
+        "description": "Circle equation"
+    },
+    {
+        "id": "ellipse_equation_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1",
+        "expected_expr": "Relation{left: Box(Add(Box([Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2)))), Pow(Box(Pow(Box(Symbol(Symbol{name:a})), Box(Number(SmallInt(2))))), Box(Number(SmallInt(-1))))])), Mul(Box([Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(2)))), Pow(Box(Pow(Box(Symbol(Symbol{name:b})), Box(Number(SmallInt(2))))), Box(Number(SmallInt(-1))))]))]))), right: Box(Number(SmallInt(1))), relation_type: Equal}",
+        "description": "Ellipse equation"
+    },
+    {
+        "id": "hyperbola_equation_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\frac{x^2}{a^2} - \\frac{y^2}{b^2} = 1",
+        "expected_expr": "Relation{left: Box(Add(Box([Mul(Box([Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2)))), Pow(Box(Pow(Box(Symbol(Symbol{name:a})), Box(Number(SmallInt(2))))), Box(Number(SmallInt(-1))))])), Mul(Box([Number(SmallInt(-1)), Pow(Box(Symbol(Symbol{name:y})), Box(Number(SmallInt(2)))), Pow(Box(Pow(Box(Symbol(Symbol{name:b})), Box(Number(SmallInt(2))))), Box(Number(SmallInt(-1))))]))]))), right: Box(Number(SmallInt(1))), relation_type: Equal}",
+        "description": "Hyperbola equation"
+    },
+    {
+        "id": "parabola_equation_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "y = ax^2 + bx + c",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:y})), right: Box(Add(Box([Mul(Box([Symbol(Symbol{name:a}), Pow(Box(Symbol(Symbol{name:x})), Box(Number(SmallInt(2))))])), Mul(Box([Symbol(Symbol{name:b}), Symbol(Symbol{name:x})])), Symbol(Symbol{name:c})]))), relation_type: Equal}",
+        "description": "Parabola equation"
+    },
+    {
+        "id": "parametric_curve_latex",
+        "language": "latex",
+        "category": "topology_geometry",
+        "input": "\\vec{r}(t) = \\langle x(t), y(t), z(t) \\rangle",
+        "expected_expr": "Relation{left: Box(Function{name:r, args:Box([Symbol(Symbol{name:t})])}), right: Box(Vector{components: Box([Function{name:x, args:Box([Symbol(Symbol{name:t})])}, Function{name:y, args:Box([Symbol(Symbol{name:t})])}, Function{name:z, args:Box([Symbol(Symbol{name:t})])}])}), relation_type: Equal}",
+        "description": "Parametric curve"
+    },
+    {
+        "id": "polar_coordinates_latex",
+        "language": "latex",
+        "category": "coordinate_systems",
+        "input": "x = r\\cos\\theta, y = r\\sin\\theta",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Mul(Box([Symbol(Symbol{name:r}), Function{name:cos, args:Box([Symbol(Symbol{name:theta})])}]))), relation_type: Equal}",
+        "description": "Polar to Cartesian conversion"
+    },
+    {
+        "id": "cylindrical_coordinates_latex",
+        "language": "latex",
+        "category": "coordinate_systems",
+        "input": "x = r\\cos\\theta, y = r\\sin\\theta, z = z",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Mul(Box([Symbol(Symbol{name:r}), Function{name:cos, args:Box([Symbol(Symbol{name:theta})])}]))), relation_type: Equal}",
+        "description": "Cylindrical coordinates"
+    },
+    {
+        "id": "spherical_coordinates_latex",
+        "language": "latex",
+        "category": "coordinate_systems",
+        "input": "x = \\rho\\sin\\phi\\cos\\theta",
+        "expected_expr": "Relation{left: Box(Symbol(Symbol{name:x})), right: Box(Mul(Box([Symbol(Symbol{name:rho}), Function{name:sin, args:Box([Symbol(Symbol{name:phi})])}, Function{name:cos, args:Box([Symbol(Symbol{name:theta})])}]))), relation_type: Equal}",
+        "description": "Spherical coordinates"
+    },
+    {
+        "id": "fourier_transform_latex",
+        "language": "latex",
+        "category": "transforms",
+        "input": "\\mathcal{F}[f(t)](\\omega) = \\int_{-\\infty}^{\\infty} f(t) e^{-i\\omega t} dt",
+        "expected_expr": "Relation{left: Box(Function{name:fourier_transform, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:t})])}, Symbol(Symbol{name:omega})])}), right: Box(Calculus(Box(Integral{integrand: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:t})))])}, Pow(Box(Constant(E)), Box(Mul(Box([Number(SmallInt(-1)), Constant(I), Symbol(Symbol{name:omega}), Symbol(Symbol{name:t})]))))]))), variable: Symbol{name:t}, bounds: Some((Box(Mul(Box([Number(SmallInt(-1)), Constant(Infinity)]))), Box(Constant(Infinity))))}), relation_type: Equal}",
+        "description": "Fourier transform"
+    },
+    {
+        "id": "laplace_transform_latex",
+        "language": "latex",
+        "category": "transforms",
+        "input": "\\mathcal{L}[f(t)](s) = \\int_0^{\\infty} f(t) e^{-st} dt",
+        "expected_expr": "Relation{left: Box(Function{name:laplace_transform, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:t})])}, Symbol(Symbol{name:s})])}), right: Box(Calculus(Box(Integral{integrand: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:t})))])}, Pow(Box(Constant(E)), Box(Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:s}), Symbol(Symbol{name:t})]))))]))), variable: Symbol{name:t}, bounds: Some((Box(Number(SmallInt(0))), Box(Constant(Infinity))))}), relation_type: Equal}",
+        "description": "Laplace transform"
+    },
+    {
+        "id": "z_transform_latex",
+        "language": "latex",
+        "category": "transforms",
+        "input": "\\mathcal{Z}[x[n]](z) = \\sum_{n=-\\infty}^{\\infty} x[n] z^{-n}",
+        "expected_expr": "Relation{left: Box(Function{name:z_transform, args:Box([Function{name:x, args:Box([Symbol(Symbol{name:n})])}, Symbol(Symbol{name:z})])}), right: Box(Calculus(Box(Sum{expression: Box(Mul(Box([Function{name:x, args:Box([Symbol(Symbol{name:n})))])}, Pow(Box(Symbol(Symbol{name:z})), Box(Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:n})]))))]))), variable: Symbol{name:n}, start: Box(Mul(Box([Number(SmallInt(-1)), Constant(Infinity)]))), end: Box(Constant(Infinity))}), relation_type: Equal}",
+        "description": "Z-transform"
+    },
+    {
+        "id": "convolution_latex",
+        "language": "latex",
+        "category": "transforms",
+        "input": "(f * g)(t) = \\int_{-\\infty}^{\\infty} f(\\tau) g(t-\\tau) d\\tau",
+        "expected_expr": "Relation{left: Box(Function{name:convolution, args:Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g}), Symbol(Symbol{name:t})])}), right: Box(Calculus(Box(Integral{integrand: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:tau})))])}, Function{name:g, args:Box([Add(Box([Symbol(Symbol{name:t}), Mul(Box([Number(SmallInt(-1)), Symbol(Symbol{name:tau})]))]))])}]))), variable: Symbol{name:tau}, bounds: Some((Box(Mul(Box([Number(SmallInt(-1)), Constant(Infinity)]))), Box(Constant(Infinity))))}), relation_type: Equal}",
+        "description": "Convolution integral"
+    },
+    {
+        "id": "dirac_delta_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "\\delta(x)",
+        "expected_expr": "Function{name:dirac_delta, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Dirac delta function"
+    },
+    {
+        "id": "heaviside_step_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "H(x)",
+        "expected_expr": "Function{name:heaviside, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Heaviside step function"
+    },
+    {
+        "id": "sign_function_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "\\text{sgn}(x)",
+        "expected_expr": "Function{name:sign, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Sign function"
+    },
+    {
+        "id": "floor_function_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "\\lfloor x \\rfloor",
+        "expected_expr": "Function{name:floor, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Floor function"
+    },
+    {
+        "id": "ceiling_function_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "\\lceil x \\rceil",
+        "expected_expr": "Function{name:ceil, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Ceiling function"
+    },
+    {
+        "id": "fractional_part_latex",
+        "language": "latex",
+        "category": "generalized_functions",
+        "input": "\\{x\\}",
+        "expected_expr": "Function{name:frac, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fractional part"
+    },
+    {
+        "id": "min_function_latex",
+        "language": "latex",
+        "category": "optimization",
+        "input": "\\min(x, y)",
+        "expected_expr": "Function{name:min, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Minimum function"
+    },
+    {
+        "id": "max_function_latex",
+        "language": "latex",
+        "category": "optimization",
+        "input": "\\max(x, y)",
+        "expected_expr": "Function{name:max, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Maximum function"
+    },
+    {
+        "id": "argmin_latex",
+        "language": "latex",
+        "category": "optimization",
+        "input": "\\arg\\min_x f(x)",
+        "expected_expr": "Function{name:argmin, args:Box([Symbol(Symbol{name:x}), Function{name:f, args:Box([Symbol(Symbol{name:x})])}])}",
+        "description": "Argument of minimum"
+    },
+    {
+        "id": "argmax_latex",
+        "language": "latex",
+        "category": "optimization",
+        "input": "\\arg\\max_x f(x)",
+        "expected_expr": "Function{name:argmax, args:Box([Symbol(Symbol{name:x}), Function{name:f, args:Box([Symbol(Symbol{name:x})])}])}",
+        "description": "Argument of maximum"
+    },
+    {
+        "id": "lagrangian_latex",
+        "language": "latex",
+        "category": "optimization",
+        "input": "\\mathcal{L}(x, \\lambda) = f(x) + \\lambda g(x)",
+        "expected_expr": "Relation{left: Box(Function{name:lagrangian, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:lambda})])}), right: Box(Add(Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Mul(Box([Symbol(Symbol{name:lambda}), Function{name:g, args:Box([Symbol(Symbol{name:x})])}]))]))), relation_type: Equal}",
+        "description": "Lagrangian function"
+    },
+    {
+        "id": "hamiltonian_latex",
+        "language": "latex",
+        "category": "physics_mathematics",
+        "input": "H(q, p, t)",
+        "expected_expr": "Function{name:hamiltonian, args:Box([Symbol(Symbol{name:q}), Symbol(Symbol{name:p}), Symbol(Symbol{name:t})])}",
+        "description": "Hamiltonian function"
+    },
+    {
+        "id": "schrodinger_equation_latex",
+        "language": "latex",
+        "category": "physics_mathematics",
+        "input": "i\\hbar \\frac{\\partial \\psi}{\\partial t} = \\hat{H} \\psi",
+        "expected_expr": "Relation{left: Box(Mul(Box([Constant(I), Symbol(Symbol{name:hbar}), PartialCalculus(Box(Derivative{expression: Box(Symbol(Symbol{name:psi})))), variable: Symbol{name:t}, order: 1}]))), right: Box(Mul(Box([Function{name:operator, args:Box([Symbol(Symbol{name:H})])}, Symbol(Symbol{name:psi})]))), relation_type: Equal}",
+        "description": "Schr\u00f6dinger equation"
+    },
+    {
+        "id": "maxwell_equation_latex",
+        "language": "latex",
+        "category": "physics_mathematics",
+        "input": "\\nabla \\times \\vec{E} = -\\frac{\\partial \\vec{B}}{\\partial t}",
+        "expected_expr": "Relation{left: Box(Function{name: \"curl\", args: Box([Function{name: \"vector\", args: Box([Symbol(Symbol{name:E})])}])}), right: Box(Mul(Box([Number(SmallInt(-1)), PartialCalculus(Box(Derivative{expression: Box(Vector{components: Box([Symbol(Symbol{name:B})))])}), variable: Symbol{name:t}, order: 1}]))), relation_type: Equal}",
+        "description": "Maxwell's equation (Faraday's law)"
+    },
+    {
+        "id": "einstein_field_equation_latex",
+        "language": "latex",
+        "category": "physics_mathematics",
+        "input": "G_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}",
+        "expected_expr": "Relation{left: Box(Tensor{indices: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:nu})]), name: Symbol{name:G}}), right: Box(Mul(Box([Mul(Box([Number(SmallInt(8)), Constant(Pi), Symbol(Symbol{name:G})])), Pow(Box(Pow(Box(Symbol(Symbol{name:c})), Box(Number(SmallInt(4))))), Box(Number(SmallInt(-1)))), Tensor{indices: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:nu})]), name: Symbol{name:T}}]))), relation_type: Equal}",
+        "description": "Einstein field equation"
+    },
+    {
+        "id": "navier_stokes_latex",
+        "language": "latex",
+        "category": "physics_mathematics",
+        "input": "\\rho \\left(\\frac{\\partial \\vec{v}}{\\partial t} + \\vec{v} \\cdot \\nabla \\vec{v}\\right) = -\\nabla p + \\mu \\nabla^2 \\vec{v}",
+        "expected_expr": "Function{name: \"navier_stokes\", args: Box([Symbol(Symbol{name:rho}), Function{name: \"vector\", args: Box([Symbol(Symbol{name:v})])}, Symbol(Symbol{name:p}), Symbol(Symbol{name:mu})])}",
+        "description": "Navier-Stokes equation"
+    },
+    {
+        "id": "product_rule_latex",
+        "language": "latex",
+        "category": "calculus_rules",
+        "input": "\\frac{d}{dx}[f(x)g(x)] = f'(x)g(x) + f(x)g'(x)",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Derivative{expression: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:x})))])}, Function{name:g, args:Box([Symbol(Symbol{name:x})])}]))), variable: Symbol{name:x}, order: 1}), right: Box(Add(Box([Mul(Box([Calculus(Box(Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}, Function{name:g, args:Box([Symbol(Symbol{name:x})])}])), Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Calculus(Box(Derivative{expression: Box(Function{name:g, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}]))]))), relation_type: Equal}",
+        "description": "Product rule for derivatives"
+    },
+    {
+        "id": "quotient_rule_latex",
+        "language": "latex",
+        "category": "calculus_rules",
+        "input": "\\frac{d}{dx}\\left[\\frac{f(x)}{g(x)}\\right] = \\frac{f'(x)g(x) - f(x)g'(x)}{[g(x)]^2}",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Derivative{expression: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol{name:x})))])}, Pow(Box(Function{name:g, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(-1))))]))), variable: Symbol{name:x}, order: 1}), right: Box(Mul(Box([Add(Box([Mul(Box([Calculus(Box(Derivative{expression: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}, Function{name:g, args:Box([Symbol(Symbol{name:x})])}])), Mul(Box([Number(SmallInt(-1)), Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Calculus(Box(Derivative{expression: Box(Function{name:g, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}]))])), Pow(Box(Pow(Box(Function{name:g, args:Box([Symbol(Symbol{name:x})])}), Box(Number(SmallInt(2))))), Box(Number(SmallInt(-1))))]))), relation_type: Equal}",
+        "description": "Quotient rule for derivatives"
+    },
+    {
+        "id": "chain_rule_latex",
+        "language": "latex",
+        "category": "calculus_rules",
+        "input": "\\frac{d}{dx}[f(g(x))] = f'(g(x)) \\cdot g'(x)",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Derivative{expression: Box(Function{name:f, args:Box([Function{name:g, args:Box([Symbol(Symbol{name:x})))])}])}), variable: Symbol{name:x}, order: 1}), right: Box(Mul(Box([Calculus(Box(Derivative{expression: Box(Function{name:f, args:Box([Function{name:g, args:Box([Symbol(Symbol{name:x})))])}])}), variable: Function{name:g, args:Box([Symbol(Symbol{name:x})])}, order: 1}, Calculus(Box(Derivative{expression: Box(Function{name:g, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}]))), relation_type: Equal}",
+        "description": "Chain rule for derivatives"
+    },
+    {
+        "id": "integration_by_parts_latex",
+        "language": "latex",
+        "category": "calculus_rules",
+        "input": "\\int u \\, dv = uv - \\int v \\, du",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Integral{integrand: Box(Mul(Box([Symbol(Symbol{name:u}))), Symbol(Symbol{name:dv})]))), variable: Symbol{name:x}, bounds: None}), right: Box(Add(Box([Mul(Box([Symbol(Symbol{name:u}), Symbol(Symbol{name:v})])), Mul(Box([Number(SmallInt(-1)), Calculus(Box(Integral{integrand: Box(Mul(Box([Symbol(Symbol{name:v}))), Symbol(Symbol{name:du})]))), variable: Symbol{name:x}, bounds: None}]))]))), relation_type: Equal}",
+        "description": "Integration by parts"
+    },
+    {
+        "id": "fundamental_theorem_calculus_latex",
+        "language": "latex",
+        "category": "calculus_rules",
+        "input": "\\frac{d}{dx} \\int_a^x f(t) \\, dt = f(x)",
+        "expected_expr": "Relation{left: Box(Calculus(Box(Derivative{expression: Box(Calculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:t})))))])}), variable: Symbol{name:t}, bounds: Some((Box(Symbol(Symbol{name:a})), Box(Symbol(Symbol{name:x}))))}), variable: Symbol{name:x}, order: 1}), right: Box(Function{name:f, args:Box([Symbol(Symbol{name:x})])}), relation_type: Equal}",
+        "description": "Fundamental theorem of calculus"
+    },
+    {
+        "id": "hyperbolic_sin_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "Sinh[x]",
+        "expected_expr": "Function{name:sinh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic sine"
+    },
+    {
+        "id": "hyperbolic_cos_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "Cosh[x]",
+        "expected_expr": "Function{name:cosh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic cosine"
+    },
+    {
+        "id": "hyperbolic_tan_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "Tanh[x]",
+        "expected_expr": "Function{name:tanh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Hyperbolic tangent"
+    },
+    {
+        "id": "inverse_hyperbolic_sin_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "ArcSinh[x]",
+        "expected_expr": "Function{name:asinh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic sine"
+    },
+    {
+        "id": "inverse_hyperbolic_cos_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "ArcCosh[x]",
+        "expected_expr": "Function{name:acosh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic cosine"
+    },
+    {
+        "id": "inverse_hyperbolic_tan_wolfram",
+        "language": "wolfram",
+        "category": "hyperbolic_functions",
+        "input": "ArcTanh[x]",
+        "expected_expr": "Function{name:atanh, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse hyperbolic tangent"
+    },
+    {
+        "id": "inverse_trig_sin_wolfram",
+        "language": "wolfram",
+        "category": "inverse_trigonometric",
+        "input": "ArcSin[x]",
+        "expected_expr": "Function{name:asin, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse sine"
+    },
+    {
+        "id": "inverse_trig_cos_wolfram",
+        "language": "wolfram",
+        "category": "inverse_trigonometric",
+        "input": "ArcCos[x]",
+        "expected_expr": "Function{name:acos, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse cosine"
+    },
+    {
+        "id": "inverse_trig_tan_wolfram",
+        "language": "wolfram",
+        "category": "inverse_trigonometric",
+        "input": "ArcTan[x]",
+        "expected_expr": "Function{name:atan, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Inverse tangent"
+    },
+    {
+        "id": "atan2_wolfram",
+        "language": "wolfram",
+        "category": "inverse_trigonometric",
+        "input": "ArcTan[x, y]",
+        "expected_expr": "Function{name:atan2, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Two-argument arctangent"
+    },
+    {
+        "id": "secant_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric_extended",
+        "input": "Sec[x]",
+        "expected_expr": "Function{name:sec, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Secant function"
+    },
+    {
+        "id": "cosecant_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric_extended",
+        "input": "Csc[x]",
+        "expected_expr": "Function{name:csc, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cosecant function"
+    },
+    {
+        "id": "cotangent_wolfram",
+        "language": "wolfram",
+        "category": "trigonometric_extended",
+        "input": "Cot[x]",
+        "expected_expr": "Function{name:cot, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Cotangent function"
+    },
+    {
+        "id": "probability_density_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "PDF[dist, x]",
+        "expected_expr": "Function{name:pdf, args:Box([Symbol(Symbol{name:dist}), Symbol(Symbol{name:x})])}",
+        "description": "Probability density function"
+    },
+    {
+        "id": "cumulative_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "CDF[dist, x]",
+        "expected_expr": "Function{name:cdf, args:Box([Symbol(Symbol{name:dist}), Symbol(Symbol{name:x})])}",
+        "description": "Cumulative distribution function"
+    },
+    {
+        "id": "expectation_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "Expectation[X, dist]",
+        "expected_expr": "Function{name:expectation, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:dist})])}",
+        "description": "Expected value"
+    },
+    {
+        "id": "variance_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "Variance[X, dist]",
+        "expected_expr": "Function{name:variance, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:dist})])}",
+        "description": "Variance"
+    },
+    {
+        "id": "standard_deviation_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "StandardDeviation[X, dist]",
+        "expected_expr": "Function{name:std_dev, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:dist})])}",
+        "description": "Standard deviation"
+    },
+    {
+        "id": "covariance_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "Covariance[X, Y]",
+        "expected_expr": "Function{name:covariance, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Covariance"
+    },
+    {
+        "id": "correlation_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "Correlation[X, Y]",
+        "expected_expr": "Function{name:correlation, args:Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Correlation coefficient"
+    },
+    {
+        "id": "normal_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "NormalDistribution[\u03bc, \u03c3]",
+        "expected_expr": "Function{name:normal_dist, args:Box([Symbol(Symbol{name:\u03bc}), Symbol(Symbol{name:\u03c3})])}",
+        "description": "Normal distribution"
+    },
+    {
+        "id": "binomial_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "BinomialDistribution[n, p]",
+        "expected_expr": "Function{name:binomial_dist, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:p})])}",
+        "description": "Binomial distribution"
+    },
+    {
+        "id": "poisson_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "PoissonDistribution[\u03bb]",
+        "expected_expr": "Function{name:poisson_dist, args:Box([Symbol(Symbol{name:\u03bb})])}",
+        "description": "Poisson distribution"
+    },
+    {
+        "id": "chi_squared_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "ChiSquareDistribution[k]",
+        "expected_expr": "Function{name:chi_squared, args:Box([Symbol(Symbol{name:k})])}",
+        "description": "Chi-squared distribution"
+    },
+    {
+        "id": "t_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "StudentTDistribution[\u03bd]",
+        "expected_expr": "Function{name:t_dist, args:Box([Symbol(Symbol{name:\u03bd})])}",
+        "description": "Student's t-distribution"
+    },
+    {
+        "id": "f_distribution_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "FRatioDistribution[d1, d2]",
+        "expected_expr": "Function{name:f_dist, args:Box([Symbol(Symbol{name:d1}), Symbol(Symbol{name:d2})])}",
+        "description": "F-distribution"
+    },
+    {
+        "id": "conditional_probability_wolfram",
+        "language": "wolfram",
+        "category": "probability_statistics",
+        "input": "Probability[A, B]",
+        "expected_expr": "Function{name:conditional_prob, args:Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Conditional probability"
+    },
+    {
+        "id": "metric_space_wolfram",
+        "language": "wolfram",
+        "category": "topology_geometry",
+        "input": "EuclideanDistance[x, y]",
+        "expected_expr": "Function{name:metric, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Metric function"
+    },
+    {
+        "id": "norm_wolfram",
+        "language": "wolfram",
+        "category": "topology_geometry",
+        "input": "Norm[x]",
+        "expected_expr": "Function{name:norm, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Norm"
+    },
+    {
+        "id": "inner_product_wolfram",
+        "language": "wolfram",
+        "category": "topology_geometry",
+        "input": "Dot[x, y]",
+        "expected_expr": "Function{name:inner_product, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Inner product"
+    },
+    {
+        "id": "cross_product_wolfram",
+        "language": "wolfram",
+        "category": "topology_geometry",
+        "input": "Cross[a, b]",
+        "expected_expr": "Function{name:cross_product, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Cross product"
+    },
+    {
+        "id": "dot_product_wolfram",
+        "language": "wolfram",
+        "category": "topology_geometry",
+        "input": "Dot[a, b]",
+        "expected_expr": "Function{name:dot_product, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Dot product"
+    },
+    {
+        "id": "fourier_transform_wolfram",
+        "language": "wolfram",
+        "category": "transforms",
+        "input": "FourierTransform[f[t], t, \u03c9]",
+        "expected_expr": "Function{name:fourier_transform, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:t})])}, Symbol(Symbol{name:t}), Symbol(Symbol{name:\u03c9})])}",
+        "description": "Fourier transform"
+    },
+    {
+        "id": "laplace_transform_wolfram",
+        "language": "wolfram",
+        "category": "transforms",
+        "input": "LaplaceTransform[f[t], t, s]",
+        "expected_expr": "Function{name:laplace_transform, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:t})])}, Symbol(Symbol{name:t}), Symbol(Symbol{name:s})])}",
+        "description": "Laplace transform"
+    },
+    {
+        "id": "z_transform_wolfram",
+        "language": "wolfram",
+        "category": "transforms",
+        "input": "ZTransform[x[n], n, z]",
+        "expected_expr": "Function{name:z_transform, args:Box([Function{name:x, args:Box([Symbol(Symbol{name:n})])}, Symbol(Symbol{name:n}), Symbol(Symbol{name:z})])}",
+        "description": "Z-transform"
+    },
+    {
+        "id": "convolution_wolfram",
+        "language": "wolfram",
+        "category": "transforms",
+        "input": "Convolve[f, g, t, \u03c4]",
+        "expected_expr": "Function{name:convolution, args:Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g}), Symbol(Symbol{name:t}), Symbol(Symbol{name:\u03c4})])}",
+        "description": "Convolution"
+    },
+    {
+        "id": "dirac_delta_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "DiracDelta[x]",
+        "expected_expr": "Function{name:dirac_delta, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Dirac delta function"
+    },
+    {
+        "id": "heaviside_step_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "HeavisideTheta[x]",
+        "expected_expr": "Function{name:heaviside, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Heaviside step function"
+    },
+    {
+        "id": "sign_function_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "Sign[x]",
+        "expected_expr": "Function{name:sign, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Sign function"
+    },
+    {
+        "id": "floor_function_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "Floor[x]",
+        "expected_expr": "Function{name:floor, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Floor function"
+    },
+    {
+        "id": "ceiling_function_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "Ceiling[x]",
+        "expected_expr": "Function{name:ceil, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Ceiling function"
+    },
+    {
+        "id": "fractional_part_wolfram",
+        "language": "wolfram",
+        "category": "generalized_functions",
+        "input": "FractionalPart[x]",
+        "expected_expr": "Function{name:frac, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fractional part"
+    },
+    {
+        "id": "min_function_wolfram",
+        "language": "wolfram",
+        "category": "optimization",
+        "input": "Min[x, y]",
+        "expected_expr": "Function{name:min, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Minimum function"
+    },
+    {
+        "id": "max_function_wolfram",
+        "language": "wolfram",
+        "category": "optimization",
+        "input": "Max[x, y]",
+        "expected_expr": "Function{name:max, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Maximum function"
+    },
+    {
+        "id": "argmin_wolfram",
+        "language": "wolfram",
+        "category": "optimization",
+        "input": "ArgMin[f[x], x]",
+        "expected_expr": "Function{name:argmin, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x})])}",
+        "description": "Argument of minimum"
+    },
+    {
+        "id": "argmax_wolfram",
+        "language": "wolfram",
+        "category": "optimization",
+        "input": "ArgMax[f[x], x]",
+        "expected_expr": "Function{name:argmax, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x})])}",
+        "description": "Argument of maximum"
+    },
+    {
+        "id": "bessel_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "BesselJ[n, x]",
+        "expected_expr": "Function{name:bessel_j, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Bessel function of first kind"
+    },
+    {
+        "id": "neumann_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "BesselY[n, x]",
+        "expected_expr": "Function{name:bessel_y, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Bessel function of second kind (Neumann)"
+    },
+    {
+        "id": "hankel_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "HankelH1[n, x]",
+        "expected_expr": "Function{name:hankel_h1, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Hankel function of first kind"
+    },
+    {
+        "id": "legendre_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "LegendreP[n, x]",
+        "expected_expr": "Function{name:legendre_p, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Legendre polynomial"
+    },
+    {
+        "id": "associated_legendre_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "LegendreP[l, m, x]",
+        "expected_expr": "Function{name:assoc_legendre, args:Box([Symbol(Symbol{name:l}), Symbol(Symbol{name:m}), Symbol(Symbol{name:x})])}",
+        "description": "Associated Legendre function"
+    },
+    {
+        "id": "spherical_harmonic_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "SphericalHarmonicY[l, m, \u03b8, \u03c6]",
+        "expected_expr": "Function{name:spherical_harmonic, args:Box([Symbol(Symbol{name:l}), Symbol(Symbol{name:m}), Symbol(Symbol{name:\u03b8}), Symbol(Symbol{name:\u03c6})])}",
+        "description": "Spherical harmonic"
+    },
+    {
+        "id": "hermite_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "HermiteH[n, x]",
+        "expected_expr": "Function{name:hermite, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Hermite polynomial"
+    },
+    {
+        "id": "laguerre_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "LaguerreL[n, x]",
+        "expected_expr": "Function{name:laguerre, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Laguerre polynomial"
+    },
+    {
+        "id": "chebyshev_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "ChebyshevT[n, x]",
+        "expected_expr": "Function{name:chebyshev_t, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Chebyshev polynomial of first kind"
+    },
+    {
+        "id": "hypergeometric_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "Hypergeometric2F1[a, b, c, z]",
+        "expected_expr": "Function{name:hypergeometric_2f1, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:c}), Symbol(Symbol{name:z})])}",
+        "description": "Hypergeometric function 2F1"
+    },
+    {
+        "id": "elliptic_integral_first_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "EllipticF[\u03c6, k]",
+        "expected_expr": "Function{name:elliptic_f, args:Box([Symbol(Symbol{name:\u03c6}), Symbol(Symbol{name:k})])}",
+        "description": "Elliptic integral of first kind"
+    },
+    {
+        "id": "elliptic_integral_second_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "EllipticE[\u03c6, k]",
+        "expected_expr": "Function{name:elliptic_e, args:Box([Symbol(Symbol{name:\u03c6}), Symbol(Symbol{name:k})])}",
+        "description": "Elliptic integral of second kind"
+    },
+    {
+        "id": "beta_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "Beta[x, y]",
+        "expected_expr": "Function{name:beta, args:Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Beta function"
+    },
+    {
+        "id": "digamma_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "PolyGamma[x]",
+        "expected_expr": "Function{name:digamma, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Digamma function"
+    },
+    {
+        "id": "polygamma_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "PolyGamma[n, x]",
+        "expected_expr": "Function{name:polygamma, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Polygamma function"
+    },
+    {
+        "id": "riemann_zeta_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "Zeta[s]",
+        "expected_expr": "Function{name:zeta, args:Box([Symbol(Symbol{name:s})])}",
+        "description": "Riemann zeta function"
+    },
+    {
+        "id": "dirichlet_eta_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "DirichletEta[s]",
+        "expected_expr": "Function{name:dirichlet_eta, args:Box([Symbol(Symbol{name:s})])}",
+        "description": "Dirichlet eta function"
+    },
+    {
+        "id": "error_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "Erf[x]",
+        "expected_expr": "Function{name:erf, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Error function"
+    },
+    {
+        "id": "complementary_error_function_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "Erfc[x]",
+        "expected_expr": "Function{name:erfc, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Complementary error function"
+    },
+    {
+        "id": "fresnel_integral_s_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "FresnelS[x]",
+        "expected_expr": "Function{name:fresnel_s, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fresnel integral S"
+    },
+    {
+        "id": "fresnel_integral_c_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_advanced",
+        "input": "FresnelC[x]",
+        "expected_expr": "Function{name:fresnel_c, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Fresnel integral C"
+    },
+    {
+        "id": "factorial_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "Factorial[n]",
+        "expected_expr": "Function{name:factorial, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Factorial"
+    },
+    {
+        "id": "double_factorial_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "Factorial2[n]",
+        "expected_expr": "Function{name:double_factorial, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Double factorial"
+    },
+    {
+        "id": "binomial_coefficient_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "Binomial[n, k]",
+        "expected_expr": "Function{name:binomial, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Binomial coefficient"
+    },
+    {
+        "id": "multinomial_coefficient_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "Multinomial[k1, k2, k3]",
+        "expected_expr": "Function{name:multinomial, args:Box([Symbol(Symbol{name:k1}), Symbol(Symbol{name:k2}), Symbol(Symbol{name:k3})])}",
+        "description": "Multinomial coefficient"
+    },
+    {
+        "id": "stirling_first_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "StirlingS1[n, k]",
+        "expected_expr": "Function{name:stirling_first, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Stirling number of first kind"
+    },
+    {
+        "id": "stirling_second_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "StirlingS2[n, k]",
+        "expected_expr": "Function{name:stirling_second, args:Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:k})])}",
+        "description": "Stirling number of second kind"
+    },
+    {
+        "id": "bell_number_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "BellB[n]",
+        "expected_expr": "Function{name:bell, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Bell number"
+    },
+    {
+        "id": "catalan_number_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "CatalanNumber[n]",
+        "expected_expr": "Function{name:catalan, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Catalan number"
+    },
+    {
+        "id": "fibonacci_number_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "Fibonacci[n]",
+        "expected_expr": "Function{name:fibonacci, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Fibonacci number"
+    },
+    {
+        "id": "lucas_number_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "LucasL[n]",
+        "expected_expr": "Function{name:lucas, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Lucas number"
+    },
+    {
+        "id": "euler_totient_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "EulerPhi[n]",
+        "expected_expr": "Function{name:euler_phi, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Euler's totient function"
+    },
+    {
+        "id": "mobius_function_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "MoebiusMu[n]",
+        "expected_expr": "Function{name:mobius, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "M\u00f6bius function"
+    },
+    {
+        "id": "divisor_function_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "DivisorSigma[k, n]",
+        "expected_expr": "Function{name:divisor_sigma, args:Box([Symbol(Symbol{name:k}), Symbol(Symbol{name:n})])}",
+        "description": "Divisor function"
+    },
+    {
+        "id": "prime_counting_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "PrimePi[x]",
+        "expected_expr": "Function{name:prime_pi, args:Box([Symbol(Symbol{name:x})])}",
+        "description": "Prime counting function"
+    },
+    {
+        "id": "legendre_symbol_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "JacobiSymbol[a, p]",
+        "expected_expr": "Function{name:legendre_symbol, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:p})])}",
+        "description": "Legendre symbol"
+    },
+    {
+        "id": "jacobi_symbol_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "JacobiSymbol[a, n]",
+        "expected_expr": "Function{name:jacobi_symbol, args:Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Jacobi symbol"
+    },
+    {
+        "id": "partition_function_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "PartitionsP[n]",
+        "expected_expr": "Function{name:partition, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Partition function"
+    },
+    {
+        "id": "ramanujan_tau_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_number_theory",
+        "input": "RamanujanTau[n]",
+        "expected_expr": "Function{name:ramanujan_tau, args:Box([Symbol(Symbol{name:n})])}",
+        "description": "Ramanujan tau function"
+    },
+    {
+        "id": "double_integral_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Integrate[f[x, y], {x, a, b}, {y, c, d}]",
+        "expected_expr": "MultipleCalculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:x}))), Symbol(Symbol{name:y})])}), variables: Box([Symbol{name:x}, Symbol{name:y}]), bounds: Some(Box([(Box(Symbol(Symbol{name:a})), Box(Symbol(Symbol{name:b}))), (Box(Symbol(Symbol{name:c})), Box(Symbol(Symbol{name:d})))]))}",
+        "description": "Double integral"
+    },
+    {
+        "id": "triple_integral_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Integrate[f[x, y, z], {x, a, b}, {y, c, d}, {z, e, f}]",
+        "expected_expr": "MultipleCalculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:x}))), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})])}), variables: Box([Symbol{name:x}, Symbol{name:y}, Symbol{name:z}]), bounds: Some(Box([(Box(Symbol(Symbol{name:a})), Box(Symbol(Symbol{name:b}))), (Box(Symbol(Symbol{name:c})), Box(Symbol(Symbol{name:d}))), (Box(Symbol(Symbol{name:e})), Box(Symbol(Symbol{name:f})))]))}",
+        "description": "Triple integral"
+    },
+    {
+        "id": "line_integral_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Integrate[F \u00b7 dr, {r, curve}]",
+        "expected_expr": "LineCalculus(Box(Integral{vector_field: Box(Symbol(Symbol{name:F})))), curve: Symbol{name:curve}}",
+        "description": "Line integral"
+    },
+    {
+        "id": "surface_integral_wolfram",
+        "language": "wolfram",
+        "category": "advanced_calculus",
+        "input": "Integrate[F \u00b7 n dS, {surface}]",
+        "expected_expr": "SurfaceCalculus(Box(Integral{vector_field: Box(Symbol(Symbol{name:F})))), surface: Symbol{name:surface}}",
+        "description": "Surface integral"
+    },
+    {
+        "id": "taylor_series_wolfram",
+        "language": "wolfram",
+        "category": "series_expansions",
+        "input": "Series[f[x], {x, a, n}]",
+        "expected_expr": "Function{name:taylor_series, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x}), Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Taylor series"
+    },
+    {
+        "id": "fourier_series_wolfram",
+        "language": "wolfram",
+        "category": "series_expansions",
+        "input": "FourierSeries[f[x], x, n]",
+        "expected_expr": "Function{name:fourier_series, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x}), Symbol(Symbol{name:n})])}",
+        "description": "Fourier series"
+    },
+    {
+        "id": "first_order_ode_wolfram",
+        "language": "wolfram",
+        "category": "differential_equations",
+        "input": "DSolve[y'[x] == f[x, y[x]], y[x], x]",
+        "expected_expr": "Function{name:dsolve, args:Box([Relation{left: Box(Calculus(Box(Derivative{expression: Box(Function{name:y, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}), right: Box(Function{name:f, args:Box([Symbol(Symbol{name:x}), Function{name:y, args:Box([Symbol(Symbol{name:x})])}])}), relation_type: Equal}, Function{name:y, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x})])}",
+        "description": "First-order ODE solver"
+    },
+    {
+        "id": "second_order_ode_wolfram",
+        "language": "wolfram",
+        "category": "differential_equations",
+        "input": "DSolve[y''[x] + p[x]*y'[x] + q[x]*y[x] == g[x], y[x], x]",
+        "expected_expr": "Function{name:dsolve, args:Box([Relation{left: Box(Add(Box([Calculus(Box(Derivative{expression: Box(Function{name:y, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 2}, Mul(Box([Function{name:p, args:Box([Symbol(Symbol{name:x})])}, Calculus(Box(Derivative{expression: Box(Function{name:y, args:Box([Symbol(Symbol{name:x})))])}), variable: Symbol{name:x}, order: 1}])), Mul(Box([Function{name:q, args:Box([Symbol(Symbol{name:x})])}, Function{name:y, args:Box([Symbol(Symbol{name:x})])}]))]))), right: Box(Function{name:g, args:Box([Symbol(Symbol{name:x})])}), relation_type: Equal}, Function{name:y, args:Box([Symbol(Symbol{name:x})])}, Symbol(Symbol{name:x})])}",
+        "description": "Second-order ODE solver"
+    },
+    {
+        "id": "eigenvalue_problem_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "Eigenvalues[A]",
+        "expected_expr": "Function{name:eigenvalues, args:Box([Matrix(Box([[Symbol(Symbol{name:A})]]))])}",
+        "description": "Eigenvalues"
+    },
+    {
+        "id": "eigenvectors_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "Eigenvectors[A]",
+        "expected_expr": "Function{name:eigenvectors, args:Box([Matrix(Box([[Symbol(Symbol{name:A})]]))])}",
+        "description": "Eigenvectors"
+    },
+    {
+        "id": "matrix_exponential_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "MatrixExp[A*t]",
+        "expected_expr": "Function{name:matrix_exp, args:Box([Mul(Box([Matrix(Box([[Symbol(Symbol{name:A})]])), Symbol(Symbol{name:t})]))])}",
+        "description": "Matrix exponential"
+    },
+    {
+        "id": "svd_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "SingularValueDecomposition[A]",
+        "expected_expr": "Function{name:svd, args:Box([Matrix(Box([[Symbol(Symbol{name:A})]]))])}",
+        "description": "Singular Value Decomposition"
+    },
+    {
+        "id": "qr_decomposition_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "QRDecomposition[A]",
+        "expected_expr": "Function{name:qr_decomposition, args:Box([Matrix(Box([[Symbol(Symbol{name:A})]]))])}",
+        "description": "QR decomposition"
+    },
+    {
+        "id": "lu_decomposition_wolfram",
+        "language": "wolfram",
+        "category": "linear_algebra_advanced",
+        "input": "LUDecomposition[A]",
+        "expected_expr": "Function{name:lu_decomposition, args:Box([Matrix(Box([[Symbol(Symbol{name:A})]]))])}",
+        "description": "LU decomposition"
+    },
+    {
+        "id": "complex_conjugate_wolfram",
+        "language": "wolfram",
+        "category": "complex_analysis",
+        "input": "Conjugate[z]",
+        "expected_expr": "Function{name:conjugate, args:Box([Symbol(Symbol{name:z})])}",
+        "description": "Complex conjugate"
+    },
+    {
+        "id": "complex_modulus_wolfram",
+        "language": "wolfram",
+        "category": "complex_analysis",
+        "input": "Abs[z]",
+        "expected_expr": "Function{name:abs, args:Box([Symbol(Symbol{name:z})])}",
+        "description": "Complex modulus"
+    },
+    {
+        "id": "contour_integral_wolfram",
+        "language": "wolfram",
+        "category": "complex_analysis",
+        "input": "Integrate[f[z], {z, contour}]",
+        "expected_expr": "ContourCalculus(Box(Integral{integrand: Box(Function{name:f, args:Box([Symbol(Symbol{name:z})))])}), contour: Symbol{name:contour}}",
+        "description": "Contour integral"
+    },
+    {
+        "id": "residue_wolfram",
+        "language": "wolfram",
+        "category": "complex_analysis",
+        "input": "Residue[f[z], {z, z0}]",
+        "expected_expr": "Function{name:residue, args:Box([Function{name:f, args:Box([Symbol(Symbol{name:z})])}, Symbol(Symbol{name:z}), Symbol(Symbol{name:z0})])}",
+        "description": "Residue calculation"
+    },
+    {
+        "id": "gcd_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\gcd(a, b)",
+        "expected_expr": "Function{name: \"gcd\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Greatest common divisor"
+    },
+    {
+        "id": "lcm_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\text{lcm}(a, b)",
+        "expected_expr": "Function{name: \"lcm\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Least common multiple"
+    },
+    {
+        "id": "mod_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "a \\bmod n",
+        "expected_expr": "Function{name: \"mod\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Modular arithmetic"
+    },
+    {
+        "id": "tensor_product_latex",
+        "language": "latex",
+        "category": "tensor_operations",
+        "input": "A \\otimes B",
+        "expected_expr": "Function{name: \"tensor_product\", args: Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Tensor product"
+    },
+    {
+        "id": "tensor_contraction_latex",
+        "language": "latex",
+        "category": "tensor_operations",
+        "input": "T^{ij}_{ij}",
+        "expected_expr": "Function{name: \"tensor_contraction\", args: Box([Symbol(Symbol{name:T})])}",
+        "description": "Tensor contraction"
+    },
+    {
+        "id": "commutator_latex",
+        "language": "latex",
+        "category": "quantum_mechanics",
+        "input": "[A, B]",
+        "expected_expr": "Function{name: \"commutator\", args: Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Commutator bracket"
+    },
+    {
+        "id": "anticommutator_latex",
+        "language": "latex",
+        "category": "quantum_mechanics",
+        "input": "\\{A, B\\}",
+        "expected_expr": "Function{name: \"anticommutator\", args: Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Anticommutator"
+    },
+    {
+        "id": "bra_ket_latex",
+        "language": "latex",
+        "category": "quantum_mechanics",
+        "input": "\\langle \\psi | \\phi \\rangle",
+        "expected_expr": "Function{name: \"inner_product\", args: Box([Symbol(Symbol{name:psi}), Symbol(Symbol{name:phi})])}",
+        "description": "Bra-ket notation"
+    },
+    {
+        "id": "group_operation_latex",
+        "language": "latex",
+        "category": "group_theory",
+        "input": "g \\circ h",
+        "expected_expr": "Function{name: \"group_op\", args: Box([Symbol(Symbol{name:g}), Symbol(Symbol{name:h})])}",
+        "description": "Group operation"
+    },
+    {
+        "id": "group_inverse_latex",
+        "language": "latex",
+        "category": "group_theory",
+        "input": "g^{-1}",
+        "expected_expr": "Function{name: \"group_inverse\", args: Box([Symbol(Symbol{name:g})])}",
+        "description": "Group inverse"
+    },
+    {
+        "id": "covariant_derivative_latex",
+        "language": "latex",
+        "category": "differential_geometry",
+        "input": "\\nabla_\\mu V^\\nu",
+        "expected_expr": "Function{name: \"covariant_derivative\", args: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:V}), Symbol(Symbol{name:nu})])}",
+        "description": "Covariant derivative"
+    },
+    {
+        "id": "lie_derivative_latex",
+        "language": "latex",
+        "category": "differential_geometry",
+        "input": "\\mathcal{L}_X Y",
+        "expected_expr": "Function{name: \"lie_derivative\", args: Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Lie derivative"
+    },
+    {
+        "id": "riemann_tensor_latex",
+        "language": "latex",
+        "category": "differential_geometry",
+        "input": "R^\\rho_{\\sigma\\mu\\nu}",
+        "expected_expr": "Function{name: \"riemann_tensor\", args: Box([Symbol(Symbol{name:rho}), Symbol(Symbol{name:sigma}), Symbol(Symbol{name:mu}), Symbol(Symbol{name:nu})])}",
+        "description": "Riemann curvature tensor"
+    },
+    {
+        "id": "ring_addition_latex",
+        "language": "latex",
+        "category": "algebraic_structures",
+        "input": "a +_R b",
+        "expected_expr": "Function{name: \"ring_add\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:R})])}",
+        "description": "Ring addition"
+    },
+    {
+        "id": "field_multiplication_latex",
+        "language": "latex",
+        "category": "algebraic_structures",
+        "input": "a \\cdot_F b",
+        "expected_expr": "Function{name: \"field_mul\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:F})])}",
+        "description": "Field multiplication"
+    },
+    {
+        "id": "homeomorphism_latex",
+        "language": "latex",
+        "category": "topology",
+        "input": "X \\cong Y",
+        "expected_expr": "Function{name: \"homeomorphic\", args: Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:Y})])}",
+        "description": "Homeomorphism"
+    },
+    {
+        "id": "fundamental_group_latex",
+        "language": "latex",
+        "category": "topology",
+        "input": "\\pi_1(X, x_0)",
+        "expected_expr": "Function{name: \"fundamental_group\", args: Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:x_0})])}",
+        "description": "Fundamental group"
+    },
+    {
+        "id": "measure_latex",
+        "language": "latex",
+        "category": "measure_theory",
+        "input": "\\mu(E)",
+        "expected_expr": "Function{name: \"measure\", args: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:E})])}",
+        "description": "Measure of set E"
+    },
+    {
+        "id": "lebesgue_integral_latex",
+        "language": "latex",
+        "category": "measure_theory",
+        "input": "\\int f \\, d\\mu",
+        "expected_expr": "Function{name: \"lebesgue_integral\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:mu})])}",
+        "description": "Lebesgue integral"
+    },
+    {
+        "id": "operator_norm_latex",
+        "language": "latex",
+        "category": "functional_analysis",
+        "input": "\\|T\\|_{op}",
+        "expected_expr": "Function{name: \"operator_norm\", args: Box([Symbol(Symbol{name:T})])}",
+        "description": "Operator norm"
+    },
+    {
+        "id": "dual_space_latex",
+        "language": "latex",
+        "category": "functional_analysis",
+        "input": "X^*",
+        "expected_expr": "Function{name: \"dual_space\", args: Box([Symbol(Symbol{name:X})])}",
+        "description": "Dual space"
+    },
+    {
+        "id": "morphism_latex",
+        "language": "latex",
+        "category": "category_theory",
+        "input": "f: A \\to B",
+        "expected_expr": "Function{name: \"morphism\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:A}), Symbol(Symbol{name:B})])}",
+        "description": "Morphism in category"
+    },
+    {
+        "id": "functor_latex",
+        "language": "latex",
+        "category": "category_theory",
+        "input": "F: \\mathcal{C} \\to \\mathcal{D}",
+        "expected_expr": "Function{name: \"functor\", args: Box([Symbol(Symbol{name:F}), Symbol(Symbol{name:C}), Symbol(Symbol{name:D})])}",
+        "description": "Functor between categories"
+    },
+    {
+        "id": "gcd_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "GCD[a, b]",
+        "expected_expr": "Function{name: \"gcd\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Greatest common divisor"
+    },
+    {
+        "id": "lcm_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "LCM[a, b]",
+        "expected_expr": "Function{name: \"lcm\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Least common multiple"
+    },
+    {
+        "id": "mod_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "Mod[a, n]",
+        "expected_expr": "Function{name: \"mod\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Modular arithmetic"
+    },
+    {
+        "id": "airy_ai_latex",
+        "language": "latex",
+        "category": "special_functions_extended",
+        "input": "\\text{Ai}(x)",
+        "expected_expr": "Function{name: \"airy_ai\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Airy function Ai"
+    },
+    {
+        "id": "airy_bi_latex",
+        "language": "latex",
+        "category": "special_functions_extended",
+        "input": "\\text{Bi}(x)",
+        "expected_expr": "Function{name: \"airy_bi\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Airy function Bi"
+    },
+    {
+        "id": "mathieu_c_latex",
+        "language": "latex",
+        "category": "special_functions_extended",
+        "input": "C_n(a, q, z)",
+        "expected_expr": "Function{name: \"mathieu_c\", args: Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:a}), Symbol(Symbol{name:q}), Symbol(Symbol{name:z})])}",
+        "description": "Mathieu cosine function"
+    },
+    {
+        "id": "mathieu_s_latex",
+        "language": "latex",
+        "category": "special_functions_extended",
+        "input": "S_n(a, q, z)",
+        "expected_expr": "Function{name: \"mathieu_s\", args: Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:a}), Symbol(Symbol{name:q}), Symbol(Symbol{name:z})])}",
+        "description": "Mathieu sine function"
+    },
+    {
+        "id": "airy_ai_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_extended",
+        "input": "AiryAi[x]",
+        "expected_expr": "Function{name: \"airy_ai\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Airy function Ai"
+    },
+    {
+        "id": "airy_bi_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_extended",
+        "input": "AiryBi[x]",
+        "expected_expr": "Function{name: \"airy_bi\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Airy function Bi"
+    },
+    {
+        "id": "fractional_derivative_latex",
+        "language": "latex",
+        "category": "fractional_calculus",
+        "input": "D^\\alpha f(x)",
+        "expected_expr": "Function{name: \"fractional_derivative\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:f}), Symbol(Symbol{name:x})])}",
+        "description": "Fractional derivative"
+    },
+    {
+        "id": "riemann_liouville_latex",
+        "language": "latex",
+        "category": "fractional_calculus",
+        "input": "{}^{RL}D^\\alpha f(x)",
+        "expected_expr": "Function{name: \"riemann_liouville\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:f}), Symbol(Symbol{name:x})])}",
+        "description": "Riemann-Liouville derivative"
+    },
+    {
+        "id": "ito_integral_latex",
+        "language": "latex",
+        "category": "stochastic_calculus",
+        "input": "\\int_0^t X_s \\, dW_s",
+        "expected_expr": "Function{name: \"ito_integral\", args: Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:W}), Number(SmallInt(0)), Symbol(Symbol{name:t})])}",
+        "description": "It\u00f4 integral"
+    },
+    {
+        "id": "stratonovich_integral_latex",
+        "language": "latex",
+        "category": "stochastic_calculus",
+        "input": "\\int_0^t X_s \\circ dW_s",
+        "expected_expr": "Function{name: \"stratonovich_integral\", args: Box([Symbol(Symbol{name:X}), Symbol(Symbol{name:W}), Number(SmallInt(0)), Symbol(Symbol{name:t})])}",
+        "description": "Stratonovich integral"
+    },
+    {
+        "id": "tribonacci_latex",
+        "language": "latex",
+        "category": "combinatorics_advanced",
+        "input": "T_n",
+        "expected_expr": "Function{name: \"tribonacci\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Tribonacci numbers"
+    },
+    {
+        "id": "motzkin_latex",
+        "language": "latex",
+        "category": "combinatorics_advanced",
+        "input": "M_n",
+        "expected_expr": "Function{name: \"motzkin\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Motzkin numbers"
+    },
+    {
+        "id": "genocchi_latex",
+        "language": "latex",
+        "category": "combinatorics_advanced",
+        "input": "G_n",
+        "expected_expr": "Function{name: \"genocchi\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Genocchi numbers"
+    },
+    {
+        "id": "andre_latex",
+        "language": "latex",
+        "category": "combinatorics_advanced",
+        "input": "A_n",
+        "expected_expr": "Function{name: \"andre\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Andr\u00e9 numbers (Euler zigzag numbers)"
+    },
+    {
+        "id": "marcumq_latex",
+        "language": "latex",
+        "category": "special_functions_radio",
+        "input": "Q_M(a, b)",
+        "expected_expr": "Function{name: \"marcumq\", args: Box([Symbol(Symbol{name:M}), Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Marcum Q-function (radio engineering)"
+    },
+    {
+        "id": "appellf1_latex",
+        "language": "latex",
+        "category": "hypergeometric_advanced",
+        "input": "F_1(a; b_1, b_2; c; x, y)",
+        "expected_expr": "Function{name: \"appell_f1\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b_1}), Symbol(Symbol{name:b_2}), Symbol(Symbol{name:c}), Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Appell hypergeometric function F1"
+    },
+    {
+        "id": "meijerg_latex",
+        "language": "latex",
+        "category": "hypergeometric_advanced",
+        "input": "G_{p,q}^{m,n}(z)",
+        "expected_expr": "Function{name: \"meijer_g\", args: Box([Symbol(Symbol{name:p}), Symbol(Symbol{name:q}), Symbol(Symbol{name:m}), Symbol(Symbol{name:n}), Symbol(Symbol{name:z})])}",
+        "description": "Meijer G-function"
+    },
+    {
+        "id": "carmichael_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\lambda(n)",
+        "expected_expr": "Function{name: \"carmichael\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Carmichael function"
+    },
+    {
+        "id": "primenu_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\nu(n)",
+        "expected_expr": "Function{name: \"primenu\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Number of distinct prime factors"
+    },
+    {
+        "id": "primeomega_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\Omega(n)",
+        "expected_expr": "Function{name: \"primeomega\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Number of prime factors with multiplicity"
+    },
+    {
+        "id": "reduced_totient_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\lambda(n)",
+        "expected_expr": "Function{name: \"reduced_totient\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Reduced totient function (Carmichael lambda)"
+    },
+    {
+        "id": "kronecker_symbol_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\left(\\frac{a}{n}\\right)",
+        "expected_expr": "Function{name: \"kronecker_symbol\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Kronecker symbol"
+    },
+    {
+        "id": "lerchphi_latex",
+        "language": "latex",
+        "category": "zeta_functions_advanced",
+        "input": "\\Phi(z, s, a)",
+        "expected_expr": "Function{name: \"lerch_phi\", args: Box([Symbol(Symbol{name:z}), Symbol(Symbol{name:s}), Symbol(Symbol{name:a})])}",
+        "description": "Lerch transcendent function"
+    },
+    {
+        "id": "polylog_latex",
+        "language": "latex",
+        "category": "zeta_functions_advanced",
+        "input": "\\text{Li}_s(z)",
+        "expected_expr": "Function{name: \"polylog\", args: Box([Symbol(Symbol{name:s}), Symbol(Symbol{name:z})])}",
+        "description": "Polylogarithm function"
+    },
+    {
+        "id": "stieltjes_latex",
+        "language": "latex",
+        "category": "zeta_functions_advanced",
+        "input": "\\gamma_n",
+        "expected_expr": "Function{name: \"stieltjes\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Stieltjes constants"
+    },
+    {
+        "id": "riemann_xi_latex",
+        "language": "latex",
+        "category": "zeta_functions_advanced",
+        "input": "\\xi(s)",
+        "expected_expr": "Function{name: \"riemann_xi\", args: Box([Symbol(Symbol{name:s})])}",
+        "description": "Riemann xi function"
+    },
+    {
+        "id": "levi_civita_latex",
+        "language": "latex",
+        "category": "tensor_calculus",
+        "input": "\\epsilon_{ijk}",
+        "expected_expr": "Function{name: \"levi_civita\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:j}), Symbol(Symbol{name:k})])}",
+        "description": "Levi-Civita symbol"
+    },
+    {
+        "id": "kronecker_delta_latex",
+        "language": "latex",
+        "category": "tensor_calculus",
+        "input": "\\delta_{ij}",
+        "expected_expr": "Function{name: \"kronecker_delta\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:j})])}",
+        "description": "Kronecker delta"
+    },
+    {
+        "id": "eijk_latex",
+        "language": "latex",
+        "category": "tensor_calculus",
+        "input": "E_{ijk}",
+        "expected_expr": "Function{name: \"eijk\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:j}), Symbol(Symbol{name:k})])}",
+        "description": "Levi-Civita tensor (alternative notation)"
+    },
+    {
+        "id": "bspline_basis_latex",
+        "language": "latex",
+        "category": "splines_interpolation",
+        "input": "B_{i,p}(t)",
+        "expected_expr": "Function{name: \"bspline_basis\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:p}), Symbol(Symbol{name:t})])}",
+        "description": "B-spline basis function"
+    },
+    {
+        "id": "interpolating_spline_latex",
+        "language": "latex",
+        "category": "splines_interpolation",
+        "input": "S(x)",
+        "expected_expr": "Function{name: \"interpolating_spline\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Interpolating spline"
+    },
+    {
+        "id": "polar_lift_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{polar\\_lift}(z)",
+        "expected_expr": "Function{name: \"polar_lift\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Polar lift function"
+    },
+    {
+        "id": "periodic_argument_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{periodic\\_arg}(z)",
+        "expected_expr": "Function{name: \"periodic_argument\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Periodic argument function"
+    },
+    {
+        "id": "unbranched_argument_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{unbranched\\_arg}(z)",
+        "expected_expr": "Function{name: \"unbranched_argument\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Unbranched argument function"
+    },
+    {
+        "id": "principal_branch_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{principal\\_branch}(z)",
+        "expected_expr": "Function{name: \"principal_branch\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Principal branch function"
+    },
+    {
+        "id": "polarify_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{polarify}(z)",
+        "expected_expr": "Function{name: \"polarify\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Polarify function"
+    },
+    {
+        "id": "unpolarify_latex",
+        "language": "latex",
+        "category": "complex_analysis_advanced",
+        "input": "\\text{unpolarify}(z)",
+        "expected_expr": "Function{name: \"unpolarify\", args: Box([Symbol(Symbol{name:z})])}",
+        "description": "Unpolarify function"
+    },
+    {
+        "id": "singularity_function_latex",
+        "language": "latex",
+        "category": "singularity_functions",
+        "input": "\\langle x - a \\rangle^n",
+        "expected_expr": "Function{name: \"singularity_function\", args: Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Singularity function (Macaulay brackets)"
+    },
+    {
+        "id": "tribonacci_wolfram",
+        "language": "wolfram",
+        "category": "combinatorics_advanced",
+        "input": "Tribonacci[n]",
+        "expected_expr": "Function{name: \"tribonacci\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Tribonacci numbers"
+    },
+    {
+        "id": "marcumq_wolfram",
+        "language": "wolfram",
+        "category": "special_functions_radio",
+        "input": "MarcumQ[M, a, b]",
+        "expected_expr": "Function{name: \"marcumq\", args: Box([Symbol(Symbol{name:M}), Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Marcum Q-function"
+    },
+    {
+        "id": "appellf1_wolfram",
+        "language": "wolfram",
+        "category": "hypergeometric_advanced",
+        "input": "AppellF1[a, b1, b2, c, x, y]",
+        "expected_expr": "Function{name: \"appell_f1\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b1}), Symbol(Symbol{name:b2}), Symbol(Symbol{name:c}), Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Appell hypergeometric function F1"
+    },
+    {
+        "id": "meijerg_wolfram",
+        "language": "wolfram",
+        "category": "hypergeometric_advanced",
+        "input": "MeijerG[{{a1, a2}, {a3}}, {{b1}, {b2, b3}}, z]",
+        "expected_expr": "Function{name: \"meijer_g\", args: Box([Set(Box([Set(Box([Symbol(Symbol{name:a1}), Symbol(Symbol{name:a2})])), Set(Box([Symbol(Symbol{name:a3})]))])), Set(Box([Set(Box([Symbol(Symbol{name:b1})])), Set(Box([Symbol(Symbol{name:b2}), Symbol(Symbol{name:b3})]))])), Symbol(Symbol{name:z})])}",
+        "description": "Meijer G-function"
+    },
+    {
+        "id": "lerchphi_wolfram",
+        "language": "wolfram",
+        "category": "zeta_functions_advanced",
+        "input": "LerchPhi[z, s, a]",
+        "expected_expr": "Function{name: \"lerch_phi\", args: Box([Symbol(Symbol{name:z}), Symbol(Symbol{name:s}), Symbol(Symbol{name:a})])}",
+        "description": "Lerch transcendent function"
+    },
+    {
+        "id": "polylog_wolfram",
+        "language": "wolfram",
+        "category": "zeta_functions_advanced",
+        "input": "PolyLog[s, z]",
+        "expected_expr": "Function{name: \"polylog\", args: Box([Symbol(Symbol{name:s}), Symbol(Symbol{name:z})])}",
+        "description": "Polylogarithm function"
+    },
+    {
+        "id": "stieltjes_wolfram",
+        "language": "wolfram",
+        "category": "zeta_functions_advanced",
+        "input": "StieltjesGamma[n]",
+        "expected_expr": "Function{name: \"stieltjes\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Stieltjes constants"
+    },
+    {
+        "id": "tribonacci_constant_latex",
+        "language": "latex",
+        "category": "mathematical_constants_advanced",
+        "input": "\\alpha_3",
+        "expected_expr": "Constant(TribonacciConstant)",
+        "description": "Tribonacci constant"
+    },
+    {
+        "id": "plastic_number_latex",
+        "language": "latex",
+        "category": "mathematical_constants_advanced",
+        "input": "\\rho",
+        "expected_expr": "Function{name: \"plastic_number\", args: Box([])}",
+        "description": "Plastic number (real root of x\u00b3 - x - 1 = 0)"
+    },
+    {
+        "id": "feigenbaum_delta_latex",
+        "language": "latex",
+        "category": "mathematical_constants_advanced",
+        "input": "\\delta",
+        "expected_expr": "Function{name: \"feigenbaum_delta\", args: Box([])}",
+        "description": "Feigenbaum constant \u03b4"
+    },
+    {
+        "id": "feigenbaum_alpha_latex",
+        "language": "latex",
+        "category": "mathematical_constants_advanced",
+        "input": "\\alpha",
+        "expected_expr": "Function{name: \"feigenbaum_alpha\", args: Box([])}",
+        "description": "Feigenbaum constant \u03b1"
+    },
+    {
+        "id": "matrix_exponential_latex",
+        "language": "latex",
+        "category": "matrix_functions_advanced",
+        "input": "e^A",
+        "expected_expr": "Function{name: \"matrix_exp\", args: Box([Symbol(Symbol{name:A})])}",
+        "description": "Matrix exponential"
+    },
+    {
+        "id": "matrix_logarithm_latex",
+        "language": "latex",
+        "category": "matrix_functions_advanced",
+        "input": "\\log(A)",
+        "expected_expr": "Function{name: \"matrix_log\", args: Box([Symbol(Symbol{name:A})])}",
+        "description": "Matrix logarithm"
+    },
+    {
+        "id": "matrix_power_latex",
+        "language": "latex",
+        "category": "matrix_functions_advanced",
+        "input": "A^{1/2}",
+        "expected_expr": "Function{name: \"matrix_power\", args: Box([Symbol(Symbol{name:A}), Mul(Box([Number(SmallInt(1)), Pow(Box(Number(SmallInt(2))), Box(Number(SmallInt(-1))))]))])}",
+        "description": "Matrix fractional power"
+    },
+    {
+        "id": "matrix_exponential_wolfram",
+        "language": "wolfram",
+        "category": "matrix_functions_advanced",
+        "input": "MatrixExp[A]",
+        "expected_expr": "Function{name: \"matrix_exp\", args: Box([Symbol(Symbol{name:A})])}",
+        "description": "Matrix exponential"
+    },
+    {
+        "id": "matrix_logarithm_wolfram",
+        "language": "wolfram",
+        "category": "matrix_functions_advanced",
+        "input": "MatrixLog[A]",
+        "expected_expr": "Function{name: \"matrix_log\", args: Box([Symbol(Symbol{name:A})])}",
+        "description": "Matrix logarithm"
+    },
+    {
+        "id": "matrix_power_wolfram",
+        "language": "wolfram",
+        "category": "matrix_functions_advanced",
+        "input": "MatrixPower[A, 1/2]",
+        "expected_expr": "Function{name: \"matrix_power\", args: Box([Symbol(Symbol{name:A}), Mul(Box([Number(SmallInt(1)), Pow(Box(Number(SmallInt(2))), Box(Number(SmallInt(-1))))]))])}",
+        "description": "Matrix fractional power"
+    },
+    {
+        "id": "hill_muscle_model_latex",
+        "language": "latex",
+        "category": "biomechanics",
+        "input": "F = F_0 \\cdot (a + b \\cdot v)/(b + v)",
+        "expected_expr": "Function{name: \"hill_muscle\", args: Box([Symbol(Symbol{name:F_0}), Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:v})])}",
+        "description": "Hill muscle model"
+    },
+    {
+        "id": "michaelis_menten_latex",
+        "language": "latex",
+        "category": "biomechanics",
+        "input": "v = \\frac{V_{max} [S]}{K_m + [S]}",
+        "expected_expr": "Function{name: \"michaelis_menten\", args: Box([Symbol(Symbol{name:V_max}), Symbol(Symbol{name:S}), Symbol(Symbol{name:K_m})])}",
+        "description": "Michaelis-Menten kinetics"
+    },
+    {
+        "id": "stress_tensor_latex",
+        "language": "latex",
+        "category": "continuum_mechanics",
+        "input": "\\sigma_{ij}",
+        "expected_expr": "Function{name: \"stress_tensor\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:j})])}",
+        "description": "Stress tensor"
+    },
+    {
+        "id": "strain_tensor_latex",
+        "language": "latex",
+        "category": "continuum_mechanics",
+        "input": "\\epsilon_{ij}",
+        "expected_expr": "Function{name: \"strain_tensor\", args: Box([Symbol(Symbol{name:i}), Symbol(Symbol{name:j})])}",
+        "description": "Strain tensor"
+    },
+    {
+        "id": "constitutive_relation_latex",
+        "language": "latex",
+        "category": "continuum_mechanics",
+        "input": "\\sigma = C : \\epsilon",
+        "expected_expr": "Function{name: \"constitutive_relation\", args: Box([Symbol(Symbol{name:sigma}), Symbol(Symbol{name:C}), Symbol(Symbol{name:epsilon})])}",
+        "description": "Constitutive relation"
+    },
+    {
+        "id": "transfer_function_latex",
+        "language": "latex",
+        "category": "control_theory",
+        "input": "G(s) = \\frac{N(s)}{D(s)}",
+        "expected_expr": "Function{name: \"transfer_function\", args: Box([Symbol(Symbol{name:N}), Symbol(Symbol{name:D}), Symbol(Symbol{name:s})])}",
+        "description": "Transfer function"
+    },
+    {
+        "id": "pid_controller_latex",
+        "language": "latex",
+        "category": "control_theory",
+        "input": "u(t) = K_p e(t) + K_i \\int_0^t e(\\tau) d\\tau + K_d \\frac{de(t)}{dt}",
+        "expected_expr": "Function{name: \"pid_controller\", args: Box([Symbol(Symbol{name:K_p}), Symbol(Symbol{name:K_i}), Symbol(Symbol{name:K_d}), Symbol(Symbol{name:e}), Symbol(Symbol{name:t})])}",
+        "description": "PID controller"
+    },
+    {
+        "id": "routh_hurwitz_latex",
+        "language": "latex",
+        "category": "control_theory",
+        "input": "\\text{RH}(s)",
+        "expected_expr": "Function{name: \"routh_hurwitz\", args: Box([Symbol(Symbol{name:s})])}",
+        "description": "Routh-Hurwitz stability criterion"
+    },
+    {
+        "id": "dirac_gamma_matrices_latex",
+        "language": "latex",
+        "category": "high_energy_physics",
+        "input": "\\gamma^\\mu",
+        "expected_expr": "Function{name: \"gamma_matrix\", args: Box([Symbol(Symbol{name:mu})])}",
+        "description": "Dirac gamma matrices"
+    },
+    {
+        "id": "pauli_matrices_latex",
+        "language": "latex",
+        "category": "high_energy_physics",
+        "input": "\\sigma_i",
+        "expected_expr": "Function{name: \"pauli_matrix\", args: Box([Symbol(Symbol{name:i})])}",
+        "description": "Pauli matrices"
+    },
+    {
+        "id": "feynman_slash_notation_latex",
+        "language": "latex",
+        "category": "high_energy_physics",
+        "input": "\\not{p}",
+        "expected_expr": "Function{name: \"feynman_slash\", args: Box([Symbol(Symbol{name:p})])}",
+        "description": "Feynman slash notation"
+    },
+    {
+        "id": "yang_mills_latex",
+        "language": "latex",
+        "category": "high_energy_physics",
+        "input": "F_{\\mu\\nu}^a = \\partial_\\mu A_\\nu^a - \\partial_\\nu A_\\mu^a + g f^{abc} A_\\mu^b A_\\nu^c",
+        "expected_expr": "Function{name: \"yang_mills_field\", args: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:nu}), Symbol(Symbol{name:a}), Symbol(Symbol{name:A}), Symbol(Symbol{name:g}), Symbol(Symbol{name:f})])}",
+        "description": "Yang-Mills field strength tensor"
+    },
+    {
+        "id": "creation_operator_latex",
+        "language": "latex",
+        "category": "quantum_optics",
+        "input": "a^\\dagger",
+        "expected_expr": "Function{name: \"creation_operator\", args: Box([Symbol(Symbol{name:a})])}",
+        "description": "Creation operator"
+    },
+    {
+        "id": "annihilation_operator_latex",
+        "language": "latex",
+        "category": "quantum_optics",
+        "input": "a",
+        "expected_expr": "Function{name: \"annihilation_operator\", args: Box([Symbol(Symbol{name:a})])}",
+        "description": "Annihilation operator"
+    },
+    {
+        "id": "coherent_state_latex",
+        "language": "latex",
+        "category": "quantum_optics",
+        "input": "|\\alpha\\rangle",
+        "expected_expr": "Function{name: \"coherent_state\", args: Box([Symbol(Symbol{name:alpha})])}",
+        "description": "Coherent state"
+    },
+    {
+        "id": "squeezed_state_latex",
+        "language": "latex",
+        "category": "quantum_optics",
+        "input": "S(\\xi) |0\\rangle",
+        "expected_expr": "Function{name: \"squeezed_state\", args: Box([Symbol(Symbol{name:xi})])}",
+        "description": "Squeezed state"
+    },
+    {
+        "id": "miller_indices_latex",
+        "language": "latex",
+        "category": "crystallography",
+        "input": "(hkl)",
+        "expected_expr": "Function{name: \"miller_indices\", args: Box([Symbol(Symbol{name:h}), Symbol(Symbol{name:k}), Symbol(Symbol{name:l})])}",
+        "description": "Miller indices"
+    },
+    {
+        "id": "bragg_law_latex",
+        "language": "latex",
+        "category": "crystallography",
+        "input": "n\\lambda = 2d\\sin\\theta",
+        "expected_expr": "Function{name: \"bragg_law\", args: Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:lambda}), Symbol(Symbol{name:d}), Symbol(Symbol{name:theta})])}",
+        "description": "Bragg's law"
+    },
+    {
+        "id": "structure_factor_latex",
+        "language": "latex",
+        "category": "crystallography",
+        "input": "F_{hkl}",
+        "expected_expr": "Function{name: \"structure_factor\", args: Box([Symbol(Symbol{name:h}), Symbol(Symbol{name:k}), Symbol(Symbol{name:l})])}",
+        "description": "Structure factor"
+    },
+    {
+        "id": "reynolds_number_latex",
+        "language": "latex",
+        "category": "fluid_dynamics",
+        "input": "Re = \\frac{\\rho v L}{\\mu}",
+        "expected_expr": "Function{name: \"reynolds_number\", args: Box([Symbol(Symbol{name:rho}), Symbol(Symbol{name:v}), Symbol(Symbol{name:L}), Symbol(Symbol{name:mu})])}",
+        "description": "Reynolds number"
+    },
+    {
+        "id": "prandtl_number_latex",
+        "language": "latex",
+        "category": "fluid_dynamics",
+        "input": "Pr = \\frac{\\nu}{\\alpha}",
+        "expected_expr": "Function{name: \"prandtl_number\", args: Box([Symbol(Symbol{name:nu}), Symbol(Symbol{name:alpha})])}",
+        "description": "Prandtl number"
+    },
+    {
+        "id": "mach_number_latex",
+        "language": "latex",
+        "category": "fluid_dynamics",
+        "input": "Ma = \\frac{v}{c}",
+        "expected_expr": "Function{name: \"mach_number\", args: Box([Symbol(Symbol{name:v}), Symbol(Symbol{name:c})])}",
+        "description": "Mach number"
+    },
+    {
+        "id": "euler_equations_latex",
+        "language": "latex",
+        "category": "fluid_dynamics",
+        "input": "\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0",
+        "expected_expr": "Function{name: \"euler_equations\", args: Box([Symbol(Symbol{name:rho}), Symbol(Symbol{name:t}), Function{name: \"vector\", args: Box([Symbol(Symbol{name:v})])}])}",
+        "description": "Euler equations for fluid flow"
+    },
+    {
+        "id": "debye_length_latex",
+        "language": "latex",
+        "category": "plasma_physics",
+        "input": "\\lambda_D = \\sqrt{\\frac{\\epsilon_0 k_B T_e}{n_e e^2}}",
+        "expected_expr": "Function{name: \"debye_length\", args: Box([Symbol(Symbol{name:epsilon_0}), Symbol(Symbol{name:k_B}), Symbol(Symbol{name:T_e}), Symbol(Symbol{name:n_e}), Symbol(Symbol{name:e})])}",
+        "description": "Debye length"
+    },
+    {
+        "id": "plasma_frequency_latex",
+        "language": "latex",
+        "category": "plasma_physics",
+        "input": "\\omega_p = \\sqrt{\\frac{n_e e^2}{\\epsilon_0 m_e}}",
+        "expected_expr": "Function{name: \"plasma_frequency\", args: Box([Symbol(Symbol{name:n_e}), Symbol(Symbol{name:e}), Symbol(Symbol{name:epsilon_0}), Symbol(Symbol{name:m_e})])}",
+        "description": "Plasma frequency"
+    },
+    {
+        "id": "cyclotron_frequency_latex",
+        "language": "latex",
+        "category": "plasma_physics",
+        "input": "\\omega_c = \\frac{eB}{m}",
+        "expected_expr": "Function{name: \"cyclotron_frequency\", args: Box([Symbol(Symbol{name:e}), Symbol(Symbol{name:B}), Symbol(Symbol{name:m})])}",
+        "description": "Cyclotron frequency"
+    },
+    {
+        "id": "lorentz_factor_latex",
+        "language": "latex",
+        "category": "relativity",
+        "input": "\\gamma = \\frac{1}{\\sqrt{1 - v^2/c^2}}",
+        "expected_expr": "Function{name: \"lorentz_factor\", args: Box([Symbol(Symbol{name:v}), Symbol(Symbol{name:c})])}",
+        "description": "Lorentz factor"
+    },
+    {
+        "id": "four_momentum_latex",
+        "language": "latex",
+        "category": "relativity",
+        "input": "p^\\mu",
+        "expected_expr": "Function{name: \"four_momentum\", args: Box([Symbol(Symbol{name:mu})])}",
+        "description": "Four-momentum"
+    },
+    {
+        "id": "minkowski_metric_latex",
+        "language": "latex",
+        "category": "relativity",
+        "input": "\\eta_{\\mu\\nu}",
+        "expected_expr": "Function{name: \"minkowski_metric\", args: Box([Symbol(Symbol{name:mu}), Symbol(Symbol{name:nu})])}",
+        "description": "Minkowski metric tensor"
+    },
+    {
+        "id": "hubble_parameter_latex",
+        "language": "latex",
+        "category": "cosmology",
+        "input": "H(t) = \\frac{\\dot{a}(t)}{a(t)}",
+        "expected_expr": "Function{name: \"hubble_parameter\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:t})])}",
+        "description": "Hubble parameter"
+    },
+    {
+        "id": "friedmann_equation_latex",
+        "language": "latex",
+        "category": "cosmology",
+        "input": "H^2 = \\frac{8\\pi G}{3}\\rho - \\frac{kc^2}{a^2}",
+        "expected_expr": "Function{name: \"friedmann_equation\", args: Box([Symbol(Symbol{name:H}), Symbol(Symbol{name:G}), Symbol(Symbol{name:rho}), Symbol(Symbol{name:k}), Symbol(Symbol{name:c}), Symbol(Symbol{name:a})])}",
+        "description": "Friedmann equation"
+    },
+    {
+        "id": "scale_factor_latex",
+        "language": "latex",
+        "category": "cosmology",
+        "input": "a(t)",
+        "expected_expr": "Function{name: \"scale_factor\", args: Box([Symbol(Symbol{name:t})])}",
+        "description": "Cosmological scale factor"
+    },
+    {
+        "id": "schwarzschild_radius_latex",
+        "language": "latex",
+        "category": "astrophysics",
+        "input": "r_s = \\frac{2GM}{c^2}",
+        "expected_expr": "Function{name: \"schwarzschild_radius\", args: Box([Symbol(Symbol{name:G}), Symbol(Symbol{name:M}), Symbol(Symbol{name:c})])}",
+        "description": "Schwarzschild radius"
+    },
+    {
+        "id": "chandrasekhar_limit_latex",
+        "language": "latex",
+        "category": "astrophysics",
+        "input": "M_{Ch} = 1.4 M_\\odot",
+        "expected_expr": "Function{name: \"chandrasekhar_limit\", args: Box([Symbol(Symbol{name:M_sun})])}",
+        "description": "Chandrasekhar limit"
+    },
+    {
+        "id": "eddington_luminosity_latex",
+        "language": "latex",
+        "category": "astrophysics",
+        "input": "L_{Edd} = \\frac{4\\pi GMm_p c}{\\sigma_T}",
+        "expected_expr": "Function{name: \"eddington_luminosity\", args: Box([Symbol(Symbol{name:G}), Symbol(Symbol{name:M}), Symbol(Symbol{name:m_p}), Symbol(Symbol{name:c}), Symbol(Symbol{name:sigma_T})])}",
+        "description": "Eddington luminosity"
+    },
+    {
+        "id": "seismic_wave_velocity_latex",
+        "language": "latex",
+        "category": "geophysics",
+        "input": "v_p = \\sqrt{\\frac{K + \\frac{4}{3}\\mu}{\\rho}}",
+        "expected_expr": "Function{name: \"seismic_p_wave\", args: Box([Symbol(Symbol{name:K}), Symbol(Symbol{name:mu}), Symbol(Symbol{name:rho})])}",
+        "description": "P-wave velocity"
+    },
+    {
+        "id": "richter_magnitude_latex",
+        "language": "latex",
+        "category": "geophysics",
+        "input": "M_L = \\log_{10} A - \\log_{10} A_0",
+        "expected_expr": "Function{name: \"richter_magnitude\", args: Box([Symbol(Symbol{name:A}), Symbol(Symbol{name:A_0})])}",
+        "description": "Richter magnitude scale"
+    },
+    {
+        "id": "coriolis_parameter_latex",
+        "language": "latex",
+        "category": "geophysics",
+        "input": "f = 2\\Omega \\sin\\phi",
+        "expected_expr": "Function{name: \"coriolis_parameter\", args: Box([Symbol(Symbol{name:Omega}), Symbol(Symbol{name:phi})])}",
+        "description": "Coriolis parameter"
+    },
+    {
+        "id": "transfer_function_wolfram",
+        "language": "wolfram",
+        "category": "control_theory",
+        "input": "TransferFunctionModel[{{num}}, {{den}}, s]",
+        "expected_expr": "Function{name: \"transfer_function\", args: Box([Symbol(Symbol{name:num}), Symbol(Symbol{name:den}), Symbol(Symbol{name:s})])}",
+        "description": "Transfer function"
+    },
+    {
+        "id": "gamma_matrix_wolfram",
+        "language": "wolfram",
+        "category": "high_energy_physics",
+        "input": "DiracGamma[mu]",
+        "expected_expr": "Function{name: \"gamma_matrix\", args: Box([Symbol(Symbol{name:mu})])}",
+        "description": "Dirac gamma matrices"
+    },
+    {
+        "id": "pauli_matrix_wolfram",
+        "language": "wolfram",
+        "category": "high_energy_physics",
+        "input": "PauliMatrix[i]",
+        "expected_expr": "Function{name: \"pauli_matrix\", args: Box([Symbol(Symbol{name:i})])}",
+        "description": "Pauli matrices"
+    },
+    {
+        "id": "lorentz_factor_wolfram",
+        "language": "wolfram",
+        "category": "relativity",
+        "input": "1/Sqrt[1 - v^2/c^2]",
+        "expected_expr": "Function{name: \"lorentz_factor\", args: Box([Symbol(Symbol{name:v}), Symbol(Symbol{name:c})])}",
+        "description": "Lorentz factor"
+    },
+    {
+        "id": "continued_fraction_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "[a_0; a_1, a_2, a_3, \\ldots]",
+        "expected_expr": "Function{name: \"continued_fraction\", args: Box([Symbol(Symbol{name:a_0}), Symbol(Symbol{name:a_1}), Symbol(Symbol{name:a_2}), Symbol(Symbol{name:a_3})])}",
+        "description": "Continued fraction representation"
+    },
+    {
+        "id": "egyptian_fraction_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\frac{1}{a_1} + \\frac{1}{a_2} + \\cdots + \\frac{1}{a_n}",
+        "expected_expr": "Function{name: \"egyptian_fraction\", args: Box([Symbol(Symbol{name:a_1}), Symbol(Symbol{name:a_2}), Symbol(Symbol{name:a_n})])}",
+        "description": "Egyptian fraction decomposition"
+    },
+    {
+        "id": "quadratic_residue_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\text{QR}(a, p)",
+        "expected_expr": "Function{name: \"quadratic_residue\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:p})])}",
+        "description": "Quadratic residue"
+    },
+    {
+        "id": "primitive_root_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\text{PrimRoot}(n)",
+        "expected_expr": "Function{name: \"primitive_root\", args: Box([Symbol(Symbol{name:n})])}",
+        "description": "Primitive root modulo n"
+    },
+    {
+        "id": "discrete_log_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "\\log_g a \\pmod{p}",
+        "expected_expr": "Function{name: \"discrete_log\", args: Box([Symbol(Symbol{name:g}), Symbol(Symbol{name:a}), Symbol(Symbol{name:p})])}",
+        "description": "Discrete logarithm"
+    },
+    {
+        "id": "elliptic_curve_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "y^2 = x^3 + ax + b",
+        "expected_expr": "Function{name: \"elliptic_curve\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Elliptic curve equation"
+    },
+    {
+        "id": "class_number_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "h(d)",
+        "expected_expr": "Function{name: \"class_number\", args: Box([Symbol(Symbol{name:d})])}",
+        "description": "Class number of quadratic field"
+    },
+    {
+        "id": "quadratic_form_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "ax^2 + bxy + cy^2",
+        "expected_expr": "Function{name: \"quadratic_form\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b}), Symbol(Symbol{name:c}), Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Binary quadratic form"
+    },
+    {
+        "id": "pell_equation_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "x^2 - Dy^2 = 1",
+        "expected_expr": "Function{name: \"pell_equation\", args: Box([Symbol(Symbol{name:D}), Symbol(Symbol{name:x}), Symbol(Symbol{name:y})])}",
+        "description": "Pell equation"
+    },
+    {
+        "id": "sum_of_squares_latex",
+        "language": "latex",
+        "category": "number_theory_advanced",
+        "input": "r_k(n)",
+        "expected_expr": "Function{name: \"sum_of_squares\", args: Box([Symbol(Symbol{name:k}), Symbol(Symbol{name:n})])}",
+        "description": "Number of ways to write n as sum of k squares"
+    },
+    {
+        "id": "cyclotomic_polynomial_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\Phi_n(x)",
+        "expected_expr": "Function{name: \"cyclotomic_polynomial\", args: Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "n-th cyclotomic polynomial"
+    },
+    {
+        "id": "minimal_polynomial_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{MinPoly}(\\alpha, \\mathbb{Q})",
+        "expected_expr": "Function{name: \"minimal_polynomial\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:Q})])}",
+        "description": "Minimal polynomial of algebraic number"
+    },
+    {
+        "id": "irreducible_polynomial_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{Irred}(f, \\mathbb{F}_p)",
+        "expected_expr": "Function{name: \"irreducible_polynomial\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:F_p})])}",
+        "description": "Irreducible polynomial over finite field"
+    },
+    {
+        "id": "polynomial_gcd_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\gcd(f(x), g(x))",
+        "expected_expr": "Function{name: \"polynomial_gcd\", args: Box([Function{name: \"f\", args: Box([Symbol(Symbol{name:x})])}, Function{name: \"g\", args: Box([Symbol(Symbol{name:x})])}])}",
+        "description": "Polynomial greatest common divisor"
+    },
+    {
+        "id": "polynomial_lcm_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{lcm}(f(x), g(x))",
+        "expected_expr": "Function{name: \"polynomial_lcm\", args: Box([Function{name: \"f\", args: Box([Symbol(Symbol{name:x})])}, Function{name: \"g\", args: Box([Symbol(Symbol{name:x})])}])}",
+        "description": "Polynomial least common multiple"
+    },
+    {
+        "id": "resultant_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{Res}(f, g)",
+        "expected_expr": "Function{name: \"resultant\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g})])}",
+        "description": "Resultant of two polynomials"
+    },
+    {
+        "id": "discriminant_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\Delta(f)",
+        "expected_expr": "Function{name: \"discriminant\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Discriminant of polynomial"
+    },
+    {
+        "id": "sylvester_matrix_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{Syl}(f, g)",
+        "expected_expr": "Function{name: \"sylvester_matrix\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g})])}",
+        "description": "Sylvester matrix"
+    },
+    {
+        "id": "polynomial_norm_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "N_{L/K}(\\alpha)",
+        "expected_expr": "Function{name: \"polynomial_norm\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:L}), Symbol(Symbol{name:K})])}",
+        "description": "Norm of algebraic element"
+    },
+    {
+        "id": "polynomial_trace_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{Tr}_{L/K}(\\alpha)",
+        "expected_expr": "Function{name: \"polynomial_trace\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:L}), Symbol(Symbol{name:K})])}",
+        "description": "Trace of algebraic element"
+    },
+    {
+        "id": "groebner_basis_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{GB}(I)",
+        "expected_expr": "Function{name: \"groebner_basis\", args: Box([Symbol(Symbol{name:I})])}",
+        "description": "Gr\u00f6bner basis of ideal"
+    },
+    {
+        "id": "hilbert_polynomial_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "H_I(t)",
+        "expected_expr": "Function{name: \"hilbert_polynomial\", args: Box([Symbol(Symbol{name:I}), Symbol(Symbol{name:t})])}",
+        "description": "Hilbert polynomial of ideal"
+    },
+    {
+        "id": "polynomial_factorization_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{Factor}(f, \\mathbb{Q})",
+        "expected_expr": "Function{name: \"polynomial_factorization\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:Q})])}",
+        "description": "Polynomial factorization over field"
+    },
+    {
+        "id": "square_free_factorization_latex",
+        "language": "latex",
+        "category": "polynomial_theory_advanced",
+        "input": "\\text{SqFree}(f)",
+        "expected_expr": "Function{name: \"square_free_factorization\", args: Box([Symbol(Symbol{name:f})])}",
+        "description": "Square-free factorization"
+    },
+    {
+        "id": "galois_group_latex",
+        "language": "latex",
+        "category": "galois_theory",
+        "input": "\\text{Gal}(L/K)",
+        "expected_expr": "Function{name: \"galois_group\", args: Box([Symbol(Symbol{name:L}), Symbol(Symbol{name:K})])}",
+        "description": "Galois group of field extension"
+    },
+    {
+        "id": "splitting_field_latex",
+        "language": "latex",
+        "category": "galois_theory",
+        "input": "\\text{Split}(f, K)",
+        "expected_expr": "Function{name: \"splitting_field\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:K})])}",
+        "description": "Splitting field of polynomial"
+    },
+    {
+        "id": "field_degree_latex",
+        "language": "latex",
+        "category": "galois_theory",
+        "input": "[L : K]",
+        "expected_expr": "Function{name: \"field_degree\", args: Box([Symbol(Symbol{name:L}), Symbol(Symbol{name:K})])}",
+        "description": "Degree of field extension"
+    },
+    {
+        "id": "continued_fraction_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "ContinuedFraction[x]",
+        "expected_expr": "Function{name: \"continued_fraction\", args: Box([Symbol(Symbol{name:x})])}",
+        "description": "Continued fraction representation"
+    },
+    {
+        "id": "quadratic_residue_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "JacobiSymbol[a, n]",
+        "expected_expr": "Function{name: \"quadratic_residue\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:n})])}",
+        "description": "Quadratic residue (Jacobi symbol)"
+    },
+    {
+        "id": "elliptic_curve_wolfram",
+        "language": "wolfram",
+        "category": "number_theory_advanced",
+        "input": "EllipticCurve[{a, b}]",
+        "expected_expr": "Function{name: \"elliptic_curve\", args: Box([Symbol(Symbol{name:a}), Symbol(Symbol{name:b})])}",
+        "description": "Elliptic curve"
+    },
+    {
+        "id": "cyclotomic_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "CyclotomicPolynomial[n, x]",
+        "expected_expr": "Function{name: \"cyclotomic_polynomial\", args: Box([Symbol(Symbol{name:n}), Symbol(Symbol{name:x})])}",
+        "description": "Cyclotomic polynomial"
+    },
+    {
+        "id": "minimal_polynomial_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "MinimalPolynomial[alpha, x]",
+        "expected_expr": "Function{name: \"minimal_polynomial\", args: Box([Symbol(Symbol{name:alpha}), Symbol(Symbol{name:x})])}",
+        "description": "Minimal polynomial"
+    },
+    {
+        "id": "resultant_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "Resultant[f, g, x]",
+        "expected_expr": "Function{name: \"resultant\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g}), Symbol(Symbol{name:x})])}",
+        "description": "Resultant of polynomials"
+    },
+    {
+        "id": "discriminant_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "Discriminant[f, x]",
+        "expected_expr": "Function{name: \"discriminant\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:x})])}",
+        "description": "Discriminant of polynomial"
+    },
+    {
+        "id": "groebner_basis_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "GroebnerBasis[{f1, f2, f3}, {x, y, z}]",
+        "expected_expr": "Function{name: \"groebner_basis\", args: Box([Set(Box([Symbol(Symbol{name:f1}), Symbol(Symbol{name:f2}), Symbol(Symbol{name:f3})])), Set(Box([Symbol(Symbol{name:x}), Symbol(Symbol{name:y}), Symbol(Symbol{name:z})]))])}",
+        "description": "Gr\u00f6bner basis"
+    },
+    {
+        "id": "polynomial_gcd_wolfram",
+        "language": "wolfram",
+        "category": "polynomial_theory_advanced",
+        "input": "PolynomialGCD[f, g]",
+        "expected_expr": "Function{name: \"polynomial_gcd\", args: Box([Symbol(Symbol{name:f}), Symbol(Symbol{name:g})])}",
+        "description": "Polynomial GCD"
     }
 ]

@@ -261,6 +261,7 @@ impl LaTeXParser {
                 crate::core::MathConstant::Undefined => "\\text{undefined}".to_string(),
                 crate::core::MathConstant::GoldenRatio => "φ".to_string(),
                 crate::core::MathConstant::EulerGamma => "γ".to_string(),
+                crate::core::MathConstant::TribonacciConstant => "α₃".to_string(),
             },
             // New expression types - implement later
             Expression::Complex(complex_data) => format!(

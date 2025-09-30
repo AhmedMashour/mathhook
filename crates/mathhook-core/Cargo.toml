@@ -8,10 +8,16 @@ homepage.workspace = true
 description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
 
 [dependencies]
+# Parser dependencies
+nom = "8.0"
+
+# Core math dependencies
 num-bigint = { workspace = true, features = ["serde"] }
 num-rational = { workspace = true, features = ["serde"] }
 num-traits.workspace = true
 num-integer.workspace = true
+
+# Utilities
 serde.workspace = true
 serde_json.workspace = true
 once_cell.workspace = true
