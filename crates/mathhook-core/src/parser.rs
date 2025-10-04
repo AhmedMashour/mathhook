@@ -6,9 +6,16 @@
 use serde::{Deserialize, Serialize};
 
 pub mod constants;
+pub mod enhanced_parser;
+pub mod implicit_multiplication;
+pub mod integrated_parser;
+pub mod lalrpop_integration;
 pub mod latex;
+pub mod lexer_with_implicit_mul;
+pub mod sequence_detector;
 pub mod serialize;
 pub mod simple;
+pub mod single_char_lexer;
 pub mod universal;
 pub mod utils;
 pub mod wolfram;

@@ -1,9 +1,8 @@
-use super::SimpleParser;
 use crate::core::{Expression, Number};
 
-impl SimpleParser {
+impl Formatter {
     /// Format an Expression as simple mathematical notation (no LaTeX commands)
-    pub fn format(&self, expr: &Expression) -> String {
+    pub fn format_simple(&self, expr: &Expression) -> String {
         match expr {
             Expression::Number(Number::Integer(n)) => n.to_string(),
             Expression::Number(Number::BigInteger(n)) => n.to_string(),
