@@ -7,9 +7,13 @@ repository.workspace = true
 homepage.workspace = true
 description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
 
+[build-dependencies]
+lalrpop = "0.22.2"
+
 [dependencies]
 # Parser dependencies
-nom = "8.0"
+lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }
+
 
 # Core math dependencies
 num-bigint = { workspace = true, features = ["serde"] }

@@ -58,6 +58,9 @@ impl fmt::Display for Expression {
                     RelationType::LessEqual => "≤",
                     RelationType::Greater => ">",
                     RelationType::GreaterEqual => "≥",
+                    RelationType::Approximate => "≈",
+                    RelationType::Similar => "∼",
+                    RelationType::Proportional => "∝",
                 };
                 write!(f, "{} {} {}", data.left, op, data.right)
             }

@@ -153,6 +153,9 @@ pub fn format(expr: &Expression) -> String {
                 crate::core::expression::RelationType::LessEqual => "<=",
                 crate::core::expression::RelationType::Greater => ">",
                 crate::core::expression::RelationType::GreaterEqual => ">=",
+                crate::core::expression::RelationType::Approximate => "≈",
+                crate::core::expression::RelationType::Similar => "∼",
+                crate::core::expression::RelationType::Proportional => "∝",
             };
             format!(
                 "{} {} {}",

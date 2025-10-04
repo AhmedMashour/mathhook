@@ -7,6 +7,7 @@ pub mod ast;
 pub mod cache;
 pub mod constants;
 pub mod formatter;
+pub mod grammar;
 pub mod lexer;
 
 // Include LALRPOP-generated parser (external token version)

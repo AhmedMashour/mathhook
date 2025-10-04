@@ -1,13 +1,6 @@
-/// LALRPOP Mathematical Expression Parser - Phase 1 Implementation
-/// 
-/// High-performance, maintainable parser supporting LaTeX, Wolfram, and simple notation.
-/// Implements Phase 1: Text Functions & Indexing Foundation
-/// 
-/// Architecture:
-/// - Frequency-optimized token matching for performance
-/// - Thread-local caching for repeated operations  
-/// - Idiomatic Rust patterns with proper error handling
-/// - Zero-copy parsing where possible
+// ============================================================================
+// LALRPOP Mathematical Expression Parser - Conflict-Free Grammar
+// ============================================================================
 
 use crate::core::{Expression, Symbol, MathConstant};
 use crate::parser::lalrpop::constants::function_names;
@@ -17,10 +10,6 @@ use crate::core::expression::RelationType;
 
 grammar;
 
-// ============================================================================
-// TOKEN DEFINITIONS - Frequency-Optimized for Performance
-// ============================================================================
-// Ordered by frequency analysis for optimal CPU cache usage and branch prediction
 match {
     // Tier 1: Ultra-high frequency (>10% of tokens) - CPU cache friendly
     "+" => PLUS,        // ~15% of all mathematical tokens
@@ -202,8 +191,6 @@ match {
     "\\star" => LATEX_STAR,
     "\\circ" => LATEX_CIRC,
     "\\bullet" => LATEX_BULLET,
-    "\\oplus" => LATEX_OPLUS,
-    "\\ominus" => LATEX_OMINUS,
     "\\otimes" => LATEX_OTIMES,
     "\\oslash" => LATEX_OSLASH,
     "\\odot" => LATEX_ODOT,
@@ -297,249 +284,137 @@ match {
     r"\s*" => { },
 }
 
-// Main entry point
+// 1. Public Entry Point
 pub Expression: Expression = {
     Relation,
 };
 
-// Relations (lowest precedence)
+// 2. Relations (Non-associative)
 Relation: Expression = {
-    <l:Relation> EQUALS <r:Addition> => Expression::relation(l, r, RelationType::Equal),
-    <l:Relation> DOUBLE_EQUALS <r:Addition> => Expression::relation(l, r, RelationType::Equal),
-    <l:Relation> NOT_EQUALS <r:Addition> => Expression::relation(l, r, RelationType::NotEqual),
-    <l:Relation> LESS <r:Addition> => Expression::relation(l, r, RelationType::Less),
-    <l:Relation> LESS_EQUAL <r:Addition> => Expression::relation(l, r, RelationType::LessEqual),
-    <l:Relation> GREATER <r:Addition> => Expression::relation(l, r, RelationType::Greater),
-    <l:Relation> GREATER_EQUAL <r:Addition> => Expression::relation(l, r, RelationType::GreaterEqual),
-    
-    // Phase 3: LaTeX relations
-    <l:Relation> LATEX_LEQ <r:Addition> => Expression::relation(l, r, RelationType::LessEqual),
-    <l:Relation> LATEX_GEQ <r:Addition> => Expression::relation(l, r, RelationType::GreaterEqual),
-    <l:Relation> LATEX_NEQ <r:Addition> => Expression::relation(l, r, RelationType::NotEqual),
-    
+    <l:Addition> EQUALS <r:Addition> => Expression::relation(l, r, RelationType::Equal),
+    <l:Addition> DOUBLE_EQUALS <r:Addition> => Expression::relation(l, r, RelationType::Equal),
+    <l:Addition> NOT_EQUALS <r:Addition> => Expression::relation(l, r, RelationType::NotEqual),
+    <l:Addition> LESS <r:Addition> => Expression::relation(l, r, RelationType::Less),
+    <l:Addition> LESS_EQUAL <r:Addition> => Expression::relation(l, r, RelationType::LessEqual),
+    <l:Addition> GREATER <r:Addition> => Expression::relation(l, r, RelationType::Greater),
+    <l:Addition> GREATER_EQUAL <r:Addition> => Expression::relation(l, r, RelationType::GreaterEqual),
+    <l:Addition> LATEX_NEQ <r:Addition> => Expression::relation(l, r, RelationType::NotEqual),
+    <l:Addition> LATEX_LEQ <r:Addition> => Expression::relation(l, r, RelationType::LessEqual),
+    <l:Addition> LATEX_GEQ <r:Addition> => Expression::relation(l, r, RelationType::GreaterEqual),
+    <l:Addition> LATEX_EQUIV <r:Addition> => Expression::relation(l, r, RelationType::Equal),
+    <l:Addition> LATEX_APPROX <r:Addition> => Expression::relation(l, r, RelationType::Approximate),
+    <l:Addition> LATEX_SIM <r:Addition> => Expression::relation(l, r, RelationType::Similar),
+    <l:Addition> LATEX_PROPTO <r:Addition> => Expression::relation(l, r, RelationType::Proportional),
     Addition,
 };
 
-// Addition and subtraction (left associative)
+// 3. Addition/Subtraction
 Addition: Expression = {
     <l:Addition> PLUS <r:Multiplication> => Expression::add(vec![l, r]),
     <l:Addition> MINUS <r:Multiplication> => Expression::add(vec![l, Expression::mul(vec![Expression::integer(-1), r])]),
+    <l:Addition> LATEX_PM <r:Multiplication> => Expression::function("plus_minus", vec![l, r]),
+    <l:Addition> LATEX_MP <r:Multiplication> => Expression::function("minus_plus", vec![l, r]),
     Multiplication,
 };
 
-// Multiplication and division (left associative)
+// 4. Multiplication/Division (EXPLICIT ONLY - no implicit multiplication)
 Multiplication: Expression = {
     <l:Multiplication> MULTIPLY <r:Power> => Expression::mul(vec![l, r]),
-    <l:Multiplication> LATEX_CDOT <r:Power> => Expression::mul(vec![l, r]),
     <l:Multiplication> DIVIDE <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
-    // Implicit multiplication (number followed by variable/function)
-    <l:Number> <r:Variable> => Expression::mul(vec![l, r]),
-    <l:Number> <r:FunctionCall> => Expression::mul(vec![l, r]),
-    <l:Number> <r:Constant> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_CDOT <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_TIMES <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_DIV <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
+    <l:Multiplication> LATEX_AST <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_STAR <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_CIRC <r:Power> => Expression::function("compose", vec![l, r]),
+    <l:Multiplication> LATEX_BULLET <r:Power> => Expression::function("dot_product", vec![l, r]),
+    <l:Multiplication> LATEX_OTIMES <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> LATEX_OSLASH <r:Power> => Expression::function("oslash", vec![l, r]),
+    <l:Multiplication> LATEX_ODOT <r:Power> => Expression::function("odot", vec![l, r]),
+    <l:Multiplication> LATEX_WEDGE <r:Power> => Expression::function("wedge", vec![l, r]),
+    <l:Multiplication> LATEX_VEE <r:Power> => Expression::function("vee", vec![l, r]),
+    <l:Multiplication> LATEX_CAP <r:Power> => Expression::function("intersection", vec![l, r]),
+    <l:Multiplication> LATEX_CUP <r:Power> => Expression::function("union", vec![l, r]),
     Power,
 };
 
-// Exponentiation (right associative)
+// 5. Exponentiation
 Power: Expression = {
     <b:Factorial> POWER <e:Power> => Expression::pow(b, e),
     Factorial,
 };
 
-// Factorial (postfix)
+// 6. Unary and Postfix Operators
 Factorial: Expression = {
+    MINUS <e:Factorial> => e.neg(),
     <e:Atom> FACTORIAL FACTORIAL => Expression::function("double_factorial", vec![e]),
     <e:Atom> FACTORIAL => Expression::function("factorial", vec![e]),
     Atom,
-}
-
-// Unary operations (for negative numbers)
-Unary: Expression = {
-    MINUS <e:Unary> => e.neg(),
-    Factorial,
 };
 
-// Atomic expressions
+// 7. Atoms
 Atom: Expression = {
     Number,
     Constant,
-    Variable,
-    FunctionCall,
-    Parenthesized,
+    ParenExpression,
+    IdentifierOrFunction,
+    AbsoluteValue,
     Set,
     Interval,
-    AbsoluteValue,
-    CalculusExpression,    // Phase 3: First-class calculus
 };
 
-// Absolute value
+// Simplified identifier handling - no conflicts
+IdentifierOrFunction: Expression = {
+    // Indexed function with power: P_l^m(x) - LONGEST PATTERN FIRST
+    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE POWER LBRACE <sup:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
+        match crate::parser::lalrpop::constants::resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed_power");
+                let mut all_args = vec![sub, sup];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                cache::build_cached_function(base, "indexed_power", {
+                    let mut all_args = vec![sub, sup];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+    
+    // Indexed function: J_n(x) - SECOND LONGEST
+    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
+        match crate::parser::lalrpop::constants::resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed");
+                let mut all_args = vec![sub];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                cache::build_cached_function(base, "indexed", {
+                    let mut all_args = vec![sub];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+    
+    // Simple identifier: x, y, z - SHORTEST PATTERN
+    <v:IDENTIFIER> => Expression::symbol(Symbol::new(v)),
+};
+
+// Helper rules
+ParenExpression: Expression = {
+    LPAREN <e:Expression> RPAREN => e,
+};
+
 AbsoluteValue: Expression = {
     PIPE <e:Expression> PIPE => Expression::function("abs", vec![e]),
 };
-
-// Phase 3: First-class calculus expressions
-// Designed to avoid grammar conflicts by using simple, non-recursive rules
-CalculusExpression: Expression = {
-    // Derivatives: \frac{d}{dx} x, \frac{\partial}{\partial x} x
-    LATEX_FRAC LBRACE DIFFERENTIAL RBRACE LBRACE <var:IDENTIFIER> RBRACE <expr:Variable> => 
-        Expression::function(function_names::DERIVATIVE, vec![expr, Expression::symbol(var)]),
-    LATEX_FRAC LBRACE LATEX_PARTIAL RBRACE LBRACE LATEX_PARTIAL <var:Variable> RBRACE <expr:Variable> => 
-        Expression::function(function_names::DERIVATIVE, vec![expr, var]),
-    
-    // Integrals: \int x dx, \iint, \iiint, \oint
-    LATEX_INT <expr:Variable> <var:IDENTIFIER> => 
-        Expression::function(function_names::INTEGRAL, vec![expr, Expression::symbol(&var[1..])]),
-    LATEX_IINT <expr:Variable> <var:IDENTIFIER> => 
-        Expression::function("double_integral", vec![expr, Expression::symbol(&var[1..])]),
-    LATEX_IIINT <expr:Variable> <var:IDENTIFIER> => 
-        Expression::function("triple_integral", vec![expr, Expression::symbol(&var[1..])]),
-    LATEX_OINT <expr:Variable> <var:IDENTIFIER> => 
-        Expression::function("contour_integral", vec![expr, Expression::symbol(&var[1..])]),
-    
-    // Limits: \lim x
-    LATEX_LIM <expr:Variable> => 
-        Expression::function(function_names::LIMIT, vec![expr]),
-    
-    // Series: \sum x, \prod x
-    LATEX_SUM <expr:Variable> => 
-        Expression::function(function_names::SUM, vec![expr]),
-    LATEX_PROD <expr:Variable> => 
-        Expression::function(function_names::PRODUCT, vec![expr]),
-    
-    // Gradient: \nabla f
-    LATEX_NABLA <expr:Variable> => 
-        Expression::function("gradient", vec![expr]),
-    
-    // More complex expressions with parentheses
-    LATEX_INT LPAREN <expr:Expression> RPAREN <var:IDENTIFIER> => 
-        Expression::function(function_names::INTEGRAL, vec![expr, Expression::symbol(&var[1..])]),
-    LATEX_SUM LPAREN <expr:Expression> RPAREN => 
-        Expression::function(function_names::SUM, vec![expr]),
-    LATEX_PROD LPAREN <expr:Expression> RPAREN => 
-        Expression::function(function_names::PRODUCT, vec![expr]),
-    LATEX_LIM LPAREN <expr:Expression> RPAREN => 
-        Expression::function(function_names::LIMIT, vec![expr]),
-    
-    // Functions with powers: \sin^2(x), \cos^{-1}(x)
-    LATEX_SIN POWER LBRACE <exp:Expression> RBRACE LPAREN <arg:Expression> RPAREN => 
-        Expression::pow(Expression::function(function_names::SIN, vec![arg]), exp),
-    LATEX_COS POWER LBRACE <exp:Expression> RBRACE LPAREN <arg:Expression> RPAREN => 
-        Expression::pow(Expression::function(function_names::COS, vec![arg]), exp),
-    LATEX_TAN POWER LBRACE <exp:Expression> RBRACE LPAREN <arg:Expression> RPAREN => 
-        Expression::pow(Expression::function("tan", vec![arg]), exp),
-    
-    // LaTeX decorators: \overline{x}, \hat{x}, \vec{x}, etc.
-    LATEX_OVERLINE LBRACE <expr:Expression> RBRACE => 
-        Expression::function("overline", vec![expr]),
-    LATEX_UNDERLINE LBRACE <expr:Expression> RBRACE => 
-        Expression::function("underline", vec![expr]),
-    LATEX_HAT LBRACE <expr:Expression> RBRACE => 
-        Expression::function("hat", vec![expr]),
-    LATEX_TILDE LBRACE <expr:Expression> RBRACE => 
-        Expression::function("tilde", vec![expr]),
-    LATEX_VEC LBRACE <expr:Expression> RBRACE => 
-        Expression::function("vec", vec![expr]),
-    LATEX_DOT LBRACE <expr:Expression> RBRACE => 
-        Expression::function("dot", vec![expr]),
-    LATEX_DDOT LBRACE <expr:Expression> RBRACE => 
-        Expression::function("ddot", vec![expr]),
-    LATEX_BAR LBRACE <expr:Expression> RBRACE => 
-        Expression::function("bar", vec![expr]),
-    
-    // LaTeX functions: \binom{n}{k}, \det(A), \max{...}, \min{...}
-    LATEX_BINOM LBRACE <n:Expression> RBRACE LBRACE <k:Expression> RBRACE => 
-        Expression::function("binomial", vec![n, k]),
-    LATEX_DET LPAREN <expr:Expression> RPAREN => 
-        Expression::function("det", vec![expr]),
-    LATEX_MAX LBRACE <expr:Expression> RBRACE => 
-        Expression::function("max", vec![expr]),
-    LATEX_MIN LBRACE <expr:Expression> RBRACE => 
-        Expression::function("min", vec![expr]),
-    LATEX_SUP LBRACE <expr:Expression> RBRACE => 
-        Expression::function("sup", vec![expr]),
-    LATEX_INF LBRACE <expr:Expression> RBRACE => 
-        Expression::function("inf", vec![expr]),
-    LATEX_GCD LPAREN <expr:Expression> RPAREN => 
-        Expression::function("gcd", vec![expr]),
-    LATEX_LCM LPAREN <expr:Expression> RPAREN => 
-        Expression::function("lcm", vec![expr]),
-    
-    // Phase 3: Greek letters as constants
-    LATEX_ALPHA => Expression::symbol("alpha"),
-    LATEX_BETA => Expression::symbol("beta"),
-    LATEX_DELTA => Expression::symbol("delta"),
-    LATEX_EPSILON => Expression::symbol("epsilon"),
-    LATEX_ZETA => Expression::symbol("zeta"),
-    LATEX_ETA => Expression::symbol("eta"),
-    LATEX_THETA => Expression::symbol("theta"),
-    LATEX_IOTA => Expression::symbol("iota"),
-    LATEX_KAPPA => Expression::symbol("kappa"),
-    LATEX_LAMBDA => Expression::symbol("lambda"),
-    LATEX_MU => Expression::symbol("mu"),
-    LATEX_NU => Expression::symbol("nu"),
-    LATEX_XI => Expression::symbol("xi"),
-    LATEX_OMICRON => Expression::symbol("omicron"),
-    LATEX_RHO => Expression::symbol("rho"),
-    LATEX_SIGMA => Expression::symbol("sigma"),
-    LATEX_TAU => Expression::symbol("tau"),
-    LATEX_UPSILON => Expression::symbol("upsilon"),
-    LATEX_CHI => Expression::symbol("chi"),
-    LATEX_PSI => Expression::symbol("psi"),
-    LATEX_OMEGA => Expression::symbol("omega"),
-    
-    // Phase 3: LaTeX binary operators
-    <left:Expression> LATEX_PM <right:Expression> => 
-        Expression::function("plus_minus", vec![left, right]),
-    <left:Expression> LATEX_MP <right:Expression> => 
-        Expression::function("minus_plus", vec![left, right]),
-    <left:Expression> LATEX_TIMES <right:Expression> => 
-        Expression::mul(vec![left, right]),
-    <left:Expression> LATEX_DIV <right:Expression> => 
-        Expression::mul(vec![left, Expression::pow(right, Expression::integer(-1))]),
-    <left:Expression> LATEX_AST <right:Expression> => 
-        Expression::mul(vec![left, right]),
-    <left:Expression> LATEX_STAR <right:Expression> => 
-        Expression::mul(vec![left, right]),
-    <left:Expression> LATEX_CIRC <right:Expression> => 
-        Expression::function("compose", vec![left, right]),
-    <left:Expression> LATEX_BULLET <right:Expression> => 
-        Expression::function("dot_product", vec![left, right]),
-    <left:Expression> LATEX_OPLUS <right:Expression> => 
-        Expression::function("oplus", vec![left, right]),
-    <left:Expression> LATEX_OMINUS <right:Expression> => 
-        Expression::function("ominus", vec![left, right]),
-    <left:Expression> LATEX_OTIMES <right:Expression> => 
-        Expression::function("otimes", vec![left, right]),
-    <left:Expression> LATEX_OSLASH <right:Expression> => 
-        Expression::function("oslash", vec![left, right]),
-    <left:Expression> LATEX_ODOT <right:Expression> => 
-        Expression::function("odot", vec![left, right]),
-    <left:Expression> LATEX_WEDGE <right:Expression> => 
-        Expression::function("wedge", vec![left, right]),
-    <left:Expression> LATEX_VEE <right:Expression> => 
-        Expression::function("vee", vec![left, right]),
-    <left:Expression> LATEX_CAP <right:Expression> => 
-        Expression::function("intersection", vec![left, right]),
-    <left:Expression> LATEX_CUP <right:Expression> => 
-        Expression::function("union", vec![left, right]),
-    
-    // Phase 3: Simple matrix environments (basic parsing)
-    LATEX_BEGIN LBRACE LATEX_PMATRIX RBRACE <expr:Expression> LATEX_END LBRACE LATEX_PMATRIX RBRACE => 
-        Expression::function("pmatrix", vec![expr]),
-    LATEX_BEGIN LBRACE LATEX_BMATRIX RBRACE <expr:Expression> LATEX_END LBRACE LATEX_BMATRIX RBRACE => 
-        Expression::function("bmatrix", vec![expr]),
-    LATEX_BEGIN LBRACE LATEX_VMATRIX RBRACE <expr:Expression> LATEX_END LBRACE LATEX_VMATRIX RBRACE => 
-        Expression::function("vmatrix", vec![expr]),
-    LATEX_BEGIN LBRACE LATEX_CASES RBRACE <expr:Expression> LATEX_END LBRACE LATEX_CASES RBRACE => 
-        Expression::function("cases", vec![expr]),
-    
-    // Phase 3: LaTeX left/right delimiters
-    LATEX_LEFT LPAREN <expr:Expression> LATEX_RIGHT RPAREN => expr,
-    LATEX_LEFT LBRACKET <expr:Expression> LATEX_RIGHT RBRACKET => expr,
-    LATEX_LEFT LBRACE <expr:Expression> LATEX_RIGHT RBRACE => expr,
-    LATEX_LEFT PIPE <expr:Expression> LATEX_RIGHT PIPE => 
-        Expression::function("abs", vec![expr]),
-};
-
 
 // Numbers
 Number: Expression = {
@@ -565,223 +440,6 @@ Constant: Expression = {
     LATEX_EULER_GAMMA => Expression::euler_gamma(),
 };
 
-// Variables/identifiers
-Variable: Expression = {
-    IDENTIFIER => Expression::symbol(<>),
-};
-
-// Function calls (standard notation)
-FunctionCall: Expression = {
-    <name:IDENTIFIER> LPAREN <args:ExprList> RPAREN => Expression::function(name, args),
-    LaTeXFunction,
-    WolframFunction,
-    LaTeXTextFunction,     // Phase 1: Text functions
-    IndexedFunction,       // Phase 1: Subscript/superscript functions
-};
-
-// ============================================================================
-// LATEX FUNCTION CALLS - Phase 1 Enhanced
-// ============================================================================
-// Uses constants for function names and optimized expression construction
-
-LaTeXFunction: Expression = {
-    // Basic trigonometric functions
-    LATEX_SIN LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::SIN, vec![arg]),
-    LATEX_COS LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::COS, vec![arg]),
-    
-    // Phase 1: Hyperbolic functions
-    LATEX_SINH LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::SINH, vec![arg]),
-    LATEX_COSH LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::COSH, vec![arg]),
-    LATEX_TANH LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::TANH, vec![arg]),
-    
-    // Phase 1: Inverse trigonometric functions
-    LATEX_ARCSIN LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::ARCSIN, vec![arg]),
-    LATEX_ARCCOS LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::ARCCOS, vec![arg]),
-    LATEX_ARCTAN LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::ARCTAN, vec![arg]),
-    
-    // Phase 1: Extended trigonometric functions
-    LATEX_SEC LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::SEC, vec![arg]),
-    LATEX_CSC LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::CSC, vec![arg]),
-    LATEX_COT LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::COT, vec![arg]),
-    
-    // Logarithmic functions
-    LATEX_LN LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::LN, vec![arg]),
-    LATEX_LOG LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::LOG, vec![arg]),
-    
-    // Special functions
-    LATEX_GAMMA LPAREN <arg:Expression> RPAREN => 
-        Expression::function(function_names::GAMMA, vec![arg]),
-    
-    // Mathematical operations
-    LATEX_SQRT LBRACE <arg:Expression> RBRACE => 
-        Expression::pow(arg, Expression::rational(1, 2)),
-    LATEX_FRAC LBRACE <num:Expression> RBRACE LBRACE <den:Expression> RBRACE => 
-        Expression::mul(vec![num, Expression::pow(den, Expression::integer(-1))]),
-};
-
-// ============================================================================
-// WOLFRAM FUNCTION CALLS - Phase 1 Enhanced
-// ============================================================================
-// Uses constants for function names and optimized expression construction
-
-WolframFunction: Expression = {
-    // Basic operations
-    WOLFRAM_TIMES LBRACKET <args:ExprList> RBRACKET => Expression::mul(args),
-    
-    // Basic functions
-    WOLFRAM_SIN LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function(function_names::SIN, vec![arg]),
-    WOLFRAM_COS LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function(function_names::COS, vec![arg]),
-    WOLFRAM_SQRT LBRACKET <arg:Expression> RBRACKET => 
-        Expression::pow(arg, Expression::rational(1, 2)),
-    WOLFRAM_EXP LBRACKET <arg:Expression> RBRACKET => 
-        Expression::pow(Expression::e(), arg),
-    WOLFRAM_LOG LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function(function_names::LN, vec![arg]),
-    WOLFRAM_GAMMA LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function(function_names::GAMMA, vec![arg]),
-    
-    // Calculus operations
-    WOLFRAM_D LBRACKET <expr:Expression> COMMA <var:Expression> RBRACKET => 
-        Expression::function(function_names::DERIVATIVE, vec![expr, var]),
-    WOLFRAM_INTEGRATE LBRACKET <expr:Expression> COMMA <var:Expression> RBRACKET => 
-        Expression::function(function_names::INTEGRAL, vec![expr, var]),
-    WOLFRAM_LIMIT LBRACKET <expr:Expression> COMMA <var:Expression> ARROW <point:Expression> RBRACKET => 
-        Expression::function(function_names::LIMIT, vec![expr, var, point]),
-    WOLFRAM_SUM LBRACKET <expr:Expression> COMMA <var:Expression> RBRACKET => 
-        Expression::function(function_names::SUM, vec![expr, var]),
-    WOLFRAM_PIECEWISE LBRACKET <expr:Expression> RBRACKET => 
-        Expression::function("piecewise", vec![expr]),
-    
-    // Phase 2: Polynomial theory functions
-    WOLFRAM_CYCLOTOMIC LBRACKET <n:Expression> COMMA <x:Expression> RBRACKET => 
-        Expression::function(function_names::CYCLOTOMIC_POLYNOMIAL, vec![n, x]),
-    WOLFRAM_MINIMAL LBRACKET <alpha:Expression> COMMA <x:Expression> RBRACKET => 
-        Expression::function(function_names::MINIMAL_POLYNOMIAL, vec![alpha, x]),
-    WOLFRAM_RESULTANT LBRACKET <f:Expression> COMMA <g:Expression> COMMA <x:Expression> RBRACKET => 
-        Expression::function(function_names::RESULTANT, vec![f, g, x]),
-    WOLFRAM_DISCRIMINANT LBRACKET <f:Expression> COMMA <x:Expression> RBRACKET => 
-        Expression::function(function_names::DISCRIMINANT, vec![f, x]),
-    WOLFRAM_POLY_GCD LBRACKET <f:Expression> COMMA <g:Expression> RBRACKET => 
-        Expression::function(function_names::POLYNOMIAL_GCD, vec![f, g]),
-    
-    // Phase 2: Advanced polynomial operations with nested structures
-    WOLFRAM_GROEBNER LBRACKET LBRACE <polys:ExprList> RBRACE COMMA LBRACE <vars:ExprList> RBRACE RBRACKET => 
-        Expression::function(function_names::GROEBNER_BASIS, vec![Expression::set(polys), Expression::set(vars)]),
-    
-    // Phase 2: Number theory functions
-    WOLFRAM_EULER_PHI LBRACKET <n:Expression> RBRACKET => 
-        Expression::function(function_names::EULER_PHI, vec![n]),
-    WOLFRAM_MOEBIUS LBRACKET <n:Expression> RBRACKET => 
-        Expression::function(function_names::MOEBIUS_MU, vec![n]),
-    WOLFRAM_PRIME_PI LBRACKET <x:Expression> RBRACKET => 
-        Expression::function(function_names::PRIME_PI, vec![x]),
-    WOLFRAM_RIEMANN_SIEGEL LBRACKET <s:Expression> RBRACKET => 
-        Expression::function(function_names::RIEMANN_SIEGEL_THETA, vec![s]),
-    
-    // Phase 3: More Wolfram functions
-    WOLFRAM_ABS LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("abs", vec![arg]),
-    WOLFRAM_MAX LBRACKET <args:ExprList> RBRACKET => 
-        Expression::function("max", args),
-    WOLFRAM_MIN LBRACKET <args:ExprList> RBRACKET => 
-        Expression::function("min", args),
-    WOLFRAM_FLOOR LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("floor", vec![arg]),
-    WOLFRAM_CEILING LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("ceiling", vec![arg]),
-    WOLFRAM_ROUND LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("round", vec![arg]),
-    WOLFRAM_SIGN LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("sign", vec![arg]),
-    WOLFRAM_RE LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("real", vec![arg]),
-    WOLFRAM_IM LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("imaginary", vec![arg]),
-    WOLFRAM_CONJUGATE LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("conjugate", vec![arg]),
-    WOLFRAM_ARG LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("argument", vec![arg]),
-    WOLFRAM_PLUS LBRACKET <args:ExprList> RBRACKET => 
-        Expression::add(args),
-    WOLFRAM_SUBTRACT LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::add(vec![a, Expression::mul(vec![Expression::integer(-1), b])]),
-    WOLFRAM_DIVIDE LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::mul(vec![a, Expression::pow(b, Expression::integer(-1))]),
-    WOLFRAM_MOD LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("mod", vec![a, b]),
-    WOLFRAM_GCD_CAPS LBRACKET <args:ExprList> RBRACKET => 
-        Expression::function("gcd", args),
-    WOLFRAM_LCM_CAPS LBRACKET <args:ExprList> RBRACKET => 
-        Expression::function("lcm", args),
-    WOLFRAM_FACTORIAL LBRACKET <arg:Expression> RBRACKET => 
-        Expression::function("factorial", vec![arg]),
-    WOLFRAM_BINOMIAL LBRACKET <n:Expression> COMMA <k:Expression> RBRACKET => 
-        Expression::function("binomial", vec![n, k]),
-    
-    // Phase 3: Advanced Wolfram matrix and linear algebra functions
-    WOLFRAM_DET LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("det", vec![matrix]),
-    WOLFRAM_TR LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("trace", vec![matrix]),
-    WOLFRAM_INVERSE LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("inverse", vec![matrix]),
-    WOLFRAM_TRANSPOSE LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("transpose", vec![matrix]),
-    WOLFRAM_EIGENVALUES LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("eigenvalues", vec![matrix]),
-    WOLFRAM_EIGENVECTORS LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("eigenvectors", vec![matrix]),
-    WOLFRAM_MATRIX_POWER LBRACKET <matrix:Expression> COMMA <power:Expression> RBRACKET => 
-        Expression::function("matrix_power", vec![matrix, power]),
-    WOLFRAM_MATRIX_EXP LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("matrix_exp", vec![matrix]),
-    WOLFRAM_NORM LBRACKET <vector:Expression> RBRACKET => 
-        Expression::function("norm", vec![vector]),
-    WOLFRAM_CROSS LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("cross", vec![a, b]),
-    WOLFRAM_DOT LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("dot", vec![a, b]),
-    WOLFRAM_INNER LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("inner", vec![a, b]),
-    WOLFRAM_OUTER LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("outer", vec![a, b]),
-    WOLFRAM_KRONECKER LBRACKET <a:Expression> COMMA <b:Expression> RBRACKET => 
-        Expression::function("kronecker", vec![a, b]),
-    WOLFRAM_LINEAR_SOLVE LBRACKET <matrix:Expression> COMMA <vector:Expression> RBRACKET => 
-        Expression::function("linear_solve", vec![matrix, vector]),
-    WOLFRAM_LEAST_SQUARES LBRACKET <matrix:Expression> COMMA <vector:Expression> RBRACKET => 
-        Expression::function("least_squares", vec![matrix, vector]),
-    WOLFRAM_QR LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("qr_decomposition", vec![matrix]),
-    WOLFRAM_SVD LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("svd", vec![matrix]),
-    WOLFRAM_LU LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("lu_decomposition", vec![matrix]),
-    WOLFRAM_CHOLESKY LBRACKET <matrix:Expression> RBRACKET => 
-        Expression::function("cholesky_decomposition", vec![matrix]),
-};
-
-// Parenthesized expressions
-Parenthesized: Expression = {
-    LPAREN <e:Expression> RPAREN => e,
-};
-
-// Set notation
 Set: Expression = {
     LBRACE <elements:ExprList> RBRACE => Expression::set(elements),
     LATEX_LBRACE <elements:ExprList> LATEX_RBRACE => Expression::set(elements),
@@ -794,76 +452,6 @@ Interval: Expression = {
     LBRACKET <start:Expression> COMMA <end:Expression> RPAREN => Expression::interval(start, end, true, false),
     LPAREN <start:Expression> COMMA <end:Expression> RBRACKET => Expression::interval(start, end, false, true),
 };
-
-// ============================================================================
-// PHASE 1: TEXT FUNCTIONS & INDEXING INFRASTRUCTURE
-// ============================================================================
-
-/// LaTeX text function parsing: \text{Re}(z), \text{Im}(z), etc.
-/// 
-/// Handles text functions commonly used in mathematical notation.
-/// Performance: O(1) token matching, cached function name construction
-LaTeXTextFunction: Expression = {
-    LATEX_TEXT LBRACE <name:IDENTIFIER> RBRACE LPAREN <args:ExprList> RPAREN => {
-        // Use cached function name construction for performance
-        cache::build_cached_function("text", name, args)
-    },
-};
-
-/// Indexed function parsing: J_n(x), P_l^m(x), H_n^{(1)}(x)
-/// 
-/// Supports subscript and superscript notation for special functions.
-/// Uses cached function name construction and special function mapping.
-IndexedFunction: Expression = {
-    // Simple subscript: J_n(x) -> bessel_j_indexed(n, x)
-    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
-        // Check if this is a known special function
-        match crate::parser::lalrpop::constants::resolve_special_function(base) {
-            Some(func_name) => {
-                // Build indexed function with cached name
-                let indexed_name = cache::get_cached_function_name(func_name, "indexed");
-                let mut all_args = vec![sub];
-                all_args.extend(args);
-                Expression::function(indexed_name, all_args)
-            }
-            None => {
-                // Generic indexed function
-                cache::build_cached_function(base, "indexed", {
-                    let mut all_args = vec![sub];
-                    all_args.extend(args);
-                    all_args
-                })
-            }
-        }
-    },
-    
-    // Subscript with superscript: P_l^m(x) -> legendre_p_indexed_power(l, m, x)
-    <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE POWER LBRACE <sup:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
-        // Check if this is a known special function
-        match crate::parser::lalrpop::constants::resolve_special_function(base) {
-            Some(func_name) => {
-                // Build indexed power function with cached name
-                let indexed_name = cache::get_cached_function_name(func_name, "indexed_power");
-                let mut all_args = vec![sub, sup];
-                all_args.extend(args);
-                Expression::function(indexed_name, all_args)
-            }
-            None => {
-                // Generic indexed power function
-                cache::build_cached_function(base, "indexed_power", {
-                    let mut all_args = vec![sub, sup];
-                    all_args.extend(args);
-                    all_args
-                })
-            }
-        }
-    },
-};
-
-
-// ============================================================================
-// UTILITY RULES
-// ============================================================================
 
 // Expression lists (for function arguments)
 ExprList: Vec<Expression> = {

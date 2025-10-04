@@ -77,6 +77,9 @@ pub enum RelationType {
     LessEqual,
     Greater,
     GreaterEqual,
+    Approximate,
+    Similar,
+    Proportional,
 }
 
 /// Direction for limit operations
