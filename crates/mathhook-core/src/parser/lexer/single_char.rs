@@ -3,7 +3,7 @@
 //! This lexer tokenizes single-character variables separately to enable
 //! implicit multiplication detection between adjacent variables.
 
-use crate::parser::lalrpop::lexer::tokens::Token;
+use super::tokens::Token;
 use std::iter::Peekable;
 use std::str::CharIndices;
 

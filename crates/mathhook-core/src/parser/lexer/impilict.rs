@@ -3,8 +3,9 @@
 //! This lexer extends the standard mathematical lexer to detect
 //! adjacent terms that should be implicitly multiplied and inserts
 //! multiplication tokens automatically.
-
-use crate::parser::{lalrpop::lexer::tokens::Token, single_char_lexer::SingleCharVariableLexer};
+//!
+use super::single_char::SingleCharVariableLexer;
+use super::tokens::Token;
 use std::collections::VecDeque;
 
 /// Enhanced token that includes implicit multiplication markers

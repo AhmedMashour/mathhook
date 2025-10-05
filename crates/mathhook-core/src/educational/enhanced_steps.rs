@@ -4,6 +4,7 @@
 
 use crate::core::{Expression, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use crate::formatter::latex::LaTeXFormatter;
 
 /// Smart step type for enhanced educational features
 pub type SmartStep = Step;

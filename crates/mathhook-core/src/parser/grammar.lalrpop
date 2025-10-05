@@ -1,13 +1,8 @@
-// ============================================================================
-// LALRPOP Mathematical Expression Parser - Conflict-Free Grammar
-// ============================================================================
-
-use crate::core::{Expression, Symbol, MathConstant};
-use crate::parser::lalrpop::constants::function_names;
-use crate::parser::lalrpop::cache;
 use std::ops::Neg;
+use crate::core::{Expression, Symbol};
+use crate::parser::constants::resolve_special_function;
+use crate::parser::cache;
 use crate::core::expression::RelationType;
-
 grammar;
 
 match {
@@ -367,7 +362,7 @@ Atom: Expression = {
 IdentifierOrFunction: Expression = {
     // Indexed function with power: P_l^m(x) - LONGEST PATTERN FIRST
     <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE POWER LBRACE <sup:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
-        match crate::parser::lalrpop::constants::resolve_special_function(base) {
+        match resolve_special_function(base) {
             Some(func_name) => {
                 let indexed_name = cache::get_cached_function_name(func_name, "indexed_power");
                 let mut all_args = vec![sub, sup];
@@ -386,7 +381,7 @@ IdentifierOrFunction: Expression = {
     
     // Indexed function: J_n(x) - SECOND LONGEST
     <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
-        match crate::parser::lalrpop::constants::resolve_special_function(base) {
+        match resolve_special_function(base) {
             Some(func_name) => {
                 let indexed_name = cache::get_cached_function_name(func_name, "indexed");
                 let mut all_args = vec![sub];

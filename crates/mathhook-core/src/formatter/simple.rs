@@ -1,73 +1,205 @@
+use super::FormattingContext;
 use crate::core::{Expression, Number};
 
-impl Formatter {
-    /// Format an Expression as simple mathematical notation (no LaTeX commands)
-    pub fn format_simple(&self, expr: &Expression) -> String {
-        match expr {
-            Expression::Number(Number::Integer(n)) => n.to_string(),
-            Expression::Number(Number::BigInteger(n)) => n.to_string(),
+const MAX_RECURSION_DEPTH: usize = 1000;
+const MAX_TERMS_PER_OPERATION: usize = 10000;
+
+/// Simple formatting context
+#[derive(Debug, Default, Clone)]
+pub struct SimpleContext {
+    /// Whether to use parentheses around negative numbers
+    pub parenthesize_negatives: bool,
+    /// Whether to use implicit multiplication (2x vs 2*x)
+    pub implicit_multiplication: bool,
+    /// Maximum precision for floating point numbers
+    pub float_precision: Option<usize>,
+    /// Whether to use Unicode symbols (× instead of *)
+    pub use_unicode: bool,
+}
+
+impl FormattingContext for SimpleContext {}
+
+/// Formt the expression to Simple
+pub trait SimpleFormatter {
+    /// Format an Expression as simple mathematical notation
+    ///
+    /// Converts mathematical expressions into clean, readable text format
+    /// without LaTeX commands or complex markup. The output can be customized
+    /// using the provided context.
+    ///
+    /// # Arguments
+    /// * `context` - Formatting configuration controlling output style
+    ///
+    /// # Context Options
+    /// * `float_precision` - Number of decimal places for floating point numbers
+    /// * `use_unicode` - Whether to use Unicode symbols (× instead of *)
+    /// * `parenthesize_negatives` - Whether to wrap negative numbers in parentheses
+    /// * `implicit_multiplication` - Whether to use implicit multiplication (2x vs 2*x)
+    ///
+    /// # Examples
+    /// ```
+    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::formatter::simple::{SimpleFormatter, SimpleContext};
+    ///
+    /// let expr = Expression::from("2 * x + 1");
+    /// let context = SimpleContext::default();
+    /// let result = expr.to_simple(&context);
+    /// assert_eq!(result, "2 * x + 1");
+    ///
+    /// // With Unicode symbols
+    /// let context = SimpleContext { use_unicode: true, ..Default::default() };
+    /// let result = expr.to_simple(&context);
+    /// assert_eq!(result, "2 × x + 1");
+    /// ```
+    ///
+    /// # Error Handling
+    /// Returns error messages for expressions that exceed safety limits:
+    /// - Maximum recursion depth (1000 levels)
+    /// - Maximum terms per operation (10000 terms)
+    fn to_simple(&self, context: &SimpleContext) -> String {
+        match self.to_simple_with_depth(context, 0) {
+            Ok(result) => result,
+            Err(error) => format!("Error: {}", error),
+        }
+    }
+
+    /// Format with explicit recursion depth tracking
+    ///
+    /// Internal method that provides stack overflow protection by tracking
+    /// recursion depth. This method returns a Result to allow proper error
+    /// propagation during recursive formatting.
+    ///
+    /// # Arguments
+    /// * `context` - Formatting configuration
+    /// * `depth` - Current recursion depth (starts at 0)
+    ///
+    /// # Returns
+    /// * `Ok(String)` - Successfully formatted expression
+    /// * `Err(String)` - Error message if limits exceeded
+    ///
+    /// # Safety Limits
+    /// * Maximum recursion depth: 1000 levels
+    /// * Maximum terms per operation: 10000 terms/factors/arguments
+    ///
+    /// # Examples
+    /// ```
+    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::formatter::simple::{SimpleFormatter, SimpleContext};
+    ///
+    /// let expr = Expression::from("x + y");
+    /// let context = SimpleContext::default();
+    /// let result = expr.to_simple_with_depth(&context, 0);
+    /// assert!(result.is_ok());
+    /// assert_eq!(result.unwrap(), "x + y");
+    /// ```
+    fn to_simple_with_depth(&self, context: &SimpleContext, depth: usize)
+        -> Result<String, String>;
+}
+
+impl SimpleFormatter for Expression {
+    fn to_simple_with_depth(
+        &self,
+        context: &SimpleContext,
+        depth: usize,
+    ) -> Result<String, String> {
+        if depth > MAX_RECURSION_DEPTH {
+            return Err("Maximum recursion depth exceeded".to_string());
+        }
+        match self {
+            Expression::Number(Number::Integer(n)) => Ok(n.to_string()),
+            Expression::Number(Number::BigInteger(n)) => Ok(n.to_string()),
             Expression::Number(Number::Rational(r)) => {
                 if r.denom() == &num_bigint::BigInt::from(1) {
-                    r.numer().to_string()
+                    Ok(r.numer().to_string())
                 } else {
-                    format!("{}/{}", r.numer(), r.denom())
+                    Ok(format!("{}/{}", r.numer(), r.denom()))
                 }
             }
-            Expression::Number(Number::Float(f)) => f.to_string(),
-            Expression::Symbol(s) => s.name().to_string(),
+            Expression::Number(Number::Float(f)) => {
+                if let Some(precision) = context.float_precision {
+                    Ok(format!("{:.1$}", f, precision))
+                } else {
+                    Ok(f.to_string())
+                }
+            }
+            Expression::Symbol(s) => Ok(s.name().to_string()),
             Expression::Add(terms) => {
-                let term_strs: Vec<String> = terms
-                    .iter()
-                    .enumerate()
-                    .map(|(i, term)| {
-                        if i == 0 {
-                            self.format(term)
+                if terms.len() > MAX_TERMS_PER_OPERATION {
+                    return Err(format!(
+                        "Too many terms in addition: {} (max: {})",
+                        terms.len(),
+                        MAX_TERMS_PER_OPERATION
+                    ));
+                }
+
+                let mut term_strs = Vec::with_capacity(terms.len());
+                for (i, term) in terms.iter().enumerate() {
+                    let term_result = term.to_simple_with_depth(context, depth + 1)?;
+                    if i == 0 {
+                        term_strs.push(term_result);
+                    } else {
+                        // Handle negative terms properly
+                        if term_result.starts_with('-') {
+                            term_strs.push(format!(" - {}", &term_result[1..]));
                         } else {
-                            // Handle negative terms properly
-                            let term_str = self.format(term);
-                            if term_str.starts_with('-') {
-                                format!(" - {}", &term_str[1..])
-                            } else {
-                                format!(" + {}", term_str)
-                            }
+                            term_strs.push(format!(" + {}", term_result));
                         }
-                    })
-                    .collect();
-                term_strs.join("")
+                    }
+                }
+                Ok(term_strs.join(""))
             }
             Expression::Mul(factors) => {
-                let factor_strs: Vec<String> = factors
-                    .iter()
-                    .map(|f| {
-                        let needs_parens = matches!(f, Expression::Add(_));
-                        if needs_parens {
-                            format!("({})", self.format(f))
-                        } else {
-                            self.format(f)
-                        }
-                    })
-                    .collect();
-                factor_strs.join(" * ")
+                if factors.len() > MAX_TERMS_PER_OPERATION {
+                    return Err(format!(
+                        "Too many factors in multiplication: {} (max: {})",
+                        factors.len(),
+                        MAX_TERMS_PER_OPERATION
+                    ));
+                }
+
+                let mut factor_strs = Vec::with_capacity(factors.len());
+                for f in factors.iter() {
+                    let factor_result = f.to_simple_with_depth(context, depth + 1)?;
+                    let needs_parens = matches!(f, Expression::Add(_));
+                    if needs_parens {
+                        factor_strs.push(format!("({})", factor_result));
+                    } else {
+                        factor_strs.push(factor_result);
+                    }
+                }
+                let separator = if context.use_unicode { " × " } else { " * " };
+                Ok(factor_strs.join(separator))
             }
             Expression::Pow(base, exp) => {
-                let base_simple = self.format(base);
-                let exp_simple = self.format(exp);
+                let base_simple = base.to_simple_with_depth(context, depth + 1)?;
+                let exp_simple = exp.to_simple_with_depth(context, depth + 1)?;
                 // Add parentheses around negative or complex exponents for clarity
                 if exp_simple.starts_with('-') || exp_simple.contains(' ') {
-                    format!("{}^({})", base_simple, exp_simple)
+                    Ok(format!("{}^({})", base_simple, exp_simple))
                 } else {
-                    format!("{}^{}", base_simple, exp_simple)
+                    Ok(format!("{}^{}", base_simple, exp_simple))
                 }
             }
             Expression::Function { name, args } => {
                 if args.is_empty() {
-                    name.clone()
+                    Ok(name.clone())
                 } else {
-                    let arg_strs: Vec<String> = args.iter().map(|a| self.format(a)).collect();
-                    format!("{}({})", name, arg_strs.join(", "))
+                    if args.len() > MAX_TERMS_PER_OPERATION {
+                        return Err(format!(
+                            "Too many function arguments: {} (max: {})",
+                            args.len(),
+                            MAX_TERMS_PER_OPERATION
+                        ));
+                    }
+
+                    let mut arg_strs = Vec::with_capacity(args.len());
+                    for arg in args.iter() {
+                        arg_strs.push(arg.to_simple_with_depth(context, depth + 1)?);
+                    }
+                    Ok(format!("{}({})", name, arg_strs.join(", ")))
                 }
             }
-            _ => "unknown".to_string(),
+            _ => Ok("unknown".to_string()),
         }
     }
 }

@@ -1,7 +1,5 @@
-use mathhook_core::parser::{
-    integrated_parser::IntegratedMathParser, lalrpop::grammar::mathematical,
-    lexer_with_implicit_mul::ImplicitMultiplicationLexer,
-};
+use mathhook_core::parser::ImplicitMultiplicationLexer;
+use mathhook_core::parser::Parser;
 
 fn main() {
     println!("=== MathHook Implicit Multiplication Demo ===\n");

@@ -8,10 +8,13 @@ pub mod calculus;
 pub mod core;
 pub mod educational;
 // pub mod macros; // Temporarily disabled for parser focus
+pub mod formatter;
 pub mod matrix;
 pub mod parser;
+pub mod serialize;
 pub mod simplify;
 pub mod solvers;
+
 // Re-export
 pub use algebra::*;
 pub use calculus::*;
