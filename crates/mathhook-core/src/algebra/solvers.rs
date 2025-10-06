@@ -215,6 +215,10 @@ impl Expression {
                     }
                 }
             }
+            Expression::MethodCall(method_data) => {
+                method_data.object.is_valid_expression()
+                    && method_data.args.iter().all(|a| a.is_valid_expression())
+            }
         }
     }
 

@@ -18,19 +18,19 @@ pub const IMPLICIT_MUL_MATRIX: [[bool; 10]; 10] = [
     // From\To:  Num  Id   Con  Grk  Fun  LP   RP   Op   LaT  Oth
     /* Number */
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* Identifier */
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* Constant */
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* GreekSymbol */
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* Function */
     [
@@ -42,7 +42,7 @@ pub const IMPLICIT_MUL_MATRIX: [[bool; 10]; 10] = [
     ],
     /* RightParen */
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* Operator */
     [
@@ -50,7 +50,7 @@ pub const IMPLICIT_MUL_MATRIX: [[bool; 10]; 10] = [
     ],
     /* LaTeXCommand*/
     [
-        false, true, true, true, false, true, false, false, true, false,
+        false, true, true, true, true, true, false, false, true, false,
     ],
     /* Other */
     [

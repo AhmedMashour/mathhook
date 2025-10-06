@@ -1,4 +1,5 @@
 use super::{FormattingContext, FormattingError};
+use crate::core::expression::smart_display::SmartDisplayFormatter;
 use crate::core::expression::RelationType;
 use crate::core::{Expression, Number};
 
@@ -137,14 +138,24 @@ impl SimpleFormatter for Expression {
 
                 let mut term_strs = Vec::with_capacity(terms.len());
                 for (i, term) in terms.iter().enumerate() {
-                    let term_result = term.to_simple_with_depth(context, depth + 1)?;
                     if i == 0 {
+                        let term_result = term.to_simple_with_depth(context, depth + 1)?;
                         term_strs.push(term_result);
                     } else {
-                        // Handle negative terms properly
-                        if term_result.starts_with('-') {
-                            term_strs.push(format!(" - {}", &term_result[1..]));
+                        // Smart subtraction detection for Simple format
+                        if SmartDisplayFormatter::is_negated_expression(term) {
+                            if let Some(positive_part) =
+                                SmartDisplayFormatter::extract_negated_expression(term)
+                            {
+                                let positive_result =
+                                    positive_part.to_simple_with_depth(context, depth + 1)?;
+                                term_strs.push(format!(" - {}", positive_result));
+                            } else {
+                                let term_result = term.to_simple_with_depth(context, depth + 1)?;
+                                term_strs.push(format!(" + {}", term_result));
+                            }
                         } else {
+                            let term_result = term.to_simple_with_depth(context, depth + 1)?;
                             term_strs.push(format!(" + {}", term_result));
                         }
                     }
@@ -157,6 +168,15 @@ impl SimpleFormatter for Expression {
                         count: factors.len(),
                         limit: MAX_TERMS_PER_OPERATION,
                     });
+                }
+
+                // Smart division detection for Simple format: x * y^(-1) → x / y
+                if let Some((dividend, divisor)) =
+                    SmartDisplayFormatter::extract_division_parts(factors)
+                {
+                    let dividend_str = dividend.to_simple_with_depth(context, depth + 1)?;
+                    let divisor_str = divisor.to_simple_with_depth(context, depth + 1)?;
+                    return Ok(format!("{} / {}", dividend_str, divisor_str));
                 }
 
                 let mut factor_strs = Vec::with_capacity(factors.len());
@@ -295,6 +315,25 @@ impl SimpleFormatter for Expression {
 
                 result.push('}');
                 Ok(result)
+            }
+            Expression::MethodCall(method_data) => {
+                let object_str = method_data
+                    .object
+                    .to_simple_with_depth(context, depth + 1)?;
+                if method_data.args.is_empty() {
+                    Ok(format!("{}.{}()", object_str, method_data.method_name))
+                } else {
+                    let args_str = method_data
+                        .args
+                        .iter()
+                        .map(|arg| arg.to_simple_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ");
+                    Ok(format!(
+                        "{}.{}({})",
+                        object_str, method_data.method_name, args_str
+                    ))
+                }
             }
             _ => Ok("unknown".to_string()),
         }

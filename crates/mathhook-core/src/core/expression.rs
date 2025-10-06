@@ -7,6 +7,7 @@ pub mod display;
 pub mod methods;
 pub mod operations;
 pub mod operators;
+pub mod smart_display;
 
 pub use crate::matrix::unified::Matrix;
 pub use data_types::*;
@@ -37,4 +38,5 @@ pub enum Expression {
     Piecewise(Box<PiecewiseData>),
     Interval(Box<IntervalData>),
     Calculus(Box<CalculusData>),
+    MethodCall(Box<MethodCallData>),
 }

@@ -36,6 +36,55 @@ pub static STANDARD_TOKEN_MAP: LazyLock<HashMap<&'static str, TokenType>> = Lazy
     map.insert("gcd", TokenType::Function);
     map.insert("lcm", TokenType::Function);
 
+    // Extended Trigonometric Functions
+    map.insert("sec", TokenType::Function);
+    map.insert("csc", TokenType::Function);
+    map.insert("cot", TokenType::Function);
+
+    // Hyperbolic Functions
+    map.insert("sinh", TokenType::Function);
+    map.insert("cosh", TokenType::Function);
+    map.insert("tanh", TokenType::Function);
+    map.insert("sech", TokenType::Function);
+    map.insert("csch", TokenType::Function);
+    map.insert("coth", TokenType::Function);
+
+    // Inverse Trigonometric Functions
+    map.insert("arcsin", TokenType::Function);
+    map.insert("arccos", TokenType::Function);
+    map.insert("arctan", TokenType::Function);
+    map.insert("arcsec", TokenType::Function);
+    map.insert("arccsc", TokenType::Function);
+    map.insert("arccot", TokenType::Function);
+    map.insert("asin", TokenType::Function); // Alternative names
+    map.insert("acos", TokenType::Function);
+    map.insert("atan", TokenType::Function);
+
+    // Extended Logarithmic Functions
+    map.insert("log10", TokenType::Function);
+    map.insert("log2", TokenType::Function);
+
+    // Utility Functions
+    map.insert("sign", TokenType::Function);
+    map.insert("factorial", TokenType::Function);
+
+    // Complex Functions
+    map.insert("real", TokenType::Function);
+    map.insert("imag", TokenType::Function);
+    map.insert("conj", TokenType::Function);
+    map.insert("arg", TokenType::Function);
+
+    // Note: Matrix operations (det, trace, rank) are handled as matrix methods, not simple functions
+
+    // Statistical Functions
+    map.insert("mean", TokenType::Function);
+    map.insert("median", TokenType::Function);
+    map.insert("var", TokenType::Function);
+    map.insert("std", TokenType::Function);
+
+    // Note: Calculus functions like sum, product, limit, integral, derivative
+    // are handled specially in grammar and should NOT be classified as Function type
+
     // Greek symbol names (common in math)
     map.insert("alpha", TokenType::GreekSymbol);
     map.insert("beta", TokenType::GreekSymbol);

@@ -1,5 +1,10 @@
 [
   {
+    "received": "2 * \\cos(x)",
+    "input": "2*\\cos(x)",
+    "expected": "Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })])}"
+  },
+  {
     "expected": "Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })])}",
     "received": "\\sin(x)",
     "input": "Sin[x]"

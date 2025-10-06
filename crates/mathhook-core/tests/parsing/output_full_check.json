@@ -1,0 +1,786 @@
+[
+  {
+    "input": "x + y",
+    "received": "x + y"
+  },
+  {
+    "received": "x - y",
+    "input": "x - y"
+  },
+  {
+    "received": "x * y",
+    "input": "x \\cdot y"
+  },
+  {
+    "input": "2x + 3y - 5",
+    "received": "2 * x + 3 * y - 5"
+  },
+  {
+    "received": "x + y",
+    "input": "x + y"
+  },
+  {
+    "input": "x / y",
+    "received": "\\frac{x}{y}"
+  },
+  {
+    "input": "x^2",
+    "received": "x^{2}"
+  },
+  {
+    "received": "\\sqrt{x}",
+    "input": "\\sqrt{x}"
+  },
+  {
+    "received": "e^{x}",
+    "input": "e^x"
+  },
+  {
+    "received": "x^{2}",
+    "input": "x^2"
+  },
+  {
+    "input": "\\sin(x)",
+    "received": "\\sin(x)"
+  },
+  {
+    "received": "\\cos(x)",
+    "input": "\\cos(x)"
+  },
+  {
+    "received": "\\sin(x)",
+    "input": "Sin[x]"
+  },
+  {
+    "received": "\\ln(x)",
+    "input": "\\ln(x)"
+  },
+  {
+    "input": "\\log(x)",
+    "received": "\\log(x)"
+  },
+  {
+    "input": "\\pi",
+    "received": "π"
+  },
+  {
+    "received": "e",
+    "input": "e"
+  },
+  {
+    "received": "i",
+    "input": "i"
+  },
+  {
+    "received": "∞",
+    "input": "\\infty"
+  },
+  {
+    "input": "Pi",
+    "received": "π"
+  },
+  {
+    "input": "E",
+    "received": "e"
+  },
+  {
+    "input": "I",
+    "received": "i"
+  },
+  {
+    "input": "3 + 4i",
+    "received": "3 + 4i"
+  },
+  {
+    "input": "3 + 4*I",
+    "received": "3 + 4i"
+  },
+  {
+    "received": "\\{\\{1, 2\\}, \\{3, 4\\}\\}",
+    "input": "{{1, 2}, {3, 4}}"
+  },
+  {
+    "input": "[0, 1]",
+    "received": "[0, 1]"
+  },
+  {
+    "received": "(0, 1)",
+    "input": "(0, 1)"
+  },
+  {
+    "input": "{1, 2, 3}",
+    "received": "\\{1, 2, 3\\}"
+  },
+  {
+    "input": "x = 5",
+    "received": "x = 5"
+  },
+  {
+    "received": "x < y",
+    "input": "x < y"
+  },
+  {
+    "received": "x = 5",
+    "input": "x == 5"
+  },
+  {
+    "input": "J_f",
+    "received": "J_f"
+  },
+  {
+    "received": "H_f",
+    "input": "H_f"
+  },
+  {
+    "received": "\\grad(\\f(x, y, z), \\{x, y, z\\})",
+    "input": "Grad[f[x, y, z], {x, y, z}]"
+  },
+  {
+    "input": "Div[{Fx, Fy, Fz}, {x, y, z}]",
+    "received": "\\div(\\{Fx, Fy, Fz\\}, \\{x, y, z\\})"
+  },
+  {
+    "input": "Curl[{Fx, Fy, Fz}, {x, y, z}]",
+    "received": "\\curl(\\{Fx, Fy, Fz\\}, \\{x, y, z\\})"
+  },
+  {
+    "received": "e^{At}",
+    "input": "e^{At}"
+  },
+  {
+    "received": "A = QR",
+    "input": "A = QR"
+  },
+  {
+    "input": "A = LU",
+    "received": "A = LU"
+  },
+  {
+    "input": "|z|",
+    "received": "\\left|z\\right|"
+  },
+  {
+    "input": "J_n(x)",
+    "received": "J_n * x"
+  },
+  {
+    "input": "Y_n(x)",
+    "received": "Y_n * x"
+  },
+  {
+    "received": "P_n * x",
+    "input": "P_n(x)"
+  },
+  {
+    "received": "P_l^{m} * x",
+    "input": "P_l^m(x)"
+  },
+  {
+    "received": "Y_l^{m} * (theta, φ)",
+    "input": "Y_l^m(\\theta, \\phi)"
+  },
+  {
+    "input": "H_n(x)",
+    "received": "H_n * x"
+  },
+  {
+    "input": "L_n(x)",
+    "received": "L_n * x"
+  },
+  {
+    "received": "T_n * x",
+    "input": "T_n(x)"
+  },
+  {
+    "input": "F(\\phi, k)",
+    "received": "F * (φ, k)"
+  },
+  {
+    "received": "e * (φ, k)",
+    "input": "E(\\phi, k)"
+  },
+  {
+    "received": "B * (x, y)",
+    "input": "B(x, y)"
+  },
+  {
+    "received": "\\digamma(x)",
+    "input": "\\psi(x)"
+  },
+  {
+    "input": "\\zeta(s)",
+    "received": "\\riemann_zeta(s)"
+  },
+  {
+    "input": "S(x)",
+    "received": "S * x"
+  },
+  {
+    "received": "C * x",
+    "input": "C(x)"
+  },
+  {
+    "received": "n!",
+    "input": "n!"
+  },
+  {
+    "input": "n!!",
+    "received": "\\double_factorial(n)"
+  },
+  {
+    "input": "s(n, k)",
+    "received": "s * (n, k)"
+  },
+  {
+    "input": "S(n, k)",
+    "received": "S * (n, k)"
+  },
+  {
+    "input": "B_n",
+    "received": "B_n"
+  },
+  {
+    "input": "C_n",
+    "received": "C_n"
+  },
+  {
+    "received": "F_n",
+    "input": "F_n"
+  },
+  {
+    "input": "L_n",
+    "received": "L_n"
+  },
+  {
+    "input": "\\phi(n)",
+    "received": "\\euler_phi(n)"
+  },
+  {
+    "received": "\\mobius(n)",
+    "input": "\\mu(n)"
+  },
+  {
+    "received": "\\prime_pi(x)",
+    "input": "\\pi(x)"
+  },
+  {
+    "input": "p(n)",
+    "received": "p * n"
+  },
+  {
+    "input": "\\tau(n)",
+    "received": "\\ramanujan_tau(n)"
+  },
+  {
+    "input": "\\sinh(x)",
+    "received": "\\sinh(x)"
+  },
+  {
+    "input": "\\cosh(x)",
+    "received": "\\cosh(x)"
+  },
+  {
+    "received": "\\tanh(x)",
+    "input": "\\tanh(x)"
+  },
+  {
+    "input": "\\arcsin(x)",
+    "received": "\\arcsin(x)"
+  },
+  {
+    "input": "\\arccos(x)",
+    "received": "\\arccos(x)"
+  },
+  {
+    "received": "\\arctan(x)",
+    "input": "\\arctan(x)"
+  },
+  {
+    "received": "\\sec(x)",
+    "input": "\\sec(x)"
+  },
+  {
+    "input": "\\csc(x)",
+    "received": "\\csc(x)"
+  },
+  {
+    "received": "\\cot(x)",
+    "input": "\\cot(x)"
+  },
+  {
+    "received": "f_X * x",
+    "input": "f_X(x)"
+  },
+  {
+    "input": "F_X(x)",
+    "received": "F_X * x"
+  },
+  {
+    "input": "\\chi^2(k)",
+    "received": "chi^{2} * k"
+  },
+  {
+    "input": "t(\\nu)",
+    "received": "t * nu"
+  },
+  {
+    "input": "F(d_1, d_2)",
+    "received": "F * (d_1, d_2)"
+  },
+  {
+    "input": "\\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}",
+    "received": "\\sqrt{\\left(x_2 - x_1\\right)^{2} + \\left(y_2 - y_1\\right)^{2}}"
+  },
+  {
+    "received": "\\left(x - a\\right)^{2} + \\left(y - b\\right)^{2} + \\left(z - c\\right)^{2} = r^{2}",
+    "input": "(x-a)^2 + (y-b)^2 + (z-c)^2 = r^2"
+  },
+  {
+    "input": "(x-h)^2 + (y-k)^2 = r^2",
+    "received": "\\left(x - h\\right)^{2} + \\left(y - k\\right)^{2} = r^{2}"
+  },
+  {
+    "received": "y = a * x^{2} + b * x + c",
+    "input": "y = ax^2 + bx + c"
+  },
+  {
+    "received": "\\dirac_delta(x)",
+    "input": "\\delta(x)"
+  },
+  {
+    "input": "H(x)",
+    "received": "H * x"
+  },
+  {
+    "received": "\\{x\\}",
+    "input": "\\{x\\}"
+  },
+  {
+    "received": "\\sinh(x)",
+    "input": "Sinh[x]"
+  },
+  {
+    "received": "\\cosh(x)",
+    "input": "Cosh[x]"
+  },
+  {
+    "received": "\\tanh(x)",
+    "input": "Tanh[x]"
+  },
+  {
+    "received": "\\arc_sinh(x)",
+    "input": "ArcSinh[x]"
+  },
+  {
+    "received": "\\arc_cosh(x)",
+    "input": "ArcCosh[x]"
+  },
+  {
+    "input": "ArcTanh[x]",
+    "received": "\\arc_tanh(x)"
+  },
+  {
+    "received": "\\arcsin(x)",
+    "input": "ArcSin[x]"
+  },
+  {
+    "input": "ArcCos[x]",
+    "received": "\\arccos(x)"
+  },
+  {
+    "input": "ArcTan[x]",
+    "received": "\\arctan(x)"
+  },
+  {
+    "input": "ArcTan[x, y]",
+    "received": "\\arctan(x, y)"
+  },
+  {
+    "received": "\\sec(x)",
+    "input": "Sec[x]"
+  },
+  {
+    "received": "\\csc(x)",
+    "input": "Csc[x]"
+  },
+  {
+    "received": "\\cot(x)",
+    "input": "Cot[x]"
+  },
+  {
+    "input": "Covariance[X, Y]",
+    "received": "\\covariance(X, Y)"
+  },
+  {
+    "received": "\\correlation(X, Y)",
+    "input": "Correlation[X, Y]"
+  },
+  {
+    "received": "\\binomial_distribution(n, p)",
+    "input": "BinomialDistribution[n, p]"
+  },
+  {
+    "received": "\\chi_square_distribution(k)",
+    "input": "ChiSquareDistribution[k]"
+  },
+  {
+    "input": "FRatioDistribution[d1, d2]",
+    "received": "\\f_ratio_distribution(d1, d2)"
+  },
+  {
+    "received": "\\probability(A, B)",
+    "input": "Probability[A, B]"
+  },
+  {
+    "received": "\\euclidean_distance(x, y)",
+    "input": "EuclideanDistance[x, y]"
+  },
+  {
+    "input": "LaplaceTransform[f[t], t, s]",
+    "received": "\\laplace_transform(\\f(t), t, s)"
+  },
+  {
+    "input": "ZTransform[x[n], n, z]",
+    "received": "\\z_transform(\\x(n), n, z)"
+  },
+  {
+    "input": "DiracDelta[x]",
+    "received": "\\dirac_delta(x)"
+  },
+  {
+    "input": "HeavisideTheta[x]",
+    "received": "\\heaviside_theta(x)"
+  },
+  {
+    "received": "\\fractional_part(x)",
+    "input": "FractionalPart[x]"
+  },
+  {
+    "input": "ArgMin[f[x], x]",
+    "received": "\\arg_min(\\f(x), x)"
+  },
+  {
+    "received": "\\arg_max(\\f(x), x)",
+    "input": "ArgMax[f[x], x]"
+  },
+  {
+    "received": "\\bessel_j(n, x)",
+    "input": "BesselJ[n, x]"
+  },
+  {
+    "received": "\\bessel_y(n, x)",
+    "input": "BesselY[n, x]"
+  },
+  {
+    "input": "HankelH1[n, x]",
+    "received": "\\hankel_h1(n, x)"
+  },
+  {
+    "input": "LegendreP[n, x]",
+    "received": "\\legendre_p(n, x)"
+  },
+  {
+    "received": "\\legendre_p(l, m, x)",
+    "input": "LegendreP[l, m, x]"
+  },
+  {
+    "received": "\\hermite(n, x)",
+    "input": "HermiteH[n, x]"
+  },
+  {
+    "input": "LaguerreL[n, x]",
+    "received": "\\laguerre(n, x)"
+  },
+  {
+    "input": "ChebyshevT[n, x]",
+    "received": "\\chebyshev_first(n, x)"
+  },
+  {
+    "input": "Hypergeometric2F1[a, b, c, z]",
+    "received": "\\hypergeometric2_f1(a, b, c, z)"
+  },
+  {
+    "input": "Beta[x, y]",
+    "received": "\\beta(x, y)"
+  },
+  {
+    "input": "PolyGamma[x]",
+    "received": "\\poly_gamma(x)"
+  },
+  {
+    "input": "PolyGamma[n, x]",
+    "received": "\\poly_gamma(n, x)"
+  },
+  {
+    "received": "\\zeta(s)",
+    "input": "Zeta[s]"
+  },
+  {
+    "received": "\\dirichlet_eta(s)",
+    "input": "DirichletEta[s]"
+  },
+  {
+    "input": "Erf[x]",
+    "received": "\\erf(x)"
+  },
+  {
+    "received": "\\erfc(x)",
+    "input": "Erfc[x]"
+  },
+  {
+    "received": "\\fresnel_s(x)",
+    "input": "FresnelS[x]"
+  },
+  {
+    "received": "\\fresnel_c(x)",
+    "input": "FresnelC[x]"
+  },
+  {
+    "input": "Factorial2[n]",
+    "received": "\\factorial2(n)"
+  },
+  {
+    "received": "\\multinomial(k1, k2, k3)",
+    "input": "Multinomial[k1, k2, k3]"
+  },
+  {
+    "input": "StirlingS1[n, k]",
+    "received": "\\stirling_s1(n, k)"
+  },
+  {
+    "input": "StirlingS2[n, k]",
+    "received": "\\stirling_s2(n, k)"
+  },
+  {
+    "received": "\\bell_b(n)",
+    "input": "BellB[n]"
+  },
+  {
+    "received": "\\catalan_number(n)",
+    "input": "CatalanNumber[n]"
+  },
+  {
+    "received": "\\fibonacci(n)",
+    "input": "Fibonacci[n]"
+  },
+  {
+    "received": "\\lucas_l(n)",
+    "input": "LucasL[n]"
+  },
+  {
+    "input": "DivisorSigma[k, n]",
+    "received": "\\divisor_sigma(k, n)"
+  },
+  {
+    "received": "\\jacobi_symbol(a, p)",
+    "input": "JacobiSymbol[a, p]"
+  },
+  {
+    "input": "JacobiSymbol[a, n]",
+    "received": "\\jacobi_symbol(a, n)"
+  },
+  {
+    "input": "PartitionsP[n]",
+    "received": "\\partitions_p(n)"
+  },
+  {
+    "input": "RamanujanTau[n]",
+    "received": "\\ramanujan_tau(n)"
+  },
+  {
+    "received": "\\series(\\f(x), \\{x, a, n\\})",
+    "input": "Series[f[x], {x, a, n}]"
+  },
+  {
+    "received": "\\fourier_series(\\f(x), x, n)",
+    "input": "FourierSeries[f[x], x, n]"
+  },
+  {
+    "input": "Residue[f[z], {z, z0}]",
+    "received": "\\residue(\\f(z), \\{z, z0\\})"
+  },
+  {
+    "input": "[A, B]",
+    "received": "[A, B]"
+  },
+  {
+    "input": "\\{A, B\\}",
+    "received": "\\{A, B\\}"
+  },
+  {
+    "input": "g^{-1}",
+    "received": "g^{-1 * 1}"
+  },
+  {
+    "input": "\\mu(E)",
+    "received": "\\mobius(e)"
+  },
+  {
+    "input": "AiryAi[x]",
+    "received": "\\airy_ai(x)"
+  },
+  {
+    "input": "AiryBi[x]",
+    "received": "\\airy_bi(x)"
+  },
+  {
+    "input": "T_n",
+    "received": "T_n"
+  },
+  {
+    "input": "M_n",
+    "received": "M_n"
+  },
+  {
+    "received": "G_n",
+    "input": "G_n"
+  },
+  {
+    "received": "A_n",
+    "input": "A_n"
+  },
+  {
+    "received": "Q_M * (a, b)",
+    "input": "Q_M(a, b)"
+  },
+  {
+    "received": "\\reduced_totient(n)",
+    "input": "\\lambda(n)"
+  },
+  {
+    "received": "\\primenu(n)",
+    "input": "\\nu(n)"
+  },
+  {
+    "input": "\\lambda(n)",
+    "received": "\\reduced_totient(n)"
+  },
+  {
+    "received": "xi * s",
+    "input": "\\xi(s)"
+  },
+  {
+    "input": "S(x)",
+    "received": "S * x"
+  },
+  {
+    "received": "\\tribonacci(n)",
+    "input": "Tribonacci[n]"
+  },
+  {
+    "received": "\\marcum_q(M, a, b)",
+    "input": "MarcumQ[M, a, b]"
+  },
+  {
+    "received": "\\appell_f1(a, b1, b2, c, x, y)",
+    "input": "AppellF1[a, b1, b2, c, x, y]"
+  },
+  {
+    "received": "\\meijer_g(\\{\\{a1, a2\\}, \\{a3\\}\\}, \\{\\{b1\\}, \\{b2, b3\\}\\}, z)",
+    "input": "MeijerG[{{a1, a2}, {a3}}, {{b1}, {b2, b3}}, z]"
+  },
+  {
+    "received": "\\lerch_phi(z, s, a)",
+    "input": "LerchPhi[z, s, a]"
+  },
+  {
+    "input": "PolyLog[s, z]",
+    "received": "\\poly_log(s, z)"
+  },
+  {
+    "input": "StieltjesGamma[n]",
+    "received": "\\stieltjes_gamma(n)"
+  },
+  {
+    "received": "rho",
+    "input": "\\rho"
+  },
+  {
+    "received": "delta",
+    "input": "\\delta"
+  },
+  {
+    "input": "\\alpha",
+    "received": "alpha"
+  },
+  {
+    "received": "e^{A}",
+    "input": "e^A"
+  },
+  {
+    "input": "\\log(A)",
+    "received": "\\log(A)"
+  },
+  {
+    "input": "A^{1/2}",
+    "received": "A^{\\frac{1}{2}}"
+  },
+  {
+    "input": "MatrixLog[A]",
+    "received": "\\matrix_log(A)"
+  },
+  {
+    "received": "F = \\frac{F_0 * a + b * v}{b + v}",
+    "input": "F = F_0 \\cdot (a + b \\cdot v)/(b + v)"
+  },
+  {
+    "input": "\\gamma^\\mu",
+    "received": "γ^{mu}"
+  },
+  {
+    "received": "a",
+    "input": "a"
+  },
+  {
+    "received": "h * k * l",
+    "input": "(hkl)"
+  },
+  {
+    "input": "p^\\mu",
+    "received": "p^{mu}"
+  },
+  {
+    "input": "a(t)",
+    "received": "a * t"
+  },
+  {
+    "received": "\\dirac_gamma(mu)",
+    "input": "DiracGamma[mu]"
+  },
+  {
+    "input": "PauliMatrix[i]",
+    "received": "\\pauli_matrix(i)"
+  },
+  {
+    "received": "y^{2} = x^{3} + a * x + b",
+    "input": "y^2 = x^3 + ax + b"
+  },
+  {
+    "input": "ax^2 + bxy + cy^2",
+    "received": "a * x^{2} + b * x * y + c * y^{2}"
+  },
+  {
+    "input": "x^2 - Dy^2 = 1",
+    "received": "x^{2} - Dy^{2} = 1"
+  },
+  {
+    "received": "r_k * n",
+    "input": "r_k(n)"
+  },
+  {
+    "input": "H_I(t)",
+    "received": "H_I * t"
+  },
+  {
+    "received": "\\continued_fraction(x)",
+    "input": "ContinuedFraction[x]"
+  },
+  {
+    "received": "\\jacobi_symbol(a, n)",
+    "input": "JacobiSymbol[a, n]"
+  },
+  {
+    "input": "EllipticCurve[{a, b}]",
+    "received": "\\elliptic_curve(\\{a, b\\})"
+  }
+]

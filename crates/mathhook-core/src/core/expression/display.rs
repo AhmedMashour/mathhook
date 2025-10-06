@@ -1,5 +1,6 @@
 //! Display implementation for Expression
 
+use super::smart_display::SmartDisplayFormatter;
 use super::{Expression, RelationType};
 use std::fmt;
 
@@ -12,17 +13,14 @@ impl fmt::Display for Expression {
                 if terms.is_empty() {
                     write!(f, "0")
                 } else {
-                    let term_strs: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
-                    write!(f, "{}", term_strs.join(" + "))
+                    SmartDisplayFormatter::format_addition_smartly(f, terms)
                 }
             }
             Expression::Mul(factors) => {
                 if factors.is_empty() {
                     write!(f, "1")
                 } else {
-                    let factor_strs: Vec<String> =
-                        factors.iter().map(|f| format!("{}", f)).collect();
-                    write!(f, "{}", factor_strs.join(" * "))
+                    SmartDisplayFormatter::format_multiplication_smartly(f, factors)
                 }
             }
             Expression::Pow(base, exp) => write!(f, "{}^{}", base, exp),
@@ -63,6 +61,21 @@ impl fmt::Display for Expression {
                     RelationType::Proportional => "∝",
                 };
                 write!(f, "{} {} {}", data.left, op, data.right)
+            }
+            Expression::MethodCall(method_data) => {
+                if method_data.args.is_empty() {
+                    write!(f, "{}.{}()", method_data.object, method_data.method_name)
+                } else {
+                    let arg_strs: Vec<String> =
+                        method_data.args.iter().map(|a| format!("{}", a)).collect();
+                    write!(
+                        f,
+                        "{}.{}({})",
+                        method_data.object,
+                        method_data.method_name,
+                        arg_strs.join(", ")
+                    )
+                }
             }
             _ => write!(f, "{:?}", self),
         }

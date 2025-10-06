@@ -116,6 +116,20 @@ impl MathSerializer {
                     approach_expr,
                 ))
             }
+            ExpressionData::MethodCall {
+                object,
+                method_name,
+                args,
+            } => {
+                let object_expr = Self::data_to_expression(*object)?;
+                let arg_exprs: Result<Vec<Expression>, SerializationError> =
+                    args.into_iter().map(Self::data_to_expression).collect();
+                Ok(Expression::method_call(
+                    object_expr,
+                    method_name,
+                    arg_exprs?,
+                ))
+            }
         }
     }
 
@@ -197,6 +211,16 @@ impl MathSerializer {
                 }
             }
 
+            Expression::MethodCall(method_data) => ExpressionData::MethodCall {
+                object: Box::new(Self::expression_to_data(&method_data.object)),
+                method_name: method_data.method_name.clone(),
+                args: method_data
+                    .args
+                    .iter()
+                    .map(|arg| Self::expression_to_data(arg))
+                    .collect(),
+            },
+
             // For other types, use placeholder for now
             _ => ExpressionData::Symbol {
                 name: "placeholder".to_string(),
@@ -254,6 +278,11 @@ pub enum ExpressionData {
         variable: String,
         approach: Box<ExpressionData>,
         direction: LimitDirection,
+    },
+    MethodCall {
+        object: Box<ExpressionData>,
+        method_name: String,
+        args: Vec<ExpressionData>,
     },
 }
 

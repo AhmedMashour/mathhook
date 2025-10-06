@@ -1,6 +1,6 @@
 use std::ops::Neg;
 use crate::core::{Expression, Symbol};
-use crate::parser::constants::resolve_special_function;
+use crate::parser::constants::{resolve_special_function, resolve_standard_function, resolve_wolfram_function, pascal_to_snake_case};
 use crate::parser::cache;
 use crate::core::expression::RelationType;
 grammar;
@@ -40,6 +40,7 @@ match {
     "d" => DIFFERENTIAL,
     "_" => SUBSCRIPT,
     ";" => SEMICOLON,  // Phase 1: For continued fractions
+    "." => DOT,        // For method calls: matrix.det()
     
     // Tier 6: LaTeX commands (0.1-1% of tokens) - alphabetically organized
     "\\arccos" => LATEX_ARCCOS,    // Phase 1: Extended trig functions
@@ -74,6 +75,7 @@ match {
     "\\phi" => LATEX_PHI,
     "\\pi" => LATEX_PI,
     "\\sec" => LATEX_SEC,  
+    "\\sin" => LATEX_SIN,          // Phase 1: Basic trig functions
     "\\sinh" => LATEX_SINH,        // Phase 1: Hyperbolic functions
     "\\tan" => LATEX_TAN,
     "\\tanh" => LATEX_TANH,        // Phase 1: Hyperbolic functions
@@ -436,10 +438,31 @@ IdentifierOrFunction: Expression = {
         }
     },
 
-    // Simple function call: f(x) - THIRD LONGEST
+    // Simple indexed function: J_n(x) - THIRD LONGEST (without braces)
+    <base:IDENTIFIER> SUBSCRIPT <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        match resolve_special_function(base) {
+            Some(func_name) => {
+                let indexed_name = cache::get_cached_function_name(func_name, "indexed");
+                let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+                all_args.extend(args);
+                Expression::function(indexed_name, all_args)
+            }
+            None => {
+                println!("caching simple indexed function: {}_{}", base, sub);
+                cache::build_cached_function(base, "indexed", {
+                    let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
+                    all_args.extend(args);
+                    all_args
+                })
+            }
+        }
+    },
+
+    // Simple function call: f(x) - FOURTH LONGEST
     <base:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
         println!("it is simple function call {}", base);
-        match resolve_special_function(base) {
+        match resolve_standard_function(base)
+            .or_else(|| resolve_special_function(base)) {
             Some(func_name) => Expression::function(func_name, args),
             None => Expression::function(base, args)
         }
@@ -447,12 +470,59 @@ IdentifierOrFunction: Expression = {
 
     <base:IDENTIFIER> LBRACKET <args:ExprList> RBRACKET => {
         println!("it is simple wolfram function call {}", base);
-        let updated_base = base.to_lowercase().to_string();
-        match resolve_special_function(&updated_base) {
-            Some(func_name) => Expression::function(updated_base, args),
-            None => Expression::function(updated_base, args)
+        // First try the hardcoded mapping for known functions
+        match resolve_wolfram_function(base) {
+            Some(func_name) => Expression::function(func_name, args),
+            // If not found, use flexible PascalCase to snake_case conversion
+            None => {
+                let snake_case_name = pascal_to_snake_case(base);
+                Expression::function(&snake_case_name, args)
+            }
         }
     },
+
+    // Method calls: A.det(), matrix.trace(), etc.
+    <object:IDENTIFIER> DOT <method:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        println!("parsing method call: {}.{}()", object, method);
+        Expression::method_call(Expression::symbol(Symbol::new(object)), method, args)
+    },
+
+    // LaTeX Functions with parentheses: \sin(x)
+    LATEX_SIN LPAREN <args:ExprList> RPAREN => Expression::function("sin", args),
+    LATEX_COS LPAREN <args:ExprList> RPAREN => Expression::function("cos", args),
+    LATEX_TAN LPAREN <args:ExprList> RPAREN => Expression::function("tan", args),
+    LATEX_SEC LPAREN <args:ExprList> RPAREN => Expression::function("sec", args),
+    LATEX_CSC LPAREN <args:ExprList> RPAREN => Expression::function("csc", args),
+    LATEX_COT LPAREN <args:ExprList> RPAREN => Expression::function("cot", args),
+    LATEX_SINH LPAREN <args:ExprList> RPAREN => Expression::function("sinh", args),
+    LATEX_COSH LPAREN <args:ExprList> RPAREN => Expression::function("cosh", args),
+    LATEX_TANH LPAREN <args:ExprList> RPAREN => Expression::function("tanh", args),
+    LATEX_ARCSIN LPAREN <args:ExprList> RPAREN => Expression::function("arcsin", args),
+    LATEX_ARCCOS LPAREN <args:ExprList> RPAREN => Expression::function("arccos", args),
+    LATEX_ARCTAN LPAREN <args:ExprList> RPAREN => Expression::function("arctan", args),
+    LATEX_LN LPAREN <args:ExprList> RPAREN => Expression::function("ln", args),
+    LATEX_LOG LPAREN <args:ExprList> RPAREN => Expression::function("log", args),
+
+    // LaTeX Functions with braces: \sin{x}
+    LATEX_SIN LBRACE <args:ExprList> RBRACE => Expression::function("sin", args),
+    LATEX_COS LBRACE <args:ExprList> RBRACE => Expression::function("cos", args),
+    LATEX_TAN LBRACE <args:ExprList> RBRACE => Expression::function("tan", args),
+    LATEX_LN LBRACE <args:ExprList> RBRACE => Expression::function("ln", args),
+    LATEX_LOG LBRACE <args:ExprList> RBRACE => Expression::function("log", args),
+
+    // Special case for sqrt
+    LATEX_SQRT LBRACE <arg:Expression> RBRACE => Expression::function("sqrt", vec![arg]),
+
+    // Greek symbols as number theory functions: \phi(n), \mu(n), \tau(n), \lambda(n), \pi(x), \nu(n), etc.
+    LATEX_PHI LPAREN <args:ExprList> RPAREN => Expression::function("euler_phi", args),
+    LATEX_MU LPAREN <args:ExprList> RPAREN => Expression::function("mobius", args),
+    LATEX_TAU LPAREN <args:ExprList> RPAREN => Expression::function("ramanujan_tau", args),
+    LATEX_LAMBDA LPAREN <args:ExprList> RPAREN => Expression::function("reduced_totient", args),
+    LATEX_PI LPAREN <args:ExprList> RPAREN => Expression::function("prime_pi", args),
+    LATEX_NU LPAREN <args:ExprList> RPAREN => Expression::function("primenu", args),
+    LATEX_DELTA LPAREN <args:ExprList> RPAREN => Expression::function("dirac_delta", args),
+    LATEX_ZETA LPAREN <args:ExprList> RPAREN => Expression::function("riemann_zeta", args),
+    LATEX_PSI LPAREN <args:ExprList> RPAREN => Expression::function("digamma", args),
     
     // Simple identifier: x, y, z - SHORTEST PATTERN
     <v:IDENTIFIER> => Expression::symbol(Symbol::new(v)),

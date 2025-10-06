@@ -588,6 +588,34 @@ impl Expression {
         Self::Matrix(Box::new(Matrix::identity(size)))
     }
 
+    /// Create a method call expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let matrix = Expression::symbol("A");
+    /// let det_call = Expression::method_call(matrix, "det", vec![]);
+    /// let trace_call = Expression::method_call(
+    ///     Expression::symbol("B"),
+    ///     "trace",
+    ///     vec![]
+    /// );
+    /// ```
+    pub fn method_call(
+        object: Expression,
+        method_name: impl Into<String>,
+        args: Vec<Expression>,
+    ) -> Self {
+        use crate::core::expression::MethodCallData;
+        Self::MethodCall(Box::new(MethodCallData {
+            object,
+            method_name: method_name.into(),
+            args,
+        }))
+    }
+
     /// Create a zero matrix expression
     ///
     /// # Examples

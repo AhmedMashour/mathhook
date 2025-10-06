@@ -1,4 +1,5 @@
 use super::{FormattingContext, FormattingError};
+use crate::core::expression::smart_display::SmartDisplayFormatter;
 use crate::core::expression::CalculusData;
 use crate::core::expression::{LimitDirection, RelationType};
 use crate::core::MathConstant;
@@ -120,33 +121,9 @@ impl LaTeXFormatter for Expression {
                 limit: MAX_TERMS_PER_OPERATION,
             });
         }
+
+        // Handle special formatting cases only, otherwise use generic \functionname approach
         Ok(match name {
-            // Trigonometric functions
-            "sin" | "cos" | "tan" | "sec" | "csc" | "cot" => {
-                if args.len() == 1 {
-                    format!(
-                        "\\{}({})",
-                        name,
-                        args[0].to_latex_with_depth(context, depth + 1)?
-                    )
-                } else {
-                    let mut arg_strs = Vec::with_capacity(args.len());
-                    for arg in args.iter() {
-                        arg_strs.push(arg.to_latex_with_depth(context, depth + 1)?);
-                    }
-                    format!("\\{}({})", name, arg_strs.join(", "))
-                }
-            }
-            // Inverse trigonometric
-            "arcsin" | "arccos" | "arctan" => {
-                format!(
-                    "\\{}({})",
-                    name,
-                    args[0].to_latex_with_depth(context, depth + 1)?
-                )
-            }
-            // Logarithmic functions
-            "ln" => format!("\\ln({})", args[0].to_latex_with_depth(context, depth + 1)?),
             "log" => {
                 if args.len() == 1 {
                     format!(
@@ -262,18 +239,20 @@ impl LaTeXFormatter for Expression {
                 "\\Gamma({})",
                 args[0].to_latex_with_depth(context, depth + 1)?
             ),
-            // Default case
+            "abs" => format!(
+                "\\left|{}\\right|",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            // Generic LaTeX function formatting: \functionname(args)
             _ => {
                 if args.is_empty() {
-                    name.to_string()
+                    format!("\\{}", name)
                 } else {
-                    format!("\\text{{{}}}({})", name, {
-                        let mut arg_strs = Vec::with_capacity(args.len());
-                        for arg in args.iter() {
-                            arg_strs.push(arg.to_latex_with_depth(context, depth + 1)?);
-                        }
-                        arg_strs.join(", ")
-                    })
+                    let arg_strs: Vec<String> = args
+                        .iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    format!("\\{}({})", name, arg_strs.join(", "))
                 }
             }
         })
@@ -316,10 +295,27 @@ impl LaTeXFormatter for Expression {
                     if i == 0 {
                         term_strs.push(term.to_latex_with_depth(context, depth + 1)?);
                     } else {
-                        term_strs.push(format!(
-                            " + {}",
-                            term.to_latex_with_depth(context, depth + 1)?
-                        ));
+                        // Smart subtraction detection for LaTeX
+                        if SmartDisplayFormatter::is_negated_expression(term) {
+                            if let Some(positive_part) =
+                                SmartDisplayFormatter::extract_negated_expression(term)
+                            {
+                                term_strs.push(format!(
+                                    " - {}",
+                                    positive_part.to_latex_with_depth(context, depth + 1)?
+                                ));
+                            } else {
+                                term_strs.push(format!(
+                                    " + {}",
+                                    term.to_latex_with_depth(context, depth + 1)?
+                                ));
+                            }
+                        } else {
+                            term_strs.push(format!(
+                                " + {}",
+                                term.to_latex_with_depth(context, depth + 1)?
+                            ));
+                        }
                     }
                 }
                 if context.needs_parentheses {
@@ -334,6 +330,17 @@ impl LaTeXFormatter for Expression {
                         count: factors.len(),
                         limit: MAX_TERMS_PER_OPERATION,
                     });
+                }
+
+                // Smart division detection for LaTeX: x * y^(-1) → \frac{x}{y}
+                if let Some((dividend, divisor)) =
+                    SmartDisplayFormatter::extract_division_parts(factors)
+                {
+                    return Ok(format!(
+                        "\\frac{{{}}}{{{}}}",
+                        dividend.to_latex_with_depth(context, depth + 1)?,
+                        divisor.to_latex_with_depth(context, depth + 1)?
+                    ));
                 }
 
                 let mut factor_strs = Vec::with_capacity(factors.len());
@@ -399,11 +406,18 @@ impl LaTeXFormatter for Expression {
                     }
                     _ => base.to_latex_with_depth(context, depth + 1)?,
                 };
-                format!(
-                    "{}^{{{}}}",
-                    base_str,
-                    exp.to_latex_with_depth(context, depth + 1)?
-                )
+                // Format exponent with smart bracing
+                let exp_str = exp.to_latex_with_depth(context, depth + 1)?;
+
+                // Remove unnecessary outer braces from sets in exponents
+                let clean_exp_str = if exp_str.starts_with("\\{") && exp_str.ends_with("\\}") {
+                    // Remove the outer \{ and \} for cleaner exponent formatting
+                    exp_str[2..exp_str.len() - 2].to_string()
+                } else {
+                    exp_str
+                };
+
+                format!("{}^{{{}}}", base_str, clean_exp_str)
             }
             Expression::Function { name, args } => {
                 self.function_to_latex_with_depth(name, args, context, depth + 1)?
@@ -511,7 +525,7 @@ impl LaTeXFormatter for Expression {
                     .to_latex_with_depth(context, depth + 1)?;
                 let end_latex = interval_data.end.to_latex_with_depth(context, depth + 1)?;
                 format!(
-                    "{}{}; {}{}",
+                    "{}{}, {}{}",
                     start_bracket, start_latex, end_latex, end_bracket
                 )
             }
@@ -602,6 +616,19 @@ impl LaTeXFormatter for Expression {
                     )
                 }
             },
+            Expression::MethodCall(method_data) => {
+                format!(
+                    "{}.{}({})",
+                    method_data.object.to_latex_with_depth(context, depth + 1)?,
+                    method_data.method_name,
+                    method_data
+                        .args
+                        .iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
         })
     }
 }

@@ -392,6 +392,10 @@ impl Expression {
             Expression::Set(_) => false,
             Expression::Interval(_) => true,
             Expression::Calculus(_) => false,
+            Expression::MethodCall(method_data) => {
+                self.is_constant(&method_data.object)
+                    && method_data.args.iter().all(|a| self.is_constant(a))
+            }
         }
     }
 }

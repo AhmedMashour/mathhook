@@ -171,8 +171,12 @@ impl ImplicitMultiplicationProcessor {
                 }
                 let token = chars[latex_start..*i].iter().collect::<String>();
 
-                // O(1) HashMap lookup for LaTeX tokens
+                // Smart context detection for LaTeX tokens
                 if let Some(&token_type) = LATEX_TOKEN_MAP.get(token.as_str()) {
+                    // If this Greek symbol is followed by '(', treat it as a function
+                    if Self::is_latex_function_context(chars, *i, &token) {
+                        return (token, TokenType::Function);
+                    }
                     return (token, token_type);
                 }
                 return (token, TokenType::LaTeXCommand);
@@ -209,6 +213,11 @@ impl ImplicitMultiplicationProcessor {
                 return (full_identifier, token_type);
             }
 
+            // O(1) HashMap lookup for Wolfram tokens
+            if let Some(&token_type) = WOLFRAM_TOKEN_MAP.get(full_identifier.as_str()) {
+                return (full_identifier, token_type);
+            }
+
             // Smart splitting for variables like "xy" -> "x", "y"
             if Self::should_split_identifier(&full_identifier) {
                 // Reset and return first character only
@@ -237,10 +246,53 @@ impl ImplicitMultiplicationProcessor {
 
     /// Determine if identifier should be split into single characters
     fn should_split_identifier(identifier: &str) -> bool {
+        // Don't split if it's a known function name
+        if STANDARD_TOKEN_MAP.get(identifier).is_some() {
+            return false;
+        }
+
         // Split short sequences of lowercase letters (like "xy" -> "x", "y")
+        // but NOT function names
         identifier.len() <= 4
             && identifier.chars().all(|c| c.is_ascii_lowercase())
             && !identifier.contains('_')
+            && identifier.len() > 1 // Don't split single characters
+    }
+
+    /// Context detection for LaTeX symbols
+    ///
+    /// Determines if a LaTeX symbol should be treated as a function based on context.
+    /// This enables proper parsing of Greek symbol functions like \phi(n), \mu(n), etc.
+    fn is_latex_function_context(chars: &[char], current_pos: usize, token: &str) -> bool {
+        // Skip whitespace after the token to find next character
+        let mut next_pos = current_pos;
+        while next_pos < chars.len() && chars[next_pos].is_whitespace() {
+            next_pos += 1;
+        }
+
+        // If followed by '(', it's likely a function call
+        if next_pos < chars.len() && chars[next_pos] == '(' {
+            // Check if this is a Greek symbol that can be a number theory function
+            matches!(
+                token,
+                "\\phi"
+                    | "\\mu"
+                    | "\\tau"
+                    | "\\lambda"
+                    | "\\nu"
+                    | "\\pi"
+                    | "\\delta"
+                    | "\\zeta"
+                    | "\\psi"
+                    | "\\eta"
+                    | "\\chi"
+                    | "\\rho"
+                    | "\\sigma"
+                    | "\\omega"
+            )
+        } else {
+            false
+        }
     }
 }
 

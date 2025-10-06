@@ -89,3 +89,11 @@ pub enum LimitDirection {
     Left,
     Right,
 }
+
+/// Method call data for object.method() syntax
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MethodCallData {
+    pub object: Expression,
+    pub method_name: String,
+    pub args: Vec<Expression>,
+}

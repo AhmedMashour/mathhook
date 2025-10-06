@@ -149,6 +149,19 @@ impl Simplify for Expression {
                     }
                 }
             }
+            Expression::MethodCall(method_data) => {
+                let simplified_object = method_data.object.simplify();
+                let simplified_args: Vec<Expression> =
+                    method_data.args.iter().map(|arg| arg.simplify()).collect();
+
+                // Try to evaluate the method call if possible
+                let method_call = Expression::method_call(
+                    simplified_object,
+                    &method_data.method_name,
+                    simplified_args,
+                );
+                method_call.evaluate_method_call()
+            }
         }
     }
 }

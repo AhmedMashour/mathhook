@@ -94,6 +94,25 @@ impl Number {
             Number::Rational(r) => r.is_one(),
         }
     }
+
+    /// Check if the number is negative one
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Number;
+    ///
+    /// let neg_one = Number::integer(-1);
+    /// assert!(neg_one.is_negative_one());
+    /// ```
+    pub fn is_negative_one(&self) -> bool {
+        match self {
+            Number::Integer(i) => *i == -1,
+            Number::Float(f) => *f == -1.0,
+            Number::BigInteger(bi) => **bi == BigInt::from(-1),
+            Number::Rational(r) => **r == BigRational::new(BigInt::from(-1), BigInt::from(1)),
+        }
+    }
 }
 
 impl From<i64> for Number {

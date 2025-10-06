@@ -1,4 +1,5 @@
 use super::{FormattingContext, FormattingError};
+use crate::core::expression::smart_display::SmartDisplayFormatter;
 use crate::core::expression::{CalculusData, RelationType};
 use crate::core::{Expression, Number};
 
@@ -114,6 +115,25 @@ impl WolframFormatter for Expression {
 
                 if terms.len() == 1 {
                     terms[0].to_wolfram_with_depth(context, depth + 1)
+                } else if terms.len() == 2
+                    && SmartDisplayFormatter::is_negated_expression(&terms[1])
+                {
+                    // Smart subtraction detection: x + (-1 * y) → Subtract[x, y]
+                    if let Some(positive_part) =
+                        SmartDisplayFormatter::extract_negated_expression(&terms[1])
+                    {
+                        Ok(format!(
+                            "Subtract[{}, {}]",
+                            terms[0].to_wolfram_with_depth(context, depth + 1)?,
+                            positive_part.to_wolfram_with_depth(context, depth + 1)?
+                        ))
+                    } else {
+                        let mut term_strs = Vec::with_capacity(terms.len());
+                        for term in terms.iter() {
+                            term_strs.push(term.to_wolfram_with_depth(context, depth + 1)?);
+                        }
+                        Ok(format!("Plus[{}]", term_strs.join(", ")))
+                    }
                 } else {
                     let mut term_strs = Vec::with_capacity(terms.len());
                     for term in terms.iter() {
@@ -132,6 +152,15 @@ impl WolframFormatter for Expression {
 
                 if factors.len() == 1 {
                     factors[0].to_wolfram_with_depth(context, depth + 1)
+                } else if let Some((dividend, divisor)) =
+                    SmartDisplayFormatter::extract_division_parts(factors)
+                {
+                    // Smart division detection: x * y^(-1) → Divide[x, y]
+                    Ok(format!(
+                        "Divide[{}, {}]",
+                        dividend.to_wolfram_with_depth(context, depth + 1)?,
+                        divisor.to_wolfram_with_depth(context, depth + 1)?
+                    ))
                 } else {
                     let mut factor_strs = Vec::with_capacity(factors.len());
                     for factor in factors.iter() {
@@ -299,6 +328,21 @@ impl WolframFormatter for Expression {
                         )
                     }
                 })
+            }
+            Expression::MethodCall(method_data) => {
+                let object_str = method_data
+                    .object
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let args_str = method_data
+                    .args
+                    .iter()
+                    .map(|arg| arg.to_wolfram_with_depth(context, depth + 1))
+                    .collect::<Result<Vec<_>, _>>()?
+                    .join(", ");
+                Ok(format!(
+                    "{}.{}[{}]",
+                    object_str, method_data.method_name, args_str
+                ))
             }
         }
     }

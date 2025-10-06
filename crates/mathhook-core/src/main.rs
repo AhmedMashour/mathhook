@@ -1,6 +1,3 @@
-use mathhook_core::educational::enhanced_steps::FormatContext;
-use mathhook_core::formatter::ExpressionFormatter;
-use mathhook_core::formatter::FormattingContext;
 use mathhook_core::parser::config::ParserConfig;
 use mathhook_core::parser::Parser;
 use std::collections::HashMap;
@@ -52,10 +49,10 @@ fn main() {
 
 fn test_json_test_cases() {
     let parser = Parser::new(ParserConfig {
-        enable_implicit_multiplication: false,
+        enable_implicit_multiplication: true,
     });
 
-    let test_cases = read_to_string("./crates/mathhook-core/tests/parsing/cases_small.json")
+    let test_cases = read_to_string("./crates/mathhook-core/tests/parsing/cases.json")
         .expect("Failed to read cases.json");
     let cases: serde_json::Value = serde_json::from_str(&test_cases).unwrap();
 
@@ -64,13 +61,11 @@ fn test_json_test_cases() {
     let mut responses: Vec<HashMap<String, String>> = vec![];
     for case in cases.as_array().unwrap() {
         let input = case["input"].as_str().unwrap();
-        let expected = case["expected_expr"].as_str().unwrap();
         let result = parser.parse(input);
         match result {
             Ok(expr) => {
                 responses.push(HashMap::from([
                     ("input".to_string(), String::from(input)),
-                    ("expected".to_string(), String::from(expected)),
                     ("received".to_string(), expr.format().unwrap()),
                 ]));
             }
@@ -84,7 +79,7 @@ fn test_json_test_cases() {
         }
     }
 
-    let file_path = "./crates/mathhook-core/tests/parsing/output_small.json";
+    let file_path = "./crates/mathhook-core/tests/parsing/output_full_check.json";
     write(file_path, serde_json::to_string_pretty(&responses).unwrap()).unwrap();
 
     println!("Output written to {}", file_path);

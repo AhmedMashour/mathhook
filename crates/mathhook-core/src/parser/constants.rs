@@ -82,6 +82,29 @@ pub mod function_names {
     pub const CONJUGATE: &str = "conjugate";
     pub const REAL: &str = "real";
     pub const IMAG: &str = "imag";
+    pub const ARG: &str = "arg";
+
+    // Utility Functions
+    pub const SIGN: &str = "sign";
+    pub const FLOOR: &str = "floor";
+    pub const CEILING: &str = "ceiling";
+    pub const ROUND: &str = "round";
+    pub const MAX: &str = "max";
+    pub const MIN: &str = "min";
+
+    // Note: Matrix operations (det, trace, rank, inverse, transpose, eigenvalues, eigenvectors)
+    // are now handled as MethodCall expressions, not function constants
+
+    // Statistical Functions
+    pub const MEAN: &str = "mean";
+    pub const MEDIAN: &str = "median";
+    pub const VARIANCE: &str = "variance";
+    pub const STD: &str = "std";
+
+    // Number Theory Functions (additional)
+    pub const GCD_CAPS: &str = "gcd";
+    pub const LCM_CAPS: &str = "lcm";
+    pub const BINOMIAL: &str = "binomial";
 
     // Number theory
     pub const CYCLOTOMIC_POLYNOMIAL: &str = "cyclotomic_polynomial";
@@ -196,6 +219,127 @@ pub static WOLFRAM_FUNCTION_MAP: Lazy<HashMap<&'static str, &'static str>> = Laz
     map.insert("EulerPhi", function_names::EULER_PHI);
     map.insert("PrimePi", function_names::PRIME_PI);
 
+    // Extended trigonometric functions
+    map.insert("Sec", function_names::SEC);
+    map.insert("Csc", function_names::CSC);
+    map.insert("Cot", function_names::COT);
+
+    // Extended hyperbolic functions
+    map.insert("Sech", function_names::SECH);
+    map.insert("Csch", function_names::CSCH);
+    map.insert("Coth", function_names::COTH);
+
+    // Extended inverse functions
+    map.insert("ArcSec", function_names::ARCSEC);
+    map.insert("ArcCsc", function_names::ARCCSC);
+    map.insert("ArcCot", function_names::ARCCOT);
+
+    // Utility functions
+    map.insert("Abs", function_names::ABS);
+    map.insert("Sign", function_names::SIGN);
+    map.insert("Max", function_names::MAX);
+    map.insert("Min", function_names::MIN);
+    map.insert("Floor", function_names::FLOOR);
+    map.insert("Ceiling", function_names::CEILING);
+    map.insert("Round", function_names::ROUND);
+
+    // Complex functions
+    map.insert("Re", function_names::REAL);
+    map.insert("Im", function_names::IMAG);
+    map.insert("Conjugate", function_names::CONJUGATE);
+    map.insert("Arg", function_names::ARG);
+
+    // Note: Matrix operations (Det, Tr, Inverse, Transpose, Eigenvalues, Eigenvectors)
+    // are handled as matrix methods, not simple functions
+
+    // Number theory functions
+    map.insert("GCD", function_names::GCD_CAPS);
+    map.insert("LCM", function_names::LCM_CAPS);
+    map.insert("Factorial", function_names::FACTORIAL);
+    map.insert("Binomial", function_names::BINOMIAL);
+
+    // Statistical functions
+    map.insert("Mean", function_names::MEAN);
+    map.insert("Median", function_names::MEDIAN);
+    map.insert("Variance", function_names::VARIANCE);
+    map.insert("StandardDeviation", function_names::STD);
+
+    map
+});
+
+/// Standard function name mapping for simple functions like sin(x), cos(x)
+///
+/// Note: LaTeX functions (\sin, \cos) are handled by explicit tokens in grammar
+/// Note: Wolfram functions (Sin, Cos) use WOLFRAM_FUNCTION_MAP
+pub static STANDARD_FUNCTION_MAP: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+    let mut map = HashMap::new();
+
+    // Basic trigonometric functions
+    map.insert("sin", function_names::SIN);
+    map.insert("cos", function_names::COS);
+    map.insert("tan", function_names::TAN);
+    map.insert("sec", function_names::SEC);
+    map.insert("csc", function_names::CSC);
+    map.insert("cot", function_names::COT);
+
+    // Hyperbolic functions
+    map.insert("sinh", function_names::SINH);
+    map.insert("cosh", function_names::COSH);
+    map.insert("tanh", function_names::TANH);
+    map.insert("sech", function_names::SECH);
+    map.insert("csch", function_names::CSCH);
+    map.insert("coth", function_names::COTH);
+
+    // Inverse trigonometric functions
+    map.insert("arcsin", function_names::ARCSIN);
+    map.insert("arccos", function_names::ARCCOS);
+    map.insert("arctan", function_names::ARCTAN);
+    map.insert("arcsec", function_names::ARCSEC);
+    map.insert("arccsc", function_names::ARCCSC);
+    map.insert("arccot", function_names::ARCCOT);
+    map.insert("asin", function_names::ARCSIN); // Alternative names
+    map.insert("acos", function_names::ARCCOS);
+    map.insert("atan", function_names::ARCTAN);
+
+    // Logarithmic functions
+    map.insert("ln", function_names::LN);
+    map.insert("log", function_names::LOG);
+    map.insert("log10", function_names::LOG10);
+    map.insert("log2", function_names::LOG2);
+
+    // Other basic functions
+    map.insert("sqrt", function_names::SQRT);
+    map.insert("abs", function_names::ABS);
+    map.insert("exp", function_names::EXP);
+    map.insert("sign", function_names::SIGN);
+    map.insert("floor", function_names::FLOOR);
+    map.insert("ceiling", function_names::CEILING);
+    map.insert("round", function_names::ROUND);
+    map.insert("max", function_names::MAX);
+    map.insert("min", function_names::MIN);
+
+    // Special functions
+    map.insert("gamma", function_names::GAMMA);
+    map.insert("factorial", function_names::FACTORIAL);
+
+    // Complex functions
+    map.insert("real", function_names::REAL);
+    map.insert("imag", function_names::IMAG);
+    map.insert("conj", function_names::CONJUGATE);
+    map.insert("arg", function_names::ARG);
+
+    // Note: Matrix operations (det, trace, rank) are handled as matrix methods, not simple functions
+
+    // Statistical functions
+    map.insert("mean", function_names::MEAN);
+    map.insert("median", function_names::MEDIAN);
+    map.insert("var", function_names::VARIANCE);
+    map.insert("std", function_names::STD);
+
+    // Number theory functions
+    map.insert("gcd", function_names::GCD_CAPS);
+    map.insert("lcm", function_names::LCM_CAPS);
+
     map
 });
 
@@ -213,6 +357,40 @@ pub fn resolve_wolfram_function(name: &str) -> Option<&'static str> {
     WOLFRAM_FUNCTION_MAP.get(name).copied()
 }
 
+/// Convert PascalCase function names to snake_case
+///
+/// This provides a flexible, generic way to convert Wolfram function names
+/// (like "BesselJ", "ArcSin") to consistent snake_case format.
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::parser::constants::pascal_to_snake_case;
+///
+/// assert_eq!(pascal_to_snake_case("Sin"), "sin");
+/// assert_eq!(pascal_to_snake_case("BesselJ"), "bessel_j");
+/// assert_eq!(pascal_to_snake_case("ArcSin"), "arc_sin");
+/// assert_eq!(pascal_to_snake_case("DiracDelta"), "dirac_delta");
+/// ```
+pub fn pascal_to_snake_case(name: &str) -> String {
+    let mut result = String::with_capacity(name.len() + 4); // Reserve extra space for underscores
+    let mut chars = name.chars().peekable();
+
+    while let Some(ch) = chars.next() {
+        if ch.is_uppercase() {
+            // Add underscore before uppercase letters (except the first character)
+            if !result.is_empty() {
+                result.push('_');
+            }
+            result.push(ch.to_lowercase().next().unwrap());
+        } else {
+            result.push(ch);
+        }
+    }
+
+    result
+}
+
 /// Resolve special function name for indexed functions
 ///
 /// # Examples
@@ -228,6 +406,21 @@ pub fn resolve_special_function(name: &str) -> Option<&'static str> {
     SPECIAL_FUNCTION_MAP.get(name).copied()
 }
 
+/// Resolve standard function name (for simple functions like sin(x))
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::parser::constants::resolve_standard_function;
+///
+/// assert_eq!(resolve_standard_function("sin"), Some("sin"));
+/// assert_eq!(resolve_standard_function("asin"), Some("arcsin"));
+/// assert_eq!(resolve_standard_function("unknown"), None);
+/// ```
+pub fn resolve_standard_function(name: &str) -> Option<&'static str> {
+    STANDARD_FUNCTION_MAP.get(name).copied()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -241,6 +434,31 @@ mod tests {
             Some(function_names::BESSEL_J)
         );
         assert_eq!(resolve_wolfram_function("UnknownFunction"), None);
+    }
+
+    #[test]
+    fn test_pascal_to_snake_case() {
+        // Basic cases
+        assert_eq!(pascal_to_snake_case("Sin"), "sin");
+        assert_eq!(pascal_to_snake_case("Cos"), "cos");
+
+        // Multi-word cases
+        assert_eq!(pascal_to_snake_case("BesselJ"), "bessel_j");
+        assert_eq!(pascal_to_snake_case("ArcSin"), "arc_sin");
+        assert_eq!(pascal_to_snake_case("DiracDelta"), "dirac_delta");
+        assert_eq!(pascal_to_snake_case("HeavisideTheta"), "heaviside_theta");
+
+        // Complex cases
+        assert_eq!(
+            pascal_to_snake_case("Hypergeometric2F1"),
+            "hypergeometric2_f1"
+        );
+        assert_eq!(pascal_to_snake_case("LegendreP"), "legendre_p");
+
+        // Edge cases
+        assert_eq!(pascal_to_snake_case("A"), "a");
+        assert_eq!(pascal_to_snake_case("AB"), "a_b");
+        assert_eq!(pascal_to_snake_case("ABC"), "a_b_c");
     }
 
     #[test]
