@@ -358,7 +358,9 @@ Addition: Expression = {
 
 // 4. Multiplication/Division (EXPLICIT ONLY - no implicit multiplication)
 Multiplication: Expression = {
-    <l:Multiplication> MULTIPLY <r:Power> => Expression::mul(vec![l, r]),
+    <l:Multiplication> MULTIPLY <r:Power> => {
+        Expression::mul(vec![l, r])
+    },
     <l:Multiplication> DIVIDE <r:Power> => Expression::mul(vec![l, Expression::pow(r, Expression::integer(-1))]),
     <l:Multiplication> LATEX_CDOT <r:Power> => Expression::mul(vec![l, r]),
     <l:Multiplication> LATEX_TIMES <r:Power> => Expression::mul(vec![l, r]),
@@ -407,7 +409,6 @@ Atom: Expression = {
 IdentifierOrFunction: Expression = {
     // Indexed function tokens: J_n(x), P_l(x), etc. - HIGHEST PRIORITY
     <token:BESSEL_J_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Bessel J function: J_{}", sub);
         let indexed_name = cache::get_cached_function_name("bessel_j", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -415,7 +416,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:BESSEL_Y_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Bessel Y function: Y_{}", sub);
         let indexed_name = cache::get_cached_function_name("bessel_y", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -423,7 +423,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:BESSEL_I_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Bessel I function: I_{}", sub);
         let indexed_name = cache::get_cached_function_name("bessel_i", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -431,7 +430,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:BESSEL_K_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Bessel K function: K_{}", sub);
         let indexed_name = cache::get_cached_function_name("bessel_k", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -439,7 +437,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:LEGENDRE_P_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Legendre P function: P_{}", sub);
         let indexed_name = cache::get_cached_function_name("legendre_p", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -447,7 +444,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:LEGENDRE_Q_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Legendre Q function: Q_{}", sub);
         let indexed_name = cache::get_cached_function_name("legendre_q", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -455,7 +451,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:HERMITE_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Hermite function: H_{}", sub);
         let indexed_name = cache::get_cached_function_name("hermite", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -463,7 +458,6 @@ IdentifierOrFunction: Expression = {
     },
     
     <token:LAGUERRE_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
-        println!("parsing indexed Laguerre function: L_{}", sub);
         let indexed_name = cache::get_cached_function_name("laguerre", "indexed");
         let mut all_args = vec![Expression::symbol(Symbol::new(sub))];
         all_args.extend(args);
@@ -545,7 +539,6 @@ IdentifierOrFunction: Expression = {
                 
                 // Check if the base is a special function
                 if let Some(func_name) = resolve_special_function(base_func) {
-                    println!("resolving subscripted function: {}_{}", base_func, subscript);
                     let indexed_name = cache::get_cached_function_name(func_name, "indexed");
                     let mut all_args = vec![Expression::symbol(Symbol::new(subscript))];
                     all_args.extend(args);

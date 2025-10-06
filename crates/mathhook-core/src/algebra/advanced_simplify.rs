@@ -447,11 +447,6 @@ impl Expression {
     pub fn ln(arg: Expression) -> Expression {
         Expression::function("ln", vec![arg])
     }
-
-    /// Create square root expression
-    pub fn sqrt(arg: Expression) -> Expression {
-        Expression::function("sqrt", vec![arg])
-    }
 }
 
 #[cfg(test)]

@@ -250,6 +250,19 @@ impl Expression {
         Self::Constant(MathConstant::NegativeInfinity)
     }
 
+    /// Create a square root expression
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// let sqrt_2 = Expression::sqrt(Expression::integer(2));
+    /// ```
+    pub fn sqrt(arg: Expression) -> Self {
+        Self::function("sqrt", vec![arg])
+    }
+
     /// Create an undefined expression
     ///
     /// # Examples

@@ -87,4 +87,59 @@ impl Expression {
             _ => self.clone(),
         }
     }
+
+    /// Check if this expression represents a mathematical function
+    ///
+    /// Returns true for expressions like sin(x), cos(x), etc.
+    /// Now integrated with Universal Function Intelligence System
+    pub fn is_function(&self) -> bool {
+        match self {
+            Expression::Function { name, .. } => {
+                // Check if function has intelligence in the registry
+                use crate::functions::intelligence::UNIVERSAL_REGISTRY;
+                UNIVERSAL_REGISTRY.has_intelligence(name)
+            }
+            _ => false,
+        }
+    }
+
+    /// Get function intelligence properties if available
+    ///
+    /// Seamless integration between core expressions and function intelligence
+    pub fn get_function_intelligence(&self) -> Option<&crate::functions::FunctionProperties> {
+        if let Expression::Function { name, .. } = self {
+            use crate::functions::intelligence::UNIVERSAL_REGISTRY;
+            UNIVERSAL_REGISTRY.get_properties(name)
+        } else {
+            None
+        }
+    }
+
+    /// Generate educational explanation for function expressions
+    ///
+    /// Perfect integration with the educational system
+    pub fn explain_function(&self) -> Vec<crate::educational::step_by_step::Step> {
+        if let Expression::Function { name, args } = self {
+            use crate::functions::intelligence::UNIVERSAL_REGISTRY;
+            UNIVERSAL_REGISTRY.explain_function(name, args)
+        } else {
+            vec![crate::educational::step_by_step::Step::new(
+                "Expression Type",
+                "This is not a function expression".to_string(),
+            )]
+        }
+    }
+
+    /// High-performance function evaluation using SIMD when beneficial
+    ///
+    /// Seamless integration with the evaluation system
+    pub fn evaluate_function_simd(&self, values: &[f64]) -> Option<Vec<f64>> {
+        if let Expression::Function { name, .. } = self {
+            use crate::functions::FunctionEvaluator;
+            let evaluator = FunctionEvaluator::new();
+            evaluator.evaluate_bulk_f64(name, values)
+        } else {
+            None
+        }
+    }
 }

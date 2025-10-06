@@ -7,6 +7,7 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+pub mod functions;
 // pub mod macros; // Temporarily disabled for parser focus
 pub mod formatter;
 pub mod matrix;
@@ -19,6 +20,7 @@ pub mod solvers;
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
+pub use functions::*;
 pub use parser::*;
 // pub use macros::*; // Temporarily disabled for parser focus
 pub use matrix::*;

@@ -119,7 +119,11 @@ impl ImplicitMultiplicationProcessor {
                     let mut temp_i = next_i;
                     let (_, next_token_type) = Self::extract_next_token(&chars, &mut temp_i);
 
-                    if should_insert_multiplication_fast(token_type, next_token_type) {
+                    // Smart indexed function detection - prevent multiplication for J_n(x) patterns
+                    if Self::is_indexed_function_pattern(&token_text, &chars, next_i) {
+                        // Don't insert multiplication for indexed functions like J_n(x)
+                        println!("Detected indexed function pattern: {}", token_text);
+                    } else if should_insert_multiplication_fast(token_type, next_token_type) {
                         result.push('*');
                     }
                 }
@@ -270,6 +274,33 @@ impl ImplicitMultiplicationProcessor {
             && identifier.chars().all(|c| c.is_ascii_lowercase())
             && !identifier.contains('_')
             && identifier.len() > 1 // Don't split single characters
+    }
+
+    /// Smart indexed function pattern detection
+    ///
+    /// Detects patterns like J_n(x), P_l(x), H_n(x) to prevent implicit multiplication
+    /// and ensure they're parsed as function calls instead of multiplication.
+    fn is_indexed_function_pattern(token: &str, chars: &[char], next_pos: usize) -> bool {
+        // Check if token matches indexed function pattern: [Letter]_[identifier]
+        if token.contains('_') {
+            if let Some(underscore_pos) = token.find('_') {
+                let base = &token[..underscore_pos];
+                let subscript = &token[underscore_pos + 1..];
+
+                // Check if base is a known special function
+                if ["J", "Y", "I", "K", "P", "Q", "H", "L"].contains(&base) {
+                    // Check if followed by parentheses (function call pattern)
+                    if next_pos < chars.len() && chars[next_pos] == '(' {
+                        println!(
+                            "Indexed function detected: {} with subscript {}",
+                            base, subscript
+                        );
+                        return true;
+                    }
+                }
+            }
+        }
+        false
     }
 
     /// Context detection for LaTeX symbols
