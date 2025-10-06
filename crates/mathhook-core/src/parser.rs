@@ -61,17 +61,13 @@ impl Parser {
 
     /// Parse with implicit multiplication enabled
     fn parse_with_implicit_multiplication(&self, input: &str) -> Result<Expression, ParseError> {
-        // Step 1: Enhanced lexer processes input and inserts implicit * tokens
-        let mut enhanced_lexer = ImplicitMultiplicationLexer::new(input);
-        let lalrpop_tokens = enhanced_lexer.to_lalrpop_tokens();
+        // Step 1: Simple string preprocessing to insert * where needed
+        let enhanced_input = self.insert_implicit_multiplication(input);
 
-        // Step 2: Convert tokens to string format (what LALRPOP expects)
-        let enhanced_string = self.tokens_to_string(&lalrpop_tokens);
-
-        // Step 3: Parse with LALRPOP grammar
+        // Step 2: Parse with LALRPOP grammar (let LALRPOP handle all tokenization)
         let parser = grammar::ExpressionParser::new();
         parser
-            .parse(&enhanced_string)
+            .parse(&enhanced_input)
             .map_err(|e| ParseError::SyntaxError(format!("LALRPOP parse error: {:?}", e)))
     }
 
@@ -84,48 +80,158 @@ impl Parser {
             .map_err(|e| ParseError::SyntaxError(format!("LALRPOP parse error: {:?}", e)))
     }
 
-    /// Convert tokens to string format for LALRPOP
-    fn tokens_to_string(&self, tokens: &[(usize, Token, usize)]) -> String {
+    /// Insert implicit multiplication operators in string format
+    fn insert_implicit_multiplication(&self, input: &str) -> String {
         let mut result = String::new();
+        let chars: Vec<char> = input.chars().collect();
+        let mut i = 0;
 
-        for (i, (_, token, _)) in tokens.iter().enumerate() {
-            if i > 0 {
-                result.push(' ');
+        while i < chars.len() {
+            let current = chars[i];
+            result.push(current);
+
+            // Look ahead to see if we should insert implicit multiplication
+            if i + 1 < chars.len() {
+                let next = chars[i + 1];
+
+                // Insert * between number and letter: 2x -> 2*x
+                if current.is_ascii_digit() && (next.is_alphabetic() || next == '\\') {
+                    // Check if next char starts a LaTeX command or is a simple variable
+                    if !self.is_followed_by_operator(&chars, i + 1) {
+                        result.push('*');
+                    }
+                }
+                // Insert * between letter and letter: xy -> x*y (but not in LaTeX commands)
+                else if current.is_alphabetic()
+                    && next.is_alphabetic()
+                    && !self.is_in_latex_command(&chars, i)
+                {
+                    if !self.is_followed_by_operator(&chars, i + 1) {
+                        result.push('*');
+                    }
+                }
+                // Insert * between ) and letter/number: (x)y -> (x)*y
+                else if current == ')' && (next.is_alphanumeric() || next == '\\') {
+                    if !self.is_followed_by_operator(&chars, i + 1) {
+                        result.push('*');
+                    }
+                }
+                // Insert * between letter/number and (: x( -> x*(
+                else if (current.is_alphanumeric()) && next == '(' {
+                    // Don't insert if it's a function call
+                    if !self.is_function_call(&chars, i) {
+                        result.push('*');
+                    }
+                }
             }
-            result.push_str(&self.token_to_string(token));
+
+            i += 1;
         }
 
         result
     }
 
-    /// Convert individual token to string
-    fn token_to_string<'a>(&self, token: &Token<'a>) -> &'a str {
-        use Token;
-
-        match token {
-            Token::PLUS => "+",
-            Token::MINUS => "-",
-            Token::MULTIPLY => "*",
-            Token::DIVIDE => "/",
-            Token::POWER => "^",
-            Token::EQUALS => "=",
-            Token::LPAREN => "(",
-            Token::RPAREN => ")",
-            Token::LBRACKET => "[",
-            Token::RBRACKET => "]",
-            Token::LBRACE => "{",
-            Token::RBRACE => "}",
-            Token::COMMA => ",",
-            Token::FACTORIAL => "!",
-            Token::INTEGER(n) => n,
-            Token::FLOAT(n) => n,
-            Token::IDENTIFIER(id) => id,
-            Token::PI => "pi",
-            Token::E_CONST => "e",
-            Token::I_CONST => "i",
-            Token::INFINITY => "infinity",
-            _ => "?", // Fallback for unsupported tokens
+    /// Check if position is followed by an operator
+    fn is_followed_by_operator(&self, chars: &[char], pos: usize) -> bool {
+        if pos >= chars.len() {
+            return false;
         }
+
+        // Skip whitespace
+        let mut i = pos;
+        while i < chars.len() && chars[i].is_whitespace() {
+            i += 1;
+        }
+
+        if i >= chars.len() {
+            return false;
+        }
+
+        matches!(
+            chars[i],
+            '+' | '-' | '*' | '/' | '^' | '=' | '<' | '>' | '!' | ',' | ';'
+        )
+    }
+
+    /// Check if position is within a LaTeX command
+    fn is_in_latex_command(&self, chars: &[char], pos: usize) -> bool {
+        // Look backwards to see if we're after a backslash
+        if pos == 0 {
+            return false;
+        }
+
+        let mut i = pos;
+        while i > 0 {
+            i -= 1;
+            if chars[i] == '\\' {
+                return true;
+            }
+            if !chars[i].is_alphabetic() {
+                break;
+            }
+        }
+        false
+    }
+
+    /// Check if this looks like a function call
+    fn is_function_call(&self, chars: &[char], pos: usize) -> bool {
+        // Extract the identifier before the parenthesis
+        if pos == 0 {
+            return false;
+        }
+
+        let mut start = pos;
+        while start > 0 && chars[start - 1].is_alphabetic() {
+            start -= 1;
+        }
+
+        if start == pos {
+            return false;
+        }
+
+        let identifier: String = chars[start..=pos].iter().collect();
+
+        // Check if it's a known function
+        matches!(
+            identifier.as_str(),
+            "sin"
+                | "cos"
+                | "tan"
+                | "sec"
+                | "csc"
+                | "cot"
+                | "sinh"
+                | "cosh"
+                | "tanh"
+                | "sech"
+                | "csch"
+                | "coth"
+                | "arcsin"
+                | "arccos"
+                | "arctan"
+                | "arcsec"
+                | "arccsc"
+                | "arccot"
+                | "asin"
+                | "acos"
+                | "atan"
+                | "asec"
+                | "acsc"
+                | "acot"
+                | "log"
+                | "ln"
+                | "exp"
+                | "sqrt"
+                | "abs"
+                | "floor"
+                | "ceil"
+                | "round"
+                | "sign"
+                | "max"
+                | "min"
+                | "gcd"
+                | "lcm"
+        )
     }
 }
 

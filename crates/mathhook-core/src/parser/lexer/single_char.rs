@@ -63,6 +63,9 @@ impl<'input> SingleCharVariableLexer<'input> {
                 ',' => Some((start_pos, Token::COMMA, start_pos + 1)),
                 '!' => Some((start_pos, Token::FACTORIAL, start_pos + 1)),
                 
+                // LaTeX commands starting with backslash
+                '\\' => self.lex_latex_command(start_pos),
+                
                 // Unknown character
                 _ => None,
             }
@@ -208,6 +211,70 @@ impl<'input> SingleCharVariableLexer<'input> {
         Some((start_pos, token, end_pos))
     }
 
+    /// Lex LaTeX command starting with backslash
+    fn lex_latex_command(&mut self, start_pos: usize) -> Option<(usize, Token<'input>, usize)> {
+        // Skip the backslash
+        let mut end_pos = start_pos + 1;
+        
+        // Read the command name
+        while let Some(&(pos, ch)) = self.chars.peek() {
+            if ch.is_alphabetic() {
+                end_pos = pos + ch.len_utf8();
+                self.chars.next();
+            } else {
+                break;
+            }
+        }
+        
+        let command = &self.input[start_pos..end_pos];
+        
+        // Map LaTeX commands to tokens
+        let token = match command {
+            "\\pi" => Token::LATEX_PI,
+            "\\alpha" => Token::LATEX_ALPHA,
+            "\\beta" => Token::LATEX_BETA,
+            "\\gamma" => Token::LATEX_GAMMA,
+            "\\delta" => Token::LATEX_DELTA,
+            "\\epsilon" => Token::LATEX_EPSILON,
+            "\\zeta" => Token::LATEX_ZETA,
+            "\\eta" => Token::LATEX_ETA,
+            "\\theta" => Token::LATEX_THETA,
+            "\\iota" => Token::LATEX_IOTA,
+            "\\kappa" => Token::LATEX_KAPPA,
+            "\\lambda" => Token::LATEX_LAMBDA,
+            "\\mu" => Token::LATEX_MU,
+            "\\nu" => Token::LATEX_NU,
+            "\\xi" => Token::LATEX_XI,
+            "\\omicron" => Token::LATEX_OMICRON,
+            "\\rho" => Token::LATEX_RHO,
+            "\\sigma" => Token::LATEX_SIGMA,
+            "\\tau" => Token::LATEX_TAU,
+            "\\upsilon" => Token::LATEX_UPSILON,
+            "\\phi" => Token::LATEX_PHI,
+            "\\chi" => Token::LATEX_CHI,
+            "\\psi" => Token::LATEX_PSI,
+            "\\omega" => Token::LATEX_OMEGA,
+            "\\varphi" => Token::LATEX_VARPHI,
+            "\\infty" => Token::LATEX_INFTY,
+            "\\sin" => Token::LATEX_SIN,
+            "\\cos" => Token::LATEX_COS,
+            "\\tan" => Token::LATEX_TAN,
+            "\\ln" => Token::LATEX_LN,
+            "\\log" => Token::LATEX_LOG,
+            "\\sqrt" => Token::LATEX_SQRT,
+            "\\frac" => Token::LATEX_FRAC,
+            "\\cdot" => Token::LATEX_CDOT,
+            "\\times" => Token::LATEX_TIMES,
+            "\\div" => Token::LATEX_DIV,
+            _ => {
+                // If we don't recognize the LaTeX command, treat it as an identifier
+                Token::IDENTIFIER(command)
+            }
+        };
+        
+        Some((start_pos, token, end_pos))
+    }
+
     /// Skip whitespace characters
     fn skip_whitespace(&mut self) {
         while let Some(&(_, ch)) = self.chars.peek() {
@@ -286,5 +353,27 @@ mod tests {
         // Should NOT split constants
         assert_eq!(tokens.len(), 1);
         assert!(matches!(tokens[0].1, Token::PI));
+    }
+
+    #[test]
+    fn test_latex_tokens() {
+        let mut lexer = SingleCharVariableLexer::new("\\pi");
+        
+        let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_token()).collect();
+        
+        // Should tokenize LaTeX \pi as LATEX_PI
+        assert_eq!(tokens.len(), 1);
+        assert!(matches!(tokens[0].1, Token::LATEX_PI));
+    }
+
+    #[test]
+    fn test_latex_greek_symbols() {
+        let mut lexer = SingleCharVariableLexer::new("\\alpha");
+        
+        let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_token()).collect();
+        
+        // Should tokenize LaTeX \alpha as LATEX_ALPHA
+        assert_eq!(tokens.len(), 1);
+        assert!(matches!(tokens[0].1, Token::LATEX_ALPHA));
     }
 }

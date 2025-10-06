@@ -209,6 +209,22 @@ impl<'input> ImplicitMultiplicationLexer<'input> {
 
     /// Check if implicit multiplication should be inserted between two tokens
     fn should_insert_between(&self, left: &Token<'input>, right: &Token<'input>) -> bool {
+        use Token::*;
+
+        // NEVER insert implicit multiplication after operators
+        match left {
+            PLUS | MINUS | MULTIPLY | DIVIDE | POWER | EQUALS | LESS | GREATER | LESS_EQUAL
+            | GREATER_EQUAL | DOUBLE_EQUALS | NOT_EQUALS | COMMA | SEMICOLON => return false,
+            _ => {}
+        }
+
+        // NEVER insert implicit multiplication before operators
+        match right {
+            PLUS | MINUS | MULTIPLY | DIVIDE | POWER | EQUALS | LESS | GREATER | LESS_EQUAL
+            | GREATER_EQUAL | DOUBLE_EQUALS | NOT_EQUALS | COMMA | SEMICOLON => return false,
+            _ => {}
+        }
+
         let left_category = self.categorize_token(left);
         let right_category = self.categorize_token(right);
 
@@ -482,5 +498,77 @@ mod tests {
         assert!(lexer.should_insert_between(&Token::RPAREN, &Token::PI));
         assert!(lexer.should_insert_between(&Token::RPAREN, &Token::LATEX_ALPHA));
         assert!(lexer.should_insert_between(&Token::RPAREN, &Token::IDENTIFIER("x")));
+    }
+
+    #[test]
+    fn test_latex_implicit_multiplication() {
+        // Test that LaTeX tokens work with implicit multiplication
+        let mut lexer = ImplicitMultiplicationLexer::new("2\\pi");
+        let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_enhanced_token()).collect();
+
+        // Should generate: INTEGER(2), ImplicitMultiply, LATEX_PI
+        assert!(tokens.len() >= 3);
+        assert!(matches!(
+            tokens[0].1,
+            EnhancedToken::Regular(Token::INTEGER(_))
+        ));
+        assert!(matches!(tokens[1].1, EnhancedToken::ImplicitMultiply));
+        assert!(matches!(
+            tokens[2].1,
+            EnhancedToken::Regular(Token::LATEX_PI)
+        ));
+    }
+
+    #[test]
+    fn test_explicit_operators_respected() {
+        let lexer = ImplicitMultiplicationLexer::new("");
+
+        // Should NOT insert implicit multiplication around explicit operators
+        assert!(!lexer.should_insert_between(&Token::INTEGER("2"), &Token::PLUS));
+        assert!(!lexer.should_insert_between(&Token::PLUS, &Token::INTEGER("3")));
+        assert!(!lexer.should_insert_between(&Token::IDENTIFIER("x"), &Token::MULTIPLY));
+        assert!(!lexer.should_insert_between(&Token::MULTIPLY, &Token::PI));
+        assert!(!lexer.should_insert_between(&Token::PI, &Token::DIVIDE));
+        assert!(!lexer.should_insert_between(&Token::DIVIDE, &Token::IDENTIFIER("x")));
+
+        // Should still insert for valid cases
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::IDENTIFIER("x")));
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::PI));
+    }
+
+    #[test]
+    fn test_complex_expression_with_operators() {
+        // Test the specific failing case: "2+3*\pi"
+        let mut lexer = ImplicitMultiplicationLexer::new("2+3*\\pi");
+        let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_enhanced_token()).collect();
+
+        // Should generate: INTEGER(2), PLUS, INTEGER(3), MULTIPLY, LATEX_PI
+        // No implicit multiplication should be inserted because of explicit operators
+        assert!(tokens.len() >= 5);
+
+        // Check that we have the right tokens without extra implicit multiplications
+        let regular_tokens: Vec<_> = tokens
+            .iter()
+            .filter_map(|(_, token, _)| match token {
+                EnhancedToken::Regular(t) => Some(t),
+                EnhancedToken::ImplicitMultiply => None,
+            })
+            .collect();
+
+        assert!(matches!(regular_tokens[0], Token::INTEGER(_)));
+        assert!(matches!(regular_tokens[1], Token::PLUS));
+        assert!(matches!(regular_tokens[2], Token::INTEGER(_)));
+        assert!(matches!(regular_tokens[3], Token::MULTIPLY));
+        assert!(matches!(regular_tokens[4], Token::LATEX_PI));
+
+        // Verify no implicit multiplication was inserted
+        let implicit_count = tokens
+            .iter()
+            .filter(|(_, token, _)| matches!(token, EnhancedToken::ImplicitMultiply))
+            .count();
+        assert_eq!(
+            implicit_count, 0,
+            "No implicit multiplication should be inserted in '2+3*\\pi'"
+        );
     }
 }
