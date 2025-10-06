@@ -73,8 +73,7 @@ match {
     "\\log" => LATEX_LOG,
     "\\phi" => LATEX_PHI,
     "\\pi" => LATEX_PI,
-    "\\sec" => LATEX_SEC,          // Phase 1: Extended trig functions
-    "\\sin" => LATEX_SIN,
+    "\\sec" => LATEX_SEC,  
     "\\sinh" => LATEX_SINH,        // Phase 1: Hyperbolic functions
     "\\tan" => LATEX_TAN,
     "\\tanh" => LATEX_TANH,        // Phase 1: Hyperbolic functions
@@ -237,7 +236,6 @@ match {
     "PrimePi" => WOLFRAM_PRIME_PI,                     // Phase 2: Number theory
     "Resultant" => WOLFRAM_RESULTANT,                  // Phase 2: Polynomial theory
     "RiemannSiegelTheta" => WOLFRAM_RIEMANN_SIEGEL,    // Phase 2: Number theory
-    "Sin" => WOLFRAM_SIN,
     "Sqrt" => WOLFRAM_SQRT,
     "Sum" => WOLFRAM_SUM,
     "Times" => WOLFRAM_TIMES,
@@ -399,12 +397,15 @@ IdentifierOrFunction: Expression = {
     <base:IDENTIFIER> SUBSCRIPT LBRACE <sub:Expression> RBRACE POWER LBRACE <sup:Expression> RBRACE LPAREN <args:ExprList> RPAREN => {
         match resolve_special_function(base) {
             Some(func_name) => {
+                println!("resolving function: {}", func_name);
                 let indexed_name = cache::get_cached_function_name(func_name, "indexed_power");
                 let mut all_args = vec![sub, sup];
                 all_args.extend(args);
                 Expression::function(indexed_name, all_args)
             }
             None => {
+                println!("caching function: {}", base);
+                println!("it is indexed_power");
                 cache::build_cached_function(base, "indexed_power", {
                     let mut all_args = vec![sub, sup];
                     all_args.extend(args);
@@ -424,12 +425,32 @@ IdentifierOrFunction: Expression = {
                 Expression::function(indexed_name, all_args)
             }
             None => {
+                println!("caching function: {}", base);
+                println!("it is indexed");
                 cache::build_cached_function(base, "indexed", {
                     let mut all_args = vec![sub];
                     all_args.extend(args);
                     all_args
                 })
             }
+        }
+    },
+
+    // Simple function call: f(x) - THIRD LONGEST
+    <base:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
+        println!("it is simple function call {}", base);
+        match resolve_special_function(base) {
+            Some(func_name) => Expression::function(func_name, args),
+            None => Expression::function(base, args)
+        }
+    },
+
+    <base:IDENTIFIER> LBRACKET <args:ExprList> RBRACKET => {
+        println!("it is simple wolfram function call {}", base);
+        let updated_base = base.to_lowercase().to_string();
+        match resolve_special_function(&updated_base) {
+            Some(func_name) => Expression::function(updated_base, args),
+            None => Expression::function(updated_base, args)
         }
     },
     

@@ -1,0 +1,7 @@
+[
+  {
+    "expected": "Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })])}",
+    "received": "\\sin(x)",
+    "input": "Sin[x]"
+  }
+]

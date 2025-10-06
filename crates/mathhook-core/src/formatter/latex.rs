@@ -381,16 +381,13 @@ impl LaTeXFormatter for Expression {
 
                 // Check if this is a function power: sin(x)^2 -> \sin^2(x)
                 if let Expression::Function { name, args } = base.as_ref() {
-                    if args.len() == 1
-                        && matches!(name.as_str(), "sin" | "cos" | "tan" | "ln" | "log")
-                    {
-                        return Ok(format!(
-                            "\\{}^{{{}}}({})",
-                            name,
-                            exp.to_latex_with_depth(context, depth + 1)?,
-                            args[0].to_latex_with_depth(context, depth + 1)?
-                        ));
-                    }
+                    println!("print function: {}", name);
+                    return Ok(format!(
+                        "\\{}^{{{}}}({})",
+                        name,
+                        exp.to_latex_with_depth(context, depth + 1)?,
+                        args[0].to_latex_with_depth(context, depth + 1)?
+                    ));
                 }
 
                 let base_str = match base.as_ref() {

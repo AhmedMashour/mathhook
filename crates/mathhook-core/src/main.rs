@@ -55,7 +55,7 @@ fn test_json_test_cases() {
         enable_implicit_multiplication: false,
     });
 
-    let test_cases = read_to_string("./crates/mathhook-core/tests/parsing/cases.json")
+    let test_cases = read_to_string("./crates/mathhook-core/tests/parsing/cases_small.json")
         .expect("Failed to read cases.json");
     let cases: serde_json::Value = serde_json::from_str(&test_cases).unwrap();
 
@@ -84,7 +84,7 @@ fn test_json_test_cases() {
         }
     }
 
-    let file_path = "./crates/mathhook-core/tests/parsing/output_3.json";
+    let file_path = "./crates/mathhook-core/tests/parsing/output_small.json";
     write(file_path, serde_json::to_string_pretty(&responses).unwrap()).unwrap();
 
     println!("Output written to {}", file_path);
