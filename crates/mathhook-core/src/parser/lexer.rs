@@ -9,7 +9,7 @@
 //! - Intelligent operator and function call preservation
 //! - Precomputed multiplication rules matrix for maximum speed
 
-pub mod comprehensive_processor;
+pub mod implicit_multiplication;
 pub mod multiplication_rules;
 pub mod rules;
 pub mod standard_tokens;
@@ -17,7 +17,7 @@ pub mod token_maps;
 pub mod tokens;
 pub mod wolfram_tokens;
 
-pub use comprehensive_processor::*;
+pub use implicit_multiplication::*;
 pub use multiplication_rules::*;
 pub use rules::*;
 pub use standard_tokens::*;

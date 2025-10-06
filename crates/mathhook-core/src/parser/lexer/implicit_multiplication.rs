@@ -1,17 +1,26 @@
-//! Comprehensive high-performance implicit multiplication processor
+//! High-performance implicit multiplication processor
 //!
-//! This module provides the ultimate string-based implicit multiplication processor
-//! that combines all token knowledge from the existing lexers with ultra-fast
-//! performance optimizations using HashMaps and early-exit strategies.
+//! This module provides comprehensive string-based implicit multiplication processing
+//! with optimized performance using HashMaps and early-exit strategies.
+//!
+//! Features:
+//! - Byte-level early-exit optimization
+//! - O(1) HashMap token lookups  
+//! - Precomputed multiplication rules matrix
+//! - Multi-format support (LaTeX, Wolfram, Standard)
 
 use super::multiplication_rules::should_insert_multiplication_fast;
 use super::standard_tokens::STANDARD_TOKEN_MAP;
 use super::token_maps::{TokenType, LATEX_TOKEN_MAP};
 use super::wolfram_tokens::WOLFRAM_TOKEN_MAP;
 
-pub struct ComprehensiveProcessor;
+/// High-performance implicit multiplication processor
+///
+/// Provides fast processing with intelligent early-exit optimization.
+/// Supports LaTeX (\pi), Wolfram (\[Pi]), and standard (pi) notation.
+pub struct ImplicitMultiplicationProcessor;
 
-impl ComprehensiveProcessor {
+impl ImplicitMultiplicationProcessor {
     /// Insert implicit multiplication with maximum performance and comprehensive token support
     pub fn insert_implicit_multiplication(input: &str) -> String {
         // Skip processing for simple cases
@@ -243,23 +252,23 @@ mod tests {
     fn test_comprehensive_performance() {
         // Path tests (should return immediately)
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication(""),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication(""),
             ""
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x"),
             "x"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2 + 3"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2 + 3"),
             "2 + 3"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x * y"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x * y"),
             "x * y"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("sin(x)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("sin(x)"),
             "sin(x)"
         );
     }
@@ -268,54 +277,54 @@ mod tests {
     fn test_comprehensive_implicit_multiplication() {
         // Basic cases
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2x"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2x"),
             "2*x"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("xy"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("xy"),
             "x*y"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2pi"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2pi"),
             "2*pi"
         );
 
         // LaTeX cases
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2\\pi"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2\\pi"),
             "2*\\pi"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x\\alpha"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x\\alpha"),
             "x*\\alpha"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("\\pi\\alpha"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("\\pi\\alpha"),
             "\\pi*\\alpha"
         );
 
         // Wolfram cases
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2\\[Pi]"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2\\[Pi]"),
             "2*\\[Pi]"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x\\[Alpha]"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x\\[Alpha]"),
             "x*\\[Alpha]"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("\\[Pi]\\[Alpha]"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("\\[Pi]\\[Alpha]"),
             "\\[Pi]*\\[Alpha]"
         );
 
         // Parentheses
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2(x+1)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2(x+1)"),
             "2*(x+1)"
         );
         // Note: Complex parentheses patterns might not be detected by ultra-fast check
         // This is a performance trade-off - most expressions don't have this pattern
-        let result = ComprehensiveProcessor::insert_implicit_multiplication("(a+b)(c+d)");
+        let result = ImplicitMultiplicationProcessor::insert_implicit_multiplication("(a+b)(c+d)");
         assert!(
             result == "(a+b)(c+d)" || result == "(a+b)*(c+d)",
             "Got: {}",
@@ -327,19 +336,19 @@ mod tests {
     fn test_function_recognition() {
         // Should NOT insert multiplication for function calls
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("sin(x)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("sin(x)"),
             "sin(x)"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("\\sin(x)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("\\sin(x)"),
             "\\sin(x)"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("log(10)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("log(10)"),
             "log(10)"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("\\ln(e)"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("\\ln(e)"),
             "\\ln(e)"
         );
     }
@@ -348,23 +357,23 @@ mod tests {
     fn test_operator_respect() {
         // Should NOT insert multiplication around operators
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("2+3"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("2+3"),
             "2+3"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x-y"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x-y"),
             "x-y"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("a/b"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("a/b"),
             "a/b"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x^2"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x^2"),
             "x^2"
         );
         assert_eq!(
-            ComprehensiveProcessor::insert_implicit_multiplication("x\\cdot y"),
+            ImplicitMultiplicationProcessor::insert_implicit_multiplication("x\\cdot y"),
             "x\\cdot y"
         );
     }

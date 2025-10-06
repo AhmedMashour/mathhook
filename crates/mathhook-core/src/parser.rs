@@ -58,8 +58,9 @@ impl Parser {
 
     /// Parse with implicit multiplication enabled using comprehensive processor
     fn parse_with_implicit_multiplication(&self, input: &str) -> Result<Expression, ParseError> {
-        // String to insert implicit multiplication
-        let enhanced_input = lexer::ComprehensiveProcessor::insert_implicit_multiplication(input);
+        // Use high-performance implicit multiplication processor
+        let enhanced_input =
+            lexer::ImplicitMultiplicationProcessor::insert_implicit_multiplication(input);
 
         // Parse with LALRPOP grammar (let LALRPOP handle all tokenization)
         let parser = grammar::ExpressionParser::new();
