@@ -86,7 +86,7 @@ impl StepByStep for Expression {
             description: "Starting expression".to_string(),
             expression: current.clone(),
             rule_applied: "Initial".to_string(),
-            latex: Some(self.to_latex()),
+            latex: Some(self.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
         });
 
         // Apply simplification rules step by step
@@ -118,7 +118,7 @@ impl StepByStep for Expression {
             description: "Starting expression".to_string(),
             expression: self.clone(),
             rule_applied: "Initial".to_string(),
-            latex: Some(self.to_latex()),
+            latex: Some(self.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
         });
 
         // For now, just show the final expanded form
@@ -129,7 +129,7 @@ impl StepByStep for Expression {
             description: "Applied expansion rules".to_string(),
             expression: expanded.clone(),
             rule_applied: "Expansion".to_string(),
-            latex: Some(expanded.to_latex()),
+            latex: Some(expanded.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
         });
 
         rules_used.push("Expansion".to_string());
@@ -161,7 +161,7 @@ impl Expression {
             description: "Starting expression".to_string(),
             expression: self.clone(),
             rule_applied: "Initial".to_string(),
-            latex: Some(self.to_latex()),
+            latex: Some(self.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
         });
 
         // For now, just show the factored form
@@ -171,7 +171,7 @@ impl Expression {
             description: "Applied factorization rules".to_string(),
             expression: factored.clone(),
             rule_applied: "Factorization".to_string(),
-            latex: Some(factored.to_latex()),
+            latex: Some(factored.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
         });
 
         rules_used.push("Factorization".to_string());
@@ -205,7 +205,7 @@ impl Expression {
                     description: "Combine numeric terms".to_string(),
                     expression: numeric_simplified.clone(),
                     rule_applied: "Numeric Combination".to_string(),
-                    latex: Some(numeric_simplified.to_latex()),
+                    latex: Some(numeric_simplified.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
                 });
                 rules_used.push("Numeric Combination".to_string());
                 current = numeric_simplified;
@@ -221,7 +221,7 @@ impl Expression {
                     description: "Apply identity rules".to_string(),
                     expression: identity_simplified.clone(),
                     rule_applied: "Identity Rules".to_string(),
-                    latex: Some(identity_simplified.to_latex()),
+                    latex: Some(identity_simplified.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
                 });
                 rules_used.push("Identity Rules".to_string());
                 current = identity_simplified;
@@ -237,7 +237,7 @@ impl Expression {
                     description: "Apply zero rules".to_string(),
                     expression: zero_simplified.clone(),
                     rule_applied: "Zero Rules".to_string(),
-                    latex: Some(zero_simplified.to_latex()),
+                    latex: Some(zero_simplified.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
                 });
                 rules_used.push("Zero Rules".to_string());
                 current = zero_simplified;
@@ -253,7 +253,7 @@ impl Expression {
                     description: "Apply power rules".to_string(),
                     expression: power_simplified.clone(),
                     rule_applied: "Power Rules".to_string(),
-                    latex: Some(power_simplified.to_latex()),
+                    latex: Some(power_simplified.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
                 });
                 rules_used.push("Power Rules".to_string());
                 current = power_simplified;
@@ -268,7 +268,7 @@ impl Expression {
                 description: "Final simplification".to_string(),
                 expression: final_simplified.clone(),
                 rule_applied: "Standard Simplification".to_string(),
-                latex: Some(final_simplified.to_latex()),
+                latex: Some(final_simplified.to_latex(None).unwrap_or_else(|_| "expression".to_string())),
             });
             rules_used.push("Standard Simplification".to_string());
             current = final_simplified;
@@ -414,7 +414,7 @@ impl Expression {
                     "0".to_string()
                 } else {
                     let term_strs: Vec<String> = terms.iter()
-                        .map(|t| t.to_latex())
+                        .map(|t| t.to_latex(None).unwrap_or_else(|_| "term".to_string()))
                         .collect();
                     term_strs.join(" + ")
                 }
@@ -426,8 +426,8 @@ impl Expression {
                     let factor_strs: Vec<String> = factors.iter()
                         .map(|f| {
                             match f {
-                                Expression::Add(_) => format!("({})", f.to_latex()),
-                                _ => f.to_latex(),
+                                Expression::Add(_) => format!("({})", f.to_latex(None).unwrap_or_else(|_| "factor".to_string())),
+                                _ => f.to_latex(None).unwrap_or_else(|_| "factor".to_string()),
                             }
                         })
                         .collect();
@@ -436,17 +436,17 @@ impl Expression {
             },
             Expression::Pow(base, exp) => {
                 let base_latex = match base.as_ref() {
-                    Expression::Add(_) | Expression::Mul(_) => format!("({})", base.to_latex()),
-                    _ => base.to_latex(),
+                    Expression::Add(_) | Expression::Mul(_) => format!("({})", base.to_latex(None).unwrap_or_else(|_| "base".to_string())),
+                    _ => base.to_latex(None).unwrap_or_else(|_| "base".to_string()),
                 };
-                format!("{}^{{{}}}", base_latex, exp.to_latex())
+                format!("{}^{{{}}}", base_latex, exp.to_latex(None).unwrap_or_else(|_| "exp".to_string()))
             },
             Expression::Function { name, args } => {
                 if args.is_empty() {
                     format!("\\{}", name)
                 } else {
                     let arg_strs: Vec<String> = args.iter()
-                        .map(|a| a.to_latex())
+                        .map(|a| a.to_latex(None).unwrap_or_else(|_| "arg".to_string()))
                         .collect();
                     format!("\\{}({})", name, arg_strs.join(", "))
                 }
@@ -583,7 +583,7 @@ impl StepByStepBuilder {
 
     /// Add a step to the explanation
     pub fn add_step(&mut self, description: String, expression: Expression, rule: String) {
-        let latex = expression.to_latex();
+        let latex = expression.to_latex(None).unwrap_or_else(|_| "expression".to_string());
         self.steps.push(Step {
             description,
             expression,
@@ -641,13 +641,13 @@ mod tests {
         let x = Symbol::new("x");
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
-        let latex = expr.to_latex();
+        let latex = expr.to_latex(None).unwrap();
         assert_eq!(latex, "x^{2}");
 
         let rational = Expression::number(Number::rational(
             num_rational::BigRational::new(num_bigint::BigInt::from(3), num_bigint::BigInt::from(4))
         ));
-        let latex = rational.to_latex();
+        let latex = rational.to_latex(None).unwrap();
         assert_eq!(latex, "\\frac{3}{4}");
     }
 

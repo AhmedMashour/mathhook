@@ -1,4 +1,4 @@
-use super::FormattingContext;
+use super::{FormattingContext, FormattingError};
 use crate::core::{Expression, Number};
 
 const MAX_RECURSION_DEPTH: usize = 1000;
@@ -56,11 +56,8 @@ pub trait SimpleFormatter {
     /// Returns error messages for expressions that exceed safety limits:
     /// - Maximum recursion depth (1000 levels)
     /// - Maximum terms per operation (10000 terms)
-    fn to_simple(&self, context: &SimpleContext) -> String {
-        match self.to_simple_with_depth(context, 0) {
-            Ok(result) => result,
-            Err(error) => format!("Error: {}", error),
-        }
+    fn to_simple(&self, context: &SimpleContext) -> Result<String, FormattingError> {
+        self.to_simple_with_depth(context, 0)
     }
 
     /// Format with explicit recursion depth tracking
@@ -92,8 +89,11 @@ pub trait SimpleFormatter {
     /// assert!(result.is_ok());
     /// assert_eq!(result.unwrap(), "x + y");
     /// ```
-    fn to_simple_with_depth(&self, context: &SimpleContext, depth: usize)
-        -> Result<String, String>;
+    fn to_simple_with_depth(
+        &self,
+        context: &SimpleContext,
+        depth: usize,
+    ) -> Result<String, FormattingError>;
 }
 
 impl SimpleFormatter for Expression {
@@ -101,9 +101,12 @@ impl SimpleFormatter for Expression {
         &self,
         context: &SimpleContext,
         depth: usize,
-    ) -> Result<String, String> {
+    ) -> Result<String, FormattingError> {
         if depth > MAX_RECURSION_DEPTH {
-            return Err("Maximum recursion depth exceeded".to_string());
+            return Err(FormattingError::RecursionLimitExceeded {
+                depth,
+                limit: MAX_RECURSION_DEPTH,
+            });
         }
         match self {
             Expression::Number(Number::Integer(n)) => Ok(n.to_string()),
@@ -125,11 +128,10 @@ impl SimpleFormatter for Expression {
             Expression::Symbol(s) => Ok(s.name().to_string()),
             Expression::Add(terms) => {
                 if terms.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many terms in addition: {} (max: {})",
-                        terms.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: terms.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 let mut term_strs = Vec::with_capacity(terms.len());
@@ -150,11 +152,10 @@ impl SimpleFormatter for Expression {
             }
             Expression::Mul(factors) => {
                 if factors.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many factors in multiplication: {} (max: {})",
-                        factors.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: factors.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 let mut factor_strs = Vec::with_capacity(factors.len());
@@ -185,11 +186,10 @@ impl SimpleFormatter for Expression {
                     Ok(name.clone())
                 } else {
                     if args.len() > MAX_TERMS_PER_OPERATION {
-                        return Err(format!(
-                            "Too many function arguments: {} (max: {})",
-                            args.len(),
-                            MAX_TERMS_PER_OPERATION
-                        ));
+                        return Err(FormattingError::TooManyTerms {
+                            count: args.len(),
+                            limit: MAX_TERMS_PER_OPERATION,
+                        });
                     }
 
                     let mut arg_strs = Vec::with_capacity(args.len());

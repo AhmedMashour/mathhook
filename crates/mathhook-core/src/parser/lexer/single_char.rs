@@ -39,29 +39,29 @@ impl<'input> SingleCharVariableLexer<'input> {
                 'a'..='z' | 'A'..='Z' if self.should_tokenize_as_single_char(start_pos) => {
                     let end_pos = start_pos + ch.len_utf8();
                     let identifier = &self.input[start_pos..end_pos];
-                    Some((start_pos, Token::Identifier(identifier), end_pos))
+                    Some((start_pos, Token::IDENTIFIER(identifier), end_pos))
                 }
                 
                 // Multi-character identifiers (functions, constants, etc.)
                 'a'..='z' | 'A'..='Z' => self.lex_multi_char_identifier(start_pos),
                 
                 // Operators
-                '+' => Some((start_pos, Token::Plus, start_pos + 1)),
-                '-' => Some((start_pos, Token::Minus, start_pos + 1)),
-                '*' => Some((start_pos, Token::Star, start_pos + 1)),
-                '/' => Some((start_pos, Token::Slash, start_pos + 1)),
-                '^' => Some((start_pos, Token::Caret, start_pos + 1)),
-                '=' => Some((start_pos, Token::Equals, start_pos + 1)),
+                '+' => Some((start_pos, Token::PLUS, start_pos + 1)),
+                '-' => Some((start_pos, Token::MINUS, start_pos + 1)),
+                '*' => Some((start_pos, Token::MULTIPLY, start_pos + 1)),
+                '/' => Some((start_pos, Token::DIVIDE, start_pos + 1)),
+                '^' => Some((start_pos, Token::POWER, start_pos + 1)),
+                '=' => Some((start_pos, Token::EQUALS, start_pos + 1)),
                 
                 // Delimiters
-                '(' => Some((start_pos, Token::LParen, start_pos + 1)),
-                ')' => Some((start_pos, Token::RParen, start_pos + 1)),
-                '[' => Some((start_pos, Token::LBracket, start_pos + 1)),
-                ']' => Some((start_pos, Token::RBracket, start_pos + 1)),
-                '{' => Some((start_pos, Token::LBrace, start_pos + 1)),
-                '}' => Some((start_pos, Token::RBrace, start_pos + 1)),
-                ',' => Some((start_pos, Token::Comma, start_pos + 1)),
-                '!' => Some((start_pos, Token::Exclamation, start_pos + 1)),
+                '(' => Some((start_pos, Token::LPAREN, start_pos + 1)),
+                ')' => Some((start_pos, Token::RPAREN, start_pos + 1)),
+                '[' => Some((start_pos, Token::LBRACKET, start_pos + 1)),
+                ']' => Some((start_pos, Token::RBRACKET, start_pos + 1)),
+                '{' => Some((start_pos, Token::LBRACE, start_pos + 1)),
+                '}' => Some((start_pos, Token::RBRACE, start_pos + 1)),
+                ',' => Some((start_pos, Token::COMMA, start_pos + 1)),
+                '!' => Some((start_pos, Token::FACTORIAL, start_pos + 1)),
                 
                 // Unknown character
                 _ => None,
@@ -74,8 +74,8 @@ impl<'input> SingleCharVariableLexer<'input> {
     /// Determine if this should be tokenized as a single character
     fn should_tokenize_as_single_char(&mut self, start_pos: usize) -> bool {
         // Look ahead to see what follows this character
-        if let Some(&(next_pos, next_ch)) = self.chars.peek() {
-            let current_ch = self.input.chars().nth(start_pos).unwrap();
+        if let Some(&(_next_pos, next_ch)) = self.chars.peek() {
+            let _current_ch = self.input.chars().nth(start_pos).unwrap();
             
             // Tokenize as single char if:
             // 1. Next character is also a single letter (for xy -> x, y)
@@ -174,7 +174,11 @@ impl<'input> SingleCharVariableLexer<'input> {
         }
 
         let number_str = &self.input[start_pos..end_pos];
-        Some((start_pos, Token::Number(number_str), end_pos))
+        if has_dot {
+            Some((start_pos, Token::FLOAT(number_str), end_pos))
+        } else {
+            Some((start_pos, Token::INTEGER(number_str), end_pos))
+        }
     }
 
     /// Lex multi-character identifier (functions, constants, etc.)
@@ -194,11 +198,11 @@ impl<'input> SingleCharVariableLexer<'input> {
         
         // Check for special constants and functions
         let token = match identifier {
-            "pi" => Token::Pi,
-            "e" => Token::E,
-            "i" => Token::ImaginaryUnit,
-            "infinity" => Token::Infinity,
-            _ => Token::Identifier(identifier),
+            "pi" => Token::PI,
+            "e" => Token::E_CONST,
+            "i" => Token::I_CONST,
+            "infinity" => Token::INFINITY,
+            _ => Token::IDENTIFIER(identifier),
         };
 
         Some((start_pos, token, end_pos))
@@ -228,8 +232,8 @@ mod tests {
         
         // Should tokenize as two separate identifiers
         assert_eq!(tokens.len(), 2);
-        assert!(matches!(tokens[0].1, Token::Identifier("x")));
-        assert!(matches!(tokens[1].1, Token::Identifier("y")));
+        assert!(matches!(tokens[0].1, Token::IDENTIFIER("x")));
+        assert!(matches!(tokens[1].1, Token::IDENTIFIER("y")));
     }
 
     #[test]
@@ -240,7 +244,7 @@ mod tests {
         
         // Should NOT split function names
         assert_eq!(tokens.len(), 1);
-        assert!(matches!(tokens[0].1, Token::Identifier("sin")));
+        assert!(matches!(tokens[0].1, Token::IDENTIFIER("sin")));
     }
 
     #[test]
@@ -251,8 +255,8 @@ mod tests {
         
         // Should tokenize as number and single-char variable
         assert_eq!(tokens.len(), 2);
-        assert!(matches!(tokens[0].1, Token::Number("2")));
-        assert!(matches!(tokens[1].1, Token::Identifier("x")));
+        assert!(matches!(tokens[0].1, Token::INTEGER("2")));
+        assert!(matches!(tokens[1].1, Token::IDENTIFIER("x")));
     }
 
     #[test]
@@ -263,14 +267,14 @@ mod tests {
         
         // Should tokenize as: 2, x, y, +, sin, (, z, )
         assert!(tokens.len() >= 8);
-        assert!(matches!(tokens[0].1, Token::Number("2")));
-        assert!(matches!(tokens[1].1, Token::Identifier("x")));
-        assert!(matches!(tokens[2].1, Token::Identifier("y")));
-        assert!(matches!(tokens[3].1, Token::Plus));
-        assert!(matches!(tokens[4].1, Token::Identifier("sin")));
-        assert!(matches!(tokens[5].1, Token::LParen));
-        assert!(matches!(tokens[6].1, Token::Identifier("z")));
-        assert!(matches!(tokens[7].1, Token::RParen));
+        assert!(matches!(tokens[0].1, Token::INTEGER("2")));
+        assert!(matches!(tokens[1].1, Token::IDENTIFIER("x")));
+        assert!(matches!(tokens[2].1, Token::IDENTIFIER("y")));
+        assert!(matches!(tokens[3].1, Token::PLUS));
+        assert!(matches!(tokens[4].1, Token::IDENTIFIER("sin")));
+        assert!(matches!(tokens[5].1, Token::LPAREN));
+        assert!(matches!(tokens[6].1, Token::IDENTIFIER("z")));
+        assert!(matches!(tokens[7].1, Token::RPAREN));
     }
 
     #[test]
@@ -281,6 +285,6 @@ mod tests {
         
         // Should NOT split constants
         assert_eq!(tokens.len(), 1);
-        assert!(matches!(tokens[0].1, Token::Pi));
+        assert!(matches!(tokens[0].1, Token::PI));
     }
 }

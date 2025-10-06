@@ -1,4 +1,4 @@
-use super::FormattingContext;
+use super::{FormattingContext, FormattingError};
 use crate::core::expression::CalculusData;
 use crate::core::expression::LimitDirection;
 use crate::core::MathConstant;
@@ -43,15 +43,12 @@ pub trait LaTeXFormatter {
     /// Returns error messages for expressions that exceed safety limits:
     /// - Maximum recursion depth (1000 levels)
     /// - Maximum terms per operation (10000 terms)
-    fn to_latex<C>(&self, context: C) -> Result<String, String>
+    fn to_latex<C>(&self, context: C) -> Result<String, FormattingError>
     where
         C: Into<Option<LaTeXContext>>,
     {
         let context = context.into().unwrap_or_default();
-        match self.to_latex_with_depth(&context, 0) {
-            Ok(result) => Ok(result),
-            Err(error) => Err(format!("Error: {}", error)),
-        }
+        self.to_latex_with_depth(&context, 0)
     }
 
     /// Format with explicit recursion depth tracking
@@ -71,7 +68,11 @@ pub trait LaTeXFormatter {
     /// # Safety Limits
     /// * Maximum recursion depth: 1000 levels
     /// * Maximum terms per operation: 10000 terms/factors/arguments
-    fn to_latex_with_depth(&self, context: &LaTeXContext, depth: usize) -> Result<String, String>;
+    fn to_latex_with_depth(
+        &self,
+        context: &LaTeXContext,
+        depth: usize,
+    ) -> Result<String, FormattingError>;
 
     /// Convert function to LaTeX with context and depth tracking
     fn function_to_latex_with_depth(
@@ -80,13 +81,20 @@ pub trait LaTeXFormatter {
         args: &[Expression],
         context: &LaTeXContext,
         depth: usize,
-    ) -> Result<String, String>;
+    ) -> Result<String, FormattingError>;
 
     /// Convert function to LaTeX (convenience method)
-    fn function_to_latex(&self, name: &str, args: &[Expression], context: &LaTeXContext) -> String {
+    fn function_to_latex(
+        &self,
+        name: &str,
+        args: &[Expression],
+        context: &LaTeXContext,
+    ) -> Result<String, FormattingError> {
         match self.function_to_latex_with_depth(name, args, context, 0) {
-            Ok(result) => result,
-            Err(error) => format!("Error: {}", error),
+            Ok(result) => Ok(result),
+            Err(error) => Err(FormattingError::InvalidMathConstruct {
+                reason: error.to_string(),
+            }),
         }
     }
 }
@@ -98,17 +106,19 @@ impl LaTeXFormatter for Expression {
         args: &[Expression],
         context: &LaTeXContext,
         depth: usize,
-    ) -> Result<String, String> {
+    ) -> Result<String, FormattingError> {
         if depth > MAX_RECURSION_DEPTH {
-            return Err("Maximum recursion depth exceeded".to_string());
+            return Err(FormattingError::RecursionLimitExceeded {
+                depth,
+                limit: MAX_RECURSION_DEPTH,
+            });
         }
 
         if args.len() > MAX_TERMS_PER_OPERATION {
-            return Err(format!(
-                "Too many function arguments: {} (max: {})",
-                args.len(),
-                MAX_TERMS_PER_OPERATION
-            ));
+            return Err(FormattingError::TooManyTerms {
+                count: args.len(),
+                limit: MAX_TERMS_PER_OPERATION,
+            });
         }
         Ok(match name {
             // Trigonometric functions
@@ -269,9 +279,16 @@ impl LaTeXFormatter for Expression {
         })
     }
 
-    fn to_latex_with_depth(&self, context: &LaTeXContext, depth: usize) -> Result<String, String> {
+    fn to_latex_with_depth(
+        &self,
+        context: &LaTeXContext,
+        depth: usize,
+    ) -> Result<String, FormattingError> {
         if depth > MAX_RECURSION_DEPTH {
-            return Err("Maximum recursion depth exceeded".to_string());
+            return Err(FormattingError::RecursionLimitExceeded {
+                depth,
+                limit: MAX_RECURSION_DEPTH,
+            });
         }
 
         Ok(match self {
@@ -288,11 +305,10 @@ impl LaTeXFormatter for Expression {
             Expression::Symbol(s) => s.name().to_string(),
             Expression::Add(terms) => {
                 if terms.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many terms in addition: {} (max: {})",
-                        terms.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: terms.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 let mut term_strs = Vec::with_capacity(terms.len());
@@ -314,11 +330,10 @@ impl LaTeXFormatter for Expression {
             }
             Expression::Mul(factors) => {
                 if factors.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many factors in multiplication: {} (max: {})",
-                        factors.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: factors.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 let mut factor_strs = Vec::with_capacity(factors.len());
@@ -393,7 +408,9 @@ impl LaTeXFormatter for Expression {
                     exp.to_latex_with_depth(context, depth + 1)?
                 )
             }
-            Expression::Function { name, args } => self.function_to_latex(name, args, context),
+            Expression::Function { name, args } => {
+                self.function_to_latex_with_depth(name, args, context, depth + 1)?
+            }
             // Mathematical constants with consistent formatting
             Expression::Constant(c) => match c {
                 MathConstant::Pi => "π".to_string(),

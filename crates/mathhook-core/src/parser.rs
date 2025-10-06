@@ -17,7 +17,9 @@ use lexer::tokens::*;
 use lexer::ImplicitMultiplicationLexer;
 
 pub use cache::*;
+pub use config::*;
 pub use constants::*;
+
 /// Fully integrated mathematical expression parser
 pub struct Parser {
     enable_implicit_multiplication: bool,
@@ -75,6 +77,7 @@ impl Parser {
 
     /// Parse with explicit operators only (no implicit multiplication)
     fn parse_explicit_only(&self, input: &str) -> Result<Expression, ParseError> {
+        println!("Parsing with explicit operators only: {}", input);
         let parser = grammar::ExpressionParser::new();
         parser
             .parse(input)
@@ -100,26 +103,27 @@ impl Parser {
         use Token;
 
         match token {
-            Token::Plus => "+",
-            Token::Minus => "-",
-            Token::Star => "*",
-            Token::Slash => "/",
-            Token::Caret => "^",
-            Token::Equals => "=",
-            Token::LParen => "(",
-            Token::RParen => ")",
-            Token::LBracket => "[",
-            Token::RBracket => "]",
-            Token::LBrace => "{",
-            Token::RBrace => "}",
-            Token::Comma => ",",
-            Token::Exclamation => "!",
-            Token::Number(n) => n,
-            Token::Identifier(id) => id,
-            Token::Pi => "pi",
-            Token::E => "e",
-            Token::ImaginaryUnit => "i",
-            Token::Infinity => "infinity",
+            Token::PLUS => "+",
+            Token::MINUS => "-",
+            Token::MULTIPLY => "*",
+            Token::DIVIDE => "/",
+            Token::POWER => "^",
+            Token::EQUALS => "=",
+            Token::LPAREN => "(",
+            Token::RPAREN => ")",
+            Token::LBRACKET => "[",
+            Token::RBRACKET => "]",
+            Token::LBRACE => "{",
+            Token::RBRACE => "}",
+            Token::COMMA => ",",
+            Token::FACTORIAL => "!",
+            Token::INTEGER(n) => n,
+            Token::FLOAT(n) => n,
+            Token::IDENTIFIER(id) => id,
+            Token::PI => "pi",
+            Token::E_CONST => "e",
+            Token::I_CONST => "i",
+            Token::INFINITY => "infinity",
             _ => "?", // Fallback for unsupported tokens
         }
     }

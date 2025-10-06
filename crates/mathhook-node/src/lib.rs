@@ -3,7 +3,7 @@
 //! This crate provides Node.js bindings using NAPI-RS, exposing the hybrid API
 //! for JavaScript/TypeScript users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{parser::universal::MathLanguage, Expression, MathSolver, Simplify, Symbol};
+use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 
@@ -109,43 +109,19 @@ impl JsExpression {
 
     /// Parse a mathematical expression from string with automatic language detection
     ///
+    /// The parser automatically detects the mathematical language (LaTeX, Wolfram, or simple notation)
+    /// and parses accordingly.
+    ///
     /// # Examples
     ///
     /// ```javascript
-    /// const expr1 = JsExpression.parse("2*x + sin(y)");
-    /// const expr2 = JsExpression.parse("\\frac{x^2}{2}");    // LaTeX auto-detected
-    /// const expr3 = JsExpression.parse("Sin[x] + Cos[y]");   // Wolfram auto-detected
+    /// const expr1 = JsExpression.parse("2*x + sin(y)");        // Simple notation
+    /// const expr2 = JsExpression.parse("\\frac{x^2}{2}");      // LaTeX auto-detected
+    /// const expr3 = JsExpression.parse("Sin[x] + Cos[y]");     // Wolfram auto-detected
     /// ```
     #[napi(factory)]
     pub fn parse(input: String) -> Result<JsExpression> {
-        match Expression::parse(&input) {
-            Ok(expr) => Ok(JsExpression { inner: expr }),
-            Err(e) => Err(Error::new(
-                Status::InvalidArg,
-                format!("Parse error: {}", e),
-            )),
-        }
-    }
-
-    /// Parse with explicit language specification
-    ///
-    /// # Examples
-    ///
-    /// ```javascript
-    /// const latex = JsExpression.parseWithLanguage("\\sin(x)", "latex");
-    /// const wolfram = JsExpression.parseWithLanguage("Sin[x]", "wolfram");
-    /// const simple = JsExpression.parseWithLanguage("sin(x)", "simple");
-    /// ```
-    #[napi(factory)]
-    pub fn parse_with_language(input: String, language: String) -> Result<JsExpression> {
-        let lang = match language.as_str() {
-            "latex" => MathLanguage::LaTeX,
-            "wolfram" => MathLanguage::Wolfram,
-            "simple" => MathLanguage::Simple,
-            _ => MathLanguage::Simple,
-        };
-
-        match Expression::parse_with_language(&input, lang) {
+        match Expression::parse(&input, None) {
             Ok(expr) => Ok(JsExpression { inner: expr }),
             Err(e) => Err(Error::new(
                 Status::InvalidArg,
@@ -164,7 +140,10 @@ impl JsExpression {
     /// ```
     #[napi]
     pub fn to_latex(&self) -> String {
-        self.inner.to_latex()
+        use mathhook_core::formatter::LaTeXFormatter;
+        self.inner
+            .to_latex(None)
+            .unwrap_or_else(|e| format!("Error: {}", e))
     }
 
     /// Convert expression to simple mathematical notation
@@ -177,7 +156,10 @@ impl JsExpression {
     /// ```
     #[napi]
     pub fn to_simple(&self) -> String {
-        self.inner.to_simple()
+        use mathhook_core::formatter::simple::{SimpleContext, SimpleFormatter};
+        self.inner
+            .to_simple(&SimpleContext::default())
+            .unwrap_or_else(|e| format!("Error: {}", e))
     }
 
     /// Convert expression to Wolfram Language format
@@ -190,7 +172,26 @@ impl JsExpression {
     /// ```
     #[napi]
     pub fn to_wolfram(&self) -> String {
-        self.inner.to_wolfram()
+        use mathhook_core::formatter::wolfram::{WolframContext, WolframFormatter};
+        self.inner
+            .to_wolfram(&WolframContext::default())
+            .unwrap_or_else(|e| format!("Error: {}", e))
+    }
+
+    /// Create a function expression
+    ///
+    /// # Examples
+    ///
+    /// ```javascript
+    /// const x = JsExpression.symbol("x");
+    /// const sinX = JsExpression.function("sin", [x]);
+    /// ```
+    #[napi(factory)]
+    pub fn function(name: String, args: Vec<&JsExpression>) -> JsExpression {
+        let inner_args: Vec<Expression> = args.iter().map(|arg| arg.inner.clone()).collect();
+        JsExpression {
+            inner: Expression::function(name, inner_args),
+        }
     }
 
     /// Create an equation (equality relation)

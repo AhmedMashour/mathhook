@@ -1,10 +1,58 @@
-//! 🎯 ENHANCED STEP SYSTEM - COMPLETE HUMAN-READABLE + API-READY STRUCTURE
 //! Provides both human messages AND structured data for external applications
 //! User requirement: "steps to be smart enough to have their own full human readable messages along with message keys"
 
 use crate::core::{Expression, Symbol};
-use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use crate::educational::step_by_step::Step;
 use crate::formatter::latex::LaTeXFormatter;
+use crate::formatter::{FormattingError, MathLanguage};
+use serde_json;
+
+/// Format context for enhanced steps
+#[derive(Debug, Clone)]
+pub struct FormatContext {
+    pub target_format: MathLanguage,
+    pub include_intermediate_steps: bool,
+    pub verbosity_level: u8, // 1-5, where 5 is most verbose
+}
+
+impl Default for FormatContext {
+    fn default() -> Self {
+        Self {
+            target_format: MathLanguage::default(),
+            include_intermediate_steps: true,
+            verbosity_level: 3,
+        }
+    }
+}
+
+impl FormatContext {
+    /// Format an expression according to the target format
+    pub fn format_expression(&self, expr: &Expression) -> Result<String, FormattingError> {
+        match self.target_format {
+            MathLanguage::LaTeX => expr.to_latex(None),
+            MathLanguage::Wolfram => {
+                // Placeholder - would use to_wolfram when available
+                Ok(expr.to_string())
+            }
+            MathLanguage::Simple | MathLanguage::Human => Ok(expr.to_string()),
+            MathLanguage::Json => {
+                serde_json::to_string(expr).map_err(|e| FormattingError::SerializationError {
+                    message: e.to_string(),
+                })
+            }
+            MathLanguage::Markdown => {
+                // Placeholder - would use to_markdown when available
+                Ok(expr.to_string())
+            }
+        }
+    }
+
+    /// Format an expression with fallback on error
+    pub fn format_expression_safe(&self, expr: &Expression) -> String {
+        self.format_expression(expr)
+            .unwrap_or_else(|e| format!("{{error: {}}}", e))
+    }
+}
 
 /// Smart step type for enhanced educational features
 pub type SmartStep = Step;
@@ -325,18 +373,29 @@ pub type SmartStepExplanation = EnhancedStepExplanation;
 impl StepFactory {
     /// Generate linear equation introduction step
     pub fn linear_introduction(equation: &Expression, variable: &Symbol) -> EnhancedStep {
+        Self::linear_introduction_with_format(equation, variable, &FormatContext::default())
+    }
+
+    /// Generate linear equation introduction step with custom format
+    pub fn linear_introduction_with_format(
+        equation: &Expression,
+        variable: &Symbol,
+        context: &FormatContext,
+    ) -> EnhancedStep {
+        let equation_formatted = context.format_expression_safe(equation);
+
         EnhancedStepBuilder::new("linear_intro_001")
             .with_human_message(
                 "📝 Given Equation",
                 &format!("We need to solve: {} = 0\nThis is a linear equation because {} appears only to the first power.", 
-                        equation.to_latex(), variable.name)
+                        equation_formatted, variable.name())
             )
             .with_api_data("linear_equation", "introduction", "equation_analysis")
-            .with_input("original_equation", &equation.to_latex())
-            .with_input("variable", &variable.name)
+            .with_input("original_equation", &equation_formatted)
+            .with_input("variable", variable.name())
             .with_output("equation_type", "linear")
             .with_output("complexity", "simple")
-            .with_math_context(&equation.to_latex(), &variable.name, 0.1)
+            .with_math_context(&equation_formatted, variable.name(), 0.1)
             .with_message_key("linear", "introduction", 0)
             .with_presentation("blue", 4, "slide-in")
             .build()
@@ -344,17 +403,25 @@ impl StepFactory {
 
     /// Generate linear equation strategy step
     pub fn linear_strategy(variable: &Symbol) -> EnhancedStep {
+        Self::linear_strategy_with_format(variable, &FormatContext::default())
+    }
+
+    /// Generate linear equation strategy step with custom format
+    pub fn linear_strategy_with_format(
+        variable: &Symbol,
+        _context: &FormatContext,
+    ) -> EnhancedStep {
         EnhancedStepBuilder::new("linear_strategy_001")
             .with_human_message(
                 "🎯 Solution Strategy",
                 &format!("To solve for {}, we'll isolate it using inverse operations.\nWhatever operation is applied to {}, we'll undo it step by step.", 
-                        variable.name, variable.name)
+                        variable.name(), variable.name())
             )
             .with_api_data("linear_equation", "strategy", "isolation_method")
-            .with_input("variable", &variable.name)
+            .with_input("variable", variable.name())
             .with_output("method", "inverse_operations")
             .with_output("approach", "systematic_isolation")
-            .with_math_context("", &variable.name, 0.2)
+            .with_math_context("", variable.name(), 0.2)
             .with_message_key("linear", "strategy", 0)
             .with_presentation("green", 3, "fade-in")
             .build()
@@ -366,18 +433,36 @@ impl StepFactory {
         b: &Expression,
         variable: &Symbol,
     ) -> SmartStep {
+        Self::linear_coefficient_identification_with_format(
+            a,
+            b,
+            variable,
+            &FormatContext::default(),
+        )
+    }
+
+    /// Generate coefficient identification step with custom format
+    pub fn linear_coefficient_identification_with_format(
+        a: &Expression,
+        b: &Expression,
+        variable: &Symbol,
+        context: &FormatContext,
+    ) -> SmartStep {
+        let a_formatted = context.format_expression_safe(a);
+        let b_formatted = context.format_expression_safe(b);
+
         SmartStepBuilder::new("linear_coeffs_001")
             .with_human_message(
                 "🔍 Identify Components",
                 &format!("In our equation, we can identify:\n• Coefficient of {}: {}\n• Constant term: {}\nForm: {}·{} + {} = 0", 
-                        variable.name, a.to_latex(), b.to_latex(), a.to_latex(), variable.name, b.to_latex())
+                        variable.name(), a_formatted, b_formatted, a_formatted, variable.name(), b_formatted)
             )
             .with_api_data("linear_equation", "analysis", "coefficient_extraction")
-            .with_input("variable", &variable.name)
-            .with_input("coefficient", &a.to_latex())
-            .with_input("constant", &b.to_latex())
-            .with_output("standard_form", &format!("{}x + {}", a.to_latex(), b.to_latex()))
-            .with_math_context("", &variable.name, 0.4)
+            .with_input("variable", variable.name())
+            .with_input("coefficient", &a_formatted)
+            .with_input("constant", &b_formatted)
+            .with_output("standard_form", &format!("{}x + {}", a_formatted, b_formatted))
+            .with_math_context("", variable.name(), 0.4)
             .with_message_key("linear", "analysis", 0)
             .with_presentation("orange", 4, "highlight")
             .build()
@@ -390,19 +475,40 @@ impl StepFactory {
         a: &Expression,
         b: &Expression,
     ) -> SmartStep {
+        Self::linear_solution_calculation_with_format(
+            variable,
+            solution,
+            a,
+            b,
+            &FormatContext::default(),
+        )
+    }
+
+    /// Generate solution calculation step with custom format
+    pub fn linear_solution_calculation_with_format(
+        variable: &Symbol,
+        solution: &Expression,
+        a: &Expression,
+        b: &Expression,
+        context: &FormatContext,
+    ) -> SmartStep {
+        let a_formatted = context.format_expression_safe(a);
+        let b_formatted = context.format_expression_safe(b);
+        let solution_formatted = context.format_expression_safe(solution);
+
         SmartStepBuilder::new("linear_calc_001")
             .with_human_message(
                 "📊 Calculate Solution",
                 &format!("Using the linear equation formula:\n{} = -({}) ÷ ({})\n{} = {}\nThis gives us our solution.", 
-                        variable.name, b.to_latex(), a.to_latex(), variable.name, solution.to_latex())
+                        variable.name(), b_formatted, a_formatted, variable.name(), solution_formatted)
             )
             .with_api_data("linear_equation", "calculation", "division_operation")
-            .with_input("numerator", &format!("-({})", b.to_latex()))
-            .with_input("denominator", &a.to_latex())
-            .with_input("variable", &variable.name)
-            .with_output("solution", &solution.to_latex())
+            .with_input("numerator", &format!("-({})", b_formatted))
+            .with_input("denominator", &a_formatted)
+            .with_input("variable", variable.name())
+            .with_output("solution", &solution_formatted)
             .with_output("calculation_method", "division")
-            .with_math_context("", &variable.name, 0.8)
+            .with_math_context("", variable.name(), 0.8)
             .with_message_key("linear", "calculation", 0)
             .with_presentation("purple", 5, "calculate")
             .build()
@@ -414,10 +520,28 @@ impl StepFactory {
         variable: &Symbol,
         solution: &Expression,
     ) -> SmartStep {
+        Self::linear_verification_with_format(
+            equation,
+            variable,
+            solution,
+            &FormatContext::default(),
+        )
+    }
+
+    /// Generate verification step with custom format
+    pub fn linear_verification_with_format(
+        equation: &Expression,
+        variable: &Symbol,
+        solution: &Expression,
+        context: &FormatContext,
+    ) -> SmartStep {
+        let equation_formatted = context.format_expression_safe(equation);
+        let solution_formatted = context.format_expression_safe(solution);
+
         let verification_text = format!(
             "Substitute {} = {} into original equation",
-            variable.name,
-            solution.to_latex()
+            variable.name(),
+            solution_formatted
         );
 
         SmartStepBuilder::new("linear_verify_001")
@@ -429,12 +553,12 @@ impl StepFactory {
                 ),
             )
             .with_api_data("linear_equation", "verification", "substitution_check")
-            .with_input("original_equation", &equation.to_latex())
-            .with_input("variable", &variable.name)
-            .with_input("solution", &solution.to_latex())
+            .with_input("original_equation", &equation_formatted)
+            .with_input("variable", variable.name())
+            .with_input("solution", &solution_formatted)
             .with_output("verification_result", "success")
             .with_output("substitution", &verification_text)
-            .with_math_context(&equation.to_latex(), &variable.name, 1.0)
+            .with_math_context(&equation_formatted, variable.name(), 1.0)
             .with_message_key("linear", "verification", 0)
             .with_presentation("green", 4, "success")
             .build()
@@ -442,17 +566,27 @@ impl StepFactory {
 
     /// Generate special case steps
     pub fn linear_no_solution(equation: &Expression) -> SmartStep {
+        Self::linear_no_solution_with_format(equation, &FormatContext::default())
+    }
+
+    /// Generate special case steps with custom format
+    pub fn linear_no_solution_with_format(
+        equation: &Expression,
+        context: &FormatContext,
+    ) -> SmartStep {
+        let equation_formatted = context.format_expression_safe(equation);
+
         SmartStepBuilder::new("linear_no_solution_001")
             .with_human_message(
                 "⚠️ No Solution",
                 &format!("This equation: {} = 0\nSimplifies to a contradiction (like 5 = 0).\nTherefore, no solution exists.", 
-                        equation.to_latex())
+                        equation_formatted)
             )
             .with_api_data("linear_equation", "error", "no_solution")
-            .with_input("equation", &equation.to_latex())
+            .with_input("equation", &equation_formatted)
             .with_output("result_type", "no_solution")
             .with_output("reason", "contradiction")
-            .with_math_context(&equation.to_latex(), "", 1.0)
+            .with_math_context(&equation_formatted, "", 1.0)
             .with_message_key("linear", "error", 0)
             .with_presentation("red", 5, "alert")
             .build()
@@ -460,18 +594,29 @@ impl StepFactory {
 
     /// Generate infinite solutions step
     pub fn linear_infinite_solutions(equation: &Expression, variable: &Symbol) -> SmartStep {
+        Self::linear_infinite_solutions_with_format(equation, variable, &FormatContext::default())
+    }
+
+    /// Generate infinite solutions step with custom format
+    pub fn linear_infinite_solutions_with_format(
+        equation: &Expression,
+        variable: &Symbol,
+        context: &FormatContext,
+    ) -> SmartStep {
+        let equation_formatted = context.format_expression_safe(equation);
+
         SmartStepBuilder::new("linear_infinite_001")
             .with_human_message(
                 "📊 Infinite Solutions",
                 &format!("This equation: {} = 0\nSimplifies to 0 = 0, which is always true.\nTherefore, any value of {} is a solution.", 
-                        equation.to_latex(), variable.name)
+                        equation_formatted, variable.name())
             )
             .with_api_data("linear_equation", "result", "infinite_solutions")
-            .with_input("equation", &equation.to_latex())
-            .with_input("variable", &variable.name)
+            .with_input("equation", &equation_formatted)
+            .with_input("variable", variable.name())
             .with_output("result_type", "infinite_solutions")
             .with_output("reason", "identity_equation")
-            .with_math_context(&equation.to_latex(), &variable.name, 1.0)
+            .with_math_context(&equation_formatted, variable.name(), 1.0)
             .with_message_key("linear", "infinite", 0)
             .with_presentation("blue", 4, "expand")
             .build()

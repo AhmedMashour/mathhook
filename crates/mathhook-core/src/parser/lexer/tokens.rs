@@ -8,150 +8,295 @@
 /// Uses string slices for zero-copy parsing performance and structured
 /// tokens for complex mathematical constructs.
 #[derive(Debug, Clone, PartialEq)]
+#[allow(non_camel_case_types)]
 pub enum Token<'input> {
-    // Basic operators
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Caret,
+    // Basic operators - matching LALRPOP grammar exactly
+    PLUS,
+    MINUS,
+    MULTIPLY,
+    DIVIDE,
+    POWER,
 
     // Comparison operators
-    Equals,
-    NotEquals,
-    Less,
-    LessEqual,
-    Greater,
-    GreaterEqual,
+    EQUALS,
+    DOUBLE_EQUALS,
+    NOT_EQUALS,
+    LESS,
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
 
     // Delimiters
-    LParen,
-    RParen,
-    LBracket,
-    RBracket,
-    LBrace,
-    RBrace,
+    LPAREN,
+    RPAREN,
+    LBRACKET,
+    RBRACKET,
+    LBRACE,
+    RBRACE,
 
     // Punctuation
-    Comma,
-    Semicolon,
-    Exclamation,
-    Ampersand,
-    Arrow,       // ->
-    DoubleArrow, // =>
+    COMMA,
+    SEMICOLON,
+    FACTORIAL,
+    PIPE,
+    ARROW,
+    SUBSCRIPT,
+    DIFFERENTIAL,
 
-    // Unicode mathematical symbols
-    Pi,
-    E,
-    ImaginaryUnit,
-    Infinity,
-    NegativeInfinity,
-    PlusMinus,
-    MinusPlus,
-    Cdot,
-    Times,
-    Div,
-    Phi,
-    Gamma,
+    // LaTeX commands - all from grammar
+    LATEX_ARCCOS,
+    LATEX_ARCSIN,
+    LATEX_ARCTAN,
+    LATEX_CDOT,
+    LATEX_COS,
+    LATEX_COSH,
+    LATEX_COT,
+    LATEX_CSC,
+    LATEX_FRAC,
+    LATEX_GAMMA,
+    LATEX_EULER_GAMMA,
+    LATEX_INFTY,
+    LATEX_INT,
+    LATEX_IINT,
+    LATEX_IIINT,
+    LATEX_OINT,
+    LATEX_LIM,
+    LATEX_PARTIAL,
+    LATEX_NABLA,
+    LATEX_PROD,
+    LATEX_TO,
+    LATEX_RIGHTARROW,
+    LATEX_LEFTARROW,
+    LATEX_DOUBLE_RIGHTARROW,
+    LATEX_DOUBLE_LEFTARROW,
+    LATEX_LEFTRIGHTARROW,
+    LATEX_DOUBLE_LEFTRIGHTARROW,
+    LATEX_LN,
+    LATEX_LOG,
+    LATEX_PHI,
+    LATEX_PI,
+    LATEX_SEC,
+    LATEX_SIN,
+    LATEX_SINH,
+    LATEX_TAN,
+    LATEX_TANH,
+    LATEX_SQRT,
+    LATEX_SUM,
+    LATEX_TEXT,
+    LATEX_VARPHI,
+    LATEX_LBRACE,
+    LATEX_RBRACE,
 
-    // Greek letters (commonly used)
-    Alpha,
-    Beta,
-    Delta,
-    Epsilon,
-    Theta,
-    Lambda,
-    Mu,
-    Sigma,
-    Omega,
+    // More LaTeX constructs
+    LATEX_BEGIN,
+    LATEX_END,
+    LATEX_LEFT,
+    LATEX_RIGHT,
+    LATEX_OVERLINE,
+    LATEX_UNDERLINE,
+    LATEX_HAT,
+    LATEX_TILDE,
+    LATEX_VEC,
+    LATEX_DOT,
+    LATEX_DDOT,
+    LATEX_BAR,
+    LATEX_PRIME,
+    LATEX_BINOM,
+    LATEX_CHOOSE,
+    LATEX_DET,
+    LATEX_MAX,
+    LATEX_MIN,
+    LATEX_SUP,
+    LATEX_INF,
+    LATEX_GCD,
+    LATEX_LCM,
 
-    // Literals
-    Number(&'input str),
-    Identifier(&'input str),
+    // Mathematical symbols
+    LATEX_LEQ,
+    LATEX_GEQ,
+    LATEX_NEQ,
+    LATEX_EQUIV,
+    LATEX_APPROX,
+    LATEX_SIM,
+    LATEX_PROPTO,
+    LATEX_IN,
+    LATEX_NOTIN,
+    LATEX_SUBSET,
+    LATEX_SUPSET,
+    LATEX_SUBSETEQ,
+    LATEX_SUPSETEQ,
+    LATEX_CUP,
+    LATEX_CAP,
+    LATEX_EMPTYSET,
+    LATEX_FORALL,
+    LATEX_EXISTS,
+    LATEX_NEXISTS,
+    LATEX_LAND,
+    LATEX_LOR,
+    LATEX_LNOT,
+    LATEX_IMPLIES,
+    LATEX_IFF,
 
-    // LaTeX commands (structured tokens)
-    FracStart, // \frac{
-    SqrtStart, // \sqrt{
-    SinFunc,   // \sin(
-    CosFunc,   // \cos(
-    TanFunc,   // \tan(
-    LnFunc,    // \ln(
-    LogFunc,   // \log(
-    GammaFunc, // \Gamma(
-    ExpFunc,   // \exp(
+    // Greek symbols - LaTeX
+    LATEX_ALPHA,
+    LATEX_BETA,
+    LATEX_DELTA,
+    LATEX_EPSILON,
+    LATEX_ZETA,
+    LATEX_ETA,
+    LATEX_THETA,
+    LATEX_IOTA,
+    LATEX_KAPPA,
+    LATEX_LAMBDA,
+    LATEX_MU,
+    LATEX_NU,
+    LATEX_XI,
+    LATEX_OMICRON,
+    LATEX_RHO,
+    LATEX_SIGMA,
+    LATEX_TAU,
+    LATEX_UPSILON,
+    LATEX_CHI,
+    LATEX_PSI,
+    LATEX_OMEGA,
 
-    // LaTeX function powers
-    SinPower, // \sin^{
-    CosPower, // \cos^{
-    TanPower, // \tan^{
-
-    // LaTeX calculus
-    IntegralStart,  // \int
-    IntegralBounds, // \int_
-    SumStart,       // \sum_{
-    ProdStart,      // \prod_{
-    LimitStart,     // \lim_{
+    // Greek symbols - Wolfram
+    WOLFRAM_ALPHA,
+    WOLFRAM_BETA,
+    WOLFRAM_DELTA,
+    WOLFRAM_EPSILON,
+    WOLFRAM_ZETA,
+    WOLFRAM_ETA,
+    WOLFRAM_THETA,
+    WOLFRAM_IOTA,
+    WOLFRAM_KAPPA,
+    WOLFRAM_LAMBDA,
+    WOLFRAM_MU,
+    WOLFRAM_NU,
+    WOLFRAM_XI,
+    WOLFRAM_OMICRON,
+    WOLFRAM_RHO,
+    WOLFRAM_SIGMA,
+    WOLFRAM_TAU,
+    WOLFRAM_UPSILON,
+    WOLFRAM_CHI,
+    WOLFRAM_PSI,
+    WOLFRAM_OMEGA,
 
     // LaTeX environments
-    CasesStart,   // \begin{cases}
-    CasesEnd,     // \end{cases}
-    PMatrixStart, // \begin{pmatrix}
-    PMatrixEnd,   // \end{pmatrix}
+    LATEX_PMATRIX,
+    LATEX_BMATRIX,
+    LATEX_VMATRIX,
+    LATEX_VMATRIX_CAPS,
+    LATEX_CASES,
+    LATEX_ALIGN,
+    LATEX_EQUATION,
+    LATEX_ARRAY,
 
-    // LaTeX delimiters
-    LeftParen,    // \left(
-    RightParen,   // \right)
-    LeftBracket,  // \left[
-    RightBracket, // \right]
-    LeftBrace,    // \left\{
-    RightBrace,   // \right\}
+    // More LaTeX symbols and delimiters
+    LATEX_AMPERSAND,
+    LATEX_DOUBLE_BACKSLASH,
+    LATEX_CR,
+    LATEX_HLINE,
+    LATEX_CDOTS,
+    LATEX_LDOTS,
+    LATEX_VDOTS,
+    LATEX_DDOTS,
+    LATEX_DOTS,
+    LATEX_PM,
+    LATEX_MP,
+    LATEX_TIMES,
+    LATEX_DIV,
+    LATEX_AST,
+    LATEX_STAR,
+    LATEX_CIRC,
+    LATEX_BULLET,
+    LATEX_OTIMES,
+    LATEX_OSLASH,
+    LATEX_ODOT,
+    LATEX_WEDGE,
+    LATEX_VEE,
 
-    // LaTeX text
-    TextIf,        // \text{if}
-    TextOtherwise, // \text{otherwise}
+    // Wolfram functions
+    WOLFRAM_COS,
+    WOLFRAM_CYCLOTOMIC,
+    WOLFRAM_D,
+    WOLFRAM_DISCRIMINANT,
+    WOLFRAM_EULER_PHI,
+    WOLFRAM_EXP,
+    WOLFRAM_GAMMA,
+    WOLFRAM_GROEBNER,
+    WOLFRAM_INTEGRATE,
+    WOLFRAM_LIMIT,
+    WOLFRAM_LOG,
+    WOLFRAM_MINIMAL,
+    WOLFRAM_MOEBIUS,
+    WOLFRAM_PIECEWISE,
+    WOLFRAM_POLY_GCD,
+    WOLFRAM_PRIME_PI,
+    WOLFRAM_RESULTANT,
+    WOLFRAM_RIEMANN_SIEGEL,
+    WOLFRAM_SIN,
+    WOLFRAM_SQRT,
+    WOLFRAM_SUM,
+    WOLFRAM_TIMES,
 
-    // LaTeX arrows and relations
-    To,  // \to
-    Leq, // \leq
-    Geq, // \geq
-    Neq, // \neq
+    // More Wolfram functions
+    WOLFRAM_ABS,
+    WOLFRAM_MAX,
+    WOLFRAM_MIN,
+    WOLFRAM_FLOOR,
+    WOLFRAM_CEILING,
+    WOLFRAM_ROUND,
+    WOLFRAM_SIGN,
+    WOLFRAM_RE,
+    WOLFRAM_IM,
+    WOLFRAM_CONJUGATE,
+    WOLFRAM_ARG,
+    WOLFRAM_PLUS,
+    WOLFRAM_SUBTRACT,
+    WOLFRAM_DIVIDE,
+    WOLFRAM_MOD,
+    WOLFRAM_GCD_CAPS,
+    WOLFRAM_LCM_CAPS,
+    WOLFRAM_FACTORIAL,
+    WOLFRAM_BINOMIAL,
 
-    // Wolfram functions (structured tokens)
-    WolframPlus,  // Plus[
-    WolframTimes, // Times[
-    WolframPower, // Power[
-    WolframSin,   // Sin[
-    WolframCos,   // Cos[
-    WolframTan,   // Tan[
-    WolframLog,   // Log[
-    WolframExp,   // Exp[
-    WolframSqrt,  // Sqrt[
-    WolframGamma, // Gamma[
+    // Advanced Wolfram functions
+    WOLFRAM_DET,
+    WOLFRAM_TR,
+    WOLFRAM_INVERSE,
+    WOLFRAM_TRANSPOSE,
+    WOLFRAM_EIGENVALUES,
+    WOLFRAM_EIGENVECTORS,
+    WOLFRAM_MATRIX_POWER,
+    WOLFRAM_MATRIX_EXP,
+    WOLFRAM_NORM,
+    WOLFRAM_CROSS,
+    WOLFRAM_DOT,
+    WOLFRAM_INNER,
+    WOLFRAM_OUTER,
+    WOLFRAM_KRONECKER,
+    WOLFRAM_LINEAR_SOLVE,
+    WOLFRAM_LEAST_SQUARES,
+    WOLFRAM_QR,
+    WOLFRAM_SVD,
+    WOLFRAM_LU,
+    WOLFRAM_CHOLESKY,
 
-    // Wolfram calculus
-    WolframD,         // D[
-    WolframIntegrate, // Integrate[
-    WolframLimit,     // Limit[
-    WolframSum,       // Sum[
-    WolframProduct,   // Product[
+    // Constants and keywords
+    E_CONST,
+    EULER_GAMMA,
+    GAMMA_CONST,
+    GOLDEN_RATIO,
+    I_CONST,
+    INFINITY,
+    PHI,
+    PI,
+    UNDEFINED,
 
-    // Wolfram special
-    WolframPiecewise, // Piecewise[{
-
-    // Wolfram constants
-    WolframPi,       // Pi
-    WolframE,        // E
-    WolframI,        // I
-    WolframInfinity, // Infinity
-
-    // Special patterns
-    DifferentialD, // d (in dx)
-    LineBreak,     // \\ (in LaTeX)
-
-    // Keywords and special tokens
-    If,
-    Then,
-    Else,
-    True,
-    False,
+    // Literals with string slices
+    FLOAT(&'input str),
+    INTEGER(&'input str),
+    IDENTIFIER(&'input str),
 }

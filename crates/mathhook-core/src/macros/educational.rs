@@ -54,8 +54,8 @@ macro_rules! step {
         EnhancedStepBuilder::new(&format!("{}_step", $operation))
             .with_human_message($operation, &format!("Solving {} for {}", $equation, $variable))
             .with_api_data("solver", $operation, "equation_solving")
-            .with_input("equation", &$equation.to_latex())
-            .with_output("result", &$result.to_latex())
+            .with_input("equation", &$equation.to_latex(None).unwrap_or_else(|_| "equation".to_string()))
+            .with_output("result", &$result.to_latex(None).unwrap_or_else(|_| "result".to_string()))
             .build()
     }};
 
@@ -66,8 +66,8 @@ macro_rules! step {
         EnhancedStepBuilder::new(&format!("rule_{}", $rule_name))
             .with_human_message("Mathematical Rule", $explanation)
             .with_api_data("simplification", $rule_name, "rule_application")
-            .with_input("before", &$before.to_latex())
-            .with_output("after", &$after.to_latex())
+            .with_input("before", &$before.to_latex(None).unwrap_or_else(|_| "before".to_string()))
+            .with_output("after", &$after.to_latex(None).unwrap_or_else(|_| "after".to_string()))
             .build()
     }};
 

@@ -19,9 +19,9 @@ pub mod solvers;
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
+pub use parser::*;
 // pub use macros::*; // Temporarily disabled for parser focus
 pub use matrix::*;
-pub use parser::*;
 pub use simplify::*;
 pub use solvers::*;
 

@@ -135,7 +135,9 @@ match {
     "\\implies" => LATEX_IMPLIES,
     "\\iff" => LATEX_IFF,
     
-    // Phase 3: More advanced LaTeX
+    // Phase 3: Greek symbols
+
+    // Latex greek symbols
     "\\alpha" => LATEX_ALPHA,
     "\\beta" => LATEX_BETA,
     "\\delta" => LATEX_DELTA,
@@ -157,7 +159,31 @@ match {
     "\\chi" => LATEX_CHI,
     "\\psi" => LATEX_PSI,
     "\\omega" => LATEX_OMEGA,
-    
+
+    // Wolfram greek symbols
+    "\\[Alpha]" => WOLFRAM_ALPHA,
+    "\\[Beta]" => WOLFRAM_BETA,
+    "\\[Delta]" => WOLFRAM_DELTA,
+    "\\[Epsilon]" => WOLFRAM_EPSILON,
+    "\\[Zeta]" => WOLFRAM_ZETA,
+    "\\[Eta]" => WOLFRAM_ETA,
+    "\\[Theta]" => WOLFRAM_THETA,
+    "\\[Iota]" => WOLFRAM_IOTA,
+    "\\[Kappa]" => WOLFRAM_KAPPA,
+    "\\[Lambda]" => WOLFRAM_LAMBDA,
+    "\\[Mu]" => WOLFRAM_MU,
+    "\\[Nu]" => WOLFRAM_NU,
+    "\\[Xi]" => WOLFRAM_XI,
+    "\\[Omicron]" => WOLFRAM_OMICRON,
+    "\\[Rho]" => WOLFRAM_RHO,
+    "\\[Sigma]" => WOLFRAM_SIGMA,
+    "\\[Tau]" => WOLFRAM_TAU,
+    "\\[Upsilon]" => WOLFRAM_UPSILON,
+    "\\[Chi]" => WOLFRAM_CHI,
+    "\\[Psi]" => WOLFRAM_PSI,
+    "\\[Omega]" => WOLFRAM_OMEGA,
+
+
     // Phase 3: LaTeX environments
     "pmatrix" => LATEX_PMATRIX,
     "bmatrix" => LATEX_BMATRIX,
@@ -279,6 +305,7 @@ match {
     r"\s*" => { },
 }
 
+
 // 1. Public Entry Point
 pub Expression: Expression = {
     Relation,
@@ -349,6 +376,7 @@ Factorial: Expression = {
 
 // 7. Atoms
 Atom: Expression = {
+    GreekSymbol,
     Number,
     Constant,
     ParenExpression,
@@ -415,6 +443,53 @@ AbsoluteValue: Expression = {
 Number: Expression = {
     FLOAT => Expression::number(<>.parse::<f64>().unwrap()),
     INTEGER => Expression::integer(<>.parse::<i64>().unwrap()),
+};
+
+// Greek symbols
+GreekSymbol: Expression = {
+    LATEX_ALPHA => Expression::symbol(Symbol::new("alpha")),
+    LATEX_BETA => Expression::symbol(Symbol::new("beta")),
+    LATEX_DELTA => Expression::symbol(Symbol::new("delta")),
+    LATEX_EPSILON => Expression::symbol(Symbol::new("epsilon")),
+    LATEX_ZETA => Expression::symbol(Symbol::new("zeta")),
+    LATEX_ETA => Expression::symbol(Symbol::new("eta")),
+    LATEX_THETA => Expression::symbol(Symbol::new("theta")),
+    LATEX_IOTA => Expression::symbol(Symbol::new("iota")),
+    LATEX_KAPPA => Expression::symbol(Symbol::new("kappa")),
+    LATEX_LAMBDA => Expression::symbol(Symbol::new("lambda")),
+    LATEX_MU => Expression::symbol(Symbol::new("mu")),
+    LATEX_NU => Expression::symbol(Symbol::new("nu")),
+    LATEX_XI => Expression::symbol(Symbol::new("xi")),
+    LATEX_OMICRON => Expression::symbol(Symbol::new("omicron")),
+    LATEX_RHO => Expression::symbol(Symbol::new("rho")),
+    LATEX_SIGMA => Expression::symbol(Symbol::new("sigma")),
+    LATEX_TAU => Expression::symbol(Symbol::new("tau")),
+    LATEX_UPSILON => Expression::symbol(Symbol::new("upsilon")),
+    LATEX_CHI => Expression::symbol(Symbol::new("chi")),
+    LATEX_PSI => Expression::symbol(Symbol::new("psi")),
+    LATEX_OMEGA => Expression::symbol(Symbol::new("omega")),
+
+    WOLFRAM_ALPHA => Expression::symbol(Symbol::new("alpha")),
+    WOLFRAM_BETA => Expression::symbol(Symbol::new("beta")),
+    WOLFRAM_DELTA => Expression::symbol(Symbol::new("delta")),
+    WOLFRAM_EPSILON => Expression::symbol(Symbol::new("epsilon")),
+    WOLFRAM_ZETA => Expression::symbol(Symbol::new("zeta")),
+    WOLFRAM_ETA => Expression::symbol(Symbol::new("eta")),
+    WOLFRAM_THETA => Expression::symbol(Symbol::new("theta")),  
+    WOLFRAM_IOTA => Expression::symbol(Symbol::new("iota")),
+    WOLFRAM_KAPPA => Expression::symbol(Symbol::new("kappa")),
+    WOLFRAM_LAMBDA => Expression::symbol(Symbol::new("lambda")),
+    WOLFRAM_MU => Expression::symbol(Symbol::new("mu")),
+    WOLFRAM_NU => Expression::symbol(Symbol::new("nu")),
+    WOLFRAM_XI => Expression::symbol(Symbol::new("xi")),
+    WOLFRAM_OMICRON => Expression::symbol(Symbol::new("omicron")),
+    WOLFRAM_RHO => Expression::symbol(Symbol::new("rho")),
+    WOLFRAM_SIGMA => Expression::symbol(Symbol::new("sigma")),
+    WOLFRAM_TAU => Expression::symbol(Symbol::new("tau")),
+    WOLFRAM_UPSILON => Expression::symbol(Symbol::new("upsilon")),
+    WOLFRAM_CHI => Expression::symbol(Symbol::new("chi")),
+    WOLFRAM_PSI => Expression::symbol(Symbol::new("psi")),
+    WOLFRAM_OMEGA => Expression::symbol(Symbol::new("omega")),
 };
 
 // Mathematical constants

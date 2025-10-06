@@ -6,7 +6,141 @@
 //!
 use super::single_char::SingleCharVariableLexer;
 use super::tokens::Token;
-use std::collections::VecDeque;
+use std::collections::{HashSet, VecDeque};
+use std::sync::LazyLock;
+
+/// Categories of mathematical tokens for implicit multiplication logic
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum TokenCategory {
+    Number,
+    Identifier,
+    Constant,
+    GreekSymbol,
+    Function,
+    LeftParen,
+    RightParen,
+    Operator,
+    Other,
+}
+
+/// Mathematical constants that should trigger implicit multiplication
+static CONSTANTS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        // Basic constants (as token variants)
+        "PI",
+        "E_CONST",
+        "I_CONST",
+        "INFINITY",
+        "PHI",
+        "GOLDEN_RATIO",
+        "EULER_GAMMA",
+        "GAMMA_CONST",
+        "UNDEFINED",
+        // LaTeX constants
+        "LATEX_PI",
+        "LATEX_PHI",
+        "LATEX_VARPHI",
+        "LATEX_INFTY",
+        "LATEX_EULER_GAMMA",
+        "LATEX_GAMMA", // Gamma function
+        // Wolfram constants/functions that act like constants
+        "WOLFRAM_GAMMA", // Gamma function
+    ])
+});
+
+/// Greek symbols that should trigger implicit multiplication
+static GREEK_SYMBOLS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        // LaTeX Greek symbols
+        "LATEX_ALPHA",
+        "LATEX_BETA",
+        "LATEX_DELTA",
+        "LATEX_EPSILON",
+        "LATEX_ZETA",
+        "LATEX_ETA",
+        "LATEX_THETA",
+        "LATEX_IOTA",
+        "LATEX_KAPPA",
+        "LATEX_LAMBDA",
+        "LATEX_MU",
+        "LATEX_NU",
+        "LATEX_XI",
+        "LATEX_OMICRON",
+        "LATEX_RHO",
+        "LATEX_SIGMA",
+        "LATEX_TAU",
+        "LATEX_UPSILON",
+        "LATEX_CHI",
+        "LATEX_PSI",
+        "LATEX_OMEGA",
+        // Wolfram Greek symbols
+        "WOLFRAM_ALPHA",
+        "WOLFRAM_BETA",
+        "WOLFRAM_DELTA",
+        "WOLFRAM_EPSILON",
+        "WOLFRAM_ZETA",
+        "WOLFRAM_ETA",
+        "WOLFRAM_THETA",
+        "WOLFRAM_IOTA",
+        "WOLFRAM_KAPPA",
+        "WOLFRAM_LAMBDA",
+        "WOLFRAM_MU",
+        "WOLFRAM_NU",
+        "WOLFRAM_XI",
+        "WOLFRAM_OMICRON",
+        "WOLFRAM_RHO",
+        "WOLFRAM_SIGMA",
+        "WOLFRAM_TAU",
+        "WOLFRAM_UPSILON",
+        "WOLFRAM_CHI",
+        "WOLFRAM_PSI",
+        "WOLFRAM_OMEGA",
+    ])
+});
+
+/// Mathematical functions that should NOT trigger implicit multiplication when followed by parentheses
+static FUNCTIONS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
+    HashSet::from([
+        "sin", "cos", "tan", "sec", "csc", "cot", "sinh", "cosh", "tanh", "sech", "csch", "coth",
+        "arcsin", "arccos", "arctan", "arcsec", "arccsc", "arccot", "asin", "acos", "atan", "asec",
+        "acsc", "acot", "log", "ln", "exp", "sqrt", "abs", "floor", "ceil", "round", "sign", "max",
+        "min", "gcd", "lcm", "gamma", "beta", "zeta", "erf", "erfc", "J", "Y", "I",
+        "K", // Bessel functions
+        "P", "Q", "L", "H", // Legendre, Hermite functions
+        "F", "G", "U", "M", "W", // Hypergeometric, Whittaker functions
+    ])
+});
+
+/// Rules for when implicit multiplication should be inserted
+static IMPLICIT_MUL_RULES: LazyLock<HashSet<(TokenCategory, TokenCategory)>> =
+    LazyLock::new(|| {
+        HashSet::from([
+            // Number followed by anything multiplicative
+            (TokenCategory::Number, TokenCategory::Identifier),
+            (TokenCategory::Number, TokenCategory::Constant),
+            (TokenCategory::Number, TokenCategory::GreekSymbol),
+            (TokenCategory::Number, TokenCategory::LeftParen),
+            // Identifier followed by anything multiplicative
+            (TokenCategory::Identifier, TokenCategory::Identifier),
+            (TokenCategory::Identifier, TokenCategory::Constant),
+            (TokenCategory::Identifier, TokenCategory::GreekSymbol),
+            // Constants followed by anything multiplicative
+            (TokenCategory::Constant, TokenCategory::Identifier),
+            (TokenCategory::Constant, TokenCategory::Constant),
+            (TokenCategory::Constant, TokenCategory::GreekSymbol),
+            (TokenCategory::Constant, TokenCategory::LeftParen),
+            // Greek symbols followed by anything multiplicative
+            (TokenCategory::GreekSymbol, TokenCategory::Identifier),
+            (TokenCategory::GreekSymbol, TokenCategory::Constant),
+            (TokenCategory::GreekSymbol, TokenCategory::GreekSymbol),
+            (TokenCategory::GreekSymbol, TokenCategory::LeftParen),
+            // Right parentheses followed by anything multiplicative
+            (TokenCategory::RightParen, TokenCategory::Identifier),
+            (TokenCategory::RightParen, TokenCategory::Constant),
+            (TokenCategory::RightParen, TokenCategory::GreekSymbol),
+            (TokenCategory::RightParen, TokenCategory::LeftParen),
+        ])
+    });
 
 /// Enhanced token that includes implicit multiplication markers
 #[derive(Debug, Clone, PartialEq)]
@@ -22,7 +156,6 @@ pub struct ImplicitMultiplicationLexer<'input> {
     base_lexer: SingleCharVariableLexer<'input>,
     token_buffer: VecDeque<(usize, EnhancedToken<'input>, usize)>,
     last_token: Option<Token<'input>>,
-    enable_implicit_mul: bool,
 }
 
 impl<'input> ImplicitMultiplicationLexer<'input> {
@@ -32,17 +165,6 @@ impl<'input> ImplicitMultiplicationLexer<'input> {
             base_lexer: SingleCharVariableLexer::new(input),
             token_buffer: VecDeque::new(),
             last_token: None,
-            enable_implicit_mul: true,
-        }
-    }
-
-    /// Create lexer with implicit multiplication disabled
-    pub fn without_implicit_mul(input: &'input str) -> Self {
-        Self {
-            base_lexer: SingleCharVariableLexer::new(input),
-            token_buffer: VecDeque::new(),
-            last_token: None,
-            enable_implicit_mul: false,
         }
     }
 
@@ -56,7 +178,7 @@ impl<'input> ImplicitMultiplicationLexer<'input> {
         // Get next token from base lexer
         if let Some((start, token, end)) = self.base_lexer.next_token() {
             // Check if we should insert implicit multiplication before this token
-            if self.enable_implicit_mul && self.should_insert_implicit_mul_before(&token) {
+            if self.should_insert_implicit_mul_before(&token) {
                 // Buffer the implicit multiply token
                 self.token_buffer
                     .push_back((start, EnhancedToken::ImplicitMultiply, start));
@@ -87,63 +209,58 @@ impl<'input> ImplicitMultiplicationLexer<'input> {
 
     /// Check if implicit multiplication should be inserted between two tokens
     fn should_insert_between(&self, left: &Token<'input>, right: &Token<'input>) -> bool {
+        let left_category = self.categorize_token(left);
+        let right_category = self.categorize_token(right);
+
+        // Special case: Don't insert multiplication between identifier and left paren if it's a function
+        if left_category == TokenCategory::Identifier && right_category == TokenCategory::LeftParen
+        {
+            if let Token::IDENTIFIER(name) = left {
+                if self.is_function_name(name) {
+                    return false;
+                }
+            }
+        }
+
+        // Check if this combination should trigger implicit multiplication
+        IMPLICIT_MUL_RULES.contains(&(left_category, right_category))
+    }
+
+    /// Categorize a token for implicit multiplication logic
+    fn categorize_token(&self, token: &Token<'input>) -> TokenCategory {
         use Token::*;
 
-        match (left, right) {
-            // Number followed by identifier: 2x -> 2*x
-            (Number(_), Identifier(_)) => true,
-
-            // Number followed by function: 2sin -> 2*sin
-            (Number(_), Identifier(name)) if self.is_function_name(name) => true,
-
-            // Identifier followed by identifier: xy -> x*y
-            (Identifier(_), Identifier(_)) => true,
-
-            // Number followed by parentheses: 2(x) -> 2*(x)
-            (Number(_), LParen) => true,
-
-            // Identifier followed by parentheses: x(y) -> x*(y) (unless it's a function call)
-            (Identifier(name), LParen) if !self.is_function_name(name) => true,
-
-            // Closing parentheses followed by identifier: (x)y -> (x)*y
-            (RParen, Identifier(_)) => true,
-
-            // Closing parentheses followed by opening parentheses: (x)(y) -> (x)*(y)
-            (RParen, LParen) => true,
-
-            // Function call followed by identifier: sin(x)y -> sin(x)*y
-            (RParen, Identifier(_)) if self.was_function_call() => true,
-
-            // Constants followed by variables: πx -> π*x
-            (Pi | E | ImaginaryUnit, Identifier(_)) => true,
-
-            // Variables followed by constants: xπ -> x*π
-            (Identifier(_), Pi | E | ImaginaryUnit) => true,
-
-            // Power followed by identifier: x^2 y -> x^2 * y (handled by precedence)
-            // Note: This is tricky because x^2y could be x^(2y) or (x^2)*y
-            // We'll be conservative and not insert here
-            _ => false,
+        match token {
+            INTEGER(_) | FLOAT(_) => TokenCategory::Number,
+            IDENTIFIER(_) => TokenCategory::Identifier,
+            LPAREN => TokenCategory::LeftParen,
+            RPAREN => TokenCategory::RightParen,
+            PLUS | MINUS | MULTIPLY | DIVIDE | POWER | EQUALS | LESS | GREATER => {
+                TokenCategory::Operator
+            }
+            token if self.is_constant_token_by_name(token) => TokenCategory::Constant,
+            token if self.is_greek_symbol_token_by_name(token) => TokenCategory::GreekSymbol,
+            _ => TokenCategory::Other,
         }
     }
 
     /// Check if an identifier is a known function name
     fn is_function_name(&self, name: &str) -> bool {
-        // Common mathematical functions
-        matches!(
-            name,
-            "sin" | "cos" | "tan" | "sec" | "csc" | "cot" |
-            "sinh" | "cosh" | "tanh" | "sech" | "csch" | "coth" |
-            "arcsin" | "arccos" | "arctan" | "arcsec" | "arccsc" | "arccot" |
-            "asin" | "acos" | "atan" | "asec" | "acsc" | "acot" |
-            "log" | "ln" | "exp" | "sqrt" | "abs" |
-            "floor" | "ceil" | "round" | "sign" |
-            "max" | "min" | "gcd" | "lcm" |
-            "gamma" | "beta" | "zeta" | "erf" | "erfc" |
-            "J" | "Y" | "I" | "K" | // Bessel functions
-            "P" | "Q" | "L" | "H" | // Legendre, Hermite functions
-            "F" | "G" | "U" | "M" | "W" // Hypergeometric, Whittaker functions
-        )
+        FUNCTIONS.contains(name)
+    }
+
+    /// Check if a token is a mathematical constant by checking its debug name
+    fn is_constant_token_by_name(&self, token: &Token<'input>) -> bool {
+        let token_debug = format!("{:?}", token);
+        let token_name = token_debug.split('(').next().unwrap_or("");
+        CONSTANTS.contains(token_name)
+    }
+
+    /// Check if a token is a Greek symbol by checking its debug name
+    fn is_greek_symbol_token_by_name(&self, token: &Token<'input>) -> bool {
+        let token_debug = format!("{:?}", token);
+        let token_name = token_debug.split('(').next().unwrap_or("");
+        GREEK_SYMBOLS.contains(token_name)
     }
 
     /// Check if the last token sequence was a function call
@@ -164,74 +281,12 @@ impl<'input> ImplicitMultiplicationLexer<'input> {
                 }
                 EnhancedToken::ImplicitMultiply => {
                     // Convert implicit multiply to explicit multiply token
-                    tokens.push((start, Token::Star, end));
+                    tokens.push((start, Token::MULTIPLY, end));
                 }
             }
         }
 
         tokens
-    }
-}
-
-/// Integration with your LALRPOP parser
-pub struct ImplicitMultiplicationParser {
-    enable_implicit_mul: bool,
-}
-
-impl ImplicitMultiplicationParser {
-    pub fn new() -> Self {
-        Self {
-            enable_implicit_mul: true,
-        }
-    }
-
-    pub fn without_implicit_mul() -> Self {
-        Self {
-            enable_implicit_mul: false,
-        }
-    }
-
-    /// Parse with implicit multiplication detection
-    pub fn parse(&self, input: &str) -> Result<crate::core::Expression, crate::parser::ParseError> {
-        // Step 1: Enhanced tokenization with implicit multiplication detection
-        let mut enhanced_lexer = if self.enable_implicit_mul {
-            ImplicitMultiplicationLexer::new(input)
-        } else {
-            ImplicitMultiplicationLexer::without_implicit_mul(input)
-        };
-
-        // Step 2: Convert to LALRPOP tokens
-        let tokens = enhanced_lexer.to_lalrpop_tokens();
-
-        // Step 3: Parse with your LALRPOP grammar
-        self.parse_tokens(tokens)
-    }
-
-    /// Parse tokens with LALRPOP grammar (you'll implement this)
-    fn parse_tokens<'input>(
-        &self,
-        _tokens: Vec<(usize, Token<'input>, usize)>,
-    ) -> Result<crate::core::Expression, crate::parser::ParseError> {
-        // This is where you'd integrate with your LALRPOP parser
-        //
-        // You would do something like:
-        // use crate::parser::lalrpop::grammar::mathematical;
-        // let parser = mathematical::ExpressionParser::new();
-        //
-        // // Convert tokens to LALRPOP format and parse
-        // let lalrpop_tokens = self.convert_to_lalrpop_format(tokens);
-        // parser.parse(lalrpop_tokens).map_err(|e| ParseError::SyntaxError(format!("{:?}", e)))
-
-        // Placeholder for now
-        Err(crate::parser::ParseError::SyntaxError(
-            "Token parsing not implemented yet".to_string(),
-        ))
-    }
-}
-
-impl Default for ImplicitMultiplicationParser {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -243,30 +298,98 @@ mod tests {
     fn test_implicit_multiplication_detection() {
         let mut lexer = ImplicitMultiplicationLexer::new("2x");
 
-        // Should generate: Number(2), ImplicitMultiply, Identifier(x)
+        // Should generate: INTEGER(2), ImplicitMultiply, IDENTIFIER(x)
         let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_enhanced_token()).collect();
 
         assert_eq!(tokens.len(), 3);
         assert!(matches!(
             tokens[0].1,
-            EnhancedToken::Regular(Token::Number(_))
+            EnhancedToken::Regular(Token::INTEGER(_))
         ));
         assert!(matches!(tokens[1].1, EnhancedToken::ImplicitMultiply));
         assert!(matches!(
             tokens[2].1,
-            EnhancedToken::Regular(Token::Identifier(_))
+            EnhancedToken::Regular(Token::IDENTIFIER(_))
         ));
+    }
+
+    #[test]
+    fn test_constants_implicit_multiplication() {
+        // Test number * constant: 2π -> 2*π
+        let mut lexer = ImplicitMultiplicationLexer::new("2pi");
+        let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_enhanced_token()).collect();
+
+        assert!(tokens.len() >= 3);
+        assert!(matches!(
+            tokens[0].1,
+            EnhancedToken::Regular(Token::INTEGER(_))
+        ));
+        assert!(matches!(tokens[1].1, EnhancedToken::ImplicitMultiply));
+        assert!(matches!(tokens[2].1, EnhancedToken::Regular(Token::PI)));
+    }
+
+    #[test]
+    fn test_token_categorization() {
+        let lexer = ImplicitMultiplicationLexer::new("");
+
+        // Test number categorization
+        assert_eq!(
+            lexer.categorize_token(&Token::INTEGER("2")),
+            TokenCategory::Number
+        );
+        assert_eq!(
+            lexer.categorize_token(&Token::FLOAT("2.5")),
+            TokenCategory::Number
+        );
+
+        // Test identifier categorization
+        assert_eq!(
+            lexer.categorize_token(&Token::IDENTIFIER("x")),
+            TokenCategory::Identifier
+        );
+
+        // Test constant categorization
+        assert_eq!(lexer.categorize_token(&Token::PI), TokenCategory::Constant);
+        assert_eq!(
+            lexer.categorize_token(&Token::E_CONST),
+            TokenCategory::Constant
+        );
+
+        // Test Greek symbol categorization
+        assert_eq!(
+            lexer.categorize_token(&Token::LATEX_ALPHA),
+            TokenCategory::GreekSymbol
+        );
+        assert_eq!(
+            lexer.categorize_token(&Token::WOLFRAM_BETA),
+            TokenCategory::GreekSymbol
+        );
+
+        // Test parentheses categorization
+        assert_eq!(
+            lexer.categorize_token(&Token::LPAREN),
+            TokenCategory::LeftParen
+        );
+        assert_eq!(
+            lexer.categorize_token(&Token::RPAREN),
+            TokenCategory::RightParen
+        );
     }
 
     #[test]
     fn test_function_detection() {
         let lexer = ImplicitMultiplicationLexer::new("");
 
+        // Test function name detection
         assert!(lexer.is_function_name("sin"));
         assert!(lexer.is_function_name("cos"));
         assert!(lexer.is_function_name("log"));
+        assert!(lexer.is_function_name("sqrt"));
+
+        // Test non-function names
         assert!(!lexer.is_function_name("x"));
         assert!(!lexer.is_function_name("variable"));
+        assert!(!lexer.is_function_name("pi"));
     }
 
     #[test]
@@ -279,12 +402,12 @@ mod tests {
         assert_eq!(tokens.len(), 3); // x, +, y (no implicit multiply)
         assert!(matches!(
             tokens[0].1,
-            EnhancedToken::Regular(Token::Identifier(_))
+            EnhancedToken::Regular(Token::IDENTIFIER(_))
         ));
-        assert!(matches!(tokens[1].1, EnhancedToken::Regular(Token::Plus)));
+        assert!(matches!(tokens[1].1, EnhancedToken::Regular(Token::PLUS)));
         assert!(matches!(
             tokens[2].1,
-            EnhancedToken::Regular(Token::Identifier(_))
+            EnhancedToken::Regular(Token::IDENTIFIER(_))
         ));
     }
 
@@ -294,13 +417,70 @@ mod tests {
 
         let tokens: Vec<_> = std::iter::from_fn(|| lexer.next_enhanced_token()).collect();
 
-        // Should generate: Number(2), ImplicitMultiply, LParen, Identifier(x), Plus, Number(1), RParen
+        // Should generate: INTEGER(2), ImplicitMultiply, LPAREN, IDENTIFIER(x), PLUS, INTEGER(1), RPAREN
         assert!(tokens.len() >= 3);
         assert!(matches!(
             tokens[0].1,
-            EnhancedToken::Regular(Token::Number(_))
+            EnhancedToken::Regular(Token::INTEGER(_))
         ));
         assert!(matches!(tokens[1].1, EnhancedToken::ImplicitMultiply));
-        assert!(matches!(tokens[2].1, EnhancedToken::Regular(Token::LParen)));
+        assert!(matches!(tokens[2].1, EnhancedToken::Regular(Token::LPAREN)));
+    }
+
+    #[test]
+    fn test_implicit_multiplication_rules() {
+        let lexer = ImplicitMultiplicationLexer::new("");
+
+        // Test various combinations that should trigger implicit multiplication
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::PI));
+        assert!(lexer.should_insert_between(&Token::FLOAT("2.5"), &Token::E_CONST));
+        assert!(lexer.should_insert_between(&Token::IDENTIFIER("x"), &Token::LATEX_ALPHA));
+        assert!(lexer.should_insert_between(&Token::PI, &Token::IDENTIFIER("x")));
+        assert!(lexer.should_insert_between(&Token::LATEX_ALPHA, &Token::LATEX_BETA));
+        assert!(lexer.should_insert_between(&Token::PI, &Token::E_CONST));
+        assert!(lexer.should_insert_between(&Token::RPAREN, &Token::LATEX_PI));
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::LPAREN));
+
+        // Test combinations that should NOT trigger implicit multiplication
+        assert!(!lexer.should_insert_between(&Token::PLUS, &Token::IDENTIFIER("x")));
+        assert!(!lexer.should_insert_between(&Token::IDENTIFIER("sin"), &Token::LPAREN));
+        assert!(!lexer.should_insert_between(&Token::MULTIPLY, &Token::PI));
+    }
+
+    #[test]
+    fn test_comprehensive_implicit_multiplication() {
+        let lexer = ImplicitMultiplicationLexer::new("");
+
+        // Numbers with constants: 2π, 3.14e, 5φ
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::PI));
+        assert!(lexer.should_insert_between(&Token::FLOAT("3.14"), &Token::E_CONST));
+        assert!(lexer.should_insert_between(&Token::INTEGER("5"), &Token::PHI));
+        assert!(lexer.should_insert_between(&Token::INTEGER("2"), &Token::LATEX_PI));
+
+        // Variables with Greek symbols: xα, yβ, zδ
+        assert!(lexer.should_insert_between(&Token::IDENTIFIER("x"), &Token::LATEX_ALPHA));
+        assert!(lexer.should_insert_between(&Token::IDENTIFIER("y"), &Token::LATEX_BETA));
+        assert!(lexer.should_insert_between(&Token::IDENTIFIER("z"), &Token::LATEX_DELTA));
+
+        // Constants with constants: πe, φΓ (Gamma function)
+        assert!(lexer.should_insert_between(&Token::PI, &Token::E_CONST));
+        assert!(lexer.should_insert_between(&Token::PHI, &Token::WOLFRAM_GAMMA));
+
+        // Greek symbols with Greek symbols: αβ, δε
+        assert!(lexer.should_insert_between(&Token::LATEX_ALPHA, &Token::LATEX_BETA));
+        assert!(lexer.should_insert_between(&Token::LATEX_DELTA, &Token::LATEX_EPSILON));
+
+        // Constants with parentheses: π(x), e(y)
+        assert!(lexer.should_insert_between(&Token::PI, &Token::LPAREN));
+        assert!(lexer.should_insert_between(&Token::E_CONST, &Token::LPAREN));
+
+        // Greek symbols with parentheses: α(x), β(y)
+        assert!(lexer.should_insert_between(&Token::LATEX_ALPHA, &Token::LPAREN));
+        assert!(lexer.should_insert_between(&Token::WOLFRAM_BETA, &Token::LPAREN));
+
+        // Parentheses with everything: (x)π, (y)α, (z)2
+        assert!(lexer.should_insert_between(&Token::RPAREN, &Token::PI));
+        assert!(lexer.should_insert_between(&Token::RPAREN, &Token::LATEX_ALPHA));
+        assert!(lexer.should_insert_between(&Token::RPAREN, &Token::IDENTIFIER("x")));
     }
 }

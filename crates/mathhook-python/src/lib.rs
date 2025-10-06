@@ -3,7 +3,7 @@
 //! This crate provides Python bindings using PyO3, exposing the hybrid API
 //! for Python users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{parser::universal::MathLanguage, Expression, MathSolver, Simplify, Symbol};
+use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
 use pyo3::prelude::*;
 
 /// Python wrapper for Expression
@@ -103,48 +103,26 @@ impl PyExpression {
         }
     }
 
-    /// Parse a mathematical expression from string
+    /// Parse a mathematical expression from string with automatic language detection
+    ///
+    /// The parser automatically detects the mathematical language (LaTeX, Wolfram, or simple notation)
+    /// and parses accordingly.
     ///
     /// # Examples
     ///
     /// ```python
-    /// expr = PyExpression.parse("x^2 + 2*x + 1")
-    /// latex_expr = PyExpression.parse("\\frac{x^2}{2}")
-    /// wolfram_expr = PyExpression.parse("Sin[x] + Cos[y]")
+    /// expr1 = PyExpression.parse("x^2 + 2*x + 1")        # Simple notation
+    /// expr2 = PyExpression.parse("\\frac{x^2}{2}")        # LaTeX auto-detected
+    /// expr3 = PyExpression.parse("Sin[x] + Cos[y]")       # Wolfram auto-detected
     /// ```
     #[staticmethod]
     pub fn parse(input: &str) -> PyResult<Self> {
-        match Expression::parse(input) {
+        match Expression::parse(input, None) {
             Ok(expr) => Ok(Self { inner: expr }),
-            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Parse error: {}", e)
-            )),
-        }
-    }
-
-    /// Parse with explicit language specification
-    ///
-    /// # Examples
-    ///
-    /// ```python
-    /// latex = PyExpression.parse_with_language("\\sin(x)", "latex")
-    /// wolfram = PyExpression.parse_with_language("Sin[x]", "wolfram")
-    /// simple = PyExpression.parse_with_language("x + 1", "simple")
-    /// ```
-    #[staticmethod]
-    pub fn parse_with_language(input: &str, language: &str) -> PyResult<Self> {
-        let lang = match language {
-            "latex" => MathLanguage::LaTeX,
-            "wolfram" => MathLanguage::Wolfram,
-            "simple" => MathLanguage::Simple,
-            _ => MathLanguage::Simple,
-        };
-
-        match Expression::parse_with_language(input, lang) {
-            Ok(expr) => Ok(Self { inner: expr }),
-            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                format!("Parse error: {}", e)
-            )),
+            Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Parse error: {}",
+                e
+            ))),
         }
     }
 
@@ -157,7 +135,10 @@ impl PyExpression {
     /// latex = expr.to_latex()  # Returns "x^{2}"
     /// ```
     pub fn to_latex(&self) -> String {
-        self.inner.to_latex()
+        use mathhook_core::formatter::LaTeXFormatter;
+        self.inner
+            .to_latex(None)
+            .unwrap_or_else(|e| format!("Error: {}", e))
     }
 
     /// Convert expression to simple mathematical notation
@@ -169,7 +150,10 @@ impl PyExpression {
     /// simple = expr.to_simple()  # Returns "x^2"
     /// ```
     pub fn to_simple(&self) -> String {
-        self.inner.to_simple()
+        use mathhook_core::formatter::simple::{SimpleContext, SimpleFormatter};
+        self.inner
+            .to_simple(&SimpleContext::default())
+            .unwrap_or_else(|e| format!("Error: {}", e))
     }
 
     /// Convert expression to Wolfram Language format
@@ -181,7 +165,26 @@ impl PyExpression {
     /// wolfram = expr.to_wolfram()  # Returns "Sin[x]"
     /// ```
     pub fn to_wolfram(&self) -> String {
-        self.inner.to_wolfram()
+        use mathhook_core::formatter::wolfram::{WolframContext, WolframFormatter};
+        self.inner
+            .to_wolfram(&WolframContext::default())
+            .unwrap_or_else(|e| format!("Error: {}", e))
+    }
+
+    /// Create a function expression
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// x = PyExpression.symbol("x")
+    /// sin_x = PyExpression.function("sin", [x])
+    /// ```
+    #[staticmethod]
+    pub fn function(name: &str, args: Vec<PyExpression>) -> Self {
+        let inner_args: Vec<Expression> = args.into_iter().map(|arg| arg.inner).collect();
+        Self {
+            inner: Expression::function(name, inner_args),
+        }
     }
 
     /// Create an equation (equality relation)
@@ -252,7 +255,6 @@ impl PyMathSolver {
         format!("{:?}", result)
     }
 }
-
 
 /// Python module
 #[pymodule]

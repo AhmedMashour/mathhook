@@ -1,4 +1,4 @@
-use super::FormattingContext;
+use super::{FormattingContext, FormattingError};
 use crate::core::expression::CalculusData;
 use crate::core::{Expression, Number};
 
@@ -41,11 +41,8 @@ pub trait WolframFormatter {
     /// Returns error messages for expressions that exceed safety limits:
     /// - Maximum recursion depth (1000 levels)
     /// - Maximum terms per operation (10000 terms)
-    fn to_wolfram(&self, context: &WolframContext) -> String {
-        match self.to_wolfram_with_depth(context, 0) {
-            Ok(result) => result,
-            Err(error) => format!("Error: {}", error),
-        }
+    fn to_wolfram(&self, context: &WolframContext) -> Result<String, FormattingError> {
+        self.to_wolfram_with_depth(context, 0)
     }
 
     /// Format with explicit recursion depth tracking
@@ -69,7 +66,7 @@ pub trait WolframFormatter {
         &self,
         context: &WolframContext,
         depth: usize,
-    ) -> Result<String, String>;
+    ) -> Result<String, FormattingError>;
 
     /// Convert function to Wolfram Language with depth tracking
     fn format_function_with_depth(
@@ -78,7 +75,7 @@ pub trait WolframFormatter {
         args: &[Expression],
         context: &WolframContext,
         depth: usize,
-    ) -> Result<String, String>;
+    ) -> Result<String, FormattingError>;
 }
 
 impl WolframFormatter for Expression {
@@ -86,9 +83,12 @@ impl WolframFormatter for Expression {
         &self,
         context: &WolframContext,
         depth: usize,
-    ) -> Result<String, String> {
+    ) -> Result<String, FormattingError> {
         if depth > MAX_RECURSION_DEPTH {
-            return Err("Maximum recursion depth exceeded".to_string());
+            return Err(FormattingError::RecursionLimitExceeded {
+                depth,
+                limit: MAX_RECURSION_DEPTH,
+            });
         }
 
         match self {
@@ -106,11 +106,10 @@ impl WolframFormatter for Expression {
             Expression::Symbol(s) => Ok(s.name().to_string()),
             Expression::Add(terms) => {
                 if terms.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many terms in addition: {} (max: {})",
-                        terms.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: terms.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 if terms.len() == 1 {
@@ -125,11 +124,10 @@ impl WolframFormatter for Expression {
             }
             Expression::Mul(factors) => {
                 if factors.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many factors in multiplication: {} (max: {})",
-                        factors.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: factors.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 if factors.len() == 1 {
@@ -165,11 +163,10 @@ impl WolframFormatter for Expression {
             Expression::Piecewise(_) => Ok("piecewise".to_string()),
             Expression::Set(elements) => {
                 if elements.len() > MAX_TERMS_PER_OPERATION {
-                    return Err(format!(
-                        "Too many set elements: {} (max: {})",
-                        elements.len(),
-                        MAX_TERMS_PER_OPERATION
-                    ));
+                    return Err(FormattingError::TooManyTerms {
+                        count: elements.len(),
+                        limit: MAX_TERMS_PER_OPERATION,
+                    });
                 }
 
                 if elements.is_empty() {
@@ -277,13 +274,12 @@ impl WolframFormatter for Expression {
         args: &[Expression],
         context: &WolframContext,
         depth: usize,
-    ) -> Result<String, String> {
+    ) -> Result<String, FormattingError> {
         if args.len() > MAX_TERMS_PER_OPERATION {
-            return Err(format!(
-                "Too many function arguments: {} (max: {})",
-                args.len(),
-                MAX_TERMS_PER_OPERATION
-            ));
+            return Err(FormattingError::TooManyTerms {
+                count: args.len(),
+                limit: MAX_TERMS_PER_OPERATION,
+            });
         }
 
         let wolfram_name = match name {

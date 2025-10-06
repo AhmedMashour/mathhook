@@ -35,7 +35,7 @@
 macro_rules! format {
     // LaTeX formatting
     (latex: $expr:expr) => {
-        $expr.to_latex()
+        $expr.to_latex(None).unwrap_or_else(|e| format!("{{error: {}}}", e))
     };
 
     // Wolfram Language formatting

@@ -43,12 +43,12 @@ pub use mathhook_core as core;
 
 pub use mathhook_core::{
     algebra::{Expand, Factor},
-    parser::universal::UniversalParser,
     Expression, MathConstant, MathSolver, Number, Simplify, SolverConfig, SolverResult, Symbol,
 };
 
-pub use core::{MathLanguage, ParseError};
+pub use core::{error::ParseError, formatter::MathLanguage};
 
+pub use core::parser::Parser;
 pub use num_bigint;
 pub use num_rational;
 pub use serde_json;
@@ -64,11 +64,13 @@ pub use serde_json;
 /// let simplified = expr.simplify();
 /// ```
 pub mod prelude {
-    pub use crate::core::parser::{MathLanguage, ParseError};
+    pub use crate::core::parser::config::ParserConfig;
+    pub use crate::core::parser::Parser;
     pub use crate::core::{
         algebra::{Expand, Factor},
         Expression, MathConstant, Number, Simplify, Symbol,
     };
+    pub use crate::core::{error::ParseError, formatter::MathLanguage};
     pub use crate::core::{MathSolver, SolverConfig, SolverResult};
 }
 
@@ -101,8 +103,8 @@ mod tests {
 
     #[test]
     fn test_parser_integration() {
-        let parser = UniversalParser::new();
-        let result = parser.parse("42", MathLanguage::Standard);
+        let parser = Parser::new(ParserConfig::default());
+        let result = parser.parse("42");
         assert!(result.is_ok());
     }
 
