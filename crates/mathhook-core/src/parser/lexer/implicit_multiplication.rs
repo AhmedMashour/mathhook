@@ -200,13 +200,20 @@ impl ImplicitMultiplicationProcessor {
             return (")".to_string(), TokenType::RightParen);
         }
 
-        // Identifiers (with smart splitting)
+        // Identifiers (with smart subscript handling)
         if chars[*i].is_alphabetic() {
             let identifier_start = *i;
-            while *i < chars.len() && (chars[*i].is_alphanumeric() || chars[*i] == '_') {
+
+            // First, consume only alphabetic characters (not underscores)
+            while *i < chars.len() && chars[*i].is_alphabetic() {
                 *i += 1;
             }
-            let full_identifier = chars[identifier_start..*i].iter().collect::<String>();
+
+            let base_identifier = chars[identifier_start..*i].iter().collect::<String>();
+
+            // If followed by underscore, this might be a subscripted function like J_n
+            // Don't consume the underscore - let it be tokenized separately
+            let full_identifier = base_identifier;
 
             // O(1) HashMap lookup for standard tokens
             if let Some(&token_type) = STANDARD_TOKEN_MAP.get(full_identifier.as_str()) {
@@ -230,6 +237,12 @@ impl ImplicitMultiplicationProcessor {
         }
 
         // Other characters
+        // Handle underscore (subscript) separately
+        if chars[*i] == '_' {
+            *i += 1;
+            return ("_".to_string(), TokenType::Other);
+        }
+
         let token = chars[*i].to_string();
         *i += 1;
         (token, TokenType::Other)
