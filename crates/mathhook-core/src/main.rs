@@ -15,7 +15,7 @@ fn test_integrated_parser() {
 
     let test_cases = vec![
         // Cases that should work with implicit multiplication
-        ("3*\\beta", "Should parse as: beta"),
+        ("3\\beta", "Should parse as: beta"),
         // ("2x", "Should parse as: 2 * x"),
         // ("2(x+1)", "Should parse as: 2 * (x + 1)"),
         // Cases that should work normally
