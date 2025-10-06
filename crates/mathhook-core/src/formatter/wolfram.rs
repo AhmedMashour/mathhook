@@ -1,5 +1,5 @@
 use super::{FormattingContext, FormattingError};
-use crate::core::expression::CalculusData;
+use crate::core::expression::{CalculusData, RelationType};
 use crate::core::{Expression, Number};
 
 const MAX_RECURSION_DEPTH: usize = 1000;
@@ -159,8 +159,44 @@ impl WolframFormatter for Expression {
             )),
             Expression::Matrix(_) => Ok("matrix".to_string()),
             Expression::Constant(c) => Ok(format!("{:?}", c)),
-            Expression::Relation(_) => Ok("relation".to_string()),
-            Expression::Piecewise(_) => Ok("piecewise".to_string()),
+            Expression::Relation(relation_data) => {
+                let left_wolfram = relation_data
+                    .left
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let right_wolfram = relation_data
+                    .right
+                    .to_wolfram_with_depth(context, depth + 1)?;
+                let operator = match relation_data.relation_type {
+                    RelationType::Equal => "Equal",
+                    RelationType::NotEqual => "Unequal",
+                    RelationType::Less => "Less",
+                    RelationType::LessEqual => "LessEqual",
+                    RelationType::Greater => "Greater",
+                    RelationType::GreaterEqual => "GreaterEqual",
+                    RelationType::Approximate => "TildeEqual",
+                    RelationType::Similar => "Tilde",
+                    RelationType::Proportional => "Proportional",
+                };
+                Ok(format!("{}[{}, {}]", operator, left_wolfram, right_wolfram))
+            }
+            Expression::Piecewise(piecewise_data) => {
+                let mut conditions = Vec::new();
+                let mut values = Vec::new();
+
+                for (condition, value) in &piecewise_data.pieces {
+                    conditions.push(condition.to_wolfram_with_depth(context, depth + 1)?);
+                    values.push(value.to_wolfram_with_depth(context, depth + 1)?);
+                }
+
+                if let Some(default_value) = &piecewise_data.default {
+                    conditions.push("True".to_string());
+                    values.push(default_value.to_wolfram_with_depth(context, depth + 1)?);
+                }
+
+                let conditions_list = format!("{{{}}}", conditions.join(", "));
+                let values_list = format!("{{{}}}", values.join(", "));
+                Ok(format!("Piecewise[{}, {}]", values_list, conditions_list))
+            }
             Expression::Set(elements) => {
                 if elements.len() > MAX_TERMS_PER_OPERATION {
                     return Err(FormattingError::TooManyTerms {

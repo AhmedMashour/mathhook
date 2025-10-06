@@ -1,0 +1,182 @@
+[
+  {
+    "received": "\\{\\{1, 2\\}, \\{3, 4\\}\\}",
+    "input": "{{1, 2}, {3, 4}}",
+    "expected": "Matrix(Box([[Number(Integer(1)), Number(Integer(2))], [Number(Integer(3)), Number(Integer(4))]]))"
+  },
+  {
+    "input": "\\{1, 2, 3\\}",
+    "expected": "Set(Box([Number(Integer(1)), Number(Integer(2)), Number(Integer(3))]))",
+    "received": "\\{1, 2, 3\\}"
+  },
+  {
+    "input": "[0, 1]",
+    "received": "[0; 1]",
+    "expected": "Interval{start: Box(Number(Integer(0))), end: Box(Number(Integer(1))), start_inclusive: true, end_inclusive: true}"
+  },
+  {
+    "input": "(0, 1)",
+    "expected": "Interval{start: Box(Number(Integer(0))), end: Box(Number(Integer(1))), start_inclusive: false, end_inclusive: false}",
+    "received": "(0; 1)"
+  },
+  {
+    "input": "J_f",
+    "expected": "Function{name: \"jacobian\", args: Box([Symbol(Symbol { name: \"f\" })])}",
+    "received": "J_f"
+  },
+  {
+    "received": "H_f",
+    "expected": "Function{name: \"hessian\", args: Box([Symbol(Symbol { name: \"f\" })])}",
+    "input": "H_f"
+  },
+  {
+    "input": "|z|",
+    "expected": "Function{name:abs, args:Box([Symbol(Symbol { name: \"z\" })])}",
+    "received": "\\text{abs}(z)"
+  },
+  {
+    "received": "B_n",
+    "expected": "Function{name:bell, args:Box([Symbol(Symbol { name: \"n\" })])}",
+    "input": "B_n"
+  },
+  {
+    "input": "C_n",
+    "expected": "Function{name:catalan, args:Box([Symbol(Symbol { name: \"n\" })])}",
+    "received": "C_n"
+  },
+  {
+    "input": "F_n",
+    "expected": "Function{name:fibonacci, args:Box([Symbol(Symbol { name: \"n\" })])}",
+    "received": "F_n"
+  },
+  {
+    "input": "L_n",
+    "expected": "Function{name:lucas, args:Box([Symbol(Symbol { name: \"n\" })])}",
+    "received": "L_n"
+  },
+  {
+    "input": "(x-a)^2 + (y-b)^2 + (z-c)^2 = r^2",
+    "expected": "Relation{left: Box(Add([Pow(Add(Box([Symbol(Symbol { name: \"x\" }, Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"a\" })])]))), Box(Number(Integer(2)))), Pow(Add([Symbol(Symbol { name: \"y\" }, Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"b\" })])]))), Box(Number(Integer(2)))), Pow(Add([Symbol(Symbol { name: \"z\" }, Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"c\" })])]))), Box(Number(Integer(2))))]))), right: Box(Pow(Box(Symbol(Symbol { name: \"r\" })), Number(Integer(2)))), relation_type: Equal}",
+    "received": "\\left(x + -1 * a\\right)^{2} + \\left(y + -1 * b\\right)^{2} + \\left(z + -1 * c\\right)^{2} = r^{2}"
+  },
+  {
+    "expected": "Relation{left: Box(Symbol(Symbol { name: \"y\" })), right: Box(Add([Mul(Box([Symbol(Symbol { name: \"a\" }), Pow(Box(Symbol(Symbol { name: \"x\" })), Number(Integer(2)))]), Mul([Symbol(Symbol { name: \"b\" }), Symbol(Symbol { name: \"x\" })]), Symbol(Symbol { name: \"c\" })]))), relation_type: Equal}",
+    "received": "y = ax^{2} + bx + c",
+    "input": "y = ax^2 + bx + c"
+  },
+  {
+    "received": "\\{x\\}",
+    "input": "\\{x\\}",
+    "expected": "Function{name:frac, args:Box([Symbol(Symbol { name: \"x\" })])}"
+  },
+  {
+    "received": "A * B",
+    "input": "A \\otimes B",
+    "expected": "Function{name: \"tensor_product\", args: Box([Symbol(Symbol { name: \"A\" }), Symbol(Symbol { name: \"B\" })])}"
+  },
+  {
+    "input": "[A, B]",
+    "received": "[A; B]",
+    "expected": "Function{name: \"commutator\", args: Box([Symbol(Symbol { name: \"A\" }), Symbol(Symbol { name: \"B\" })])}"
+  },
+  {
+    "input": "\\{A, B\\}",
+    "expected": "Function{name: \"anticommutator\", args: Box([Symbol(Symbol { name: \"A\" }), Symbol(Symbol { name: \"B\" })])}",
+    "received": "\\{A, B\\}"
+  },
+  {
+    "expected": "Function{name: \"group_op\", args: Box([Symbol(Symbol { name: \"g\" }), Symbol(Symbol { name: \"h\" })])}",
+    "input": "g \\circ h",
+    "received": "\\text{compose}(g, h)"
+  },
+  {
+    "input": "g^{-1}",
+    "expected": "Function{name: \"group_inverse\", args: Box([Symbol(Symbol { name: \"g\" })])}",
+    "received": "g^{\\{-1 * 1\\}}"
+  },
+  {
+    "input": "T_n",
+    "expected": "Function{name: \"tribonacci\", args: Box([Symbol(Symbol { name: \"n\" })])}",
+    "received": "T_n"
+  },
+  {
+    "received": "M_n",
+    "input": "M_n",
+    "expected": "Function{name: \"motzkin\", args: Box([Symbol(Symbol { name: \"n\" })])}"
+  },
+  {
+    "input": "G_n",
+    "expected": "Function{name: \"genocchi\", args: Box([Symbol(Symbol { name: \"n\" })])}",
+    "received": "G_n"
+  },
+  {
+    "expected": "Function{name: \"andre\", args: Box([Symbol(Symbol { name: \"n\" })])}",
+    "input": "A_n",
+    "received": "A_n"
+  },
+  {
+    "input": "\\rho",
+    "expected": "Function{name: \"plastic_number\", args: Box([])}",
+    "received": "rho"
+  },
+  {
+    "received": "delta",
+    "expected": "Function{name: \"feigenbaum_delta\", args: Box([])}",
+    "input": "\\delta"
+  },
+  {
+    "input": "\\alpha",
+    "expected": "Function{name: \"feigenbaum_alpha\", args: Box([])}",
+    "received": "alpha"
+  },
+  {
+    "input": "e^A",
+    "expected": "Function{name: \"matrix_exp\", args: Box([Symbol(Symbol { name: \"A\" })])}",
+    "received": "e^{A}"
+  },
+  {
+    "input": "A^{1/2}",
+    "expected": "Function{name: \"matrix_power\", args: Box([Symbol(Symbol { name: \"A\" }), Mul([Number(Integer(1)), Pow(Box(Number(Integer(2))), Number(Integer(-1)))])])}",
+    "received": "A^{\\{1 * 2^{-1}\\}}"
+  },
+  {
+    "input": "F = F_0 \\cdot (a + b \\cdot v)/(b + v)",
+    "expected": "Function{name: \"hill_muscle\", args: Box([Symbol(Symbol { name: \"F_0\" }), Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b\" }), Symbol(Symbol { name: \"v\" })])}",
+    "received": "F = F_0 * a + b * v * \\left(b + v\\right)^{-1}"
+  },
+  {
+    "received": "γ^{mu}",
+    "input": "\\gamma^\\mu",
+    "expected": "Function{name: \"gamma_matrix\", args: Box([Symbol(Symbol { name: \"mu\" })])}"
+  },
+  {
+    "received": "a",
+    "input": "a",
+    "expected": "Function{name: \"annihilation_operator\", args: Box([Symbol(Symbol { name: \"a\" })])}"
+  },
+  {
+    "input": "(hkl)",
+    "expected": "Function{name: \"miller_indices\", args: Box([Symbol(Symbol { name: \"h\" }), Symbol(Symbol { name: \"k\" }), Symbol(Symbol { name: \"l\" })])}",
+    "received": "hkl"
+  },
+  {
+    "received": "p^{mu}",
+    "input": "p^\\mu",
+    "expected": "Function{name: \"four_momentum\", args: Box([Symbol(Symbol { name: \"mu\" })])}"
+  },
+  {
+    "expected": "Function{name: \"elliptic_curve\", args: Box([Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b\" })])}",
+    "received": "y^{2} = x^{3} + ax + b",
+    "input": "y^2 = x^3 + ax + b"
+  },
+  {
+    "received": "ax^{2} + bxy + cy^{2}",
+    "input": "ax^2 + bxy + cy^2",
+    "expected": "Function{name: \"quadratic_form\", args: Box([Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b\" }), Symbol(Symbol { name: \"c\" }), Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])}"
+  },
+  {
+    "input": "x^2 - Dy^2 = 1",
+    "expected": "Function{name: \"pell_equation\", args: Box([Symbol(Symbol { name: \"D\" }), Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])}",
+    "received": "x^{2} + -1 * Dy^{2} = 1"
+  }
+]

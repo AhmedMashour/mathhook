@@ -1,4 +1,5 @@
 use super::{FormattingContext, FormattingError};
+use crate::core::expression::RelationType;
 use crate::core::{Expression, Number};
 
 const MAX_RECURSION_DEPTH: usize = 1000;
@@ -19,7 +20,7 @@ pub struct SimpleContext {
 
 impl FormattingContext for SimpleContext {}
 
-/// Formt the expression to Simple
+/// Format the expression to Simple
 pub trait SimpleFormatter {
     /// Format an Expression as simple mathematical notation
     ///
@@ -198,6 +199,102 @@ impl SimpleFormatter for Expression {
                     }
                     Ok(format!("{}({})", name, arg_strs.join(", ")))
                 }
+            }
+            Expression::Interval(interval_data) => {
+                let start_bracket = if interval_data.start_inclusive {
+                    "["
+                } else {
+                    "("
+                };
+                let end_bracket = if interval_data.end_inclusive {
+                    "]"
+                } else {
+                    ")"
+                };
+                let start_simple = interval_data
+                    .start
+                    .to_simple_with_depth(context, depth + 1)?;
+                let end_simple = interval_data.end.to_simple_with_depth(context, depth + 1)?;
+                Ok(format!(
+                    "{}{}, {}{}",
+                    start_bracket, start_simple, end_simple, end_bracket
+                ))
+            }
+            Expression::Relation(relation_data) => {
+                let left_simple = relation_data
+                    .left
+                    .to_simple_with_depth(context, depth + 1)?;
+                let right_simple = relation_data
+                    .right
+                    .to_simple_with_depth(context, depth + 1)?;
+                let operator = match relation_data.relation_type {
+                    RelationType::Equal => "=",
+                    RelationType::NotEqual => {
+                        if context.use_unicode {
+                            "≠"
+                        } else {
+                            "!="
+                        }
+                    }
+                    RelationType::Less => "<",
+                    RelationType::LessEqual => {
+                        if context.use_unicode {
+                            "≤"
+                        } else {
+                            "<="
+                        }
+                    }
+                    RelationType::Greater => ">",
+                    RelationType::GreaterEqual => {
+                        if context.use_unicode {
+                            "≥"
+                        } else {
+                            ">="
+                        }
+                    }
+                    RelationType::Approximate => {
+                        if context.use_unicode {
+                            "≈"
+                        } else {
+                            "~="
+                        }
+                    }
+                    RelationType::Similar => {
+                        if context.use_unicode {
+                            "∼"
+                        } else {
+                            "~"
+                        }
+                    }
+                    RelationType::Proportional => {
+                        if context.use_unicode {
+                            "∝"
+                        } else {
+                            "prop"
+                        }
+                    }
+                };
+                Ok(format!("{} {} {}", left_simple, operator, right_simple))
+            }
+            Expression::Piecewise(piecewise_data) => {
+                let mut result = String::from("{");
+
+                for (i, (condition, value)) in piecewise_data.pieces.iter().enumerate() {
+                    if i > 0 {
+                        result.push_str(", ");
+                    }
+                    let condition_simple = condition.to_simple_with_depth(context, depth + 1)?;
+                    let value_simple = value.to_simple_with_depth(context, depth + 1)?;
+                    result.push_str(&format!("{} if {}", value_simple, condition_simple));
+                }
+
+                if let Some(default_value) = &piecewise_data.default {
+                    let default_simple = default_value.to_simple_with_depth(context, depth + 1)?;
+                    result.push_str(&format!(", {} otherwise", default_simple));
+                }
+
+                result.push('}');
+                Ok(result)
             }
             _ => Ok("unknown".to_string()),
         }

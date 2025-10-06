@@ -287,13 +287,20 @@ match {
     
     // Tier 8: Constants and keywords (0.1-0.5% of tokens)
     "e" => E_CONST,
+    "E" => WOLFRAM_E,
     "euler_gamma" => EULER_GAMMA,
     "gamma" => GAMMA_CONST,
     "golden_ratio" => GOLDEN_RATIO,
     "i" => I_CONST,
+    "I" => WOLFRAM_I,
+
     "infinity" => INFINITY,
+    "Infinity" => WOLFRAM_INFINITY,
+    
     "phi" => PHI,
+    
     "pi" => PI,
+    "Pi" => WOLFRAM_PI,
     "undefined" => UNDEFINED,
     
     // Tier 9: Regex patterns (processed last for performance)
@@ -495,16 +502,24 @@ GreekSymbol: Expression = {
 // Mathematical constants
 Constant: Expression = {
     PI => Expression::pi(),
+    WOLFRAM_PI => Expression::pi(),
+    LATEX_PI => Expression::pi(),
+
     E_CONST => Expression::e(),
+    WOLFRAM_E => Expression::e(),
+
     I_CONST => Expression::i(),
+    WOLFRAM_I => Expression::i(),
+
     INFINITY => Expression::infinity(),
+    WOLFRAM_INFINITY => Expression::infinity(),
+    LATEX_INFTY => Expression::infinity(),
+
     PHI => Expression::golden_ratio(),
     GOLDEN_RATIO => Expression::golden_ratio(),
     GAMMA_CONST => Expression::euler_gamma(),
     EULER_GAMMA => Expression::euler_gamma(),
     UNDEFINED => Expression::undefined(),
-    LATEX_PI => Expression::pi(),
-    LATEX_INFTY => Expression::infinity(),
     LATEX_PHI => Expression::golden_ratio(),
     LATEX_VARPHI => Expression::golden_ratio(),
     LATEX_EULER_GAMMA => Expression::euler_gamma(),

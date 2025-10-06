@@ -4,7 +4,7 @@
     "language": "latex",
     "category": "basic_arithmetic",
     "input": "x + y",
-    "expected_expr": "Add([Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])",
+    "expected_expr": "x + y",
     "description": "Simple addition"
   },
   {
@@ -12,7 +12,7 @@
     "language": "latex",
     "category": "basic_arithmetic",
     "input": "x - y",
-    "expected_expr": "Add([Symbol(Symbol { name: \"x\" }), Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"y\" })])]))",
+    "expected_expr": "x + -1 * y",
     "description": "Subtraction"
   },
   {
@@ -20,7 +20,7 @@
     "language": "latex",
     "category": "basic_arithmetic",
     "input": "x \\cdot y",
-    "expected_expr": "Mul([Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])",
+    "expected_expr": "x * y",
     "description": "Multiplication"
   },
   {
@@ -28,7 +28,7 @@
     "language": "latex",
     "category": "basic_arithmetic",
     "input": "\\frac{x}{y}",
-    "expected_expr": "Mul([Symbol(Symbol { name: \"x\" }), Pow(Box(Symbol(Symbol { name: \"y\" })), Number(Integer(-1)))])",
+    "expected_expr": "x * y^{-1}",
     "description": "Division as fraction"
   },
   {
@@ -36,7 +36,7 @@
     "language": "latex",
     "category": "basic_arithmetic",
     "input": "2x + 3y - 5",
-    "expected_expr": "Add([Mul(Box([Number(Integer(2)), Symbol(Symbol { name: \"x\" })]), Mul([Number(Integer(3)), Symbol(Symbol { name: \"y\" })]), Number(Integer(-5))]))",
+    "expected_expr": "2 * x + 3 * y - 1 * 5",
     "description": "Mixed operations with implicit multiplication"
   },
   {
@@ -44,7 +44,7 @@
     "language": "wolfram",
     "category": "basic_arithmetic",
     "input": "x + y",
-    "expected_expr": "Add([Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])",
+    "expected_expr": "x + y",
     "description": "Simple addition"
   },
   {
@@ -52,7 +52,7 @@
     "language": "wolfram",
     "category": "basic_arithmetic",
     "input": "Times[x, y]",
-    "expected_expr": "Mul([Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])",
+    "expected_expr": "x * y",
     "description": "Times function"
   },
   {

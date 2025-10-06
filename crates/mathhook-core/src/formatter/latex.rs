@@ -1,6 +1,6 @@
 use super::{FormattingContext, FormattingError};
 use crate::core::expression::CalculusData;
-use crate::core::expression::LimitDirection;
+use crate::core::expression::{LimitDirection, RelationType};
 use crate::core::MathConstant;
 use crate::core::{Expression, Number};
 
@@ -447,8 +447,46 @@ impl LaTeXFormatter for Expression {
                     row_strs.join(" \\\\ ")
                 )
             }
-            Expression::Relation { .. } => "\\text{relation}".to_string(),
-            Expression::Piecewise { .. } => "\\text{piecewise}".to_string(),
+            Expression::Relation(relation_data) => {
+                let left_latex = relation_data.left.to_latex_with_depth(context, depth + 1)?;
+                let right_latex = relation_data
+                    .right
+                    .to_latex_with_depth(context, depth + 1)?;
+                let operator = match relation_data.relation_type {
+                    RelationType::Equal => "=",
+                    RelationType::NotEqual => "\\neq",
+                    RelationType::Less => "<",
+                    RelationType::LessEqual => "\\leq",
+                    RelationType::Greater => ">",
+                    RelationType::GreaterEqual => "\\geq",
+                    RelationType::Approximate => "\\approx",
+                    RelationType::Similar => "\\sim",
+                    RelationType::Proportional => "\\propto",
+                };
+                format!("{} {} {}", left_latex, operator, right_latex)
+            }
+            Expression::Piecewise(piecewise_data) => {
+                let mut cases = Vec::new();
+
+                for (condition, value) in &piecewise_data.pieces {
+                    let condition_latex = condition.to_latex_with_depth(context, depth + 1)?;
+                    let value_latex = value.to_latex_with_depth(context, depth + 1)?;
+                    cases.push(format!(
+                        "{} & \\text{{if }} {}",
+                        value_latex, condition_latex
+                    ));
+                }
+
+                if let Some(default_value) = &piecewise_data.default {
+                    let default_latex = default_value.to_latex_with_depth(context, depth + 1)?;
+                    cases.push(format!("{} & \\text{{otherwise}}", default_latex));
+                }
+
+                format!(
+                    "\\begin{{cases}} {} \\end{{cases}}",
+                    cases.join(" \\\\\\\\ ")
+                )
+            }
             Expression::Set(elements) => {
                 if elements.is_empty() {
                     "\\{\\}".to_string()
@@ -460,7 +498,26 @@ impl LaTeXFormatter for Expression {
                     format!("\\{{{}\\}}", element_strs.join(", "))
                 }
             }
-            Expression::Interval { .. } => "\\text{interval}".to_string(),
+            Expression::Interval(interval_data) => {
+                let start_bracket = if interval_data.start_inclusive {
+                    "["
+                } else {
+                    "("
+                };
+                let end_bracket = if interval_data.end_inclusive {
+                    "]"
+                } else {
+                    ")"
+                };
+                let start_latex = interval_data
+                    .start
+                    .to_latex_with_depth(context, depth + 1)?;
+                let end_latex = interval_data.end.to_latex_with_depth(context, depth + 1)?;
+                format!(
+                    "{}{}; {}{}",
+                    start_bracket, start_latex, end_latex, end_bracket
+                )
+            }
             // Calculus expressions with proper LaTeX formatting
             Expression::Calculus(calculus_data) => match calculus_data.as_ref() {
                 CalculusData::Derivative {

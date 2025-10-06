@@ -10,6 +10,7 @@ pub use wolfram::WolframFormatter;
 
 use std::fmt;
 
+use crate::core::Expression;
 /// Mathematical language/format for expressions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MathLanguage {
@@ -105,4 +106,190 @@ pub trait FormattingContext: Default + Clone {
 /// Base trait for all formatters
 pub trait ExpressionFormatter<C: FormattingContext> {
     fn format(&self, context: &C) -> Result<String, FormattingError>;
+}
+
+impl<C: FormattingContext> ExpressionFormatter<C> for Expression {
+    fn format(&self, context: &C) -> Result<String, FormattingError> {
+        match context.target_format() {
+            MathLanguage::Simple | MathLanguage::Human => {
+                let simple_context = simple::SimpleContext::default();
+                self.to_simple(&simple_context)
+            }
+            MathLanguage::Wolfram => {
+                let wolfram_context = wolfram::WolframContext::default();
+                self.to_wolfram(&wolfram_context)
+            }
+            MathLanguage::Json => {
+                // Use serde_json for JSON formatting
+                serde_json::to_string_pretty(self).map_err(|e| {
+                    FormattingError::SerializationError {
+                        message: e.to_string(),
+                    }
+                })
+            }
+            MathLanguage::Markdown => {
+                // Use LaTeX formatting wrapped in markdown math blocks
+                let latex_context = latex::LaTeXContext::default();
+                let latex_result = self.to_latex(latex_context)?;
+                Ok(format!("$${}$$", latex_result))
+            }
+            // Default to LaTeX for all other cases including MathLanguage::LaTeX
+            _ => {
+                let latex_context = latex::LaTeXContext::default();
+                self.to_latex(latex_context)
+            }
+        }
+    }
+}
+
+/// Convenient formatting methods for Expression without requiring context
+impl Expression {
+    /// Format expression using default LaTeX formatting
+    ///
+    /// This is the most convenient way to format expressions when you don't need
+    /// specific formatting options. Always uses LaTeX format.
+    ///
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::core::Symbol;
+    ///
+    /// let expr = Expression::symbol(Symbol::new("x"));
+    /// let formatted = expr.format().unwrap();
+    /// // Returns LaTeX formatted string
+    /// ```
+    pub fn format(&self) -> Result<String, FormattingError> {
+        let latex_context = latex::LaTeXContext::default();
+        self.to_latex(latex_context)
+    }
+
+    /// Format expression with specific language/format
+    ///
+    /// # Examples
+    /// ```rust
+    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::formatter::MathLanguage;
+    /// use mathhook_core::core::Symbol;
+    ///
+    /// let expr = Expression::symbol(Symbol::new("x"));
+    /// let latex = expr.format_as(MathLanguage::LaTeX).unwrap();
+    /// let simple = expr.format_as(MathLanguage::Simple).unwrap();
+    /// let wolfram = expr.format_as(MathLanguage::Wolfram).unwrap();
+    /// ```
+    pub fn format_as(&self, language: MathLanguage) -> Result<String, FormattingError> {
+        match language {
+            MathLanguage::Simple | MathLanguage::Human => {
+                let simple_context = simple::SimpleContext::default();
+                self.to_simple(&simple_context)
+            }
+            MathLanguage::Wolfram => {
+                let wolfram_context = wolfram::WolframContext::default();
+                self.to_wolfram(&wolfram_context)
+            }
+            MathLanguage::Json => serde_json::to_string_pretty(self).map_err(|e| {
+                FormattingError::SerializationError {
+                    message: e.to_string(),
+                }
+            }),
+            MathLanguage::Markdown => {
+                let latex_context = latex::LaTeXContext::default();
+                let latex_result = self.to_latex(latex_context)?;
+                Ok(format!("$${}$$", latex_result))
+            }
+            // Default to LaTeX
+            _ => {
+                let latex_context = latex::LaTeXContext::default();
+                self.to_latex(latex_context)
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::{Expression, Symbol};
+
+    /// Test context that defaults to LaTeX
+    #[derive(Debug, Default, Clone)]
+    struct TestContext;
+
+    impl FormattingContext for TestContext {}
+
+    #[test]
+    fn test_format_defaults_to_latex() {
+        let expr = Expression::symbol(Symbol::new("x"));
+        let context = TestContext::default();
+
+        // Should use LaTeX formatting by default
+        let result = ExpressionFormatter::format(&expr, &context);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_format_without_context() {
+        let expr = Expression::symbol(Symbol::new("x"));
+
+        // Should work without providing context (defaults to LaTeX)
+        let result = expr.format();
+        assert!(result.is_ok());
+
+        // Test format_as method
+        let latex_result = expr.format_as(MathLanguage::LaTeX);
+        assert!(latex_result.is_ok());
+
+        let simple_result = expr.format_as(MathLanguage::Simple);
+        assert!(simple_result.is_ok());
+    }
+
+    #[test]
+    fn test_comprehensive_formatting() {
+        use crate::core::expression::RelationType;
+
+        // Test interval formatting
+        let interval = Expression::interval(
+            Expression::integer(0),
+            Expression::integer(10),
+            true,  // start inclusive
+            false, // end exclusive
+        );
+
+        let latex_interval = interval.format().unwrap();
+        assert!(latex_interval.contains("[0"));
+        assert!(latex_interval.contains("10)"));
+
+        let simple_interval = interval.format_as(MathLanguage::Simple).unwrap();
+        assert!(simple_interval.contains("[0"));
+        assert!(simple_interval.contains("10)"));
+
+        // Test relation formatting
+        let relation = Expression::relation(
+            Expression::symbol(Symbol::new("x")),
+            Expression::integer(5),
+            RelationType::Greater,
+        );
+
+        let latex_relation = relation.format().unwrap();
+        assert!(latex_relation.contains("x"));
+        assert!(latex_relation.contains("5"));
+
+        let simple_relation = relation.format_as(MathLanguage::Simple).unwrap();
+        assert!(simple_relation.contains("x > 5"));
+
+        // Test piecewise formatting
+        let piecewise = Expression::piecewise(
+            vec![
+                (Expression::symbol(Symbol::new("x")), Expression::integer(1)),
+                (Expression::symbol(Symbol::new("y")), Expression::integer(2)),
+            ],
+            Some(Expression::integer(0)),
+        );
+
+        let latex_piecewise = piecewise.format().unwrap();
+        assert!(latex_piecewise.contains("\\begin{cases}"));
+
+        let simple_piecewise = piecewise.format_as(MathLanguage::Simple).unwrap();
+        assert!(simple_piecewise.contains("if"));
+        assert!(simple_piecewise.contains("otherwise"));
+    }
 }
