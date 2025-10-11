@@ -878,7 +878,7 @@ mod tests {
         let step = SmartStepFactory::linear_introduction(&equation, &x);
 
         // Verify human-readable content
-        assert!(step.human_message.contains("x + 2"));
+        assert!(step.human_message.contains("2 + x"));
         assert!(step.human_message.contains("linear equation"));
 
         // Verify API data

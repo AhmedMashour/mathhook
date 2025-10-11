@@ -437,19 +437,21 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
 
     let mut rational_product: Option<BigRational> = None;
 
+    let has_undefined = factors.iter().any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+
     for factor in factors {
         match factor {
             Expression::Number(Number::Integer(n)) => {
                 int_product = int_product.saturating_mul(*n);
-                if int_product == 0 {
-                    return Expression::integer(0); // Early exit for zero
+                if int_product == 0 && !has_undefined {
+                    return Expression::integer(0);
                 }
             }
             Expression::Number(Number::Float(f)) => {
                 float_product *= f;
                 has_float = true;
-                if float_product == 0.0 {
-                    return Expression::integer(0); // Early exit for zero
+                if float_product == 0.0 && !has_undefined {
+                    return Expression::integer(0);
                 }
             }
             Expression::Number(Number::Rational(r)) => {
@@ -458,8 +460,8 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 } else {
                     rational_product = Some(r.as_ref().clone());
                 }
-                if rational_product.as_ref().unwrap().is_zero() {
-                    return Expression::integer(0); // Early exit for zero
+                if rational_product.as_ref().unwrap().is_zero() && !has_undefined {
+                    return Expression::integer(0);
                 }
             }
             _ => {
