@@ -158,20 +158,22 @@ impl LimitMethods {
         variable: &Symbol,
         point: &Expression,
     ) -> Expression {
-        // Handle special cases like lim(sin(x)/x, x->0) = 1
         if let Expression::Mul(factors) = expr {
             if factors.len() == 2 {
-                if let (Expression::Function { name, args }, Expression::Pow(base, exp)) =
-                    (&factors[0], &factors[1])
-                {
-                    if name == "sin"
-                        && args.len() == 1
-                        && base.as_ref() == &args[0]
-                        && **exp == Expression::integer(-1)
-                        && point.is_zero()
-                    {
-                        return Expression::integer(1);
+                let check_sin_over_x = |(func_expr, pow_expr): (&Expression, &Expression)| -> bool {
+                    if let (Expression::Function { name, args }, Expression::Pow(base, exp)) = (func_expr, pow_expr) {
+                        name == "sin"
+                            && args.len() == 1
+                            && base.as_ref() == &args[0]
+                            && **exp == Expression::integer(-1)
+                            && point.is_zero()
+                    } else {
+                        false
                     }
+                };
+
+                if check_sin_over_x((&factors[0], &factors[1])) || check_sin_over_x((&factors[1], &factors[0])) {
+                    return Expression::integer(1);
                 }
             }
         }
@@ -285,13 +287,16 @@ impl Limits for Expression {
             return substituted;
         }
 
-        // Handle special cases based on expression structure
         match self {
             Expression::Mul(factors) if factors.len() == 2 => {
-                // Check for rational functions
                 if let Expression::Pow(denom, exp) = &factors[1] {
                     if **exp == Expression::integer(-1) {
                         return LimitMethods::rational_limit(&factors[0], denom, variable, point);
+                    }
+                }
+                if let Expression::Pow(denom, exp) = &factors[0] {
+                    if **exp == Expression::integer(-1) {
+                        return LimitMethods::rational_limit(&factors[1], denom, variable, point);
                     }
                 }
 

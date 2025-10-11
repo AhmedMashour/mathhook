@@ -97,58 +97,121 @@ impl Expression {
         Self::Symbol(symbol.into())
     }
 
-    /// Create an addition expression
+    /// Create an addition expression in canonical form
+    ///
+    /// This constructor automatically produces a canonical form expression by:
+    /// - Flattening nested additions: `(a + b) + c` → `a + b + c`
+    /// - Removing identity elements: `x + 0` → `x`
+    /// - Combining like terms: `2x + 3x` → `5x`
+    /// - Sorting terms in canonical order: `y + x` → `x + y`
+    /// - Evaluating constant subexpressions: `2 + 3` → `5`
     ///
     /// # Examples
     ///
     /// ```rust
     /// use mathhook_core::Expression;
     ///
+    /// // Constant folding
     /// let expr = Expression::add(vec![
     ///     Expression::integer(1),
     ///     Expression::integer(2),
     /// ]);
+    /// assert_eq!(expr, Expression::integer(3));
+    ///
+    /// // Identity element removal
+    /// let x = Expression::symbol("x");
+    /// let expr = Expression::add(vec![x.clone(), Expression::integer(0)]);
+    /// assert_eq!(expr, x);
+    ///
+    /// // Commutativity (canonical ordering)
+    /// let y = Expression::symbol("y");
+    /// let expr1 = Expression::add(vec![x.clone(), y.clone()]);
+    /// let expr2 = Expression::add(vec![y.clone(), x.clone()]);
+    /// assert_eq!(expr1, expr2); // Both produce x + y in canonical order
     /// ```
     pub fn add(terms: Vec<Expression>) -> Self {
-        Self::Add(Box::new(terms))
+        crate::simplify::arithmetic::simplify_addition(&terms)
     }
 
-    /// Create a multiplication expression
+    /// Create a multiplication expression in canonical form
+    ///
+    /// This constructor automatically produces a canonical form expression by:
+    /// - Flattening nested multiplications: `(a * b) * c` → `a * b * c`
+    /// - Removing identity elements: `x * 1` → `x`
+    /// - Handling zero: `x * 0` → `0`
+    /// - Sorting factors in canonical order: `y * x` → `x * y`
+    /// - Evaluating constant subexpressions: `2 * 3` → `6`
+    /// - Converting division to multiplication: `a / b` → `a * b^(-1)`
     ///
     /// # Examples
     ///
     /// ```rust
     /// use mathhook_core::Expression;
     ///
+    /// // Constant folding
     /// let expr = Expression::mul(vec![
     ///     Expression::integer(2),
-    ///     Expression::symbol("x"),
-    /// ]);
-    ///
-    /// let multi = Expression::mul(vec![
-    ///     Expression::integer(2),
-    ///     Expression::symbol("x"),
     ///     Expression::integer(3),
     /// ]);
+    /// assert_eq!(expr, Expression::integer(6));
+    ///
+    /// // Identity element removal
+    /// let x = Expression::symbol("x");
+    /// let expr = Expression::mul(vec![x.clone(), Expression::integer(1)]);
+    /// assert_eq!(expr, x);
+    ///
+    /// // Zero handling
+    /// let expr = Expression::mul(vec![x.clone(), Expression::integer(0)]);
+    /// assert_eq!(expr, Expression::integer(0));
+    ///
+    /// // Commutativity (canonical ordering)
+    /// let y = Expression::symbol("y");
+    /// let expr1 = Expression::mul(vec![x.clone(), y.clone()]);
+    /// let expr2 = Expression::mul(vec![y.clone(), x.clone()]);
+    /// assert_eq!(expr1, expr2); // Both produce x * y in canonical order
     /// ```
     pub fn mul(factors: Vec<Expression>) -> Self {
-        Self::Mul(Box::new(factors))
+        crate::simplify::arithmetic::simplify_multiplication(&factors)
     }
 
-    /// Create a power expression
+    /// Create a power expression in canonical form
+    ///
+    /// This constructor automatically produces a canonical form expression by:
+    /// - Applying power identities: `x^0` → `1`, `x^1` → `x`, `1^x` → `1`
+    /// - Evaluating constant powers: `2^3` → `8`
+    /// - Converting negative exponents to rationals: `x^(-1)` → `1/x`
+    /// - Flattening nested powers: `(x^a)^b` → `x^(a*b)`
+    /// - Handling special cases: `0^n` → `0` for positive n
     ///
     /// # Examples
     ///
     /// ```rust
     /// use mathhook_core::Expression;
     ///
+    /// // Power identities
+    /// let x = Expression::symbol("x");
+    /// let expr = Expression::pow(x.clone(), Expression::integer(1));
+    /// assert_eq!(expr, x);
+    ///
+    /// let expr = Expression::pow(x.clone(), Expression::integer(0));
+    /// assert_eq!(expr, Expression::integer(1));
+    ///
+    /// // Constant evaluation
     /// let expr = Expression::pow(
-    ///     Expression::symbol("x"),
     ///     Expression::integer(2),
+    ///     Expression::integer(3),
     /// );
+    /// assert_eq!(expr, Expression::integer(8));
+    ///
+    /// // Nested power flattening
+    /// let expr = Expression::pow(
+    ///     Expression::pow(x.clone(), Expression::integer(2)),
+    ///     Expression::integer(3),
+    /// );
+    /// // Produces x^6 in canonical form
     /// ```
     pub fn pow(base: Expression, exponent: Expression) -> Self {
-        Self::Pow(Box::new(base), Box::new(exponent))
+        crate::simplify::arithmetic::simplify_power(&base, &exponent)
     }
 
     /// Create a function expression
@@ -687,5 +750,236 @@ impl Expression {
     pub fn matrix_from_arrays<const R: usize, const C: usize>(arrays: [[i64; C]; R]) -> Self {
         use crate::matrix::Matrix;
         Self::Matrix(Box::new(Matrix::from_arrays(arrays)))
+    }
+}
+
+#[cfg(test)]
+mod canonical_form_tests {
+    use super::*;
+
+    // ========== COMMUTATIVITY TESTS ==========
+
+    #[test]
+    fn test_addition_commutativity() {
+        // x + y should equal y + x (canonical ordering)
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+
+        let expr1 = Expression::add(vec![x.clone(), y.clone()]);
+        let expr2 = Expression::add(vec![y.clone(), x.clone()]);
+
+        assert_eq!(expr1, expr2, "Addition should be commutative in canonical form");
+    }
+
+    #[test]
+    fn test_multiplication_commutativity() {
+        // x * y should equal y * x (canonical ordering)
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+
+        let expr1 = Expression::mul(vec![x.clone(), y.clone()]);
+        let expr2 = Expression::mul(vec![y.clone(), x.clone()]);
+
+        assert_eq!(expr1, expr2, "Multiplication should be commutative in canonical form");
+    }
+
+    #[test]
+    fn test_multi_term_commutativity() {
+        // x + y + z should equal z + y + x (canonical ordering)
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+        let z = Expression::symbol("z");
+
+        let expr1 = Expression::add(vec![x.clone(), y.clone(), z.clone()]);
+        let expr2 = Expression::add(vec![z.clone(), y.clone(), x.clone()]);
+
+        assert_eq!(expr1, expr2, "Multi-term addition should have canonical order");
+    }
+
+    // ========== IDENTITY ELEMENT TESTS ==========
+
+    #[test]
+    fn test_addition_identity() {
+        // x + 0 should equal x
+        let x = Expression::symbol("x");
+        let expr = Expression::add(vec![x.clone(), Expression::integer(0)]);
+
+        assert_eq!(expr, x, "Adding zero should return the original expression");
+    }
+
+    #[test]
+    fn test_multiplication_identity() {
+        // x * 1 should equal x
+        let x = Expression::symbol("x");
+        let expr = Expression::mul(vec![x.clone(), Expression::integer(1)]);
+
+        assert_eq!(expr, x, "Multiplying by one should return the original expression");
+    }
+
+    #[test]
+    fn test_power_identity_exponent_one() {
+        // x^1 should equal x
+        let x = Expression::symbol("x");
+        let expr = Expression::pow(x.clone(), Expression::integer(1));
+
+        assert_eq!(expr, x, "Raising to power 1 should return the original expression");
+    }
+
+    #[test]
+    fn test_power_identity_exponent_zero() {
+        // x^0 should equal 1
+        let x = Expression::symbol("x");
+        let expr = Expression::pow(x, Expression::integer(0));
+
+        assert_eq!(expr, Expression::integer(1), "Any expression raised to power 0 should equal 1");
+    }
+
+    #[test]
+    fn test_power_identity_base_one() {
+        // 1^x should equal 1
+        let x = Expression::symbol("x");
+        let expr = Expression::pow(Expression::integer(1), x);
+
+        assert_eq!(expr, Expression::integer(1), "One raised to any power should equal 1");
+    }
+
+    #[test]
+    fn test_multiplication_zero() {
+        // x * 0 should equal 0
+        let x = Expression::symbol("x");
+        let expr = Expression::mul(vec![x, Expression::integer(0)]);
+
+        assert_eq!(expr, Expression::integer(0), "Multiplying by zero should return zero");
+    }
+
+    // ========== ASSOCIATIVITY FLATTENING TESTS ==========
+
+    #[test]
+    fn test_addition_associativity_flattening() {
+        // (x + y) + z should be flattened to x + y + z
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+        let z = Expression::symbol("z");
+
+        let inner = Expression::add(vec![x.clone(), y.clone()]);
+        let expr = Expression::add(vec![inner, z.clone()]);
+
+        // Should be flattened (no nested Add nodes)
+        match &expr {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 3, "Addition should be flattened");
+                // All terms should be non-Add expressions
+                for term in terms.iter() {
+                    assert!(!matches!(term, Expression::Add(_)), "No nested Add nodes");
+                }
+            }
+            _ => panic!("Expected Add expression"),
+        }
+    }
+
+    #[test]
+    fn test_multiplication_associativity_flattening() {
+        // (x * y) * z should be flattened to x * y * z
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+        let z = Expression::symbol("z");
+
+        let inner = Expression::mul(vec![x.clone(), y.clone()]);
+        let expr = Expression::mul(vec![inner, z.clone()]);
+
+        // Should be flattened (no nested Mul nodes)
+        match &expr {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3, "Multiplication should be flattened");
+                // All factors should be non-Mul expressions
+                for factor in factors.iter() {
+                    assert!(!matches!(factor, Expression::Mul(_)), "No nested Mul nodes");
+                }
+            }
+            _ => panic!("Expected Mul expression"),
+        }
+    }
+
+    // ========== CONSTANT FOLDING TESTS ==========
+
+    #[test]
+    fn test_addition_constant_folding() {
+        // 2 + 3 should evaluate to 5
+        let expr = Expression::add(vec![Expression::integer(2), Expression::integer(3)]);
+
+        assert_eq!(expr, Expression::integer(5), "Constant addition should be evaluated");
+    }
+
+    #[test]
+    fn test_multiplication_constant_folding() {
+        // 2 * 3 should evaluate to 6
+        let expr = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
+
+        assert_eq!(expr, Expression::integer(6), "Constant multiplication should be evaluated");
+    }
+
+    #[test]
+    fn test_power_constant_folding() {
+        // 2^3 should evaluate to 8
+        let expr = Expression::pow(Expression::integer(2), Expression::integer(3));
+
+        assert_eq!(expr, Expression::integer(8), "Constant power should be evaluated");
+    }
+
+    #[test]
+    fn test_mixed_constant_and_symbolic() {
+        // 2 + 3 + x should evaluate to 5 + x
+        let x = Expression::symbol("x");
+        let expr = Expression::add(vec![
+            Expression::integer(2),
+            Expression::integer(3),
+            x.clone(),
+        ]);
+
+        // Should combine constants but keep x separate
+        match &expr {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2, "Constants should be combined");
+                // One term should be 5, the other should be x
+                assert!(terms.contains(&Expression::integer(5)));
+                assert!(terms.contains(&x));
+            }
+            _ => panic!("Expected Add expression with 2 terms"),
+        }
+    }
+
+    // ========== IDEMPOTENCY TEST ==========
+
+    #[test]
+    fn test_constructor_idempotency() {
+        // Applying constructor twice should produce same result
+        let x = Expression::symbol("x");
+        let y = Expression::symbol("y");
+
+        let expr1 = Expression::add(vec![x.clone(), y.clone()]);
+        let expr2 = Expression::add(vec![expr1.clone()]);
+
+        assert_eq!(expr1, expr2, "Constructor should be idempotent");
+    }
+
+    // ========== LIKE TERMS COMBINING TEST ==========
+
+    #[test]
+    fn test_combining_like_terms() {
+        // 2x + 3x should evaluate to 5x
+        let x = Expression::symbol("x");
+        let term1 = Expression::mul(vec![Expression::integer(2), x.clone()]);
+        let term2 = Expression::mul(vec![Expression::integer(3), x.clone()]);
+        let expr = Expression::add(vec![term1, term2]);
+
+        // Should combine to 5x (which is Mul([5, x]))
+        match &expr {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2, "Should combine like terms");
+                assert_eq!(factors[0], Expression::integer(5));
+                assert_eq!(factors[1], x);
+            }
+            _ => panic!("Expected Mul expression for 5x"),
+        }
     }
 }

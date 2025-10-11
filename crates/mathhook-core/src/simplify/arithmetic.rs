@@ -180,7 +180,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
             match num {
                 Expression::Number(Number::Integer(0)) => simplified_non_numeric,
                 Expression::Number(Number::Float(f)) if *f == 0.0 => simplified_non_numeric,
-                _ => Expression::add(vec![num.clone(), simplified_non_numeric]),
+                _ => Expression::Add(Box::new(vec![num.clone(), simplified_non_numeric])),
             }
         }
         _ => {
@@ -240,8 +240,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                             result_terms.push(base);
                         }
                         _ => {
-                            // Reconstruct coefficient * base
-                            result_terms.push(Expression::mul(vec![coeff.clone(), base]));
+                            result_terms.push(Expression::Mul(Box::new(vec![coeff.clone(), base])));
                         }
                     }
                 } else {
@@ -255,8 +254,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                             result_terms.push(base);
                         }
                         _ => {
-                            // Non-zero coefficient sum, reconstruct
-                            result_terms.push(Expression::mul(vec![coeff_sum, base]));
+                            result_terms.push(Expression::Mul(Box::new(vec![coeff_sum, base])));
                         }
                     }
                 }
@@ -538,7 +536,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             match num {
                 Expression::Number(Number::Integer(1)) => simplified_non_numeric,
                 Expression::Number(Number::Float(f)) if *f == 1.0 => simplified_non_numeric,
-                _ => Expression::mul(vec![num.clone(), simplified_non_numeric]),
+                _ => Expression::Mul(Box::new(vec![num.clone(), simplified_non_numeric])),
             }
         }
         _ => {
@@ -640,10 +638,10 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
             Expression::Number(Number::rational(BigRational::new(numerator, denominator)))
         }
         // (a^b)^c = a^(b*c)
-        (Expression::Pow(b, e), c) => Expression::pow(
-            (**b).clone(),
-            Expression::mul(vec![(**e).clone(), c.clone()]).simplify(),
-        ),
+        (Expression::Pow(b, e), c) => {
+            let new_exp = simplify_multiplication(&[(**e).clone(), c.clone()]);
+            Expression::Pow(Box::new((**b).clone()), Box::new(new_exp))
+        }
         _ => Expression::Pow(Box::new(simplified_base), Box::new(simplified_exp)),
     }
 }

@@ -538,6 +538,40 @@ pub fn derivative(&self, var: &Symbol, order: u32) -> Expression {
 
 ---
 
+## Pre-Commit Verification Checklist
+
+**MANDATORY**: Before marking any task complete or suggesting a commit, explicitly verify:
+
+### 1. Comments Audit
+- [ ] No `//` inline comments except mathematical formulas or critical non-obvious logic
+- [ ] All `//!` are module-level only (top of file)
+- [ ] All `///` are item documentation only (functions, structs, traits)
+- Search command: `rg "^\s*//[^/!]" --type rust` (should return ONLY formulas/critical logic)
+
+### 2. Forbidden Content
+- [ ] No emojis anywhere
+- [ ] No ALL CAPS (except constants like `MAX_DEPTH`)
+- [ ] No TODO comments for incomplete critical functionality
+- [ ] No placeholder implementations
+
+### 3. Test Coverage
+- [ ] Ran relevant tests: `cargo test -p mathhook-core <module>`
+- [ ] No regressions (test count ≥ baseline)
+- [ ] All doctests pass: `cargo test --doc`
+
+### 4. Mathematical Correctness
+- [ ] Verified against SymPy/Symbolica if implementing algorithms
+- [ ] Edge cases tested (zero, infinity, undefined, complex)
+- [ ] Domain restrictions documented and tested
+
+### 5. Performance Impact
+- [ ] No performance regressions (run benchmarks if modifying hot paths)
+- [ ] Expression size constraint maintained (32 bytes)
+
+**AI Agent Protocol**: State "✅ Verified against CLAUDE.md checklist" before marking tasks complete.
+
+---
+
 ## Code Quality Principles (Priority Order)
 
 After mathematical correctness, prioritize in this exact order:

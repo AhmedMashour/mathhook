@@ -5,7 +5,8 @@
 
 use crate::core::Expression;
 use crate::matrix::operations::MatrixOperations;
-mod arithmetic;
+
+pub mod arithmetic;
 mod constants;
 mod functions;
 
