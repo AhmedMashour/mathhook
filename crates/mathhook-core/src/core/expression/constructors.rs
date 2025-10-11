@@ -8,11 +8,6 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::ToPrimitive;
 
-use crate::matrix::types::{
-    DiagonalMatrixData, IdentityMatrixData, MatrixData, PermutationMatrixData, ScalarMatrixData,
-    SymmetricMatrixData, UpperTriangularMatrixData,
-};
-
 impl Expression {
     /// Create a number expression
     ///

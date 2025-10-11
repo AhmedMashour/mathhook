@@ -4,6 +4,7 @@
 //! Inspired by SymPy's comprehensive function system but optimized for performance.
 
 use crate::core::{Expression, Symbol};
+use crate::functions::evaluation::EvaluationResult;
 use std::collections::HashMap;
 
 /// Mathematical properties for all function types
@@ -59,13 +60,7 @@ impl FunctionProperties {
     ///
     /// This is the core of truly intelligent evaluation - each function
     /// evaluates itself based on its mathematical properties
-    pub fn evaluate(
-        &self,
-        name: &str,
-        args: &[Expression],
-    ) -> crate::functions::evaluation::EvaluationResult {
-        use crate::functions::evaluation::EvaluationResult;
-
+    pub fn evaluate(&self, name: &str, args: &[Expression]) -> EvaluationResult {
         // Try special values from intelligence
         if let Some(result) = self.try_special_values(args) {
             return result;
@@ -81,12 +76,7 @@ impl FunctionProperties {
     }
 
     /// Try evaluation using special values from intelligence
-    fn try_special_values(
-        &self,
-        args: &[Expression],
-    ) -> Option<crate::functions::evaluation::EvaluationResult> {
-        use crate::functions::evaluation::EvaluationResult;
-
+    fn try_special_values(&self, args: &[Expression]) -> Option<EvaluationResult> {
         if args.len() != 1 {
             return None;
         }
@@ -111,13 +101,7 @@ impl FunctionProperties {
     /// Try evaluation using existing mathematical operations
     ///
     /// Intelligence-driven evaluation using function properties
-    fn try_existing_operations(
-        &self,
-        name: &str,
-        args: &[Expression],
-    ) -> Option<crate::functions::evaluation::EvaluationResult> {
-        use crate::functions::evaluation::EvaluationResult;
-
+    fn try_existing_operations(&self, name: &str, args: &[Expression]) -> Option<EvaluationResult> {
         // Use function properties to determine if existing operations are available
         if args.len() == 2 && self.is_binary_number_theory_function() {
             self.evaluate_binary_number_theory(name, args)
@@ -146,9 +130,7 @@ impl FunctionProperties {
         &self,
         name: &str,
         args: &[Expression],
-    ) -> Option<crate::functions::evaluation::EvaluationResult> {
-        use crate::functions::evaluation::EvaluationResult;
-
+    ) -> Option<EvaluationResult> {
         // Use function properties to determine the operation type
         match self {
             FunctionProperties::Elementary(props) => {
@@ -172,9 +154,7 @@ impl FunctionProperties {
         &self,
         name: &str,
         args: &[Expression],
-    ) -> Option<crate::functions::evaluation::EvaluationResult> {
-        use crate::functions::evaluation::EvaluationResult;
-
+    ) -> Option<EvaluationResult> {
         // Use the function name to determine which existing algorithm to use
         // This is the final bridge between intelligence and existing implementations
         match name {
@@ -627,23 +607,25 @@ mod tests {
 
     #[test]
     fn test_hot_path_methods() {
-        let props = FunctionProperties::Elementary(Box::new(ElementaryProperties {
-            derivative_rule: Some(DerivativeRule {
-                rule_type: DerivativeRuleType::Simple("cos".to_string()),
-                result_template: "cos(x)".to_string(),
-            }),
-            special_values: vec![],
-            identities: Box::new(vec![]),
-            domain_range: Box::new(DomainRangeData {
-                domain: Domain::Real,
-                range: Range::Bounded(Expression::integer(-1), Expression::integer(1)),
-                singularities: vec![],
-            }),
-            periodicity: Some(Expression::mul(vec![
-                Expression::integer(2),
-                Expression::pi(),
-            ])),
-        }));
+        let props: FunctionProperties =
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("cos".to_string()),
+                    result_template: "cos(x)".to_string(),
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Real,
+                    range: Range::Bounded(Expression::integer(-1), Expression::integer(1)),
+                    singularities: vec![],
+                }),
+                periodicity: Some(Expression::mul(vec![
+                    Expression::integer(2),
+                    Expression::pi(),
+                ])),
+                numerical_evaluator: Some(NumericalEvaluator::StandardLib(f64::sin)),
+            }));
 
         // Test hot path methods
         assert!(props.has_derivative());

@@ -1,9 +1,9 @@
-//! 🧮 Function Evaluation
+//! Function Evaluation
 //!
 //! Simple, clean evaluation that uses existing implementations
 //! and Function Intelligence properties.
 
-use crate::core::{Expression, Number};
+use crate::core::Expression;
 use crate::functions::intelligence::UNIVERSAL_REGISTRY;
 
 /// Result of mathematical evaluation
