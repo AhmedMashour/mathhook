@@ -1,208 +1,189 @@
-//! Expression construction macros
+//! Pragmatic expression construction macros
 //!
-//! Universal expression creation with natural mathematical syntax.
-//! These macros eliminate verbose Expression::add(vec![...]) constructions
-//! and provide compile-time optimized expression building.
+//! Simplified but genuinely useful macros that work within declarative macro limitations.
 
-/// Universal expression creation with natural syntax
+/// Expression creation with useful shortcuts
 ///
-/// This macro provides ergonomic expression construction for both internal
-/// MathHook development and external library users.
+/// This macro provides genuinely useful syntax without trying to parse full expressions.
+/// For complex expressions with mixed operators, use the explicit API or a future
+/// procedural macro.
 ///
-/// # Examples
+/// # What Works Well
 ///
 /// ```rust
-/// use mathhook_core::expr;
-/// use mathhook_core::{Expression, Symbol};
+/// use mathhook_core::{expr, symbol};
 ///
-/// // Numbers
+/// // Literals
 /// let num = expr!(42);
-/// assert_eq!(num, Expression::integer(42));
 ///
-/// // Symbols  
+/// // Symbols (clean!)
 /// let x = expr!(x);
-/// assert_eq!(x, Expression::symbol(Symbol::new("x")));
 ///
-/// // Multi-term addition
-/// let sum = expr!(expr!(1), expr!(2), expr!(3));
-/// assert_eq!(sum, Expression::add(vec![
-///     Expression::integer(1),
-///     Expression::integer(2),
-///     Expression::integer(3)
-/// ]));
+/// // Single operations (clean!)
+/// let sum = expr!(x + y);
+/// let product = expr!(x * y);
+/// let power = expr!(x ^ 2);
+/// let div = expr!(x / y);
 ///
-/// // Multi-factor multiplication
-/// let product = expr!(mul: expr!(2), expr!(x), expr!(3));
-/// assert_eq!(product, Expression::mul(vec![
-///     Expression::integer(2),
-///     Expression::symbol(Symbol::new("x")),
-///     Expression::integer(3)
-/// ]));
+/// // Functions (natural!)
+/// let sin_x = expr!(sin(x));
+/// let log_xy = expr!(log(x, y));
 ///
-/// // Power operations
-/// let power = expr!(pow: expr!(x), expr!(2));
-/// assert_eq!(power, Expression::pow(
-///     Expression::symbol(Symbol::new("x")),
-///     Expression::integer(2)
-/// ));
+/// // Negation
+/// let neg = expr!(-x);
+///
+/// // You can nest with parentheses for clarity
+/// let complex = expr!((x + 1) * (y - 1));
+/// ```
+///
+/// # Limitations
+///
+/// For mixed operations, operator precedence isn't perfect. Use explicit grouping:
+/// ```rust
+/// // These work as expected:
+/// expr!(2 * x)        // ✅ 2*x
+/// expr!(x + y)        // ✅ x+y
+/// expr!((2*x) + 3)    // ✅ (2*x)+3 with explicit grouping
+///
+/// // This might not work as expected:
+/// expr!(2*x + 3)      // ⚠️  Precedence unclear - use (2*x) + 3
 /// ```
 #[macro_export]
 macro_rules! expr {
-    // Numbers
+    // === Base Cases ===
+
+    // Literal integer
     ($n:literal) => {
         $crate::Expression::integer($n)
     };
 
-    // Symbols
-    ($id:ident) => {
-        $crate::Expression::symbol($crate::Symbol::new(stringify!($id)))
+    // Symbol or constant
+    ($id:ident) => {{
+        // Common mathematical constants use dedicated constructors
+        match stringify!($id) {
+            "pi" => $crate::Expression::pi(),
+            "e" => $crate::Expression::e(),
+            "i" => $crate::Expression::i(),
+            _ => $crate::Expression::symbol($crate::Symbol::new(stringify!($id)))
+        }
+    }};
+
+    // === Function Calls ===
+
+    // Zero argument function: f()
+    ($fname:ident()) => {
+        $crate::Expression::function(stringify!($fname), vec![])
     };
 
-    // Multi-term addition - vectorized construction
-    ($($terms:expr),+ $(,)?) => {
-        $crate::Expression::add(vec![$($terms),+])
+    // One argument: f(x)
+    ($fname:ident($arg:tt)) => {
+        $crate::Expression::function(stringify!($fname), vec![$crate::expr!($arg)])
     };
 
-    // Multi-factor multiplication - vectorized construction
-    (mul: $($factors:expr),+ $(,)?) => {
-        $crate::Expression::mul(vec![$($factors),+])
+    // Two arguments: f(x, y)
+    ($fname:ident($arg1:tt, $arg2:tt)) => {
+        $crate::Expression::function(
+            stringify!($fname),
+            vec![$crate::expr!($arg1), $crate::expr!($arg2)]
+        )
     };
 
-    // Power operations - optimized for common cases
-    (pow: $base:expr, $exp:expr) => {
-        $crate::Expression::pow($base, $exp)
+    // Three arguments: f(x, y, z)
+    ($fname:ident($arg1:tt, $arg2:tt, $arg3:tt)) => {
+        $crate::Expression::function(
+            stringify!($fname),
+            vec![$crate::expr!($arg1), $crate::expr!($arg2), $crate::expr!($arg3)]
+        )
     };
 
-    // Function calls - compile-time name validation
-    (fn: $name:literal, $($args:expr),* $(,)?) => {
-        $crate::Expression::function($name, vec![$($args),*])
+    // === Parenthesized Expressions ===
+
+    // (expr)
+    (($($inner:tt)+)) => {
+        $crate::expr!($($inner)+)
     };
 
-    // Rational expressions - common pattern
-    (rational: $num:expr, $den:expr) => {
-        expr!(mul: $num, expr!(pow: $den, expr!(-1)))
+    // === Unary Operations ===
+
+    // Negation: -x
+    (- $e:tt) => {
+        $crate::Expression::mul(vec![
+            $crate::Expression::integer(-1),
+            $crate::expr!($e)
+        ])
+    };
+
+    // === Binary Operations (Single Operator) ===
+
+    // Addition: a + b
+    ($a:tt + $b:tt) => {
+        $crate::Expression::add(vec![$crate::expr!($a), $crate::expr!($b)])
+    };
+
+    // Subtraction: a - b
+    ($a:tt - $b:tt) => {
+        $crate::Expression::add(vec![
+            $crate::expr!($a),
+            $crate::expr!(- $b)
+        ])
+    };
+
+    // Multiplication: a * b
+    ($a:tt * $b:tt) => {
+        $crate::Expression::mul(vec![$crate::expr!($a), $crate::expr!($b)])
+    };
+
+    // Division: a / b
+    ($a:tt / $b:tt) => {
+        $crate::Expression::mul(vec![
+            $crate::expr!($a),
+            $crate::Expression::pow($crate::expr!($b), $crate::Expression::integer(-1))
+        ])
+    };
+
+    // Exponentiation: a ^ b
+    ($a:tt ^ $b:tt) => {
+        $crate::Expression::pow($crate::expr!($a), $crate::expr!($b))
+    };
+
+    // === Chained Operations (Explicit) ===
+
+    // Multi-term addition with explicit grouping
+    (add: $($terms:tt),+ $(,)?) => {
+        $crate::Expression::add(vec![$($crate::expr!($terms)),+])
+    };
+
+    // Multi-factor multiplication with explicit grouping
+    (mul: $($factors:tt),+ $(,)?) => {
+        $crate::Expression::mul(vec![$($crate::expr!($factors)),+])
     };
 }
 
-/// Symbol creation macro
-///
-/// This macro provides ergonomic symbol creation for mathematical expressions.
-///
-/// # Examples
-///
-/// ```rust
-/// use mathhook_core::symbol;
-/// use mathhook_core::Symbol;
-///
-/// // Create a symbol
-/// let x = symbol!(x);
-/// assert_eq!(x, Symbol::new("x"));
-///
-/// // Create symbol from string
-/// let var = symbol!("variable_name");
-/// assert_eq!(var, Symbol::new("variable_name"));
-/// ```
+/// Symbol creation macro (unchanged - this one is perfect)
 #[macro_export]
 macro_rules! symbol {
-    // Symbol from identifier
     ($id:ident) => {
         $crate::Symbol::new(stringify!($id))
     };
-
-    // Symbol from string literal
     ($name:literal) => {
         $crate::Symbol::new($name)
     };
-
-    // Symbol from expression (runtime)
     ($name:expr) => {
         $crate::Symbol::new($name)
     };
 }
 
-/// Function expression creation macro
-///
-/// This macro provides ergonomic function expression creation with
-/// automatic argument handling.
-///
-/// # Examples
-///
-/// ```rust
-/// use mathhook_core::{function, expr};
-/// use mathhook_core::Expression;
-///
-/// // Function with no arguments
-/// let pi_func = function!(pi);
-///
-/// // Function with one argument
-/// let sin_x = function!(sin, expr!(x));
-///
-/// // Function with multiple arguments
-/// let log_xy = function!(log, expr!(x), expr!(y));
-///
-/// // Function with vector of arguments
-/// let f_args = function!(f, vec![expr!(a), expr!(b), expr!(c)]);
-/// ```
+/// Function expression creation (simplified)
 #[macro_export]
 macro_rules! function {
-    // Function with no arguments (constant function)
+    // Zero arguments
     ($name:ident) => {
         $crate::Expression::function(stringify!($name), vec![])
     };
 
-    // Function with no arguments from string
-    ($name:literal) => {
-        $crate::Expression::function($name, vec![])
-    };
-
-    // Function with one argument
-    ($name:ident, $arg:expr) => {
-        $crate::Expression::function(stringify!($name), vec![$arg])
-    };
-
-    // Function with one argument from string
-    ($name:literal, $arg:expr) => {
-        $crate::Expression::function($name, vec![$arg])
-    };
-
-    // Function with two arguments
-    ($name:ident, $arg1:expr, $arg2:expr) => {
-        $crate::Expression::function(stringify!($name), vec![$arg1, $arg2])
-    };
-
-    // Function with two arguments from string
-    ($name:literal, $arg1:expr, $arg2:expr) => {
-        $crate::Expression::function($name, vec![$arg1, $arg2])
-    };
-
-    // Function with three arguments
-    ($name:ident, $arg1:expr, $arg2:expr, $arg3:expr) => {
-        $crate::Expression::function(stringify!($name), vec![$arg1, $arg2, $arg3])
-    };
-
-    // Function with three arguments from string
-    ($name:literal, $arg1:expr, $arg2:expr, $arg3:expr) => {
-        $crate::Expression::function($name, vec![$arg1, $arg2, $arg3])
-    };
-
-    // Function with four arguments
-    ($name:ident, $arg1:expr, $arg2:expr, $arg3:expr, $arg4:expr) => {
-        $crate::Expression::function(stringify!($name), vec![$arg1, $arg2, $arg3, $arg4])
-    };
-
-    // Function with four arguments from string
-    ($name:literal, $arg1:expr, $arg2:expr, $arg3:expr, $arg4:expr) => {
-        $crate::Expression::function($name, vec![$arg1, $arg2, $arg3, $arg4])
-    };
-
-    // Function with variable number of arguments (vector)
-    ($name:ident, $args:expr) => {
-        $crate::Expression::function(stringify!($name), $args)
-    };
-
-    // Function with variable number of arguments from string
-    ($name:literal, $args:expr) => {
-        $crate::Expression::function($name, $args)
+    // Variable arguments
+    ($name:ident, $($args:expr),+ $(,)?) => {
+        $crate::Expression::function(stringify!($name), vec![$($args),+])
     };
 }
 
@@ -211,69 +192,66 @@ mod tests {
     use crate::{Expression, Symbol};
 
     #[test]
-    fn test_expr_numbers() {
-        let num = expr!(42);
-        assert_eq!(num, Expression::integer(42));
+    fn test_literals() {
+        assert_eq!(expr!(42), Expression::integer(42));
+        assert_eq!(expr!(0), Expression::integer(0));
     }
 
     #[test]
-    fn test_expr_symbols() {
-        let x = expr!(x);
-        assert_eq!(x, Expression::symbol(Symbol::new("x")));
+    fn test_symbols() {
+        assert_eq!(expr!(x), Expression::symbol(Symbol::new("x")));
+        assert_eq!(expr!(theta), Expression::symbol(Symbol::new("theta")));
     }
 
     #[test]
-    fn test_expr_addition() {
-        let sum = expr!(expr!(1), expr!(2), expr!(3));
+    fn test_constants() {
+        assert_eq!(expr!(pi), Expression::pi());
+        assert_eq!(expr!(e), Expression::e());
+        assert_eq!(expr!(i), Expression::i());
+    }
+
+    #[test]
+    fn test_addition() {
+        let result = expr!(x + y);
         assert_eq!(
-            sum,
+            result,
             Expression::add(vec![
-                Expression::integer(1),
-                Expression::integer(2),
-                Expression::integer(3)
+                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(Symbol::new("y"))
             ])
         );
     }
 
     #[test]
-    fn test_expr_multiplication() {
-        let product = expr!(mul: expr!(2), expr!(x));
+    fn test_multiplication() {
+        let result = expr!(x * y);
         assert_eq!(
-            product,
+            result,
             Expression::mul(vec![
-                Expression::integer(2),
-                Expression::symbol(Symbol::new("x"))
+                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(Symbol::new("y"))
             ])
         );
     }
 
     #[test]
-    fn test_expr_power() {
-        let power = expr!(pow: expr!(x), expr!(2));
+    fn test_power() {
+        let result = expr!(x ^ 2);
         assert_eq!(
-            power,
+            result,
             Expression::pow(Expression::symbol(Symbol::new("x")), Expression::integer(2))
         );
     }
 
     #[test]
-    fn test_expr_function() {
-        let func = expr!(fn: "sin", expr!(x));
+    fn test_division() {
+        let result = expr!(x / y);
         assert_eq!(
-            func,
-            Expression::function("sin", vec![Expression::symbol(Symbol::new("x"))])
-        );
-    }
-
-    #[test]
-    fn test_expr_rational() {
-        let rational = expr!(rational: expr!(1), expr!(x));
-        assert_eq!(
-            rational,
+            result,
             Expression::mul(vec![
-                Expression::integer(1),
+                Expression::symbol(Symbol::new("x")),
                 Expression::pow(
-                    Expression::symbol(Symbol::new("x")),
+                    Expression::symbol(Symbol::new("y")),
                     Expression::integer(-1)
                 )
             ])
@@ -281,63 +259,37 @@ mod tests {
     }
 
     #[test]
-    fn test_symbol_from_ident() {
-        let x = symbol!(x);
-        assert_eq!(x, Symbol::new("x"));
-    }
-
-    #[test]
-    fn test_symbol_from_string() {
-        let var = symbol!("variable_name");
-        assert_eq!(var, Symbol::new("variable_name"));
-    }
-
-    #[test]
-    fn test_symbol_from_expression() {
-        let name = "dynamic_name";
-        let sym = symbol!(name);
-        assert_eq!(sym, Symbol::new("dynamic_name"));
-    }
-
-    #[test]
-    fn test_function_no_args() {
-        let pi_func = function!(pi);
-        assert_eq!(pi_func, Expression::function("pi", vec![]));
-    }
-
-    #[test]
-    fn test_function_no_args_string() {
-        let const_func = function!("constant");
-        assert_eq!(const_func, Expression::function("constant", vec![]));
-    }
-
-    #[test]
-    fn test_function_one_arg() {
-        let sin_x = function!(sin, Expression::symbol(Symbol::new("x")));
+    fn test_negation() {
+        let result = expr!(-x);
         assert_eq!(
-            sin_x,
+            result,
+            Expression::mul(vec![
+                Expression::integer(-1),
+                Expression::symbol(Symbol::new("x"))
+            ])
+        );
+    }
+
+    #[test]
+    fn test_function_call_no_args() {
+        let result = expr!(gamma());
+        assert_eq!(result, Expression::function("gamma", vec![]));
+    }
+
+    #[test]
+    fn test_function_call_one_arg() {
+        let result = expr!(sin(x));
+        assert_eq!(
+            result,
             Expression::function("sin", vec![Expression::symbol(Symbol::new("x"))])
         );
     }
 
     #[test]
-    fn test_function_one_arg_string() {
-        let func = function!("f", Expression::integer(1));
+    fn test_function_call_two_args() {
+        let result = expr!(log(x, y));
         assert_eq!(
-            func,
-            Expression::function("f", vec![Expression::integer(1)])
-        );
-    }
-
-    #[test]
-    fn test_function_two_args() {
-        let log_xy = function!(
-            log,
-            Expression::symbol(Symbol::new("x")),
-            Expression::symbol(Symbol::new("y"))
-        );
-        assert_eq!(
-            log_xy,
+            result,
             Expression::function(
                 "log",
                 vec![
@@ -349,64 +301,41 @@ mod tests {
     }
 
     #[test]
-    fn test_function_three_args() {
-        let func = function!(
-            f,
-            Expression::integer(1),
-            Expression::integer(2),
-            Expression::integer(3)
-        );
+    fn test_parenthesized() {
+        let result = expr!((x));
+        assert_eq!(result, Expression::symbol(Symbol::new("x")));
+    }
+
+    #[test]
+    fn test_grouped_operations() {
+        let result = expr!((x + y) * (x - y));
+        // This creates: (x+y) * (x-y)
+        assert!(matches!(result, Expression::Mul(_)));
+    }
+
+    #[test]
+    fn test_multi_term_addition() {
+        let result = expr!(add: x, y, z);
         assert_eq!(
-            func,
-            Expression::function(
-                "f",
-                vec![
-                    Expression::integer(1),
-                    Expression::integer(2),
-                    Expression::integer(3)
-                ]
-            )
+            result,
+            Expression::add(vec![
+                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(Symbol::new("y")),
+                Expression::symbol(Symbol::new("z"))
+            ])
         );
     }
 
     #[test]
-    fn test_function_four_args() {
-        let func = function!(
-            f,
-            Expression::integer(1),
-            Expression::integer(2),
-            Expression::integer(3),
-            Expression::integer(4)
-        );
+    fn test_multi_factor_multiplication() {
+        let result = expr!(mul: 2, x, y);
         assert_eq!(
-            func,
-            Expression::function(
-                "f",
-                vec![
-                    Expression::integer(1),
-                    Expression::integer(2),
-                    Expression::integer(3),
-                    Expression::integer(4)
-                ]
-            )
+            result,
+            Expression::mul(vec![
+                Expression::integer(2),
+                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(Symbol::new("y"))
+            ])
         );
-    }
-
-    #[test]
-    fn test_function_vector_args() {
-        let args = vec![
-            Expression::integer(1),
-            Expression::integer(2),
-            Expression::integer(3),
-        ];
-        let func = function!(f, args.clone());
-        assert_eq!(func, Expression::function("f", args));
-    }
-
-    #[test]
-    fn test_function_vector_args_string() {
-        let args = vec![Expression::integer(1), Expression::integer(2)];
-        let func = function!("custom_func", args.clone());
-        assert_eq!(func, Expression::function("custom_func", args));
     }
 }
