@@ -42,7 +42,7 @@ MathHook is a high-performance educational computer algebra system (CAS) written
 These are non-negotiable architectural constraints. Violating them requires explicit discussion.
 
 #### Expression Type (32-byte hard constraint)
-- **Size**: Must remain 32 bytes for cache-line optimization
+- **Size**: Must remain 32 bytes to fit two expressions per 64-byte cache line (standard on modern CPUs)
 - **Structure**: Enum with variants for all expression types (Add, Multiply, Power, Function, Symbol, Number, etc.)
 - **Memory**: Uses `Box<T>` for recursive structures to maintain size constraint
 - **Performance Impact**: Fits in cache line; adding bytes hurts performance significantly
@@ -53,7 +53,11 @@ These are non-negotiable architectural constraints. Violating them requires expl
   - Integers (arbitrary precision via `BigInt` pointer)
   - Rationals (numerator/denominator as `BigInt` pointers)
   - Floats (f64)
-- **Operations**: All arithmetic must preserve exactness when possible (prefer rationals over floats)
+- **Operations**: All arithmetic must preserve exactness when possible
+  - **ALWAYS use rationals** for symbolic/exact arithmetic (e.g., 1/3, 2/5)
+  - **ONLY use floats** for numerical approximation or when exact representation is impossible
+  - **NEVER mix rationals and floats** in symbolic operations—convert consistently to one type
+  - When converting rational to float, document precision loss
 
 #### Symbol Type (Critical for variable handling)
 - **Purpose**: Represents mathematical variables (x, y, theta, etc.)
@@ -96,7 +100,7 @@ These are non-negotiable architectural constraints. Violating them requires expl
 2x        → 2 * x
 (a)(b)    → a * b
 2(x+1)    → 2 * (x + 1)
-sin x     → sin(x) * (no implicit multiplication before function args)
+sin(x)    → sin(x) * (no implicit multiplication before function args)
 x y       → x * y (when both are identifiers)
 2.5x      → 2.5 * x
 ```
@@ -135,7 +139,7 @@ x y       → x * y (when both are identifiers)
 // Functions
 "sin(x)cos(y)"    // Should: sin(x) * cos(y)
 "2sin(x)"         // Should: 2 * sin(x)
-"sin x"           // Should: sin(x) (NOT sin * x)
+"sin(x)"           // Should: sin(x) (NOT sin * x)
 "log(x)/log(y)"   // Should: log(x) / log(y)
 
 // Edge cases
@@ -157,15 +161,326 @@ x y       → x * y (when both are identifiers)
 
 ---
 
+## Mathematical Correctness Architecture
+
+These architectural decisions ensure mathematical correctness across all operations.
+
+### Domain and Range Handling
+
+**Critical for CAS Correctness**: Every operation must handle domain restrictions properly.
+
+**Domain Restrictions Strategy:**
+
+1. **Identify Domain** (compile-time or runtime):
+   - `sqrt(x)`: Real domain requires `x ≥ 0`; complex domain allows all `x`
+   - `log(x)`: Real domain requires `x > 0`; complex domain has branch cut on negative real axis
+   - `1/x`: Undefined at `x = 0` (pole)
+   - `tan(x)`: Undefined at `x = π/2 + nπ`
+
+2. **Handle Out-of-Domain Inputs**:
+   - **Symbolic context**: Keep expression symbolic (e.g., `sqrt(-1)` → `i` in complex domain, stays `sqrt(-1)` in real)
+   - **Numerical context**: Return error or promote to complex (based on domain setting)
+   - **NEVER produce mathematically incorrect results silently**
+
+3. **Branch Cuts** (for multi-valued functions):
+   - Document which branch is chosen (e.g., principal branch for `log`)
+   - Complex `log`: Branch cut on negative real axis
+   - Complex `sqrt`: Branch cut on negative real axis
+   - Arctrig functions: Document range
+
+4. **Undefined vs Indeterminate**:
+   - `1/0`: Undefined (pole) → error or symbolic infinity
+   - `0/0`: Indeterminate form → may require limit analysis
+   - `0^0`: Convention-dependent (often 1 in combinatorics, indeterminate in analysis)
+
+**Implementation Requirements:**
+- Use `Result<Expression, DomainError>` for operations that can fail
+- Document domain restrictions in function documentation
+- Test boundary cases extensively
+
+### Canonical Forms and Expression Equality
+
+**Critical for CAS Consistency**: Expressions must have canonical forms for reliable equality checking and simplification.
+
+**Canonical Form Rules:**
+
+1. **Commutative Operations** (`Add`, `Mul`):
+   - Sort terms/factors in consistent order (e.g., lexicographic by symbol name, then by type)
+   - Example: `y + x` → `x + y`
+   - Example: `2 * y * x` → `2 * x * y`
+
+2. **Identity Elements**:
+   - Addition: `x + 0` → `x`
+   - Multiplication: `x * 1` → `x`
+   - Exponentiation: `x^1` → `x`, `x^0` → `1` (except `0^0`)
+
+3. **Associativity Flattening**:
+   - `(a + b) + c` → `Add(a, b, c)` (flat, not nested)
+   - `(a * b) * c` → `Mul(a, b, c)` (flat, not nested)
+
+4. **Negation and Subtraction**:
+   - Subtraction as addition: `a - b` → `a + (-1 * b)`
+   - Negation as multiplication: `-x` → `(-1) * x`
+
+5. **Division and Reciprocals**:
+   - Division as multiplication: `a / b` → `a * b^(-1)`
+
+6. **Rational Numbers**:
+   - Always reduce to lowest terms: `6/4` → `3/2`
+   - Never represent as `(6) / (4)`; use `Number::Rational(3, 2)`
+
+**Expression Equality:**
+- Structural equality: After canonical form conversion, use `==` comparison
+- Symbolic equality: May require simplification + zero detection
+- Numerical equality: Epsilon comparison for floats
+
+**Implementation Requirements:**
+- Every constructor (`add`, `mul`, `pow`) should produce canonical form
+- Provide `to_canonical()` method for legacy code
+- Document canonical form in each variant's documentation
+
+### Symbol Assumptions System
+
+**Critical for Correct Simplification**: Symbols can have assumptions that affect simplification.
+
+**Assumption Types:**
+
+1. **Domain Assumptions**:
+   - `real`: Symbol represents a real number
+   - `complex`: Symbol represents a complex number
+   - `positive`: `x > 0`
+   - `negative`: `x < 0`
+   - `nonnegative`: `x ≥ 0`
+   - `nonzero`: `x ≠ 0`
+
+2. **Type Assumptions**:
+   - `integer`: Symbol is an integer
+   - `rational`: Symbol is a rational number
+   - `prime`: Symbol is a prime integer
+   - `even` / `odd`: Parity assumptions
+
+3. **Bounds Assumptions**:
+   - `bounded(a, b)`: `a ≤ x ≤ b`
+   - Useful for optimization and domain checking
+
+**Assumption Propagation:**
+
+When deriving new expressions, propagate assumptions:
+- `x > 0` and `y > 0` implies `x + y > 0` and `x * y > 0`
+- `x > 0` implies `x^2 > 0` and `sqrt(x)` is real
+- `x is_real` and `y is_real` implies `x + y is_real`
+
+**Conflict Detection:**
+
+Detect and error on conflicting assumptions:
+- `x > 0` and `x < 0` is impossible
+- `x is_integer` and `x = 1/2` is impossible
+
+**Implementation Requirements:**
+- Store assumptions in `Symbol` type
+- Check assumptions during simplification
+- Query assumptions: `symbol.is_positive()`, `symbol.is_real()`
+- Provide `with_assumption()` method
+
+### Complex Number System
+
+**Critical for Completeness**: Complex numbers are fundamental to CAS.
+
+**Complex Number Representation:**
+
+1. **Two Forms**:
+   - **Symbolic**: `a + b*i` where `a`, `b` are expressions and `i` is the imaginary unit
+   - **Explicit**: `Complex(Box<ComplexData>)` for numerical complex values
+
+2. **When to Use Each**:
+   - Symbolic `a + b*i`: For algebraic manipulation, symbolic expressions
+   - Explicit `Complex`: For numerical computation with complex numbers
+
+3. **Operations**:
+   - Addition: `(a + bi) + (c + di) = (a + c) + (b + d)i`
+   - Multiplication: `(a + bi)(c + di) = (ac - bd) + (ad + bc)i`
+   - Division: Use conjugate: `(a + bi)/(c + di) = [(a + bi)(c - di)] / (c² + d²)`
+
+**Branch Cuts and Principal Values:**
+
+For multi-valued functions, document which branch:
+- `sqrt(z)`: Principal branch, branch cut on negative real axis
+- `log(z)`: Principal branch, `log(z) = ln|z| + i*arg(z)` where `-π < arg(z) ≤ π`
+- `z^w`: Use principal branch of `log`
+
+**Real vs Complex Domain:**
+
+- Operations default to **complex-safe** (don't assume real domain unless specified)
+- `sqrt(-1)` → `i` (complex result)
+- If user wants real-only domain, provide `sqrt_real(-1)` → `Error`
+
+**Implementation Requirements:**
+- Provide `to_complex()` conversion for all expressions
+- Provide `real()` and `imag()` extraction methods
+- Handle branch cuts correctly in function evaluation
+- Test extensively with complex inputs
+
+### Error Handling Principles
+
+**Critical for Reliability**: Consistent error handling across all operations.
+
+**Error Handling Strategy:**
+
+1. **Return Types**:
+   - **Constructors** (`add`, `mul`, `pow`): Return `Expression` directly (always succeed, produce canonical form)
+   - **Evaluation** (`evaluate`, `simplify`): Return `Result<Expression, MathError>` (can fail on domain errors)
+   - **Parsing**: Return `Result<Expression, ParseError>`
+   - **Solving**: Return `Result<Vec<Expression>, SolverError>` (may have no solutions)
+
+2. **Error Types**:
+   ```rust
+   pub enum MathError {
+       DomainError { operation: String, value: Expression, reason: String },
+       DivisionByZero,
+       Undefined { expression: Expression },
+       NumericOverflow,
+       NotImplemented { feature: String },
+   }
+   ```
+
+3. **When to Error vs Return Symbolic**:
+   - **Numerical evaluation context**: Error on domain violations (e.g., `sqrt(-1).evaluate()` → `DomainError`)
+   - **Symbolic context**: Keep symbolic (e.g., `sqrt(-1)` → stays as `sqrt(-1)` or simplifies to `i`)
+   - **Division by zero**: Symbolic context → keep as `1/0` or `Infinity`; numerical context → `DivisionByZero`
+
+4. **Panic Policy**:
+   - **NEVER panic** in library code (panics are for programmer errors, not math errors)
+   - Use `Result` for all fallible operations
+   - Exception: Internal invariant violations (use `debug_assert!` and document assumptions)
+
+**Implementation Requirements:**
+- Define comprehensive error types in `core/error.rs`
+- Provide helpful error messages with context
+- Document error conditions in function documentation
+- Test error paths as thoroughly as success paths
+
+### Simplification Strategy
+
+**Critical for Correctness**: Simplification must preserve mathematical equivalence while producing canonical form.
+
+**Simplification Order** (must be followed in this order):
+
+1. **Normalize to Canonical Form**:
+   - Flatten associative operations: `(a + b) + c` → `Add(a, b, c)`
+   - Sort commutative operations: `y + x` → `x + y`
+   - Remove identity elements: `x + 0` → `x`, `x * 1` → `x`
+
+2. **Apply Algebraic Identities**:
+   - Combine like terms: `2x + 3x` → `5x`
+   - Power rules: `x^a * x^b` → `x^(a+b)`
+   - Trigonometric identities: `sin²(x) + cos²(x)` → `1`
+   - Logarithm rules: `log(a) + log(b)` → `log(a*b)`
+
+3. **Numerical Evaluation** (only if requested):
+   - Evaluate constant subexpressions: `2 + 3` → `5`
+   - Simplify exact symbolic values: `sin(π/2)` → `1`
+   - NEVER approximate unless explicitly requested
+
+**Zero Detection**:
+- Exact zero: `x - x` → `0` after simplification
+- Numerical zero: Use epsilon comparison for floats
+- Symbolic zero: May require advanced techniques (Gröbner bases, etc.)
+
+**Non-Simplification Principle**:
+- If no simplification applies, return expression unchanged
+- NEVER "simplify" in ways that make expression more complex
+- NEVER lose information (e.g., don't factor unless requested)
+
+**Implementation Requirements:**
+- Implement simplification as series of rewrite rules
+- Each rule must preserve mathematical equivalence
+- Test that `simplify(simplify(x)) == simplify(x)` (idempotent)
+- Test against SymPy for correctness
+
+### Concurrency and Thread Safety
+
+**Critical for Performance**: MathHook must support safe concurrent use.
+
+**Thread Safety Guarantees:**
+
+1. **Expression Type**:
+   - `Expression` is **immutable** after creation
+   - Safe to clone across threads (`Clone` is thread-safe)
+   - Safe to share across threads with `Arc<Expression>`
+   - All operations produce new expressions (no mutation)
+
+2. **Symbol Type**:
+   - String interning uses thread-safe interning mechanism
+   - `Symbol` is `Send + Sync`
+   - Symbol lookup is lock-free (or uses efficient read-write locks)
+
+3. **UniversalFunctionRegistry**:
+   - Global registry is **immutable** after initialization
+   - Function lookup is thread-safe (read-only)
+   - Lazy initialization uses `once_cell` or `lazy_static` for safety
+
+4. **Number Type**:
+   - `Number` is immutable
+   - `BigInt` operations are thread-safe (no shared mutable state)
+   - Arithmetic produces new `Number` instances
+
+**Parallelization Opportunities:**
+
+- Simplification of independent subexpressions (embarrassingly parallel)
+- SIMD operations for array arithmetic
+- Parallel solving of system equations
+
+**Implementation Requirements:**
+- All public types must be `Send + Sync` where applicable
+- Use `Arc` for shared ownership, never `Rc` in public API
+- Document thread-safety guarantees in type documentation
+- Test with `cargo test -- --test-threads=16`
+
+### Operator Overloading Guidelines
+
+**Design Decision**: MathHook provides BOTH explicit API and operator overloading for ergonomics.
+
+**Operator Overloading Support:**
+
+1. **Arithmetic Operators** (implement for `Expression`):
+   ```rust
+   impl Add for Expression         // x + y
+   impl Sub for Expression         // x - y
+   impl Mul for Expression         // x * y
+   impl Div for Expression         // x / y
+   impl Neg for Expression         // -x
+   // Note: ^ is not overloadable in Rust; use .pow() method
+   ```
+
+2. **When Operators Are Preferred**:
+   - In test code: `x + y` is clearer than `Expression::add(vec![x, y])`
+   - In mathematical algorithms where standard notation improves readability
+   - When chaining operations: `(x + y) * (x - y)`
+
+3. **When Explicit API Is Preferred**:
+   - Variable number of arguments: `Expression::add(vec![x, y, z, w])`
+   - Programmatic construction in loops
+   - When type inference needs help
+
+**Implementation Requirements:**
+- Operators should delegate to canonical constructors
+- Ensure operators produce canonical form
+- Document operator precedence in Rust vs mathematical precedence
+- Test operator overloading thoroughly
+
+---
+
 ## Documentation Standards (Strictly Enforced)
 
 ### Module and Function Documentation
 
 1. **Use `//!` ONLY for module documentation** (at the top of files)
 2. **Use `///` ONLY for item documentation** (functions, structs, enums, traits)
-3. **Inline `//` comments are FORBIDDEN** except for:
+3. **Minimize inline `//` comments**. Prefer documentation comments (`///`). Use inline comments only for:
    - Annotating specific mathematical formulas (e.g., `// Quadratic formula: x = (-b ± √(b²-4ac)) / 2a`)
-   - Explaining critical business logic that isn't self-evident from code
+   - Explaining algorithm rationale or mathematical properties
+   - Clarifying non-obvious edge cases or domain restrictions
+   - Avoid stating the obvious; let code be self-documenting when possible
 
 ### Documentation Requirements
 
@@ -180,7 +495,7 @@ Every public function MUST include:
 
 - **No emojis anywhere** (code, comments, documentation, commit messages)
 - **No ALL CAPS** except for constants (e.g., `const MAX_DEPTH: usize = 100;`)
-- **No TODO comments** - implement completely or don't implement at all
+- **No TODO comments for incomplete critical functionality** - implement completely or don't implement at all. TODOs for future enhancements are acceptable if current behavior is mathematically correct.
 - **No placeholder implementations** - if a function exists, it must be fully correct
 
 ### Legacy Cleanup
@@ -205,20 +520,17 @@ If you encounter violations of these rules, delete them immediately.
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::{Expression, Symbol};
+/// use mathhook_core::{expr, symbol};
 ///
-/// let x = Symbol::new("x");
-/// let expr = Expression::pow(
-///     Expression::symbol(x.clone()),
-///     Expression::integer(2)
-/// );
+/// let x = symbol!(x);
+/// let expr = expr!(x ^ 2);
 /// let derivative = expr.derivative(&x, 1);
 /// assert_eq!(derivative.to_string(), "2*x");
 /// ```
 ///
-/// # Panics
+/// # Returns
 ///
-/// Panics if `order` is 0, as the 0th derivative is the expression itself.
+/// Returns the expression itself if `order` is 0 (mathematically valid: 0th derivative equals the original function).
 pub fn derivative(&self, var: &Symbol, order: u32) -> Expression {
     // Implementation
 }
@@ -283,7 +595,9 @@ After mathematical correctness, prioritize in this exact order:
 2. **Sign errors in derivatives**: Chain rule application is error-prone for complex expressions
 3. **Domain restrictions**: Always check for division by zero, sqrt of negatives, log of non-positives
 4. **Floating point comparison**: Never use `==` for floats; use epsilon comparison or symbolic equality
-5. **Rational arithmetic overflow**: Integer operations in `Number` type can overflow; handle carefully
+5. **Rational arithmetic overflow**: Integer operations in `Number` type can overflow. Use checked arithmetic operations (`checked_add`, `checked_mul`, etc.). On overflow, promote to arbitrary precision BigInt or return an error. NEVER silently wrap.
+6. **Numerical stability**: Watch for catastrophic cancellation in subtraction (e.g., `(x + 1) - x` for large `x`). Use mathematically equivalent stable forms when possible.
+7. **Floating point special cases**: Handle `sin(π) → 0` symbolically when input is exact symbolic constant, not approximate float `0.000000000000001`. Detect exact vs approximate inputs.
 
 ### Rust-Specific Mistakes
 
@@ -356,6 +670,13 @@ MathHook provides declarative macros for ergonomic expression creation:
    }
    ```
 
+4. **Multi-term Operations**: Use explicit macro helpers for many terms
+   ```rust
+   // For many terms, use explicit helpers:
+   expr!(add: x, y, z, w)      // ✅ Clear
+   expr!(mul: 2, x, y, z)      // ✅ Clear
+   ```
+
 **Use Explicit API for:**
 
 1. **Complex Mixed Operations**: When precedence is unclear
@@ -379,13 +700,6 @@ MathHook provides declarative macros for ergonomic expression creation:
    Expression::add(terms)
    ```
 
-3. **Multi-term Operations**: Use helper variants
-   ```rust
-   // For many terms, use explicit helpers:
-   expr!(add: x, y, z, w)      // ✅ Clear
-   expr!(mul: 2, x, y, z)      // ✅ Clear
-   ```
-
 ### Macro Capabilities and Limitations
 
 **What Works Well (Use These Patterns):**
@@ -393,7 +707,7 @@ MathHook provides declarative macros for ergonomic expression creation:
 // ✅ Literals and symbols
 expr!(42)
 expr!(x)
-expr!(pi)    // Constants become zero-arg functions
+expr!(pi)    // Mathematical constants use dedicated constructors (Expression::pi(), Expression::e(), Expression::i())
 
 // ✅ Single binary operations
 expr!(x + y)
@@ -522,9 +836,9 @@ let derivative = expr!(2 * x);
 let x = symbol!(x);
 let theta = symbol!(theta);
 
-// ✅ Excellent - simple expressions are very readable
-let quadratic = expr!((a*x^2) + (b*x) + c);
-let trig_identity = expr!(sin(x)^2 + cos(x)^2);
+// ✅ Excellent - simple expressions are very readable with explicit grouping
+let quadratic = expr!((a*(x^2)) + (b*x) + c);
+let trig_identity = expr!((sin(x)^2) + (cos(x)^2));
 let derivative = expr!(2 * x);
 
 // ✅ Good - test cases are immediately understandable
@@ -644,7 +958,8 @@ let result = Expression::add(vec![
 let mut solver = MathSolver::new()
     .with_precision(1e-10)
     .with_max_iterations(1000);
-let solutions = solver.solve(&equation, &Symbol::new("x"));
+let x = symbol!(x);
+let solutions = solver.solve(&equation, &x);
 ```
 
 Choose the appropriate style for the use case. Don't force one pattern where the other is more natural.
@@ -660,6 +975,38 @@ Profile before optimizing:
 cargo bench
 cargo flamegraph --bench benchmark_name
 ```
+
+**Performance Profiling Requirements:**
+
+1. **Benchmarking Tools**:
+   - Use Criterion for microbenchmarks (`cargo bench`)
+   - Use `cargo flamegraph` for hot path identification
+   - Use `perf` on Linux for CPU profiling
+   - Use `heaptrack` or `valgrind --tool=massif` for memory profiling
+
+2. **Performance Targets**:
+   - Compare against SymPy (Python): Should be 10-100x faster
+   - Compare against Symbolica (Rust): Should be competitive (within 2x)
+   - Parse speed: >100K expressions/second for simple expressions
+   - Simplification: <1ms for expressions with <100 nodes
+   - Expression creation: <100ns (allocation overhead)
+
+3. **What to Benchmark**:
+   - Core operations: `add`, `mul`, `pow`, `simplify`
+   - Parser throughput with realistic inputs
+   - Function evaluation (both symbolic and numerical)
+   - Matrix operations at various sizes
+   - Derivative and integral computation
+
+4. **Regression Prevention**:
+   - Add benchmark for every performance-critical change
+   - CI should fail if performance regresses >10% without justification
+   - Track performance over time (benchmark history)
+
+5. **Optimization Strategy**:
+   - Profile first, optimize second
+   - Measure impact of every optimization
+   - Document optimization rationale in comments
 
 ### Memory Layout Constraints
 
@@ -686,9 +1033,14 @@ cargo flamegraph --bench benchmark_name
    - Functions called in hot loops
    - Getters and simple operations
 
-4. **Avoid Allocations**:
+4. **Compile-Time Optimization**:
+   - Use `const fn` where possible for compile-time expression evaluation
+   - Enables zero-cost symbolic constants at compile time
+   - Example: `const DERIVATIVE: Expression = expr!(2 * x);` (future goal)
+
+5. **Avoid Allocations**:
    - Prefer `&[T]` over `Vec<T>` in function signatures when not modifying
-   - Use `SmallVec` for collections with known small size (<8 elements)
+   - Consider `SmallVec` for collections with known small size (<8 elements), but benchmark first—for some workloads `Vec` is faster
    - Reuse buffers when possible
 
 ### Benchmarking Requirements
@@ -718,8 +1070,15 @@ Location: `crates/mathhook-benchmarks/benches/`
 - Test edge cases: zero, infinity, undefined, complex numbers
 - Test mathematical properties: `a + b == b + a`, `(a * b) * c == a * (b * c)`
 - Test domain boundaries: sqrt(-1), log(0), division by zero
+- Test numerical stability:
+  - Condition numbers for matrix operations
+  - Catastrophic cancellation: `(x + ε) - x` for small ε
+  - Accuracy degradation with repeated operations
+  - Overflow/underflow in intermediate calculations
+- Test against SymPy/Symbolica for correctness validation
 - Use meaningful test names: `test_quadratic_solver_handles_complex_roots`
 - Test both success and failure cases
+- Test error paths as thoroughly as success paths
 
 **DON'T**:
 - Test implementation details (test behavior, not internals)
@@ -933,6 +1292,78 @@ Active areas of development:
 - Macro system improvements (operator parsing)
 
 Check `.mathhook_sessions/` for detailed notes on specific development sessions.
+
+---
+
+## Versioning and Compatibility
+
+**Critical for Users**: Breaking changes must be communicated and managed carefully.
+
+### Semantic Versioning Strategy
+
+MathHook follows [Semantic Versioning 2.0.0](https://semver.org/):
+
+1. **MAJOR version** (e.g., 1.0.0 → 2.0.0):
+   - Breaking API changes
+   - Mathematical correctness fixes that change output format
+   - Removal of deprecated features
+   - Changes to serialization format (expressions can't be deserialized from old version)
+
+2. **MINOR version** (e.g., 1.0.0 → 1.1.0):
+   - New features (backward-compatible)
+   - New function support
+   - Performance improvements
+   - Non-breaking API additions
+
+3. **PATCH version** (e.g., 1.0.0 → 1.0.1):
+   - Bug fixes (including mathematical correctness bugs)
+   - Documentation improvements
+   - Performance optimizations (non-breaking)
+
+### Mathematical Correctness Fixes
+
+**Special Case**: Fixing a mathematical bug that changes output format:
+
+- If the old behavior was **mathematically incorrect**, this is a MAJOR version bump
+- Document the fix prominently in CHANGELOG
+- Provide migration guide if possible
+- Example: If `sqrt(4)` incorrectly returned `±2` instead of `2`, fixing this is a major version change
+
+### Serialization Compatibility
+
+**Critical for Data Persistence**:
+
+1. **Forward Compatibility**: New versions should deserialize old formats
+2. **Version Tagging**: All serialized expressions include version metadata
+3. **Migration Path**: Provide tools to migrate serialized data between major versions
+4. **Format Stability**: Within a major version, serialization format is stable
+
+### Deprecation Policy
+
+1. **Deprecation Period**: Features marked `#[deprecated]` for at least one minor version before removal
+2. **Documentation**: Clear migration path in deprecation notice
+3. **Warnings**: Compiler warnings guide users to new API
+
+### API Stability Guarantees
+
+1. **Public API** (`pub` items in `lib.rs`):
+   - Follows semantic versioning strictly
+   - Breaking changes only in major versions
+
+2. **Internal API** (non-`pub` items):
+   - No stability guarantee
+   - Can change in minor versions
+
+3. **Experimental Features** (behind feature flags):
+   - Marked as unstable in documentation
+   - Can change in minor versions
+   - Stabilized in major versions
+
+### Backward Compatibility Testing
+
+- Maintain test suite that validates behavior across versions
+- Test deserialization of expressions from previous versions
+- Document known incompatibilities in CHANGELOG
 
 ---
 
