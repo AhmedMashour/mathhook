@@ -50,25 +50,17 @@
 /// ```
 #[macro_export]
 macro_rules! expr {
-    // === Base Cases ===
+    // === Unary Operations (MUST come before base cases) ===
 
-    // Literal integer
-    ($n:literal) => {
-        $crate::Expression::integer($n)
+    // Negation: -x
+    (- $e:tt) => {
+        $crate::Expression::mul(vec![
+            $crate::Expression::integer(-1),
+            $crate::expr!($e)
+        ])
     };
 
-    // Symbol or constant
-    ($id:ident) => {{
-        // Common mathematical constants use dedicated constructors
-        match stringify!($id) {
-            "pi" => $crate::Expression::pi(),
-            "e" => $crate::Expression::e(),
-            "i" => $crate::Expression::i(),
-            _ => $crate::Expression::symbol($crate::Symbol::new(stringify!($id)))
-        }
-    }};
-
-    // === Function Calls ===
+    // === Function Calls (before base cases to avoid ambiguity) ===
 
     // Zero argument function: f()
     ($fname:ident()) => {
@@ -103,15 +95,23 @@ macro_rules! expr {
         $crate::expr!($($inner)+)
     };
 
-    // === Unary Operations ===
+    // === Base Cases ===
 
-    // Negation: -x
-    (- $e:tt) => {
-        $crate::Expression::mul(vec![
-            $crate::Expression::integer(-1),
-            $crate::expr!($e)
-        ])
+    // Literal integer
+    ($n:literal) => {
+        $crate::Expression::integer($n)
     };
+
+    // Symbol or constant
+    ($id:ident) => {{
+        // Common mathematical constants use dedicated constructors
+        match stringify!($id) {
+            "pi" => $crate::Expression::pi(),
+            "e" => $crate::Expression::e(),
+            "i" => $crate::Expression::i(),
+            _ => $crate::Expression::symbol($crate::Symbol::new(stringify!($id)))
+        }
+    }};
 
     // === Binary Operations (Single Operator) ===
 
@@ -309,7 +309,6 @@ mod tests {
     #[test]
     fn test_grouped_operations() {
         let result = expr!((x + y) * (x - y));
-        // This creates: (x+y) * (x-y)
         assert!(matches!(result, Expression::Mul(_)));
     }
 

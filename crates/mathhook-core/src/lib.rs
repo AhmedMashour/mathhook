@@ -8,7 +8,7 @@ pub mod calculus;
 pub mod core;
 pub mod educational;
 pub mod functions;
-// pub mod macros; // Temporarily disabled for parser focus
+pub mod macros;
 pub mod formatter;
 pub mod matrix;
 pub mod parser;
@@ -21,9 +21,9 @@ pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
 pub use functions::*;
-pub use parser::*;
-// pub use macros::*; // Temporarily disabled for parser focus
+pub use macros::*;
 pub use matrix::*;
+pub use parser::*;
 pub use simplify::*;
 pub use solvers::*;
 
@@ -35,8 +35,7 @@ pub mod prelude {
     };
     pub use crate::{Expression, MathConstant, Number, Symbol};
     pub use crate::{MathSolver, SolverConfig, SolverResult};
-    // Re-export all macros for convenience
-    // pub use crate::macros::*; // Temporarily disabled for parser focus
+    pub use crate::macros::*;
 }
 
 mod tests {
@@ -79,9 +78,9 @@ mod tests {
         // Test separate solver object
         let mut solver = MathSolver::new();
 
-        let equation = Expression::equation(Expression::symbol("x"), Expression::integer(42));
+        let equation = Expression::equation(expr!(x), expr!(42));
 
-        let result = solver.solve(&equation, &Symbol::new("x"));
+        let result = solver.solve(&equation, &symbol!(x));
 
         match result {
             SolverResult::Single(solution) => match solution {
@@ -104,11 +103,7 @@ mod tests {
         let start = std::time::Instant::now();
 
         for _ in 0..10000 {
-            let expr = Expression::add(vec![
-                Expression::integer(1),
-                Expression::symbol("x"),
-                Expression::integer(2),
-            ]);
+            let expr = expr!(add: 1, x, 2);
             let _simplified = expr.simplify();
         }
 

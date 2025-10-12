@@ -4,8 +4,6 @@
 //! construction more readable and concise.
 
 pub mod expressions;
-pub mod parsing;
 
 // Re-export macros at module level for convenient access
 pub use expressions::*;
-pub use parsing::*;
