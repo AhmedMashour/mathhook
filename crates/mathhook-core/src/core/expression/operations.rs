@@ -5,24 +5,131 @@
 use super::Expression;
 use crate::core::{Number, Symbol};
 use crate::matrix::unified::CoreMatrixOps;
+use crate::simplify::Simplify;
 
 impl Expression {
-    /// Check if the expression is zero (optimized)
-    #[inline(always)]
+    /// Check if the expression is zero (robust version with simplification)
+    ///
+    /// This method simplifies the expression first before checking if it equals zero.
+    /// It correctly detects zero for expressions like:
+    /// - Literal zeros: `0`, `0.0`, `0/1`
+    /// - Symbolic zeros: `x - x`, `0 * y`, `sin(0)`
+    /// - Simplified zeros: `(x + 1) - (x + 1)`
+    ///
+    /// # Performance Note
+    ///
+    /// This method calls `simplify()`, which may be expensive for complex expressions.
+    /// For performance-critical code where you only need to check literal zeros,
+    /// use `is_zero_fast()` instead.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// // Literal zero
+    /// assert!(Expression::integer(0).is_zero());
+    ///
+    /// // Symbolic zero after simplification
+    /// let expr = Expression::mul(vec![Expression::integer(0), Expression::integer(5)]);
+    /// assert!(expr.is_zero());
+    /// ```
     pub fn is_zero(&self) -> bool {
         match self {
             Expression::Number(n) => n.is_zero(),
-            _ => false,
+            _ => {
+                let simplified = self.simplify();
+                matches!(simplified, Expression::Number(n) if n.is_zero())
+            }
         }
     }
 
-    /// Check if the expression is one (optimized)
+    /// Fast literal zero check without simplification
+    ///
+    /// This is a performance-optimized version that only checks if the expression
+    /// is literally `Number(0)`. It does NOT simplify the expression first.
+    ///
+    /// Use this in performance-critical loops where you know the expression
+    /// is already in simplified form, or where you specifically want to check
+    /// for literal zeros only.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// // Detects literal zero
+    /// assert!(Expression::integer(0).is_zero_fast());
+    ///
+    /// // Does NOT detect symbolic zero
+    /// let expr = Expression::mul(vec![Expression::integer(0), Expression::integer(5)]);
+    /// assert!(!expr.is_zero_fast()); // Not yet simplified
+    /// ```
     #[inline(always)]
+    pub fn is_zero_fast(&self) -> bool {
+        matches!(self, Expression::Number(n) if n.is_zero())
+    }
+
+    /// Check if the expression is one (robust version with simplification)
+    ///
+    /// This method simplifies the expression first before checking if it equals one.
+    /// It correctly detects one for expressions like:
+    /// - Literal ones: `1`, `1.0`, `2/2`
+    /// - Symbolic ones: `x / x`, `x^0`, `cos(0)`
+    /// - Simplified ones: `(x + 1) / (x + 1)`
+    ///
+    /// # Performance Note
+    ///
+    /// This method calls `simplify()`, which may be expensive for complex expressions.
+    /// For performance-critical code where you only need to check literal ones,
+    /// use `is_one_fast()` instead.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// // Literal one
+    /// assert!(Expression::integer(1).is_one());
+    ///
+    /// // Symbolic one after simplification
+    /// let expr = Expression::pow(Expression::integer(5), Expression::integer(0));
+    /// assert!(expr.is_one());
+    /// ```
     pub fn is_one(&self) -> bool {
         match self {
             Expression::Number(n) => n.is_one(),
-            _ => false,
+            _ => {
+                let simplified = self.simplify();
+                matches!(simplified, Expression::Number(n) if n.is_one())
+            }
         }
+    }
+
+    /// Fast literal one check without simplification
+    ///
+    /// This is a performance-optimized version that only checks if the expression
+    /// is literally `Number(1)`. It does NOT simplify the expression first.
+    ///
+    /// Use this in performance-critical loops where you know the expression
+    /// is already in simplified form, or where you specifically want to check
+    /// for literal ones only.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// // Detects literal one
+    /// assert!(Expression::integer(1).is_one_fast());
+    ///
+    /// // Does NOT detect symbolic one
+    /// let expr = Expression::pow(Expression::integer(5), Expression::integer(0));
+    /// assert!(!expr.is_one_fast()); // Not yet simplified
+    /// ```
+    #[inline(always)]
+    pub fn is_one_fast(&self) -> bool {
+        matches!(self, Expression::Number(n) if n.is_one())
     }
 
     /// Get the numeric coefficient if this is a simple numeric expression

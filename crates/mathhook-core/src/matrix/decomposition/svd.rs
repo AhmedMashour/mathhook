@@ -199,7 +199,12 @@ impl Matrix {
                     }
 
                     // Condition number = max_singular_value / min_singular_value
-                    Expression::function("div", vec![max_val.clone(), min_val.clone()]).simplify()
+                    // Use canonical form for division: a / b = a * b^(-1)
+                    Expression::mul(vec![
+                        max_val.clone(),
+                        Expression::pow(min_val.clone(), Expression::integer(-1)),
+                    ])
+                    .simplify()
                 }
                 _ => Expression::integer(1),
             }

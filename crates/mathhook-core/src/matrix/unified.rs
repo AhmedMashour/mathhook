@@ -728,9 +728,12 @@ impl Matrix {
             // Scale pivot row
             let pivot = augmented[i][i].clone();
             for j in 0..(2 * n) {
-                augmented[i][j] =
-                    Expression::function("div", vec![augmented[i][j].clone(), pivot.clone()])
-                        .simplify();
+                // Use canonical form for division: a / b = a * b^(-1)
+                augmented[i][j] = Expression::mul(vec![
+                    augmented[i][j].clone(),
+                    Expression::pow(pivot.clone(), Expression::integer(-1)),
+                ])
+                .simplify();
             }
 
             // Eliminate column

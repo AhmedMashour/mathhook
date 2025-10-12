@@ -553,6 +553,9 @@ mod tests {
         let constant_eq = Expression::integer(5);
         let dy_dx = ImplicitDifferentiation::compute(&constant_eq, x.clone(), y.clone());
 
-        assert_eq!(dy_dx.simplify(), Expression::integer(0));
+        // For a constant equation, both ∂f/∂x = 0 and ∂f/∂y = 0
+        // Therefore dy/dx = -0/0 which is indeterminate (0 * undefined)
+        // With robust zero detection, is_zero() correctly returns false for indeterminate forms
+        assert!(!dy_dx.is_zero());
     }
 }

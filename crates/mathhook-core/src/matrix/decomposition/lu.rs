@@ -102,8 +102,12 @@ impl Matrix {
 
             // Eliminate below pivot
             for i in (k + 1)..n {
-                let factor = Expression::function("div", vec![a.get_element(i, k), pivot.clone()])
-                    .simplify();
+                // Use canonical form for division: a / b = a * b^(-1)
+                let factor = Expression::mul(vec![
+                    a.get_element(i, k),
+                    Expression::pow(pivot.clone(), Expression::integer(-1)),
+                ])
+                .simplify();
 
                 // Update row i: row_i = row_i - factor * row_k
                 for j in k..n {

@@ -107,9 +107,12 @@ impl Matrix {
                     ])
                     .simplify();
 
-                    l_elements[i][j] =
-                        Expression::function("div", vec![numerator, l_elements[j][j].clone()])
-                            .simplify();
+                    // Use canonical form for division: a / b = a * b^(-1)
+                    l_elements[i][j] = Expression::mul(vec![
+                        numerator,
+                        Expression::pow(l_elements[j][j].clone(), Expression::integer(-1)),
+                    ])
+                    .simplify();
                 }
             }
         }

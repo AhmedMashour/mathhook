@@ -187,25 +187,20 @@ impl Matrix {
 
         let sqrt_discriminant = Expression::pow(discriminant, Expression::rational(1, 2));
 
-        let lambda1 = Expression::function(
-            "div",
-            vec![
-                Expression::add(vec![trace.clone(), sqrt_discriminant.clone()]),
-                Expression::integer(2),
-            ],
-        )
+        // Use canonical form for division: a / b = a * b^(-1)
+        let lambda1 = Expression::mul(vec![
+            Expression::add(vec![trace.clone(), sqrt_discriminant.clone()]),
+            Expression::pow(Expression::integer(2), Expression::integer(-1)),
+        ])
         .simplify();
 
-        let lambda2 = Expression::function(
-            "div",
-            vec![
-                Expression::add(vec![
-                    trace,
-                    Expression::mul(vec![Expression::integer(-1), sqrt_discriminant]),
-                ]),
-                Expression::integer(2),
-            ],
-        )
+        let lambda2 = Expression::mul(vec![
+            Expression::add(vec![
+                trace,
+                Expression::mul(vec![Expression::integer(-1), sqrt_discriminant]),
+            ]),
+            Expression::pow(Expression::integer(2), Expression::integer(-1)),
+        ])
         .simplify();
 
         Some(EigenDecomposition {
@@ -285,8 +280,12 @@ impl Matrix {
             }
 
             for i in 0..n {
-                v_new[i] =
-                    Expression::function("div", vec![v_new[i].clone(), norm.clone()]).simplify();
+                // Use canonical form for division: a / b = a * b^(-1)
+                v_new[i] = Expression::mul(vec![
+                    v_new[i].clone(),
+                    Expression::pow(norm.clone(), Expression::integer(-1)),
+                ])
+                .simplify();
             }
 
             // Simplified convergence check - just check if we've done enough iterations

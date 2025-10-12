@@ -88,8 +88,13 @@ impl Matrix {
             // Normalize column to get q_j
             let mut q_column = Vec::new();
             for i in 0..rows {
+                // Use canonical form for division: a / b = a * b^(-1)
                 q_column.push(
-                    Expression::function("div", vec![column[i].clone(), norm.clone()]).simplify(),
+                    Expression::mul(vec![
+                        column[i].clone(),
+                        Expression::pow(norm.clone(), Expression::integer(-1)),
+                    ])
+                    .simplify(),
                 );
             }
             q_columns.push(q_column);
