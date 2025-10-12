@@ -937,6 +937,76 @@ let derivative = Expression::mul(vec![
 let derivative = expr!(2 * x);
 ```
 
+### Critical Migration Pitfalls (Learn from Experience)
+
+**These are common errors discovered during macro migration. Avoid them!**
+
+#### 1. **Runtime Variables Cannot Use Macros**
+
+```rust
+// ❌ DOES NOT COMPILE - 'i' is a runtime variable
+for i in 0..10 {
+    let expr = expr!(i);  // Error: macro sees token "i", not the value
+}
+
+// ✅ CORRECT - Use explicit API
+for i in 0..10 {
+    let expr = Expression::integer(i);
+}
+
+// ❌ DOES NOT COMPILE - 'point' is a variable
+let point = 42;
+let expr = expr!(point);  // Creates Symbol::new("point"), not integer 42!
+
+// ✅ CORRECT
+let point = 42;
+let expr = Expression::integer(point);
+```
+
+**Why:** Macros expand at compile time and see **tokens**, not **values**. The identifier `i` or `point` is just a name to the macro, not the runtime value it will hold.
+
+**Rule:** If the value comes from a variable, loop, or conditional → use explicit API
+
+#### 2. **Cannot Nest Macro Calls**
+
+```rust
+// ❌ DOES NOT COMPILE - Nested expr!() calls
+let expr = expr!(add: expr!(2 * x), expr!(4));
+
+// ✅ CORRECT - Use direct patterns
+let expr = expr!(add: (2 * x), 4);
+
+// ✅ ALSO CORRECT - Use intermediate variables
+let term1 = expr!(2 * x);
+let term2 = expr!(4);
+let expr = expr!(add: term1, term2);
+```
+
+**Why:** The macro pattern matcher sees `expr!()` as tokens, not as expressions to evaluate first.
+
+**Rule:** Never nest `expr!()` inside `expr!()` arguments
+
+#### 3. **Variable Names vs Values Confusion**
+
+```rust
+let a_val = 12;
+let b_val = 18;
+
+// ❌ WRONG - Creates Symbol::new("a_val") and Symbol::new("b_val")
+let a = expr!(a_val);
+let b = expr!(b_val);
+
+// ✅ CORRECT - Use values directly
+let a = Expression::integer(a_val);
+let b = Expression::integer(b_val);
+
+// ✅ ALSO CORRECT - If you actually want symbols named 'a' and 'b'
+let a = symbol!(a);
+let b = symbol!(b);
+```
+
+**Rule:** The macro sees **names**, not **values**. If it's a variable holding a value → explicit API.
+
 ### Examples of Good Macro Usage
 
 ```rust
@@ -970,21 +1040,19 @@ fn test_derivative_power_rule() {
 // ✅ Good - explicit grouping for complex expressions
 let complex = expr!((2*x + 1) * (3*y - 2));
 
-// ⚠️ Acceptable - multi-term with explicit helper
-let polynomial = expr!(add: 
-    expr!(x ^ 3),
-    expr!(-2 * (x ^ 2)),
-    expr!(3 * x),
-    expr!(-5)
-);
+// ✅ Good - multi-term with direct patterns (no nesting)
+let polynomial = expr!(add: (x ^ 3), (-2 * (x ^ 2)), (3 * x), -5);
 
-// ❌ Avoid - macro doesn't improve clarity here
+// ❌ Avoid - nested expr!() calls don't work
+let polynomial = expr!(add: expr!(x ^ 3), expr!(-2 * (x ^ 2)));  // Won't compile!
+
+// ❌ Avoid - runtime variables in macros
 let programmatic = {
     let mut terms = Vec::new();
     for i in 0..n {
-        terms.push(expr!(mul: expr!(coef), expr!(x ^ i)));  // Awkward
+        terms.push(expr!(i));  // Won't work! 'i' is runtime variable
     }
-    Expression::add(terms)  // Just use explicit API
+    Expression::add(terms)
 };
 
 // ✅ Better - use explicit API for programmatic construction

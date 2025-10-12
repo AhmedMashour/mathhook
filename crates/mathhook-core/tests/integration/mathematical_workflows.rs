@@ -4,6 +4,7 @@
 //! ensuring all components work together correctly.
 
 use mathhook_core::prelude::*;
+use mathhook_core::{expr, symbol};
 use std::time::Instant;
 
 /// Complete polynomial manipulation workflows
@@ -13,7 +14,7 @@ mod polynomial_workflows {
     #[test]
     fn test_quadratic_formula_verification_workflow() {
         /// Complete workflow: construct quadratic, verify solutions
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test case: x² - 5x + 6 = 0, solutions should be x = 2, 3
         let quadratic = Expression::add(vec![
@@ -49,7 +50,7 @@ mod polynomial_workflows {
     #[test]
     fn test_polynomial_evaluation_workflow() {
         /// Test complete polynomial evaluation at multiple points
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Polynomial: 2x³ - 3x² + x - 5
         let polynomial = Expression::add(vec![
@@ -104,7 +105,7 @@ mod polynomial_workflows {
     #[test]
     fn test_polynomial_arithmetic_workflow() {
         /// Test polynomial addition and multiplication workflow
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // P(x) = x² + 2x + 1
         let p = Expression::add(vec![
@@ -232,7 +233,7 @@ mod rational_workflows {
     fn test_rational_equation_workflow() {
         /// Test solving rational equations through verification
         // Equation: 1/x = 1/2, solution: x = 2
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let solution = Expression::integer(2);
 
         // Verify: 1/2 = 1/2
@@ -326,7 +327,7 @@ mod gcd_lcm_workflows {
     #[test]
     fn test_polynomial_gcd_workflow() {
         /// Test polynomial GCD workflow
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test with simple polynomial case: gcd(6x, 9x) should have common factor
         let poly_a = Expression::mul(vec![Expression::integer(6), Expression::symbol(x.clone())]);
@@ -385,7 +386,7 @@ mod solver_workflows {
     #[test]
     fn test_basic_equation_solving_workflow() {
         /// Test complete equation solving workflow
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Simple equation: x = 5
         let simple_equation =
@@ -445,7 +446,7 @@ mod solver_workflows {
     #[test]
     fn test_multiple_equation_workflow() {
         /// Test handling multiple different equation types
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let mut solver = MathSolver::new();
 
         let equations = vec![
@@ -501,7 +502,7 @@ mod performance_integration {
         /// Test performance of complex mathematical workflows
         let start = Instant::now();
 
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let iterations = 100;
 
         for i in 1..=iterations {
@@ -579,8 +580,8 @@ mod performance_integration {
         /// Test complete mathematical pipeline from construction to result
         let start = Instant::now();
 
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Stage 1: Construct complex expression
         let complex_expr = Expression::add(vec![
@@ -704,7 +705,7 @@ mod cross_component_integration {
     #[test]
     fn test_symbolic_numeric_integration() {
         /// Test integration between symbolic and numeric operations
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let symbolic_expr =
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(5)]);
 
