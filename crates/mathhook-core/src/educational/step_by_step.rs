@@ -614,10 +614,11 @@ impl Default for StepByStepBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{symbol, Expression};
 
     #[test]
     fn test_step_by_step_explanation() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::add(vec![
             Expression::integer(2),
             Expression::integer(3),
@@ -638,7 +639,7 @@ mod tests {
 
     #[test]
     fn test_latex_generation() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
         let latex = expr.to_latex(None).unwrap();
@@ -659,7 +660,7 @@ mod tests {
 
         // Test variable
         let expr = Expression::from_latex("x").unwrap();
-        assert_eq!(expr, Expression::symbol(Symbol::new("x")));
+        assert_eq!(expr, Expression::symbol(symbol!(x)));
 
         // Test fraction
         let expr = Expression::from_latex("\\frac{3}{4}").unwrap();
@@ -689,7 +690,7 @@ mod tests {
     fn test_step_builder() {
         let mut builder = StepByStepBuilder::new();
 
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let initial = Expression::add(vec![
             Expression::symbol(x.clone()),
             Expression::integer(0)

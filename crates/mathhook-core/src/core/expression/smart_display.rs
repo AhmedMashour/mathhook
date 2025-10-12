@@ -6,7 +6,7 @@
 use super::Expression;
 use std::fmt;
 
-/// High-performance smart display utilities
+/// Smart display utilities
 ///
 /// Provides O(1) pattern detection and minimal memory allocation
 /// for natural mathematical notation display.
@@ -180,7 +180,7 @@ impl SmartDisplayFormatter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{Expression, Symbol};
+    use crate::{symbol, Expression};
 
     #[test]
     fn test_negative_one_detection() {
@@ -193,15 +193,12 @@ mod tests {
 
     #[test]
     fn test_subtraction_pattern_detection() {
-        let factors = vec![
-            Expression::integer(-1),
-            Expression::symbol(Symbol::new("y")),
-        ];
+        let factors = vec![Expression::integer(-1), Expression::symbol(symbol!(y))];
         assert!(SmartDisplayFormatter::is_negative_one_multiplication(
             &factors
         ));
 
-        let factors = vec![Expression::integer(2), Expression::symbol(Symbol::new("y"))];
+        let factors = vec![Expression::integer(2), Expression::symbol(symbol!(y))];
         assert!(!SmartDisplayFormatter::is_negative_one_multiplication(
             &factors
         ));
@@ -209,17 +206,14 @@ mod tests {
 
     #[test]
     fn test_positive_part_extraction() {
-        let factors = vec![
-            Expression::integer(-1),
-            Expression::symbol(Symbol::new("y")),
-        ];
+        let factors = vec![Expression::integer(-1), Expression::symbol(symbol!(y))];
         let result = SmartDisplayFormatter::extract_positive_part(&factors);
         assert_eq!(result, "y");
 
         let factors = vec![
             Expression::integer(-1),
-            Expression::symbol(Symbol::new("x")),
-            Expression::symbol(Symbol::new("y")),
+            Expression::symbol(symbol!(x)),
+            Expression::symbol(symbol!(y)),
         ];
         let result = SmartDisplayFormatter::extract_positive_part(&factors);
         assert_eq!(result, "x * y");
@@ -229,18 +223,15 @@ mod tests {
     fn test_division_pattern_detection() {
         // Test x * y^(-1) pattern
         let factors = vec![
-            Expression::symbol(Symbol::new("x")),
-            Expression::pow(
-                Expression::symbol(Symbol::new("y")),
-                Expression::integer(-1),
-            ),
+            Expression::symbol(symbol!(x)),
+            Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(-1)),
         ];
         assert!(SmartDisplayFormatter::is_division_pattern(&factors));
 
         // Test regular multiplication
         let factors = vec![
-            Expression::symbol(Symbol::new("x")),
-            Expression::symbol(Symbol::new("y")),
+            Expression::symbol(symbol!(x)),
+            Expression::symbol(symbol!(y)),
         ];
         assert!(!SmartDisplayFormatter::is_division_pattern(&factors));
     }
@@ -248,19 +239,16 @@ mod tests {
     #[test]
     fn test_division_parts_extraction() {
         let factors = vec![
-            Expression::symbol(Symbol::new("x")),
-            Expression::pow(
-                Expression::symbol(Symbol::new("y")),
-                Expression::integer(-1),
-            ),
+            Expression::symbol(symbol!(x)),
+            Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(-1)),
         ];
 
         let result = SmartDisplayFormatter::extract_division_parts(&factors);
         assert!(result.is_some());
 
         if let Some((dividend, divisor)) = result {
-            assert_eq!(dividend, &Expression::symbol(Symbol::new("x")));
-            assert_eq!(divisor, &Expression::symbol(Symbol::new("y")));
+            assert_eq!(dividend, &Expression::symbol(symbol!(x)));
+            assert_eq!(divisor, &Expression::symbol(symbol!(y)));
         }
     }
 
@@ -269,17 +257,14 @@ mod tests {
         // Test negated expression detection
         let negated = Expression::mul(vec![
             Expression::integer(-1),
-            Expression::symbol(Symbol::new("x")),
+            Expression::symbol(symbol!(x)),
         ]);
         assert!(SmartDisplayFormatter::is_negated_expression(&negated));
 
         // Test division expression detection
         let division = Expression::mul(vec![
-            Expression::symbol(Symbol::new("x")),
-            Expression::pow(
-                Expression::symbol(Symbol::new("y")),
-                Expression::integer(-1),
-            ),
+            Expression::symbol(symbol!(x)),
+            Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(-1)),
         ]);
         assert!(SmartDisplayFormatter::is_division_expression(&division));
     }

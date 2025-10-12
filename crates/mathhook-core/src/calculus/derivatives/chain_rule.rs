@@ -1,8 +1,8 @@
 //! Chain rule implementation for function derivatives
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 use crate::MathConstant;
 
 /// Chain rule implementation for function derivatives
@@ -14,10 +14,11 @@ impl ChainRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let result = expr.derivative(x);
     /// ```
@@ -34,9 +35,10 @@ impl ChainRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let arg = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = ChainRule::apply("sin", &arg, x);
     /// ```
@@ -57,9 +59,10 @@ impl FunctionDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let arg = Expression::symbol(x.clone());
     /// let result = FunctionDerivatives::get("sin", &arg, x);
     /// ```

@@ -8,9 +8,8 @@ pub use latex::LaTeXFormatter;
 pub use simple::SimpleFormatter;
 pub use wolfram::WolframFormatter;
 
-use std::fmt;
-
 use crate::core::Expression;
+use std::fmt;
 /// Mathematical language/format for expressions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MathLanguage {
@@ -152,9 +151,9 @@ impl Expression {
     /// # Examples
     /// ```rust
     /// use mathhook_core::core::Expression;
-    /// use mathhook_core::core::Symbol;
+    /// use mathhook_core::symbol;
     ///
-    /// let expr = Expression::symbol(Symbol::new("x"));
+    /// let expr = Expression::symbol(symbol!(x));
     /// let formatted = expr.format().unwrap();
     /// // Returns LaTeX formatted string
     /// ```
@@ -169,9 +168,9 @@ impl Expression {
     /// ```rust
     /// use mathhook_core::core::Expression;
     /// use mathhook_core::formatter::MathLanguage;
-    /// use mathhook_core::core::Symbol;
+    /// use mathhook_core::symbol;
     ///
-    /// let expr = Expression::symbol(Symbol::new("x"));
+    /// let expr = Expression::symbol(symbol!(x));
     /// let latex = expr.format_as(MathLanguage::LaTeX).unwrap();
     /// let simple = expr.format_as(MathLanguage::Simple).unwrap();
     /// let wolfram = expr.format_as(MathLanguage::Wolfram).unwrap();
@@ -208,7 +207,8 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::{Expression, Symbol};
+    use crate::core::Expression;
+    use crate::symbol;
 
     /// Test context that defaults to LaTeX
     #[derive(Debug, Default, Clone)]
@@ -218,7 +218,7 @@ mod tests {
 
     #[test]
     fn test_format_defaults_to_latex() {
-        let expr = Expression::symbol(Symbol::new("x"));
+        let expr = Expression::symbol(symbol!(x));
         let context = TestContext::default();
 
         // Should use LaTeX formatting by default
@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn test_format_without_context() {
-        let expr = Expression::symbol(Symbol::new("x"));
+        let expr = Expression::symbol(symbol!(x));
 
         // Should work without providing context (defaults to LaTeX)
         let result = expr.format();
@@ -264,7 +264,7 @@ mod tests {
 
         // Test relation formatting
         let relation = Expression::relation(
-            Expression::symbol(Symbol::new("x")),
+            Expression::symbol(symbol!(x)),
             Expression::integer(5),
             RelationType::Greater,
         );
@@ -279,8 +279,8 @@ mod tests {
         // Test piecewise formatting
         let piecewise = Expression::piecewise(
             vec![
-                (Expression::symbol(Symbol::new("x")), Expression::integer(1)),
-                (Expression::symbol(Symbol::new("y")), Expression::integer(2)),
+                (Expression::symbol(symbol!(x)), Expression::integer(1)),
+                (Expression::symbol(symbol!(y)), Expression::integer(2)),
             ],
             Some(Expression::integer(0)),
         );

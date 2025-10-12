@@ -2,9 +2,9 @@
 //!
 //! Handles differentiation of vector-valued functions r(t) = [x(t), y(t), z(t)]
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Vector-valued function differentiation
 pub struct VectorValuedDifferentiation;
@@ -15,10 +15,11 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::function("cos", vec![Expression::symbol(t.clone())]),
     ///     Expression::function("sin", vec![Expression::symbol(t.clone())]),
@@ -41,10 +42,11 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::pow(Expression::symbol(t.clone()), Expression::integer(2)),
     ///     Expression::symbol(t.clone()),
@@ -62,10 +64,11 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::pow(Expression::symbol(t.clone()), Expression::integer(4)),
     ///     Expression::pow(Expression::symbol(t.clone()), Expression::integer(3))
@@ -125,7 +128,7 @@ impl VectorValuedDifferentiation {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::function("cos", vec![Expression::symbol(t.clone())]),
     ///     Expression::function("sin", vec![Expression::symbol(t.clone())]),
@@ -147,10 +150,11 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::symbol(t.clone()),
     ///     Expression::pow(Expression::symbol(t.clone()), Expression::integer(2)),
@@ -205,10 +209,11 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::function("cos", vec![Expression::symbol(t.clone())]),
     ///     Expression::function("sin", vec![Expression::symbol(t.clone())]),
@@ -271,19 +276,6 @@ impl VectorValuedDifferentiation {
         ])
     }
 
-    /// Cross product magnitude for 2D
-    fn cross_product_magnitude_optimized(v1: &[Expression], v2: &[Expression]) -> Expression {
-        if v1.len() >= 2 && v2.len() >= 2 {
-            Expression::add(vec![
-                Expression::mul(vec![v1[0].clone(), v2[1].clone()]),
-                Expression::mul(vec![Expression::integer(-1), v1[1].clone(), v2[0].clone()]),
-            ])
-            .simplify()
-        } else {
-            Expression::integer(0)
-        }
-    }
-
     /// 3D cross product
     fn cross_product_3d_optimized(v1: &[Expression], v2: &[Expression]) -> Vec<Expression> {
         if v1.len() >= 3 && v2.len() >= 3 {
@@ -336,10 +328,11 @@ struct FullDerivativeCache {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_linear_vector_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::symbol(t.clone()),
@@ -357,7 +350,7 @@ mod tests {
 
     #[test]
     fn test_polynomial_vector_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::pow(Expression::symbol(t.clone()), Expression::integer(2)),
@@ -375,7 +368,7 @@ mod tests {
 
     #[test]
     fn test_trigonometric_vector_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("cos", vec![Expression::symbol(t.clone())]),
@@ -393,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_exponential_vector_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("exp", vec![Expression::symbol(t.clone())]),
@@ -409,7 +402,7 @@ mod tests {
 
     #[test]
     fn test_second_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::pow(Expression::symbol(t.clone()), Expression::integer(3)),
@@ -435,7 +428,7 @@ mod tests {
 
     #[test]
     fn test_nth_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::pow(Expression::symbol(t.clone()), Expression::integer(4)),
@@ -456,7 +449,7 @@ mod tests {
 
     #[test]
     fn test_zero_order_derivative() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![Expression::symbol(t.clone()), Expression::integer(5)];
 
@@ -481,7 +474,7 @@ mod tests {
 
     #[test]
     fn test_unit_tangent_vector() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("cos", vec![Expression::symbol(t.clone())]),
@@ -497,7 +490,7 @@ mod tests {
 
     #[test]
     fn test_curvature_2d() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::symbol(t.clone()),
@@ -510,7 +503,7 @@ mod tests {
 
     #[test]
     fn test_curvature_3d() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("cos", vec![Expression::symbol(t.clone())]),
@@ -524,7 +517,7 @@ mod tests {
 
     #[test]
     fn test_torsion_3d() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("cos", vec![Expression::symbol(t.clone())]),
@@ -538,7 +531,7 @@ mod tests {
 
     #[test]
     fn test_torsion_2d_returns_zero() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::symbol(t.clone()),
@@ -551,7 +544,7 @@ mod tests {
 
     #[test]
     fn test_constant_vector() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::integer(1),
@@ -569,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_mixed_functions_vector() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::pow(Expression::symbol(t.clone()), Expression::integer(2)),
@@ -587,7 +580,7 @@ mod tests {
 
     #[test]
     fn test_helix_curve() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::function("cos", vec![Expression::symbol(t.clone())]),
@@ -612,7 +605,7 @@ mod tests {
 
     #[test]
     fn test_parametric_surface_normal() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![
             Expression::mul(vec![
@@ -635,7 +628,7 @@ mod tests {
 
     #[test]
     fn test_single_component_vector() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components = vec![Expression::pow(
             Expression::symbol(t.clone()),
@@ -650,7 +643,7 @@ mod tests {
 
     #[test]
     fn test_empty_vector() {
-        let t = Symbol::new("t");
+        let t = symbol!(t);
 
         let components: Vec<Expression> = vec![];
 

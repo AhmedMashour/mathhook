@@ -204,13 +204,12 @@ impl Neg for &Expression {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::core::Symbol;
+    use crate::{symbol, Expression};
 
     #[test]
     fn test_addition() {
-        let x = Expression::symbol(Symbol::new("x"));
-        let y = Expression::symbol(Symbol::new("y"));
+        let x = Expression::symbol(symbol!(x));
+        let y = Expression::symbol(symbol!(y));
         let sum = &x + &y;
 
         assert!(matches!(sum, Expression::Add(_)));
@@ -218,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_multiplication() {
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
         let two = Expression::integer(2);
         let product = &x * &two;
 
@@ -227,7 +226,7 @@ mod tests {
 
     #[test]
     fn test_integer_ops() {
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
         let sum = &x + 5;
         let product = 3 * &x;
 
@@ -237,7 +236,7 @@ mod tests {
 
     #[test]
     fn test_negation() {
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
         let neg_x = -&x;
 
         assert!(matches!(neg_x, Expression::Mul(_)));

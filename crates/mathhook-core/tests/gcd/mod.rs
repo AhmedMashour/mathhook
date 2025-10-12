@@ -314,7 +314,7 @@ mod polynomial_gcd {
 
     #[test]
     fn test_polynomial_gcd_simple() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test GCD of x and x (should be x)
         let expr = Expression::symbol(x.clone());
@@ -326,7 +326,7 @@ mod polynomial_gcd {
     #[test]
     fn test_polynomial_gcd_with_coefficients() {
         /// Test polynomial GCD: gcd(6x, 9x) should have common factor
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let poly_a = Expression::mul(vec![Expression::integer(6), Expression::symbol(x.clone())]);
         let poly_b = Expression::mul(vec![Expression::integer(9), Expression::symbol(x.clone())]);

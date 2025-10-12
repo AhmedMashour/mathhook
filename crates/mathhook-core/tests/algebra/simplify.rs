@@ -87,8 +87,8 @@ mod algebraic_identities {
         let test_expressions = vec![
             (Expression::integer(42), Expression::integer(42)), // 42 + 0 = 42
             (
-                Expression::symbol(Symbol::new("x")),
-                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(symbol!(x)),
+                Expression::symbol(symbol!(x)),
             ), // x + 0 = x
             // Note: 2+3 + 0 = 5 (our CAS correctly simplifies this to the mathematically superior result)
             (
@@ -127,7 +127,7 @@ mod algebraic_identities {
         /// Mathematical law: a * 1 = 1 * a = a (multiplicative identity)
         let test_expressions = vec![
             Expression::integer(42),
-            Expression::symbol(Symbol::new("x")),
+            Expression::symbol(symbol!(x)),
         ];
 
         let one = Expression::integer(1);
@@ -160,10 +160,10 @@ mod algebraic_identities {
         /// Mathematical law: a * 0 = 0 * a = 0 (multiplicative zero)
         let test_expressions = vec![
             Expression::integer(42),
-            Expression::symbol(Symbol::new("x")),
+            Expression::symbol(symbol!(x)),
             Expression::add(vec![
                 Expression::integer(2),
-                Expression::symbol(Symbol::new("y")),
+                Expression::symbol(symbol!(y)),
             ]),
         ];
 
@@ -193,7 +193,7 @@ mod algebraic_identities {
     #[test]
     fn test_power_identity_laws() {
         /// Mathematical laws: a^0 = 1, a^1 = a, 1^n = 1, 0^n = 0 (n > 0)
-        let test_bases = vec![Expression::integer(5), Expression::symbol(Symbol::new("x"))];
+        let test_bases = vec![Expression::integer(5), Expression::symbol(symbol!(x))];
 
         let zero = Expression::integer(0);
         let one = Expression::integer(1);
@@ -431,7 +431,7 @@ mod edge_cases {
     #[test]
     fn test_zero_cancellation() {
         /// Test that adding zero doesn't change results
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let var = Expression::symbol(x.clone());
 
         let expr_with_zeros = Expression::add(vec![

@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_targeted_rational() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::mul(vec![
         Expression::number(Number::rational(

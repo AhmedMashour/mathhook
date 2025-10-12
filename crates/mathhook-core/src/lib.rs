@@ -7,9 +7,9 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+pub mod formatter;
 pub mod functions;
 pub mod macros;
-pub mod formatter;
 pub mod matrix;
 pub mod parser;
 pub mod serialize;
@@ -29,13 +29,14 @@ pub use solvers::*;
 
 /// Convenience prelude for common imports
 pub mod prelude {
+    pub use crate::macros::*;
+    pub use crate::{expr, function, parse, symbol};
     pub use crate::{
         AdvancedSimplify, Collect, ComplexOperations, Expand, Factor, PolynomialGcd,
         RationalSimplify, Simplify, ZeroDetection,
     };
     pub use crate::{Expression, MathConstant, Number, Symbol};
     pub use crate::{MathSolver, SolverConfig, SolverResult};
-    pub use crate::macros::*;
 }
 
 mod tests {

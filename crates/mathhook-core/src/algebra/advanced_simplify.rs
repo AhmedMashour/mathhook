@@ -452,7 +452,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_factorial_computation() {
@@ -484,7 +484,7 @@ mod tests {
         assert_eq!(result, Expression::integer(0));
 
         // Test ln(exp(x)) = x
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::ln(Expression::function(
             "exp",
             vec![Expression::symbol(x.clone())],
@@ -548,7 +548,7 @@ mod tests {
     #[test]
     fn test_advanced_zero_detection() {
         // Test complex zero detection
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::add(vec![
             Expression::integer(4),
             Expression::mul(vec![Expression::integer(4), Expression::symbol(x.clone())]),

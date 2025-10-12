@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_power_simplification() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test x^0 = 1
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(0));
@@ -29,8 +29,8 @@ fn test_power_simplification() {
 
 #[test]
 fn test_distribute_multiplication() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Test basic distribution patterns
     let expr = Expression::mul(vec![
@@ -50,7 +50,7 @@ fn test_distribute_multiplication() {
 
 #[test]
 fn test_algebraic_manipulation_patterns() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test (x^2)^(1/2) - should be handled carefully
     let expr = Expression::pow(
@@ -71,7 +71,7 @@ fn test_algebraic_manipulation_patterns() {
 #[test]
 fn test_historic_50_percent_milestone() {
     // Commemorating our 50% SymPy coverage milestone
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::pow(
         Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
@@ -90,7 +90,7 @@ fn test_historic_50_percent_milestone() {
 
 #[test]
 fn test_simplify_zero_expressions() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test expressions that should simplify to zero
     let expr = Expression::add(vec![
@@ -121,7 +121,7 @@ fn test_simplify_zero_expressions() {
 
 #[test]
 fn test_advanced_power_patterns() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test x^2 * x^3 = x^5 (if implemented)
     let expr = Expression::mul(vec![
@@ -148,7 +148,7 @@ fn test_advanced_power_patterns() {
 
 #[test]
 fn test_ultimate_power_mastery() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test complex power expression: x^(-2) * x^3 = x
     let expr = Expression::mul(vec![
@@ -180,8 +180,8 @@ fn test_ultimate_power_mastery() {
 
 #[test]
 fn test_ultimate_power_combinations() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Test mixed power operations
     let expr = Expression::add(vec![
@@ -218,7 +218,7 @@ fn test_ultimate_power_combinations() {
 
 #[test]
 fn test_ultimate_100_percent_operation_2() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Ultimate power test for 100% coverage
     let expr = Expression::pow(
@@ -270,7 +270,7 @@ fn test_numeric_powers() {
 
 #[test]
 fn test_power_edge_cases() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test 0^0 (mathematically undefined, but often treated as 1)
     let expr = Expression::pow(Expression::integer(0), Expression::integer(0));

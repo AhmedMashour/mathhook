@@ -1,7 +1,6 @@
 //! Rational expression operations and simplification
 //! Handles rational functions, fraction simplification, and rational arithmetic
 
-use crate::algebra::gcd::PolynomialGcd;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -365,7 +364,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_rational_detection() {
@@ -402,7 +401,7 @@ mod tests {
 
     #[test]
     fn test_rational_simplification() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test x^(-1) = 1/x
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
@@ -432,7 +431,7 @@ mod tests {
 
     #[test]
     fn test_common_factor_cancellation() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test (6x) / (9x) = 2/3 (if implemented)
         let numerator =
@@ -449,7 +448,7 @@ mod tests {
 
     #[test]
     fn test_extract_rational_coefficient() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::mul(vec![
             Expression::number(Number::rational(BigRational::new(

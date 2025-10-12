@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_simplify_steps() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::integer(2),
@@ -20,7 +20,7 @@ fn test_simplify_steps() {
 
 #[test]
 fn test_detailed_steps() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::mul(vec![
         Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
@@ -35,7 +35,7 @@ fn test_detailed_steps() {
 
 #[test]
 fn test_step_verification() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(0)]);
 
@@ -45,7 +45,7 @@ fn test_step_verification() {
 
 #[test]
 fn test_multi_step_process() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -61,7 +61,7 @@ fn test_multi_step_process() {
 
 #[test]
 fn test_complex_step_sequence() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::mul(vec![
         Expression::integer(0),
@@ -77,7 +77,7 @@ fn test_complex_step_sequence() {
 
 #[test]
 fn test_power_step_sequence() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(1));
     let result = expr.simplify();

@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_factor_basic() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test basic factoring: 6x + 9 = 3(2x + 3)
     let expr = Expression::add(vec![
@@ -21,7 +21,7 @@ fn test_factor_basic() {
 
 #[test]
 fn test_collect_terms() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test collecting like terms: 2x + 3x = 5x
     let expr = Expression::add(vec![
@@ -37,7 +37,7 @@ fn test_collect_terms() {
 
 #[test]
 fn test_collect_powers() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test collecting powers: x^2 + x^2 = 2x^2
     let expr = Expression::add(vec![
@@ -53,7 +53,7 @@ fn test_collect_powers() {
 
 #[test]
 fn test_simplify_factor_out() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test factoring out common factors
     let expr = Expression::add(vec![
@@ -77,7 +77,7 @@ fn test_simplify_factor_out() {
 
 #[test]
 fn test_as_content_primitive() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test content and primitive part separation
     let expr = Expression::add(vec![
@@ -94,8 +94,8 @@ fn test_as_content_primitive() {
 
 #[test]
 fn test_separatevars() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     // Test variable separation
     let expr = Expression::add(vec![
@@ -118,7 +118,7 @@ fn test_separatevars() {
 #[test]
 fn test_historic_60_percent_milestone_operation() {
     // Commemorating 60% milestone
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::add(vec![
         Expression::mul(vec![
@@ -144,8 +144,8 @@ fn test_historic_60_percent_milestone_operation() {
 
 #[test]
 fn test_advanced_factorization_mastery() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     // Test advanced factorization patterns
     let expr = Expression::add(vec![
@@ -167,7 +167,7 @@ fn test_advanced_factorization_mastery() {
 
 #[test]
 fn test_ultimate_algebraic_mastery() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Ultimate algebraic factorization test
     let expr = Expression::add(vec![

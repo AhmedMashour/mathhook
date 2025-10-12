@@ -1,7 +1,7 @@
 //! Utility functions for partial derivative operations
 
+use crate::core::{Expression, Number};
 use crate::simplify::Simplify;
-use crate::core::{Expression, Number, Symbol};
 
 /// Utility functions for partial derivatives
 pub struct PartialUtils;
@@ -12,9 +12,10 @@ impl PartialUtils {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr1 = Expression::symbol(x.clone());
     /// let expr2 = Expression::symbol(x.clone());
     /// let equal = PartialUtils::expressions_equal(&expr1, &expr2);
@@ -178,9 +179,11 @@ impl MatrixUtils {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
+    use crate::Symbol;
 
     fn test_symbols() -> (Symbol, Symbol, Symbol) {
-        (Symbol::new("x"), Symbol::new("y"), Symbol::new("z"))
+        (symbol!(x), symbol!(y), symbol!(z))
     }
 
     #[test]
@@ -248,7 +251,7 @@ mod tests {
         assert!(!PartialUtils::is_zero(&Expression::float(-2.71)));
 
         // Symbols are not zero
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         assert!(!PartialUtils::is_zero(&Expression::symbol(x)));
     }
 
@@ -302,7 +305,7 @@ mod tests {
         assert_eq!(det, Expression::integer(5));
 
         // |x| = x
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let matrix_x = vec![vec![Expression::symbol(x.clone())]];
         let det_x = MatrixUtils::determinant(&matrix_x);
         assert_eq!(det_x, Expression::symbol(x));
@@ -321,8 +324,8 @@ mod tests {
 
         // |a b| = ad - bc
         // |c d|
-        let (a, b, c) = (Symbol::new("a"), Symbol::new("b"), Symbol::new("c"));
-        let d = Symbol::new("d");
+        let (a, b, c) = (symbol!(a), symbol!(b), symbol!(c));
+        let d = symbol!(d);
         let symbolic_matrix = vec![
             vec![Expression::symbol(a.clone()), Expression::symbol(b.clone())],
             vec![Expression::symbol(c.clone()), Expression::symbol(d.clone())],

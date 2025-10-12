@@ -19,8 +19,8 @@ fn test_logarithm_simplification() {
 #[test]
 // log(x) + log(y) = log(xy)
 fn test_logcombine_1() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     let expr = Expression::add(vec![
         Expression::function("log", vec![Expression::symbol(x.clone())]),
@@ -62,7 +62,7 @@ fn test_nsimplify() {
 #[test]
 // complex expression simplification
 fn test_simplify_expr() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -82,7 +82,7 @@ fn test_simplify_expr() {
 #[test]
 // sign simplification from SymPy
 fn test_signsimp() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::integer(1),
@@ -135,7 +135,7 @@ fn test_special_function_patterns() {
 #[test]
 // ln(exp(x)) = x
 fn test_advanced_function_combinations() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::function(
         "ln",
@@ -157,7 +157,7 @@ fn test_advanced_function_combinations() {
 #[test]
 // combination of multiple function types
 fn test_mathematical_function_mastery() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::function("sin", vec![Expression::integer(0)]),
@@ -175,7 +175,7 @@ fn test_mathematical_function_mastery() {
 #[test]
 // Ultimate function test for 100% coverage
 fn test_ultimate_100_percent_operation_3() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::function(
         "sqrt",

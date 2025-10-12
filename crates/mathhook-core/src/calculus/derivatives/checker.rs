@@ -11,9 +11,10 @@ impl DifferentiabilityChecker {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let is_diff = DifferentiabilityChecker::check(&expr, x);
     /// ```
@@ -50,11 +51,12 @@ impl DifferentiabilityChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
     use crate::{MathConstant, Number};
 
     #[test]
     fn test_basic_differentiability() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         assert!(DifferentiabilityChecker::check(
             &Expression::integer(5),
@@ -80,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_arithmetic_operations() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let sum = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
         assert!(DifferentiabilityChecker::check(&sum, x.clone()));
@@ -94,7 +96,7 @@ mod tests {
 
     #[test]
     fn test_smooth_functions() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let smooth_functions = vec![
             "sin", "cos", "tan", "sec", "csc", "cot", "sinh", "cosh", "tanh", "sech", "csch",
@@ -119,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_non_differentiable_functions() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let non_diff_functions = vec!["abs", "floor", "ceil", "sign"];
 
@@ -135,7 +137,7 @@ mod tests {
 
     #[test]
     fn test_composite_expressions() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let composite1 = Expression::add(vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -158,7 +160,7 @@ mod tests {
 
     #[test]
     fn test_nested_functions() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let nested1 = Expression::function(
             "sin",
@@ -190,8 +192,8 @@ mod tests {
 
     #[test]
     fn test_multivariate_expressions() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let multivar1 = Expression::add(vec![
             Expression::symbol(x.clone()),
@@ -213,8 +215,8 @@ mod tests {
 
     #[test]
     fn test_edge_cases() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let zero_expr = Expression::integer(0);
         assert!(DifferentiabilityChecker::check(&zero_expr, x.clone()));
@@ -258,7 +260,7 @@ mod tests {
 
     #[test]
     fn test_complex_expressions() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let complex1 = Expression::add(vec![
             Expression::mul(vec![

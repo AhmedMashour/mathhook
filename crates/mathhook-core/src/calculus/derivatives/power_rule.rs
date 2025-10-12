@@ -1,8 +1,8 @@
 //! Power rule implementation for derivatives
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Number, Symbol};
+use crate::simplify::Simplify;
 
 /// Power rule implementation
 pub struct PowerRule;
@@ -13,9 +13,10 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, PowerRule};
+    /// use mathhook_core::{Expression, PowerRule};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let base = Expression::symbol(x.clone());
     /// let exponent = Expression::integer(2);
     /// let result = PowerRule::apply(&base, &exponent, x);
@@ -36,9 +37,10 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, PowerRule};
+    /// use mathhook_core::{Expression, PowerRule};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let result = PowerRule::simple_power_rule(3, x);
     /// ```
     pub fn simple_power_rule(n: i64, variable: Symbol) -> Expression {
@@ -59,7 +61,7 @@ impl PowerRule {
     /// ```rust
     /// use mathhook_core::{Expression, Symbol, PowerRule};
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let base = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let exponent = Expression::symbol(x.clone());
     /// let result = PowerRule::logarithmic_differentiation(&base, &exponent, x);
@@ -111,10 +113,11 @@ impl PowerRule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_integer_powers() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x^0] = 0
         let x0 = Expression::pow(Expression::symbol(x.clone()), Expression::integer(0));
@@ -149,7 +152,7 @@ mod tests {
 
     #[test]
     fn test_negative_powers() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x^(-1)] = -x^(-2)
         let x_neg1 = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
@@ -187,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_fractional_powers() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x^(1/2)] = (1/2)x^(-1/2)
         let sqrt_x = Expression::pow(
@@ -214,8 +217,8 @@ mod tests {
 
     #[test]
     fn test_variable_exponents() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // d/dx[x^y] and d/dy[x^y]
         let x_to_y = Expression::pow(Expression::symbol(x.clone()), Expression::symbol(y.clone()));
@@ -236,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_special_cases() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x^x]
         let x_to_x = Expression::pow(Expression::symbol(x.clone()), Expression::symbol(x.clone()));

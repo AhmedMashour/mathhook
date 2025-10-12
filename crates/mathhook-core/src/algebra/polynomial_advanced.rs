@@ -1,9 +1,8 @@
 //! Advanced polynomial operations for Symbolica domination
-//! Implements high-performance polynomial arithmetic, division, and advanced algorithms
+//! Implements polynomial arithmetic, division, and advanced algorithms
 
-use crate::algebra::gcd::PolynomialGcd;
+use crate::core::{Expression, Number, Symbol};
 use crate::simplify::Simplify;
-use crate::core::{Number, Expression, Symbol};
 
 /// Trait for advanced polynomial operations
 pub trait AdvancedPolynomial {
@@ -273,10 +272,11 @@ impl PolynomialArithmetic {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_polynomial_degree() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test degree computation
         assert_eq!(Expression::symbol(x.clone()).polynomial_degree(&x), Some(1));
@@ -306,7 +306,7 @@ mod tests {
 
     #[test]
     fn test_polynomial_leading_coefficient() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test leading coefficient: 5x² + 3x + 1 has leading coefficient 5
         let poly = Expression::add(vec![
@@ -327,7 +327,7 @@ mod tests {
 
     #[test]
     fn test_polynomial_evaluation() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test polynomial evaluation: f(x) = x² + 2x + 1, f(3) = 9 + 6 + 1 = 16
         let poly = Expression::add(vec![
@@ -349,7 +349,7 @@ mod tests {
     fn test_polynomial_arithmetic_performance() {
         use std::time::Instant;
 
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let poly1 = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::symbol(x.clone()),

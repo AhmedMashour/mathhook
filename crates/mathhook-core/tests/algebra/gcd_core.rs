@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_algebra_gcd_basic() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Basic algebraic GCD
     let expr1 = Expression::mul(vec![Expression::integer(4), Expression::symbol(x.clone())]);
@@ -19,7 +19,7 @@ fn test_algebra_gcd_basic() {
 
 #[test]
 fn test_algebra_gcd_factoring() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test factoring with GCD
     let expr = Expression::add(vec![
@@ -66,7 +66,7 @@ fn test_algebra_gcd_cofactors() {
 
 #[test]
 fn test_algebra_gcd_zero_handling() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let zero = Expression::integer(0);
 
     // Test GCD with zero
@@ -82,7 +82,7 @@ fn test_algebra_gcd_zero_handling() {
 fn test_algebra_gcd_performance_core() {
     use std::time::Instant;
 
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let start = Instant::now();
 
     // Core algebra GCD performance

@@ -270,7 +270,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_number_gcd() {
@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_identical_expressions() {
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
         let result = x.gcd(&x);
         assert_eq!(result, x);
     }
@@ -332,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_polynomial_gcd_basic() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test with simple polynomials
         let poly1 = Expression::mul(vec![Expression::integer(6), Expression::symbol(x.clone())]);
@@ -347,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_factor_gcd() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test factoring GCD from sum: 6x + 9x = 3x(2 + 3)
         let term1 = Expression::mul(vec![Expression::integer(6), Expression::symbol(x.clone())]);

@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_symbolica_gcd_case_1() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Symbolica test case: GCD of polynomials
     let poly1 = Expression::mul(vec![
@@ -25,8 +25,8 @@ fn test_symbolica_gcd_case_1() {
 
 #[test]
 fn test_symbolica_gcd_case_2() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     // Multivariate case
     let poly1 = Expression::mul(vec![
@@ -48,7 +48,7 @@ fn test_symbolica_gcd_case_2() {
 #[test]
 fn test_symbolica_gcd_case_3() {
     // Large coefficient case
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let poly1 = Expression::mul(vec![
         Expression::integer(12345),
@@ -67,7 +67,7 @@ fn test_symbolica_gcd_case_3() {
 
 #[test]
 fn test_symbolica_gcd_case_4() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Power case
     let poly1 = Expression::pow(Expression::symbol(x.clone()), Expression::integer(3));

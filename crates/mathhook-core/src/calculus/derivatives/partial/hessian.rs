@@ -1,8 +1,8 @@
 //! Hessian matrix operations for second-order partial derivatives
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Hessian matrix operations
 pub struct HessianOperations;
@@ -13,11 +13,12 @@ impl HessianOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -58,8 +59,8 @@ impl HessianOperations {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -137,11 +138,12 @@ impl HessianOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -184,8 +186,8 @@ impl HessianOperations {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::derivatives::HessianOperations;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::mul(vec![Expression::integer(3), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
     ///     Expression::mul(vec![Expression::integer(5), Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))])
@@ -208,11 +210,12 @@ impl HessianOperations {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_quadratic_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let quadratic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -233,8 +236,8 @@ mod tests {
 
     #[test]
     fn test_mixed_partial_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let mixed = Expression::mul(vec![
             Expression::symbol(x.clone()),
@@ -251,8 +254,8 @@ mod tests {
 
     #[test]
     fn test_cubic_polynomial_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let cubic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
@@ -274,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_single_variable_hessian() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(4));
         let hessian = HessianOperations::compute(&expr, vec![x.clone()]);
@@ -286,9 +289,9 @@ mod tests {
 
     #[test]
     fn test_three_variable_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
-        let z = Symbol::new("z");
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
 
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -313,8 +316,8 @@ mod tests {
 
     #[test]
     fn test_hessian_determinant_2x2() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -327,8 +330,8 @@ mod tests {
 
     #[test]
     fn test_hessian_trace() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::mul(vec![
@@ -347,8 +350,8 @@ mod tests {
 
     #[test]
     fn test_constant_function_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let constant = Expression::integer(42);
         let hessian = HessianOperations::compute(&constant, vec![x.clone(), y.clone()]);
@@ -362,8 +365,8 @@ mod tests {
 
     #[test]
     fn test_linear_function_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let linear = Expression::add(vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -382,8 +385,8 @@ mod tests {
 
     #[test]
     fn test_hessian_symmetry() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::mul(vec![
@@ -403,8 +406,8 @@ mod tests {
 
     #[test]
     fn test_trigonometric_hessian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let trig_expr = Expression::add(vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),

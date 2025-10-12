@@ -25,11 +25,12 @@ impl AdvancedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let equation = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -47,10 +48,11 @@ impl AdvancedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
     /// let y_param = Expression::function("sin", vec![Expression::symbol(t.clone())]);
     /// let dy_dx = AdvancedDifferentiation::parametric(&x_param, &y_param, t);
@@ -66,10 +68,11 @@ impl AdvancedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::function("cos", vec![Expression::symbol(t.clone())]),
     ///     Expression::function("sin", vec![Expression::symbol(t.clone())]),
@@ -88,10 +91,11 @@ impl AdvancedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
     /// let y_param = Expression::function("sin", vec![Expression::symbol(t.clone())]);
     /// let curvature = AdvancedDifferentiation::parametric_curvature(&x_param, &y_param, t);
@@ -111,10 +115,11 @@ impl AdvancedDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::AdvancedDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let components = vec![
     ///     Expression::symbol(t.clone()),
     ///     Expression::pow(Expression::symbol(t.clone()), Expression::integer(2)),

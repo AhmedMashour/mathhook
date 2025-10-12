@@ -3,9 +3,9 @@
 //! Handles differentiation of implicitly defined functions where y is defined
 //! implicitly as a function of x through an equation F(x,y) = 0.
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Trait for solving critical point systems in implicit differentiation
 pub trait CriticalPointSolver {
@@ -15,10 +15,11 @@ pub trait CriticalPointSolver {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// // For circle x² + y² = 1 with dy/dx = -x/y = 0
     /// // Should return critical points at (0, ±1)
     /// let curve = Expression::add(vec![
@@ -52,11 +53,12 @@ impl ImplicitDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitDifferentiation;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// // For x² + y² = 1 (circle)
     /// let equation = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -81,11 +83,12 @@ impl ImplicitDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitDifferentiation;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let equation = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -122,12 +125,13 @@ impl ImplicitDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitDifferentiation;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
+    /// let z = symbol!(z);
     /// // For F(x,y,z) = 0, compute ∂z/∂x and ∂z/∂y
     /// let equation = Expression::add(vec![
     ///     Expression::symbol(x.clone()),
@@ -194,11 +198,12 @@ impl ImplicitCurveAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitCurveAnalysis;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let curve = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -219,11 +224,12 @@ impl ImplicitCurveAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitCurveAnalysis;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let curve = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let concavity = ImplicitCurveAnalysis::concavity(&curve, x, y);
     /// ```
@@ -244,11 +250,12 @@ impl ImplicitCurveAnalysis {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_circle_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let circle = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -261,8 +268,8 @@ mod tests {
 
     #[test]
     fn test_ellipse_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let ellipse = Expression::add(vec![
             Expression::mul(vec![
@@ -278,8 +285,8 @@ mod tests {
 
     #[test]
     fn test_hyperbola_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let hyperbola = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -295,8 +302,8 @@ mod tests {
 
     #[test]
     fn test_parabola_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let parabola = Expression::add(vec![
             Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),
@@ -309,8 +316,8 @@ mod tests {
 
     #[test]
     fn test_cubic_curve_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let cubic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
@@ -328,8 +335,8 @@ mod tests {
 
     #[test]
     fn test_linear_implicit_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let linear = Expression::add(vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -343,8 +350,8 @@ mod tests {
 
     #[test]
     fn test_higher_order_derivatives() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let circle = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -363,8 +370,8 @@ mod tests {
 
     #[test]
     fn test_zero_order_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let equation = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let zero_order = ImplicitDifferentiation::higher_order(&equation, x.clone(), y.clone(), 0);
@@ -374,9 +381,9 @@ mod tests {
 
     #[test]
     fn test_multiple_variables_derivatives() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
-        let z = Symbol::new("z");
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
 
         let equation = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -397,8 +404,8 @@ mod tests {
 
     #[test]
     fn test_trigonometric_implicit_curves() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let trig_curve = Expression::add(vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -411,8 +418,8 @@ mod tests {
 
     #[test]
     fn test_exponential_implicit_curves() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let exp_curve = Expression::add(vec![
             Expression::function("exp", vec![Expression::symbol(x.clone())]),
@@ -425,8 +432,8 @@ mod tests {
 
     #[test]
     fn test_mixed_polynomial_trigonometric() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let mixed = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -439,8 +446,8 @@ mod tests {
 
     #[test]
     fn test_curve_concavity() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let curve = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let concavity = ImplicitCurveAnalysis::concavity(&curve, x.clone(), y.clone());
@@ -450,8 +457,8 @@ mod tests {
 
     #[test]
     fn test_critical_points_placeholder() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let curve = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -467,8 +474,8 @@ mod tests {
 
     #[test]
     fn test_rational_function_implicit() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let rational = Expression::add(vec![
             Expression::mul(vec![
@@ -484,8 +491,8 @@ mod tests {
 
     #[test]
     fn test_parametric_like_implicit() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let parametric_form = Expression::add(vec![
             Expression::pow(
@@ -504,8 +511,8 @@ mod tests {
 
     #[test]
     fn test_implicit_differentiation_chain_rule() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let chain_curve = Expression::function(
             "sin",
@@ -521,10 +528,10 @@ mod tests {
 
     #[test]
     fn test_multiple_independent_variables() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
-        let z = Symbol::new("z");
-        let w = Symbol::new("w");
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
+        let w = symbol!(w);
 
         let multi_var = Expression::add(vec![
             Expression::symbol(x.clone()),
@@ -547,8 +554,8 @@ mod tests {
 
     #[test]
     fn test_constant_equation_implicit() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let constant_eq = Expression::integer(5);
         let dy_dx = ImplicitDifferentiation::compute(&constant_eq, x.clone(), y.clone());

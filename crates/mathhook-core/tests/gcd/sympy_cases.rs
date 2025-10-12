@@ -14,7 +14,7 @@ fn test_sympy_gcd_basic() {
 
 #[test]
 fn test_sympy_gcd_polynomials() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // SymPy polynomial GCD
     let poly1 = Expression::add(vec![
@@ -32,8 +32,8 @@ fn test_sympy_gcd_polynomials() {
 
 #[test]
 fn test_sympy_gcd_multivariate() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Multivariate GCD from SymPy
     let poly1 = Expression::mul(vec![
@@ -50,7 +50,7 @@ fn test_sympy_gcd_multivariate() {
 
 #[test]
 fn test_sympy_gcd_complex() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Complex SymPy GCD case
     let poly1 = Expression::add(vec![
@@ -70,8 +70,8 @@ fn test_sympy_gcd_complex() {
 
 #[test]
 fn test_session_071_gcd_milestone() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     let poly1 = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -119,7 +119,7 @@ fn test_sympy_gcd_comprehensive_integers() {
 
 #[test]
 fn test_sympy_gcd_comprehensive_polynomials() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test polynomial cases from SymPy
 
@@ -144,8 +144,8 @@ fn test_sympy_gcd_comprehensive_polynomials() {
 
 #[test]
 fn test_sympy_gcd_comprehensive_multivariate() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Comprehensive multivariate tests
     let poly1 = Expression::mul(vec![
@@ -165,7 +165,7 @@ fn test_sympy_gcd_comprehensive_multivariate() {
 
 #[test]
 fn test_sympy_gcd_comprehensive_complex() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Complex polynomial GCD from SymPy test suite
     let poly1 = Expression::add(vec![
@@ -192,7 +192,7 @@ fn test_sympy_gcd_comprehensive_complex() {
 fn test_sympy_gcd_comprehensive_performance() {
     use std::time::Instant;
 
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let start = Instant::now();
 
     // Comprehensive performance test

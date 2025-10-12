@@ -7,7 +7,7 @@ use mathhook_core::prelude::*;
 #[test]
 fn test_power_identity_rules() {
     /// Test fundamental power identity laws
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let var = Expression::symbol(x.clone());
 
     // Test a^1 = a
@@ -148,7 +148,7 @@ fn test_power_of_power_property() {
 #[test]
 fn test_power_cancellation_when_implemented() {
     /// Test power cancellation: x^m * x^n = x^(m+n)
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test x^2 * x^(-1) should eventually equal x^1 = x
     let expr = Expression::mul(vec![

@@ -1,5 +1,4 @@
 //! Arithmetic operations tests - the foundation of all algebra
-
 use mathhook_core::prelude::*;
 
 #[test]
@@ -47,7 +46,7 @@ fn test_numeric_simplification() {
 
 #[test]
 fn test_zero_and_one_identities() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test addition with zero
     let expr = Expression::symbol(x.clone()) + Expression::integer(0);
@@ -68,8 +67,8 @@ fn test_zero_and_one_identities() {
 #[test]
 fn test_mathematical_constants() {
     // Test that mathematical constants are handled correctly
-    let pi = Expression::symbol(Symbol::new("pi"));
-    let e = Expression::symbol(Symbol::new("e"));
+    let pi = Expression::symbol(symbol!(pi));
+    let e = Expression::symbol(symbol!(e));
 
     // Constants should remain as symbols unless specifically evaluated
     let expr = pi.clone() + e.clone();
@@ -88,7 +87,7 @@ fn test_mathematical_constants() {
 
 #[test]
 fn test_edge_case_simplification() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test empty addition
     let expr = Expression::add(vec![]);
@@ -132,7 +131,7 @@ fn test_simplify_float_vs_integer() {
 
 #[test]
 fn test_advanced_algebraic_identities() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test: x + x = 2x (if implemented)
     let expr = Expression::symbol(x.clone()) + Expression::symbol(x.clone());
@@ -151,7 +150,7 @@ fn test_advanced_algebraic_identities() {
 #[test]
 fn test_issue_27380() {
     // From SymPy test suite - test specific algebraic simplification
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::integer(1),
@@ -204,7 +203,7 @@ fn test_numeric_combination_patterns() {
     assert_eq!(result, Expression::integer(30));
 
     // Pattern 3: Mixed with symbols
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let expr = Expression::add(vec![
         Expression::integer(10),
         Expression::symbol(x.clone()),
@@ -238,7 +237,7 @@ fn test_advanced_numeric_operations() {
     assert_eq!(result, Expression::integer(-6));
 
     // Test zero handling in multiplication
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let expr = Expression::mul(vec![
         Expression::integer(0),
         Expression::symbol(x.clone()),
@@ -251,8 +250,8 @@ fn test_advanced_numeric_operations() {
 #[test]
 fn test_historic_80_percent_milestone() {
     // Test representing our historic 80% SymPy coverage milestone
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Complex expression that should maintain structure
     let expr = Expression::add(vec![
@@ -271,7 +270,7 @@ fn test_historic_80_percent_milestone() {
 #[test]
 fn test_ultimate_100_percent_operation_1() {
     // Ultimate test for 100% operation coverage
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test complex nested operations
     let expr = Expression::add(vec![

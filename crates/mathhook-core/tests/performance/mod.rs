@@ -77,7 +77,6 @@ mod core_operations {
 
     #[test]
     fn test_integer_arithmetic_performance() {
-        /// Benchmark basic integer arithmetic operations
         // Addition benchmark
         let (duration, _) = benchmark_operation(
             "Integer addition",
@@ -132,9 +131,8 @@ mod core_operations {
 
     #[test]
     fn test_symbolic_operations_performance() {
-        /// Benchmark operations with symbols
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
         let var_x = Expression::symbol(x.clone());
         let var_y = Expression::symbol(y.clone());
 
@@ -158,7 +156,6 @@ mod core_operations {
 
     #[test]
     fn test_expression_construction_performance() {
-        /// Benchmark expression construction overhead
         let (duration, _) = benchmark_operation(
             "Expression construction",
             || {
@@ -182,7 +179,6 @@ mod gcd_performance {
 
     #[test]
     fn test_gcd_performance_scaling() {
-        /// Test GCD performance with increasing input sizes
         let test_cases = vec![
             (123, 456, "Small integers"),
             (12345, 67890, "Medium integers"),
@@ -214,7 +210,6 @@ mod gcd_performance {
 
     #[test]
     fn test_lcm_performance() {
-        /// Benchmark LCM operations
         let (duration, _) = benchmark_operation(
             "LCM computation",
             || Expression::integer(12).lcm(&Expression::integer(18)),
@@ -226,7 +221,6 @@ mod gcd_performance {
 
     #[test]
     fn test_gcd_with_coprime_numbers() {
-        /// Test GCD performance with coprime numbers (worst case for Euclidean algorithm)
         let (duration, _) = benchmark_operation(
             "GCD coprime numbers",
             || Expression::integer(17).gcd(&Expression::integer(13)),
@@ -244,7 +238,6 @@ mod complexity_performance {
 
     #[test]
     fn test_large_expression_performance() {
-        /// Test performance with expressions containing many terms
         let sizes = vec![10, 50, 100, 200];
 
         for size in sizes {
@@ -278,7 +271,6 @@ mod complexity_performance {
 
     #[test]
     fn test_nested_expression_performance() {
-        /// Test performance with deeply nested expressions
         let depths = vec![5, 10, 20];
 
         for depth in depths {
@@ -307,11 +299,10 @@ mod complexity_performance {
 
     #[test]
     fn test_mixed_operation_performance() {
-        /// Test performance with mixed arithmetic operations
         let (duration, _) = benchmark_operation(
             "Mixed operations",
             || {
-                let x = Expression::symbol(Symbol::new("x"));
+                let x = Expression::symbol(symbol!(x));
                 Expression::add(vec![
                     Expression::mul(vec![Expression::integer(2), x.clone()]),
                     Expression::pow(x.clone(), Expression::integer(2)),
@@ -333,7 +324,6 @@ mod memory_performance {
 
     #[test]
     fn test_memory_efficiency() {
-        /// Test that operations don't cause excessive memory allocation
         let iterations = 1000;
         let start = Instant::now();
 
@@ -358,13 +348,9 @@ mod memory_performance {
 
     #[test]
     fn test_expression_cloning_performance() {
-        /// Test performance of expression cloning
         let complex_expr = Expression::add(vec![
-            Expression::mul(vec![
-                Expression::integer(2),
-                Expression::symbol(Symbol::new("x")),
-            ]),
-            Expression::pow(Expression::symbol(Symbol::new("y")), Expression::integer(3)),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(x))]),
+            Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(3)),
             Expression::integer(42),
         ]);
 
@@ -375,7 +361,6 @@ mod memory_performance {
 
     #[test]
     fn test_large_number_memory_usage() {
-        /// Test memory usage with large numbers
         use num_bigint::BigInt;
 
         let large_numbers: Vec<Expression> = (0..100)
@@ -413,7 +398,6 @@ mod regression_tests {
 
     #[test]
     fn test_performance_regression_baseline() {
-        /// Establish baseline performance metrics for regression detection
         // Test simple addition
         let (duration, _) = benchmark_operation(
             "Regression test: simple addition",
@@ -433,7 +417,7 @@ mod regression_tests {
         assert_performance_threshold(duration, 5000, 25_000.0, "GCD regression");
 
         // Test symbolic operations
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
         let (duration, _) = benchmark_operation(
             "Regression test: symbolic",
             || Expression::add(vec![x.clone(), Expression::integer(1)]).simplify(),
@@ -447,7 +431,6 @@ mod regression_tests {
 
     #[test]
     fn test_complexity_regression() {
-        /// Test that algorithmic complexity hasn't regressed
         let small_size = 50;
         let large_size = 200;
 
@@ -486,7 +469,6 @@ mod comparative_performance {
 
     #[test]
     fn test_operation_relative_performance() {
-        /// Compare relative performance of different operations
         let iterations = 10000;
 
         // Addition

@@ -403,10 +403,11 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_collect_like_terms() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test 2x + 3x = 5x
         let expr = Expression::add(vec![
@@ -423,7 +424,7 @@ mod tests {
 
     #[test]
     fn test_collect_different_powers() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test x^2 + 2x + x^2 = 2x^2 + 2x
         let expr = Expression::add(vec![
@@ -445,8 +446,8 @@ mod tests {
 
     #[test]
     fn test_combine_like_terms() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Test 3x + 2y + x + y = 4x + 3y
         let expr = Expression::add(vec![
@@ -464,7 +465,7 @@ mod tests {
 
     #[test]
     fn test_collect_constants() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test 5 + 3x + 2 = 3x + 7
         let expr = Expression::add(vec![
@@ -482,7 +483,7 @@ mod tests {
 
     #[test]
     fn test_separate_constants() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::add(vec![
             Expression::integer(5),
@@ -501,7 +502,7 @@ mod tests {
 
     #[test]
     fn test_collect_multiplication_powers() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test x^2 * x^3 = x^5 (if implemented)
         let expr = Expression::mul(vec![

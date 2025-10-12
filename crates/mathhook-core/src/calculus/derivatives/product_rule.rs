@@ -1,8 +1,8 @@
 //! Product rule implementation for derivatives
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Product rule implementation for two factors
 pub struct ProductRule;
@@ -13,10 +13,11 @@ impl ProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
+    /// use mathhook_core::{Expression, ProductRule};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::mul(vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())])
@@ -37,9 +38,10 @@ impl ProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
+    /// use mathhook_core::{Expression, ProductRule};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let u = Expression::symbol(x.clone());
     /// let v = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let result = ProductRule::apply(&u, &v, x);
@@ -65,9 +67,10 @@ impl GeneralProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, ProductRule, GeneralProductRule};
+    /// use mathhook_core::{Expression, ProductRule};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let factors = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -100,10 +103,11 @@ impl GeneralProductRule {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_basic_product_rule() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let u_v = Expression::mul(vec![
             Expression::symbol(x.clone()),
@@ -131,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_constant_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let const_x = Expression::mul(vec![Expression::integer(5), Expression::symbol(x.clone())]);
         assert_eq!(
@@ -164,7 +168,7 @@ mod tests {
 
     #[test]
     fn test_polynomial_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let poly1 = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -181,7 +185,7 @@ mod tests {
 
     #[test]
     fn test_function_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let sin_cos = Expression::mul(vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -200,7 +204,7 @@ mod tests {
 
     #[test]
     fn test_three_factor_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let xyz = Expression::mul(vec![
             Expression::symbol(x.clone()),
@@ -221,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_zero_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let zero_x = Expression::mul(vec![Expression::integer(0), Expression::symbol(x.clone())]);
         assert_eq!(
@@ -247,8 +251,8 @@ mod tests {
 
     #[test]
     fn test_multivariate_products() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let xy = Expression::mul(vec![
             Expression::symbol(x.clone()),
@@ -281,7 +285,7 @@ mod tests {
 
     #[test]
     fn test_nested_products() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let nested = Expression::mul(vec![
             Expression::mul(vec![Expression::symbol(x.clone()), Expression::integer(2)]),

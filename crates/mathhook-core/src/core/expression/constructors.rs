@@ -14,10 +14,10 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::expr;
     ///
-    /// let expr = Expression::number(42);
-    /// let expr = Expression::number(3.14);
+    /// let expr = expr!(42);
+    /// let expr = expr!(3.14);
     /// ```
     pub fn number<T: Into<Number>>(value: T) -> Self {
         Self::Number(value.into())
@@ -88,10 +88,9 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{symbol, Expression};
     ///
-    /// let expr = Expression::symbol(Symbol::new("x"));
-    /// let expr = Expression::symbol("x");
+    /// let expr = Expression::symbol(symbol!(x));
     /// ```
     pub fn symbol<T: Into<Symbol>>(symbol: T) -> Self {
         Self::Symbol(symbol.into())
@@ -112,19 +111,19 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// // Constant folding
-    /// let expr = Expression::add(vec![
+    /// let expression = Expression::add(vec![
     ///     Expression::integer(1),
     ///     Expression::integer(2),
     /// ]);
-    /// assert_eq!(expr, Expression::integer(3));
+    /// assert_eq!(expression, Expression::integer(3));
     ///
     /// // Identity element removal
-    /// let x = Expression::symbol("x");
-    /// let expr = Expression::add(vec![x.clone(), Expression::integer(0)]);
-    /// assert_eq!(expr, x);
+    /// let x = expr!(x);
+    /// let expression = Expression::add(vec![x.clone(), Expression::integer(0)]);
+    /// assert_eq!(expression, x);
     ///
     /// // Commutativity (canonical ordering)
-    /// let y = Expression::symbol("y");
+    /// let y = expr!(y);
     /// let expr1 = Expression::add(vec![x.clone(), y.clone()]);
     /// let expr2 = Expression::add(vec![y.clone(), x.clone()]);
     /// assert_eq!(expr1, expr2); // Both produce x + y in canonical order
@@ -149,23 +148,23 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// // Constant folding
-    /// let expr = Expression::mul(vec![
+    /// let expression = Expression::mul(vec![
     ///     Expression::integer(2),
     ///     Expression::integer(3),
     /// ]);
-    /// assert_eq!(expr, Expression::integer(6));
+    /// assert_eq!(expression, Expression::integer(6));
     ///
     /// // Identity element removal
-    /// let x = Expression::symbol("x");
+    /// let x = expr!(x);
     /// let expr = Expression::mul(vec![x.clone(), Expression::integer(1)]);
     /// assert_eq!(expr, x);
     ///
     /// // Zero handling
-    /// let expr = Expression::mul(vec![x.clone(), Expression::integer(0)]);
-    /// assert_eq!(expr, Expression::integer(0));
+    /// let expression = Expression::mul(vec![x.clone(), Expression::integer(0)]);
+    /// assert_eq!(expression, Expression::integer(0));
     ///
     /// // Commutativity (canonical ordering)
-    /// let y = Expression::symbol("y");
+    /// let y = expr!(y);
     /// let expr1 = Expression::mul(vec![x.clone(), y.clone()]);
     /// let expr2 = Expression::mul(vec![y.clone(), x.clone()]);
     /// assert_eq!(expr1, expr2); // Both produce x * y in canonical order
@@ -189,22 +188,19 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// // Power identities
-    /// let x = Expression::symbol("x");
-    /// let expr = Expression::pow(x.clone(), Expression::integer(1));
-    /// assert_eq!(expr, x);
+    /// let x = expr!(x);
+    /// let expression = Expression::pow(x.clone(), Expression::integer(1));
+    /// assert_eq!(expression, x);
     ///
-    /// let expr = Expression::pow(x.clone(), Expression::integer(0));
-    /// assert_eq!(expr, Expression::integer(1));
+    /// let expression = Expression::pow(x.clone(), Expression::integer(0));
+    /// assert_eq!(expression, Expression::integer(1));
     ///
     /// // Constant evaluation
-    /// let expr = Expression::pow(
-    ///     Expression::integer(2),
-    ///     Expression::integer(3),
-    /// );
-    /// assert_eq!(expr, Expression::integer(8));
+    /// let expression = expr!(2 ^ 3);
+    /// assert_eq!(expression, Expression::integer(8));
     ///
     /// // Nested power flattening
-    /// let expr = Expression::pow(
+    /// let expression = Expression::pow(
     ///     Expression::pow(x.clone(), Expression::integer(2)),
     ///     Expression::integer(3),
     /// );
@@ -221,7 +217,7 @@ impl Expression {
     /// ```rust
     /// use mathhook_core::Expression;
     ///
-    /// let expr = Expression::function("sin", vec![Expression::symbol("x")]);
+    /// let expression = Expression::function("sin", vec![expr!(x)]);
     /// ```
     pub fn function<S: Into<String>>(name: S, args: Vec<Expression>) -> Self {
         Self::Function {
@@ -384,8 +380,8 @@ impl Expression {
     /// use mathhook_core::Expression;
     ///
     /// let expr = Expression::equation(
-    ///     Expression::symbol("x"),
-    ///     Expression::integer(5),
+    ///     expr!(x),
+    ///     expr!(5),
     /// );
     /// ```
     pub fn equation(left: Expression, right: Expression) -> Self {
@@ -401,11 +397,12 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::derivative(
-    ///     Expression::pow(Expression::symbol("x"), Expression::integer(2)),
-    ///     Symbol::new("x"),
+    ///     Expression::pow(expr!(x), expr!(2)),
+    ///     expr!(x),
     ///     1,
     /// );
     /// ```
@@ -422,11 +419,12 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::integral(
-    ///     Expression::symbol("x"),
-    ///     Symbol::new("x"),
+    ///     expr!(x),
+    ///     symbol!(x),
     /// );
     /// ```
     pub fn integral(integrand: Expression, variable: Symbol) -> Self {
@@ -442,13 +440,14 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::definite_integral(
-    ///     Expression::symbol("x"),
-    ///     Symbol::new("x"),
-    ///     Expression::integer(0),
-    ///     Expression::integer(1),
+    ///     expr!(x),
+    ///     symbol!(x),
+    ///     expr!(0),
+    ///     expr!(1),
     /// );
     /// ```
     pub fn definite_integral(
@@ -469,12 +468,13 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::limit(
-    ///     Expression::symbol("x"),
-    ///     Symbol::new("x"),
-    ///     Expression::integer(0),
+    ///     expr!(x),
+    ///     symbol!(x),
+    ///     expr!(0),
     /// );
     /// ```
     pub fn limit(expression: Expression, variable: Symbol, point: Expression) -> Self {
@@ -491,13 +491,14 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::sum(
-    ///     Expression::symbol("i"),
-    ///     Symbol::new("i"),
-    ///     Expression::integer(1),
-    ///     Expression::integer(10),
+    ///     expr!(i),
+    ///     symbol!(i),
+    ///     expr!(1),
+    ///     expr!(10),
     /// );
     /// ```
     pub fn sum(
@@ -519,13 +520,14 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let expr = Expression::product(
-    ///     Expression::symbol("i"),
-    ///     Symbol::new("i"),
-    ///     Expression::integer(1),
-    ///     Expression::integer(10),
+    ///     expr!(i),
+    ///     symbol!(i),
+    ///     expr!(1),
+    ///     expr!(10),
     /// );
     /// ```
     pub fn product(
@@ -768,7 +770,10 @@ mod canonical_form_tests {
         let expr1 = Expression::add(vec![x.clone(), y.clone()]);
         let expr2 = Expression::add(vec![y.clone(), x.clone()]);
 
-        assert_eq!(expr1, expr2, "Addition should be commutative in canonical form");
+        assert_eq!(
+            expr1, expr2,
+            "Addition should be commutative in canonical form"
+        );
     }
 
     #[test]
@@ -780,7 +785,10 @@ mod canonical_form_tests {
         let expr1 = Expression::mul(vec![x.clone(), y.clone()]);
         let expr2 = Expression::mul(vec![y.clone(), x.clone()]);
 
-        assert_eq!(expr1, expr2, "Multiplication should be commutative in canonical form");
+        assert_eq!(
+            expr1, expr2,
+            "Multiplication should be commutative in canonical form"
+        );
     }
 
     #[test]
@@ -793,7 +801,10 @@ mod canonical_form_tests {
         let expr1 = Expression::add(vec![x.clone(), y.clone(), z.clone()]);
         let expr2 = Expression::add(vec![z.clone(), y.clone(), x.clone()]);
 
-        assert_eq!(expr1, expr2, "Multi-term addition should have canonical order");
+        assert_eq!(
+            expr1, expr2,
+            "Multi-term addition should have canonical order"
+        );
     }
 
     // ========== IDENTITY ELEMENT TESTS ==========
@@ -813,7 +824,10 @@ mod canonical_form_tests {
         let x = Expression::symbol("x");
         let expr = Expression::mul(vec![x.clone(), Expression::integer(1)]);
 
-        assert_eq!(expr, x, "Multiplying by one should return the original expression");
+        assert_eq!(
+            expr, x,
+            "Multiplying by one should return the original expression"
+        );
     }
 
     #[test]
@@ -822,7 +836,10 @@ mod canonical_form_tests {
         let x = Expression::symbol("x");
         let expr = Expression::pow(x.clone(), Expression::integer(1));
 
-        assert_eq!(expr, x, "Raising to power 1 should return the original expression");
+        assert_eq!(
+            expr, x,
+            "Raising to power 1 should return the original expression"
+        );
     }
 
     #[test]
@@ -831,7 +848,11 @@ mod canonical_form_tests {
         let x = Expression::symbol("x");
         let expr = Expression::pow(x, Expression::integer(0));
 
-        assert_eq!(expr, Expression::integer(1), "Any expression raised to power 0 should equal 1");
+        assert_eq!(
+            expr,
+            Expression::integer(1),
+            "Any expression raised to power 0 should equal 1"
+        );
     }
 
     #[test]
@@ -840,7 +861,11 @@ mod canonical_form_tests {
         let x = Expression::symbol("x");
         let expr = Expression::pow(Expression::integer(1), x);
 
-        assert_eq!(expr, Expression::integer(1), "One raised to any power should equal 1");
+        assert_eq!(
+            expr,
+            Expression::integer(1),
+            "One raised to any power should equal 1"
+        );
     }
 
     #[test]
@@ -849,7 +874,11 @@ mod canonical_form_tests {
         let x = Expression::symbol("x");
         let expr = Expression::mul(vec![x, Expression::integer(0)]);
 
-        assert_eq!(expr, Expression::integer(0), "Multiplying by zero should return zero");
+        assert_eq!(
+            expr,
+            Expression::integer(0),
+            "Multiplying by zero should return zero"
+        );
     }
 
     // ========== ASSOCIATIVITY FLATTENING TESTS ==========
@@ -907,7 +936,11 @@ mod canonical_form_tests {
         // 2 + 3 should evaluate to 5
         let expr = Expression::add(vec![Expression::integer(2), Expression::integer(3)]);
 
-        assert_eq!(expr, Expression::integer(5), "Constant addition should be evaluated");
+        assert_eq!(
+            expr,
+            Expression::integer(5),
+            "Constant addition should be evaluated"
+        );
     }
 
     #[test]
@@ -915,7 +948,11 @@ mod canonical_form_tests {
         // 2 * 3 should evaluate to 6
         let expr = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
 
-        assert_eq!(expr, Expression::integer(6), "Constant multiplication should be evaluated");
+        assert_eq!(
+            expr,
+            Expression::integer(6),
+            "Constant multiplication should be evaluated"
+        );
     }
 
     #[test]
@@ -923,7 +960,11 @@ mod canonical_form_tests {
         // 2^3 should evaluate to 8
         let expr = Expression::pow(Expression::integer(2), Expression::integer(3));
 
-        assert_eq!(expr, Expression::integer(8), "Constant power should be evaluated");
+        assert_eq!(
+            expr,
+            Expression::integer(8),
+            "Constant power should be evaluated"
+        );
     }
 
     #[test]

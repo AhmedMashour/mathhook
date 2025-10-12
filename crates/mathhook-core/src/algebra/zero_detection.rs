@@ -364,7 +364,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_zero_detection_basic() {
@@ -373,7 +373,7 @@ mod tests {
         assert!(zero.is_algebraic_zero());
 
         // Test x + (-x) = 0
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::add(vec![
             Expression::symbol(x.clone()),
             Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_additive_inverse_detection() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let term1 = Expression::symbol(x.clone());
         let term2 = Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]);
@@ -405,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_complex_zero_pattern() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test: 4 + 4*x - 2*(2 + 2*x) = 4 + 4*x - 4 - 4*x = 0
         let expr = Expression::add(vec![
@@ -430,7 +430,7 @@ mod tests {
 
     #[test]
     fn test_zero_simplification() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::add(vec![
             Expression::symbol(x.clone()),
@@ -444,7 +444,7 @@ mod tests {
 
     #[test]
     fn test_multiplication_zero_detection() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test 0 * x = 0
         let expr = Expression::mul(vec![Expression::integer(0), Expression::symbol(x.clone())]);

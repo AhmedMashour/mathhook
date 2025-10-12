@@ -21,7 +21,7 @@ fn test_zero_detection_arithmetic() {
 
 #[test]
 fn test_zero_detection_multiplication() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::mul(vec![
         Expression::integer(0),

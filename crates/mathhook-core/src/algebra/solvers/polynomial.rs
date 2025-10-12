@@ -2,10 +2,10 @@
 //! Includes step-by-step explanations for educational value
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
-
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use crate::simplify::Simplify;
+use crate::symbol;
 
 /// Polynomial equation solver
 #[derive(Debug, Clone)]
@@ -55,7 +55,7 @@ impl EquationSolver for PolynomialSolver {
     }
 
     fn can_solve(&self, equation: &Expression) -> bool {
-        let degree = self.find_polynomial_degree(equation, &Symbol::new("x")); // Generic check
+        let degree = self.find_polynomial_degree(equation, &symbol!(x)); // Generic check
         degree >= 3 && degree <= 4
     }
 }

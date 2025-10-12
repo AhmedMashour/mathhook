@@ -869,10 +869,11 @@ impl From<EnhancedStepExplanation> for crate::educational::step_by_step::StepByS
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{symbol, Expression};
 
     #[test]
     fn test_smart_step_creation() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let equation = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
 
         let step = SmartStepFactory::linear_introduction(&equation, &x);
@@ -893,7 +894,7 @@ mod tests {
 
     #[test]
     fn test_json_export() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let equation = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
 
         let steps = vec![
@@ -913,7 +914,7 @@ mod tests {
 
     #[test]
     fn test_api_data_extraction() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let steps = vec![SmartStepFactory::linear_strategy(&x)];
         let explanation = SmartStepExplanation::new(steps);
 
@@ -926,7 +927,7 @@ mod tests {
 
     #[test]
     fn test_legacy_compatibility() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let equation = Expression::integer(0);
         let smart_step = EnhancedStepFactory::linear_introduction(&equation, &x);
 

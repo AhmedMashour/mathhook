@@ -4,8 +4,8 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_expand_basic() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     // Test basic distribution: 2*(x + y) = 2x + 2y
     let expr = Expression::mul(vec![
@@ -25,7 +25,7 @@ fn test_expand_basic() {
 
 #[test]
 fn test_expand_power() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test (x + 1)^2 = x^2 + 2x + 1
     let expr = Expression::pow(
@@ -48,8 +48,8 @@ fn test_expand_power() {
 
 #[test]
 fn test_expand_binomial() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     // Test (x + y)^2 = x^2 + 2xy + y^2
     let expr = Expression::pow(
@@ -68,7 +68,7 @@ fn test_expand_binomial() {
 
 #[test]
 fn test_polynomial_expansion_patterns() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test (x + 2)(x + 3) = x^2 + 5x + 6
     let expr = Expression::mul(vec![
@@ -91,9 +91,9 @@ fn test_polynomial_expansion_patterns() {
 #[test]
 fn test_historic_70_percent_approach() {
     // Commemorating our 70% SymPy coverage approach
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
-    let z = Symbol::new("z");
+    let x = symbol!(x);
+    let y = symbol!(y);
+    let z = symbol!(z);
     
     let expr = Expression::mul(vec![
         Expression::add(vec![
@@ -114,7 +114,7 @@ fn test_historic_70_percent_approach() {
 
 #[test]
 fn test_polynomial_mastery_patterns() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test higher degree expansions
     let expr = Expression::pow(
@@ -135,8 +135,8 @@ fn test_polynomial_mastery_patterns() {
 #[test]
 fn test_historic_95_percent_milestone_achievement() {
     // Ultimate expansion test for 95% milestone
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
     
     let expr = Expression::pow(
         Expression::add(vec![
@@ -154,7 +154,7 @@ fn test_historic_95_percent_milestone_achievement() {
 
 #[test]
 fn test_nested_expansion() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     // Test nested expressions: (x + 1) * (x^2 + x + 1)
     let expr = Expression::mul(vec![

@@ -1,9 +1,9 @@
 //! Vector field operations including divergence, curl, Laplacian, and conservative field analysis
 
 use super::utils::PartialUtils;
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Vector field operations for divergence, curl, and Laplacian
 pub struct VectorFieldOperations;
@@ -14,11 +14,12 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
+    /// let z = symbol!(z);
     /// let vector_field = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone()),
@@ -55,11 +56,12 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
+    /// let z = symbol!(z);
     /// let vector_field = vec![
     ///     Expression::symbol(y.clone()),
     ///     Expression::symbol(x.clone()),
@@ -126,10 +128,11 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let f = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -156,10 +159,11 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let f = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let grad_mag = VectorFieldOperations::gradient_magnitude(&f, vec![x, y]);
     /// ```
@@ -190,10 +194,11 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let conservative_field = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone())
@@ -234,10 +239,11 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let conservative_field = vec![
     ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
     ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())])
@@ -280,11 +286,12 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
-    /// let z = Symbol::new("z");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
+    /// let z = symbol!(z);
     /// let irrotational_field = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone()),
@@ -303,10 +310,11 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let solenoidal_field = vec![
     ///     Expression::symbol(y.clone()),
     ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
@@ -328,10 +336,11 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let velocity_field = vec![
     ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(y.clone())]),
     ///     Expression::symbol(x.clone())
@@ -347,10 +356,11 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let velocity_field = vec![
     ///     Expression::symbol(y.clone()),
     ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
@@ -378,10 +388,11 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let velocity_field = vec![
     ///     Expression::symbol(y.clone()),
     ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())])
@@ -396,9 +407,11 @@ impl FluidDynamicsOperations {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
+    use crate::Symbol;
 
     fn test_symbols() -> (Symbol, Symbol, Symbol) {
-        (Symbol::new("x"), Symbol::new("y"), Symbol::new("z"))
+        (symbol!(x), symbol!(y), symbol!(z))
     }
 
     #[test]

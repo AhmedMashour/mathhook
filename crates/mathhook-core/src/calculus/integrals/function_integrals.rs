@@ -4,7 +4,6 @@
 //! and other standard functions using the existing Expression::function
 //! infrastructure.
 
-use crate::calculus::integrals::Integration;
 use crate::core::{Expression, Symbol};
 
 /// Function integration handler
@@ -16,9 +15,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
+    /// use mathhook_core::{Expression, FunctionIntegrals};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let args = vec![Expression::symbol(x.clone())];
     /// let result = FunctionIntegrals::integrate("sin", &args, x);
     /// ```
@@ -50,9 +50,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
+    /// use mathhook_core::{Expression, FunctionIntegrals};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let result = FunctionIntegrals::integrate_simple_function("sin", x);
     /// ```
     pub fn integrate_simple_function(name: &str, variable: Symbol) -> Expression {
@@ -234,9 +235,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
+    /// use mathhook_core::{Expression, FunctionIntegrals};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let inner = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = FunctionIntegrals::integrate_composite_function("sin", &inner, x);
     /// ```
@@ -275,9 +277,10 @@ impl FunctionIntegrals {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, FunctionIntegrals};
+    /// use mathhook_core::{Expression, FunctionIntegrals};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let a = Expression::integer(3);
     /// let result = FunctionIntegrals::integrate_linear_substitution("sin", &a, x);
     /// ```

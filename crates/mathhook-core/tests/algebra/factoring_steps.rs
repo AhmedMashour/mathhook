@@ -4,7 +4,7 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_factoring_steps() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -19,7 +19,7 @@ fn test_factoring_steps() {
 
 #[test]
 fn test_step_by_step_factoring() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -35,7 +35,7 @@ fn test_step_by_step_factoring() {
 
 #[test]
 fn test_advanced_factoring_steps() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     
     let expr = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),

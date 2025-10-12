@@ -440,7 +440,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_complex_addition() {
@@ -485,10 +485,10 @@ mod tests {
 
     #[test]
     fn test_complex_with_symbols() {
-        let x = Expression::symbol(Symbol::new("x"));
-        let y = Expression::symbol(Symbol::new("y"));
-        let a = Expression::symbol(Symbol::new("a"));
-        let b = Expression::symbol(Symbol::new("b"));
+        let x = Expression::symbol(symbol!(x));
+        let y = Expression::symbol(symbol!(y));
+        let a = Expression::symbol(symbol!(a));
+        let b = Expression::symbol(symbol!(b));
 
         let z1 = Expression::complex(x.clone(), y.clone());
         let z2 = Expression::complex(a.clone(), b.clone());

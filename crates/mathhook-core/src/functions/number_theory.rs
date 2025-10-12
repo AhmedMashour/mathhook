@@ -5,6 +5,7 @@
 
 use crate::core::Expression;
 use crate::functions::properties::*;
+use crate::symbol;
 use std::collections::HashMap;
 
 /// Number Theory Function Intelligence
@@ -40,16 +41,14 @@ impl NumberTheoryIntelligence {
         self.properties.contains_key(name)
     }
 
-    /// Initialize GCD and LCM with existing algorithm integration
     fn initialize_gcd_lcm(&mut self) {
-        // GCD function - integrates with existing Expression::gcd implementation
         self.properties.insert(
             "gcd".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 derivative_rule: None, // GCD is not differentiable
                 special_values: vec![SpecialValue {
                     input: "0".to_string(),
-                    output: Expression::symbol(crate::core::Symbol::new("b")),
+                    output: Expression::symbol(symbol!(b)),
                     latex_explanation: "\\gcd(0, b) = |b|".to_string(),
                 }],
                 identities: Box::new(vec![]),
@@ -70,7 +69,7 @@ impl NumberTheoryIntelligence {
                 derivative_rule: None, // LCM is not differentiable
                 special_values: vec![SpecialValue {
                     input: "1".to_string(),
-                    output: Expression::symbol(crate::core::Symbol::new("b")),
+                    output: Expression::symbol(symbol!(b)),
                     latex_explanation: "\\text{lcm}(1, b) = |b|".to_string(),
                 }],
                 identities: Box::new(vec![]),

@@ -35,7 +35,7 @@ fn test_symbolica_challenge_benchmark() {
 
     println!("⚔️ SYMBOLICA CHALLENGE BENCHMARK");
 
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let start = Instant::now();
 
     // Complex polynomial GCD operations

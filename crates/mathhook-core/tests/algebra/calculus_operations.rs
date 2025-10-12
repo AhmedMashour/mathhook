@@ -2,10 +2,11 @@
 //! Covers derivatives, integrals, limits, and series expansions
 
 use mathhook_core::prelude::*;
+
 #[test]
 fn test_derivative_basic_rules() {
     // Test basic derivative patterns that should be recognizable
-    let x = Expression::symbol(Symbol::new("x"));
+    let x = Expression::symbol(symbol!(x));
 
     // Derivative patterns in algebraic form
     // d/dx(x^n) = n*x^(n-1) pattern recognition
@@ -23,10 +24,10 @@ fn test_derivative_basic_rules() {
 #[test]
 fn test_derivative_product_rule_pattern() {
     // Test product rule pattern: d/dx(uv) = u'v + uv'
-    let u = Expression::symbol(Symbol::new("u"));
-    let v = Expression::symbol(Symbol::new("v"));
-    let u_prime = Expression::symbol(Symbol::new("u_prime"));
-    let v_prime = Expression::symbol(Symbol::new("v_prime"));
+    let u = Expression::symbol(symbol!(u));
+    let v = Expression::symbol(symbol!(v));
+    let u_prime = Expression::symbol(symbol!(u_prime));
+    let v_prime = Expression::symbol(symbol!(v_prime));
 
     // Product rule pattern: u'v + uv'
     let product_rule = Expression::add(vec![
@@ -46,8 +47,8 @@ fn test_derivative_product_rule_pattern() {
 #[test]
 fn test_derivative_chain_rule_pattern() {
     // Test chain rule pattern: d/dx(f(g(x))) = f'(g(x)) * g'(x)
-    let f_prime = Expression::symbol(Symbol::new("f_prime"));
-    let g_prime = Expression::symbol(Symbol::new("g_prime"));
+    let f_prime = Expression::symbol(symbol!(f_prime));
+    let g_prime = Expression::symbol(symbol!(g_prime));
 
     // Chain rule pattern: f'(g) * g'
     let chain_rule = Expression::mul(vec![f_prime, g_prime]);
@@ -65,7 +66,7 @@ fn test_derivative_chain_rule_pattern() {
 #[test]
 fn test_integral_basic_patterns() {
     // Test basic integral patterns that should be recognizable
-    let x = Expression::symbol(Symbol::new("x"));
+    let x = Expression::symbol(symbol!(x));
 
     // Integral patterns: ∫x^n dx = x^(n+1)/(n+1) pattern
     let power_integral_pattern = Expression::mul(vec![
@@ -83,8 +84,8 @@ fn test_integral_basic_patterns() {
 #[test]
 fn test_limit_basic_patterns() {
     // Test limit patterns that should be algebraically recognizable
-    let x = Expression::symbol(Symbol::new("x"));
-    let h = Expression::symbol(Symbol::new("h"));
+    let x = Expression::symbol(symbol!(x));
+    let h = Expression::symbol(symbol!(h));
 
     // Limit pattern: (f(x+h) - f(x))/h for f(x) = x²
     // (x+h)² - x² = x² + 2xh + h² - x² = 2xh + h²
@@ -105,7 +106,7 @@ fn test_limit_basic_patterns() {
 #[test]
 fn test_series_expansion_patterns() {
     // Test series expansion patterns (Taylor series coefficients)
-    let x = Expression::symbol(Symbol::new("x"));
+    let x = Expression::symbol(symbol!(x));
 
     // Taylor series pattern for e^x: 1 + x + x²/2! + x³/3! + ...
     let taylor_terms = Expression::add(vec![
@@ -133,8 +134,8 @@ fn test_series_expansion_patterns() {
 #[test]
 fn test_partial_derivative_patterns() {
     // Test partial derivative patterns: ∂f/∂x, ∂f/∂y
-    let x = Expression::symbol(Symbol::new("x"));
-    let y = Expression::symbol(Symbol::new("y"));
+    let x = Expression::symbol(symbol!(x));
+    let y = Expression::symbol(symbol!(y));
 
     // Partial derivative pattern for f(x,y) = x²y + xy²
     let mixed_partial = Expression::add(vec![
@@ -158,9 +159,9 @@ fn test_partial_derivative_patterns() {
 #[test]
 fn test_integration_by_parts_pattern() {
     // Test integration by parts pattern: ∫u dv = uv - ∫v du
-    let u = Expression::symbol(Symbol::new("u"));
-    let v = Expression::symbol(Symbol::new("v"));
-    let du = Expression::symbol(Symbol::new("du"));
+    let u = Expression::symbol(symbol!(u));
+    let v = Expression::symbol(symbol!(v));
+    let du = Expression::symbol(symbol!(du));
 
     // Integration by parts pattern: uv - ∫v du
     let integration_by_parts = Expression::add(vec![
@@ -180,9 +181,9 @@ fn test_integration_by_parts_pattern() {
 #[test]
 fn test_multivariable_calculus_patterns() {
     // Test multivariable calculus patterns
-    let x = Expression::symbol(Symbol::new("x"));
-    let y = Expression::symbol(Symbol::new("y"));
-    let z = Expression::symbol(Symbol::new("z"));
+    let x = Expression::symbol(symbol!(x));
+    let y = Expression::symbol(symbol!(y));
+    let z = Expression::symbol(symbol!(z));
 
     // Gradient pattern: ∇f = (∂f/∂x, ∂f/∂y, ∂f/∂z)
     // For f(x,y,z) = x²y + yz² + xz
@@ -215,9 +216,9 @@ fn test_multivariable_calculus_patterns() {
 #[test]
 fn test_vector_calculus_operations() {
     // Test vector calculus operations (divergence, curl patterns)
-    let fx = Expression::symbol(Symbol::new("Fx"));
-    let fy = Expression::symbol(Symbol::new("Fy"));
-    let fz = Expression::symbol(Symbol::new("Fz"));
+    let fx = Expression::symbol(symbol!(Fx));
+    let fy = Expression::symbol(symbol!(Fy));
+    let fz = Expression::symbol(symbol!(Fz));
 
     // Divergence pattern: ∇·F = ∂Fx/∂x + ∂Fy/∂y + ∂Fz/∂z
     let divergence = Expression::add(vec![fx, fy, fz]);
@@ -234,9 +235,9 @@ fn test_vector_calculus_operations() {
 #[test]
 fn test_differential_equation_patterns() {
     // Test differential equation patterns
-    let y = Expression::symbol(Symbol::new("y"));
-    let y_prime = Expression::symbol(Symbol::new("y_prime"));
-    let x = Expression::symbol(Symbol::new("x"));
+    let y = Expression::symbol(symbol!(y));
+    let y_prime = Expression::symbol(symbol!(y_prime));
+    let x = Expression::symbol(symbol!(x));
 
     // First-order ODE pattern: y' + p(x)y = q(x)
     let ode_pattern = Expression::add(vec![y_prime, Expression::mul(vec![x, y])]);

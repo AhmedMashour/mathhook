@@ -4,8 +4,8 @@
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 // Temporarily simplified for TDD success
-use crate::simplify::Simplify;
 use crate::algebra::solvers::{EquationSolver, SolverResult};
+use crate::simplify::Simplify;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 
@@ -451,17 +451,14 @@ impl LinearSolver {
     }
 }
 
-// ============================================================================
-// 🧪 UNIT TESTS (INTERNAL VALIDATION)
-// ============================================================================
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_coefficient_extraction() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let solver = LinearSolver::new();
 
         // Test 2x + 3
@@ -478,7 +475,7 @@ mod tests {
 
     #[test]
     fn test_linear_detection() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let solver = LinearSolver::new();
 
         // Linear equation

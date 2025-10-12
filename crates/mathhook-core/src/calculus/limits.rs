@@ -3,9 +3,9 @@
 //! Implements symbolic limit computation including one-sided limits,
 //! limits at infinity, and indeterminate form resolution.
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Direction for limit computation
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -28,7 +28,7 @@ pub trait Limits {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Limits;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::mul(vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())])
@@ -46,7 +46,7 @@ pub trait Limits {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::{Limits, LimitDirection};
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
     /// let point = Expression::integer(0);
     /// let result = expr.limit_directed(&x, &point, LimitDirection::Right);
@@ -66,7 +66,7 @@ pub trait Limits {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Limits;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
     /// let result = expr.limit_at_infinity(&x);
     /// ```
@@ -80,7 +80,7 @@ pub trait Limits {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Limits;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
     /// let result = expr.limit_at_negative_infinity(&x);
     /// ```
@@ -106,7 +106,7 @@ impl LimitMethods {
             num_derivative,
             Expression::pow(den_derivative, Expression::integer(-1)),
         ]);
-        
+
         // Recursively call limit to evaluate the derivative ratio
         derivative_ratio.limit(variable, point)
     }
@@ -161,7 +161,9 @@ impl LimitMethods {
         if let Expression::Mul(factors) = expr {
             if factors.len() == 2 {
                 let check_sin_over_x = |(func_expr, pow_expr): (&Expression, &Expression)| -> bool {
-                    if let (Expression::Function { name, args }, Expression::Pow(base, exp)) = (func_expr, pow_expr) {
+                    if let (Expression::Function { name, args }, Expression::Pow(base, exp)) =
+                        (func_expr, pow_expr)
+                    {
                         name == "sin"
                             && args.len() == 1
                             && base.as_ref() == &args[0]
@@ -172,7 +174,9 @@ impl LimitMethods {
                     }
                 };
 
-                if check_sin_over_x((&factors[0], &factors[1])) || check_sin_over_x((&factors[1], &factors[0])) {
+                if check_sin_over_x((&factors[0], &factors[1]))
+                    || check_sin_over_x((&factors[1], &factors[0]))
+                {
                     return Expression::integer(1);
                 }
             }
@@ -214,11 +218,13 @@ impl LimitMethods {
                     .iter()
                     .map(|factor| Self::substitute_and_evaluate(factor, variable, point))
                     .collect();
-                
+
                 // Check if we have a potential indeterminate form (0 with undefined)
                 let has_zero = substituted.iter().any(|f| f.is_zero());
-                let has_undefined = substituted.iter().any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
-                
+                let has_undefined = substituted
+                    .iter()
+                    .any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+
                 if has_zero && has_undefined {
                     // Don't simplify to preserve indeterminate form detection
                     Expression::mul(substituted)
@@ -366,10 +372,11 @@ impl Limits for Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_polynomial_limit() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let point = Expression::integer(3);
         let result = expr.limit(&x, &point);
@@ -379,7 +386,7 @@ mod tests {
 
     #[test]
     fn test_rational_limit_continuous() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let numerator =
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
         let denominator =
@@ -396,7 +403,7 @@ mod tests {
 
     #[test]
     fn test_trigonometric_limit() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let sin_x = Expression::function("sin", vec![Expression::symbol(x.clone())]);
         let expr = Expression::mul(vec![
             sin_x,
@@ -410,11 +417,10 @@ mod tests {
 
     #[test]
     fn test_limit_at_infinity() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
         let result = expr.limit_at_infinity(&x);
 
-        // Should be represented as a limit function call
         assert!(matches!(result, Expression::Function { name, .. } if name == "limit"));
     }
 }

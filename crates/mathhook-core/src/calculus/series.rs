@@ -3,9 +3,9 @@
 //! Implements Taylor series, Laurent series, Maclaurin series,
 //! and other infinite series expansions for symbolic computation.
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Types of series expansions
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -32,7 +32,7 @@ pub trait SeriesExpansion {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
     /// let point = Expression::integer(0);
     /// let result = expr.taylor_series(&x, &point, 5);
@@ -47,7 +47,7 @@ pub trait SeriesExpansion {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::pow(
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ///     Expression::integer(-1)
@@ -65,7 +65,7 @@ pub trait SeriesExpansion {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
     /// let result = expr.maclaurin_series(&x, 6);
     /// ```
@@ -79,7 +79,7 @@ pub trait SeriesExpansion {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
     /// let point = Expression::integer(0);
     /// let result = expr.power_series_coefficients(&x, &point, 5);
@@ -370,10 +370,11 @@ impl SeriesExpansion for Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_exponential_maclaurin() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
         let result = expr.maclaurin_series(&x, 3);
 
@@ -396,7 +397,7 @@ mod tests {
 
     #[test]
     fn test_sine_maclaurin() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
         let result = expr.maclaurin_series(&x, 3);
 
@@ -414,7 +415,7 @@ mod tests {
 
     #[test]
     fn test_cosine_maclaurin() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
         let result = expr.maclaurin_series(&x, 2);
 

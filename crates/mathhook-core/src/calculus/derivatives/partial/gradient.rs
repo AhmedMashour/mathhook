@@ -1,8 +1,8 @@
 //! Gradient and directional derivative operations
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Gradient vector operations
 pub struct GradientOperations;
@@ -13,11 +13,12 @@ impl GradientOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::GradientOperations;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -41,12 +42,13 @@ impl GradientOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::GradientOperations;
     /// use std::collections::HashMap;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::mul(vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone())
@@ -82,11 +84,12 @@ impl DirectionalDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -131,8 +134,8 @@ impl DirectionalDerivatives {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::pow(Expression::symbol(y.clone()), Expression::integer(2))
@@ -170,12 +173,13 @@ impl DirectionalDerivatives {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
     use std::collections::HashMap;
 
     #[test]
     fn test_basic_gradient_computation() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let quadratic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -190,8 +194,8 @@ mod tests {
 
     #[test]
     fn test_linear_function_gradient() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let linear = Expression::add(vec![
             Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
@@ -207,8 +211,8 @@ mod tests {
 
     #[test]
     fn test_multivariate_polynomial_gradient() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let poly = Expression::add(vec![
             Expression::mul(vec![
@@ -229,8 +233,8 @@ mod tests {
 
     #[test]
     fn test_gradient_caching() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::function(
             "sin",
@@ -255,9 +259,9 @@ mod tests {
 
     #[test]
     fn test_three_variable_gradient() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
-        let z = Symbol::new("z");
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
 
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
@@ -274,8 +278,8 @@ mod tests {
 
     #[test]
     fn test_directional_derivative_basic() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -290,8 +294,8 @@ mod tests {
 
     #[test]
     fn test_directional_derivative_diagonal() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::mul(vec![
             Expression::symbol(x.clone()),
@@ -306,8 +310,8 @@ mod tests {
 
     #[test]
     fn test_unit_directional_derivative() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -322,8 +326,8 @@ mod tests {
 
     #[test]
     fn test_constant_function_gradient() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let constant = Expression::integer(42);
         let gradient = GradientOperations::compute(&constant, vec![x.clone(), y.clone()]);
@@ -335,7 +339,7 @@ mod tests {
 
     #[test]
     fn test_single_variable_gradient() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(3));
         let gradient = GradientOperations::compute(&expr, vec![x.clone()]);
@@ -347,8 +351,8 @@ mod tests {
     #[test]
     #[should_panic(expected = "Dimension mismatch")]
     fn test_directional_derivative_dimension_mismatch() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::symbol(x.clone()),
@@ -361,8 +365,8 @@ mod tests {
 
     #[test]
     fn test_trigonometric_function_gradient() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let trig_expr = Expression::add(vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -377,8 +381,8 @@ mod tests {
 
     #[test]
     fn test_zero_direction_vector() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let expr = Expression::add(vec![
             Expression::symbol(x.clone()),

@@ -15,7 +15,7 @@ mod boundary_values {
     fn test_zero_boundary_conditions() {
         /// Test all operations with zero values
         let zero = Expression::integer(0);
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let var = Expression::symbol(x);
 
         // Addition with zero
@@ -63,7 +63,7 @@ mod boundary_values {
     fn test_unity_boundary_conditions() {
         /// Test all operations with unity (1)
         let one = Expression::integer(1);
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let var = Expression::symbol(x);
 
         // Multiplication with one
@@ -416,7 +416,7 @@ mod expression_structure {
     #[test]
     fn test_single_element_expressions() {
         /// Test expressions with single elements
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let single_add = Expression::add(vec![Expression::symbol(x.clone())]);
         let single_mul = Expression::mul(vec![Expression::symbol(x.clone())]);
 
@@ -482,8 +482,8 @@ mod symbol_edge_cases {
     #[test]
     fn test_identical_symbols() {
         /// Test operations with identical symbols
-        let x1 = Symbol::new("x");
-        let x2 = Symbol::new("x");
+        let x1 = symbol!(x);
+        let x2 = symbol!(x);
 
         let expr1 = Expression::symbol(x1);
         let expr2 = Expression::symbol(x2);
@@ -521,8 +521,8 @@ mod symbol_edge_cases {
     #[test]
     fn test_symbols_in_complex_expressions() {
         /// Test symbols in deeply nested and complex expressions
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let complex_expr = Expression::add(vec![
             Expression::mul(vec![
@@ -605,9 +605,9 @@ mod performance_edge_cases {
         let complex_expr = Expression::add(vec![
             Expression::mul(vec![
                 Expression::integer(2),
-                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(symbol!(x)),
             ]),
-            Expression::pow(Expression::symbol(Symbol::new("y")), Expression::integer(3)),
+            Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(3)),
             Expression::integer(42),
         ]);
 

@@ -3,10 +3,10 @@
 //! Implements residue computation, contour integration,
 //! and complex analysis operations for symbolic computation.
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::calculus::series::SeriesExpansion;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Trait for residue calculus operations
 pub trait ResidueCalculus {
@@ -18,7 +18,7 @@ pub trait ResidueCalculus {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::pow(
     ///     Expression::add(vec![
     ///         Expression::symbol(z.clone()),
@@ -39,7 +39,7 @@ pub trait ResidueCalculus {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::pow(
     ///     Expression::mul(vec![
     ///         Expression::add(vec![Expression::symbol(z.clone()), Expression::integer(-1)]),
@@ -59,7 +59,7 @@ pub trait ResidueCalculus {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::pow(
     ///     Expression::add(vec![Expression::symbol(z.clone()), Expression::integer(-1)]),
     ///     Expression::integer(-1)
@@ -79,7 +79,7 @@ pub trait ComplexAnalysis {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::pow(Expression::symbol(z.clone()), Expression::integer(2));
     /// let point = Expression::integer(1);
     /// let is_analytic = expr.is_analytic_at(&z, &point);
@@ -94,7 +94,7 @@ pub trait ComplexAnalysis {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::pow(
     ///     Expression::pow(
     ///         Expression::add(vec![Expression::symbol(z.clone()), Expression::integer(-1)]),
@@ -115,7 +115,7 @@ pub trait ComplexAnalysis {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::mul(vec![
     ///     Expression::function("sin", vec![Expression::symbol(z.clone())]),
     ///     Expression::pow(Expression::symbol(z.clone()), Expression::integer(-1))
@@ -133,7 +133,7 @@ pub trait ComplexAnalysis {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
-    /// let z = Symbol::new("z");
+    /// let z = symbol!(z);
     /// let expr = Expression::function(
     ///     "exp",
     ///     vec![Expression::pow(Expression::symbol(z.clone()), Expression::integer(-1))]
@@ -415,10 +415,11 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_simple_pole_residue() {
-        let z = Symbol::new("z");
+        let z = symbol!(z);
         let numerator = Expression::integer(1);
         let denominator =
             Expression::add(vec![Expression::symbol(z.clone()), Expression::integer(-1)]);
@@ -440,7 +441,7 @@ mod tests {
 
     #[test]
     fn test_pole_order() {
-        let z = Symbol::new("z");
+        let z = symbol!(z);
         let expr = Expression::mul(vec![
             Expression::integer(1),
             Expression::pow(
@@ -461,7 +462,7 @@ mod tests {
 
     #[test]
     fn test_is_analytic() {
-        let z = Symbol::new("z");
+        let z = symbol!(z);
         let polynomial = Expression::pow(Expression::symbol(z.clone()), Expression::integer(2));
         let point = Expression::integer(1);
 

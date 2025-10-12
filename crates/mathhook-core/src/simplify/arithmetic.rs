@@ -437,7 +437,9 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
 
     let mut rational_product: Option<BigRational> = None;
 
-    let has_undefined = factors.iter().any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+    let has_undefined = factors
+        .iter()
+        .any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
 
     for factor in factors {
         match factor {
@@ -677,7 +679,7 @@ fn extract_arithmetic_coefficient_and_base(expr: &Expression) -> (Expression, Ex
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::{symbol, Expression};
 
     #[test]
     fn test_addition_simplification() {
@@ -690,7 +692,7 @@ mod tests {
         assert_eq!(expr, Expression::integer(5));
 
         // Mixed numeric and symbolic
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = simplify_addition(&[Expression::integer(2), Expression::symbol(x.clone())]);
         assert_eq!(
             expr,
@@ -715,7 +717,7 @@ mod tests {
 
     #[test]
     fn test_power_simplification() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // x^0 = 1
         let expr = simplify_power(&Expression::symbol(x.clone()), &Expression::integer(0));

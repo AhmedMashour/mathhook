@@ -16,7 +16,7 @@ fn test_simple_zero_case() {
 #[test]
 fn test_variable_additive_inverse() {
     /// Test symbolic additive inverse: 4x + (-4x) should cancel when implemented
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = 4 * Expression::symbol(x.clone()) + (-4) * Expression::symbol(x.clone());
     let result = expr.simplify();
@@ -45,7 +45,7 @@ fn test_variable_additive_inverse() {
 #[test]
 fn test_combined_zero_detection() {
     /// Test combined constant and variable cancellation
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::integer(4)
         + 4 * Expression::symbol(x.clone())
@@ -84,7 +84,7 @@ fn test_combined_zero_detection() {
 #[test]
 fn test_zero_multiplication_property() {
     /// Test zero multiplication: 0 * anything = 0
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let test_cases = vec![
         Expression::integer(42),
@@ -114,7 +114,7 @@ fn test_zero_multiplication_property() {
 #[test]
 fn test_additive_identity_with_zero() {
     /// Test additive identity: a + 0 = a
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let test_expressions = vec![
         (Expression::integer(5), Expression::integer(5)), // 5 + 0 = 5

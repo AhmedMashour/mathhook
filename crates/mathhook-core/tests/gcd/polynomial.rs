@@ -4,8 +4,8 @@ use mathhook_core::prelude::*;
 
 #[test]
 fn test_polynomial_gcd_comprehensive() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Test comprehensive polynomial GCD cases
     let poly1 = Expression::mul(vec![
@@ -29,9 +29,9 @@ fn test_polynomial_gcd_comprehensive() {
 
 #[test]
 fn test_multivariate_polynomial_gcd() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
-    let z = Symbol::new("z");
+    let x = symbol!(x);
+    let y = symbol!(y);
+    let z = symbol!(z);
 
     // Test multivariate case
     let poly1 = Expression::mul(vec![
@@ -54,7 +54,7 @@ fn test_multivariate_polynomial_gcd() {
 
 #[test]
 fn test_polynomial_gcd_with_coefficients() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test polynomial GCD with different coefficients
     let poly1 = Expression::add(vec![
@@ -76,7 +76,7 @@ fn test_polynomial_gcd_with_coefficients() {
 
 #[test]
 fn test_polynomial_gcd_factoring() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test GCD that requires factoring
     let poly1 = Expression::add(vec![
@@ -100,7 +100,7 @@ fn test_polynomial_gcd_factoring() {
 fn test_polynomial_gcd_performance() {
     use std::time::Instant;
 
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let start = Instant::now();
 
     // Performance test for polynomial GCD

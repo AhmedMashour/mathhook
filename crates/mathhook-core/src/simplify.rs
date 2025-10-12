@@ -5,7 +5,6 @@
 
 use crate::core::Expression;
 use crate::matrix::operations::MatrixOperations;
-
 pub mod arithmetic;
 mod constants;
 mod functions;
@@ -170,7 +169,7 @@ impl Simplify for Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_basic_simplification() {
@@ -183,7 +182,7 @@ mod tests {
         assert_eq!(expr.simplify(), Expression::integer(6));
 
         // Test power
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(1));
         assert_eq!(expr.simplify(), Expression::symbol(x));
     }

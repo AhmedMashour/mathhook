@@ -141,13 +141,9 @@ impl SmartEquationSolver {
         }
     }
 
-    /// 🎯 MAIN LATEX ENTRY POINT - Smart solver dispatch
-    pub fn solve_latex(&mut self, latex: &str) -> (SolverResult, StepByStepExplanation) {
-        // Parsing moved to separate crate - this method now takes Expression directly
-        // For LaTeX parsing, use the parser crate
+    pub fn solve(&mut self) -> (SolverResult, StepByStepExplanation) {
         let equation = Expression::integer(0); // Placeholder
 
-        // 2. Extract primary variable (for single-variable equations)
         let variables = self.extract_variables(&equation);
         if variables.is_empty() {
             return (SolverResult::NoSolution, StepByStepExplanation::new(vec![]));
@@ -200,10 +196,11 @@ impl SmartEquationSolver {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_equation_type_detection() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Linear: 2x + 3
         let linear = Expression::add(vec![
@@ -222,22 +219,5 @@ mod tests {
             EquationAnalyzer::analyze(&quadratic, &x),
             EquationType::Quadratic
         );
-    }
-
-    #[test]
-    fn test_latex_dispatch() {
-        let mut solver = SmartEquationSolver::new();
-        let result = solver.solve_latex("2x + 3 = 0");
-        match result {
-            (solution, _steps) => {
-                println!("Solution: {:?}", solution);
-                assert!(true);
-            }
-            _ => {
-                println!("No solution found");
-                // For now, just check that we get a parse error, not a crash
-                assert!(true);
-            }
-        }
     }
 }

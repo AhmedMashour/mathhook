@@ -1,9 +1,9 @@
 //! Jacobian matrix operations for vector-valued functions
 
 use super::{gradient::GradientOperations, utils::MatrixUtils};
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 use std::collections::HashMap;
 
 /// Jacobian matrix operations
@@ -15,10 +15,11 @@ impl JacobianOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]),
     ///     Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())])
@@ -43,11 +44,12 @@ impl JacobianOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use std::collections::HashMap;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone())
@@ -88,10 +90,11 @@ impl JacobianOperations {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(y.clone())
@@ -135,10 +138,11 @@ impl JacobianDeterminant {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]),
     ///     Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())])
@@ -164,9 +168,10 @@ impl JacobianDeterminant {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let r = Symbol::new("r");
+    /// let r = symbol!(r);
     /// let theta = Symbol::new("theta");
     /// let functions = vec![
     ///     Expression::mul(vec![
@@ -191,10 +196,11 @@ impl JacobianDeterminant {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::symbol(x.clone())  // Linearly dependent
@@ -212,10 +218,11 @@ impl JacobianDeterminant {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let functions = vec![
     ///     Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]),
     ///     Expression::add(vec![
@@ -243,11 +250,12 @@ impl JacobianDeterminant {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_linear_transformation_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::add(vec![
@@ -275,8 +283,8 @@ mod tests {
 
     #[test]
     fn test_nonlinear_transformation_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -301,7 +309,7 @@ mod tests {
 
     #[test]
     fn test_polar_to_cartesian_jacobian() {
-        let r = Symbol::new("r");
+        let r = symbol!(r);
         let theta = Symbol::new("theta");
 
         let functions = vec![
@@ -330,7 +338,7 @@ mod tests {
 
     #[test]
     fn test_single_variable_jacobian() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let functions = vec![Expression::pow(
             Expression::symbol(x.clone()),
@@ -347,9 +355,9 @@ mod tests {
 
     #[test]
     fn test_three_variable_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
-        let z = Symbol::new("z");
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
 
         let functions = vec![
             Expression::add(vec![
@@ -387,8 +395,8 @@ mod tests {
 
     #[test]
     fn test_jacobian_caching() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -410,8 +418,8 @@ mod tests {
 
     #[test]
     fn test_jacobian_transpose() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
@@ -430,8 +438,8 @@ mod tests {
 
     #[test]
     fn test_jacobian_determinant_2x2() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::add(vec![
@@ -452,8 +460,8 @@ mod tests {
 
     #[test]
     fn test_identity_transformation_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())];
 
@@ -471,8 +479,8 @@ mod tests {
 
     #[test]
     fn test_constant_functions_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![Expression::integer(5), Expression::integer(10)];
 
@@ -492,8 +500,8 @@ mod tests {
     #[test]
     #[should_panic(expected = "Jacobian determinant requires square matrix")]
     fn test_non_square_jacobian_determinant() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![Expression::symbol(x.clone())];
 
@@ -503,8 +511,8 @@ mod tests {
 
     #[test]
     fn test_singular_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![Expression::symbol(x.clone()), Expression::symbol(x.clone())];
 
@@ -516,8 +524,8 @@ mod tests {
 
     #[test]
     fn test_jacobian_absolute_determinant() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
@@ -541,8 +549,8 @@ mod tests {
 
     #[test]
     fn test_rectangular_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::symbol(x.clone()),
@@ -564,8 +572,8 @@ mod tests {
 
     #[test]
     fn test_trigonometric_jacobian() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -584,8 +592,8 @@ mod tests {
 
     #[test]
     fn test_condition_number_estimate() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let functions = vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())];
 

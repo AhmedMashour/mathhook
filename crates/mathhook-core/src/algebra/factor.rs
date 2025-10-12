@@ -1,7 +1,6 @@
 //! Factorization operations for expressions
 //! Handles polynomial factorization, common factor extraction, and algebraic factoring
 
-use crate::algebra::gcd::PolynomialGcd;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_integer::Integer;
@@ -293,11 +292,11 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_basic_factoring() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test factoring 2x + 4 = 2(x + 2)
         let expr = Expression::add(vec![
@@ -317,7 +316,7 @@ mod tests {
 
     #[test]
     fn test_gcd_factoring() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test 6x + 9 = 3(2x + 3)
         let expr = Expression::add(vec![
@@ -333,7 +332,7 @@ mod tests {
 
     #[test]
     fn test_numeric_coefficient_extraction() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         let expr = Expression::mul(vec![
             Expression::integer(12),
@@ -350,8 +349,8 @@ mod tests {
 
     #[test]
     fn test_difference_of_squares() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let result = Expression::integer(1).factor_difference_of_squares(
             &Expression::symbol(x.clone()),
@@ -369,8 +368,8 @@ mod tests {
 
     #[test]
     fn test_common_factor_extraction() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Test xy + x = x(y + 1)
         let expr = Expression::add(vec![
@@ -389,8 +388,8 @@ mod tests {
 
     #[test]
     fn test_no_common_factor() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Test x + y (no common factor)
         let expr = Expression::add(vec![

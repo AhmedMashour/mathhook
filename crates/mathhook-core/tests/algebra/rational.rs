@@ -44,7 +44,7 @@ fn test_simple_rational_combination() {
 
 #[test]
 fn test_simplify_rational() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test rational with variables
     let expr = Expression::add(vec![
@@ -124,7 +124,7 @@ fn test_rational_number_patterns() {
 #[test]
 fn test_issue_4194() {
     // From SymPy test suite - specific rational issue
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::symbol(x.clone()),
@@ -147,7 +147,7 @@ fn test_issue_4194() {
 #[test]
 fn test_extract_minus_sign() {
     // Test extracting minus signs from rational expressions
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
@@ -164,7 +164,7 @@ fn test_extract_minus_sign() {
 #[test]
 fn test_signsimp() {
     // Test sign simplification
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::mul(vec![
         Expression::integer(-1),
@@ -180,8 +180,8 @@ fn test_signsimp() {
 
 #[test]
 fn test_advanced_rational_patterns() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Test complex rational combinations
     let expr = Expression::add(vec![
@@ -230,7 +230,7 @@ fn test_complex_rational_arithmetic() {
 
 #[test]
 fn test_ultimate_rational_mastery() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Ultimate rational test combining multiple concepts
     let expr = Expression::add(vec![
@@ -264,7 +264,7 @@ fn test_ultimate_rational_mastery() {
 #[test]
 fn test_historic_95_percent_milestone() {
     // Commemorating our 95% SymPy coverage milestone
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::pow(

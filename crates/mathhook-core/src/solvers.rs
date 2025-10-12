@@ -48,18 +48,19 @@ impl Default for SolverConfig {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::{MathSolver, Expression, Symbol};
+/// use mathhook_core::{MathSolver, Expression};
+/// use mathhook_core::symbol;
 ///
 /// let mut solver = MathSolver::new();
 /// let equation = Expression::equation(
 ///     Expression::add(vec![
-///         Expression::mul(vec![Expression::integer(2), Expression::symbol("x")]),
+///         Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(x))]),
 ///         Expression::integer(3),
 ///     ]),
 ///     Expression::integer(7),
 /// );
 ///
-/// let result = solver.solve(&equation, &Symbol::new("x"));
+/// let result = solver.solve(&equation, &symbol!(x));
 /// // Result: x = 2
 /// ```
 pub struct MathSolver {
@@ -113,7 +114,7 @@ impl MathSolver {
     ///     Expression::symbol("x"),
     ///     Expression::integer(5),
     /// );
-    /// let result = solver.solve(&equation, &Symbol::new("x"));
+    /// let result = solver.solve(&equation, &symbol!(x));
     /// ```
     pub fn solve(&mut self, equation: &Expression, variable: &Symbol) -> SolverResult {
         match equation {
@@ -142,14 +143,15 @@ impl MathSolver {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{MathSolver, Expression, Symbol};
+    /// use mathhook_core::{MathSolver, Expression};
+    /// use mathhook_core::symbol;
     ///
     /// let mut solver = MathSolver::new();
     /// let equations = vec![
-    ///     Expression::equation(Expression::symbol("x"), Expression::integer(1)),
-    ///     Expression::equation(Expression::symbol("y"), Expression::integer(2)),
+    ///     Expression::equation(Expression::symbol(symbol!(x)), Expression::integer(1)),
+    ///     Expression::equation(Expression::symbol(symbol!(y)), Expression::integer(2)),
     /// ];
-    /// let variables = vec![Symbol::new("x"), Symbol::new("y")];
+    /// let variables = vec![symbol!(x), symbol!(y)];
     /// let result = solver.solve_system(&equations, &variables);
     /// ```
     pub fn solve_system(

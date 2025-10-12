@@ -213,12 +213,12 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::Symbol;
+    use crate::symbol;
 
     #[test]
     fn test_basic_expansion() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Test (x + y) * 2 = 2x + 2y
         let expr = Expression::mul(vec![
@@ -244,8 +244,8 @@ mod tests {
 
     #[test]
     fn test_square_expansion() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // Test (x + y)^2 = x^2 + 2xy + y^2
         let expr = Expression::pow(
@@ -283,7 +283,7 @@ mod tests {
 
     #[test]
     fn test_nested_expansion() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Test (x + 1) * (x + 2)
         let expr = Expression::mul(vec![

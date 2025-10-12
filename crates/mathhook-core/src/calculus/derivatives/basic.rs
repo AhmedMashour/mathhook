@@ -1,8 +1,8 @@
 //! Basic differentiation rules for constants, symbols, and sums
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Basic derivative operations
 pub struct BasicDerivatives;
@@ -13,9 +13,10 @@ impl BasicDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::derivative(Expression::symbol(x.clone()), x, 1);
     /// let second = expr.derivative(x);
     /// ```
@@ -45,10 +46,11 @@ impl BasicDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let y = Symbol::new("y");
+    /// let x = symbol!(x);
+    /// let y = symbol!(y);
     /// let expr = Expression::symbol(x.clone());
     /// let dx = expr.derivative(x);
     /// let dy = expr.derivative(y);
@@ -66,10 +68,11 @@ impl BasicDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::add(vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::integer(5)
@@ -90,12 +93,13 @@ impl BasicDerivatives {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
     use crate::MathConstant;
 
     #[test]
     fn test_basic_constant_derivatives() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         assert_eq!(
             Expression::integer(2).derivative(x.clone()),
@@ -121,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_sum_linearity() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x + 5] = 1 + 0 = 1
         let sum = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(5)]);
@@ -139,8 +143,8 @@ mod tests {
 
     #[test]
     fn test_multiple_variables() {
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         // f(x,y) = xy + x² + y
         let expr = Expression::add(vec![
@@ -171,7 +175,7 @@ mod tests {
 
     #[test]
     fn test_special_constants() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[π] = 0
         let pi_derivative = Expression::constant(MathConstant::Pi).derivative(x.clone());
@@ -188,7 +192,7 @@ mod tests {
 
     #[test]
     fn test_nested_sums() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[x + (2x + 3)] = d/dx[3x + 3] = 3
         let nested = Expression::add(vec![
@@ -205,7 +209,7 @@ mod tests {
 
     #[test]
     fn test_zero_and_negative_constants() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // d/dx[0] = 0
         assert_eq!(

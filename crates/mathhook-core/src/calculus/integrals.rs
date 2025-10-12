@@ -30,10 +30,11 @@ pub trait Integration {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
     /// use mathhook_core::calculus::integrals::Integration;
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = expr.integrate(x);
     /// ```
@@ -44,10 +45,11 @@ pub trait Integration {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::integrals::Integration;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::symbol(x.clone());
     /// let lower = Expression::integer(0);
     /// let upper = Expression::integer(1);
@@ -104,9 +106,10 @@ impl IntegrationMethods {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::Expression;
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::mul(vec![
     ///     Expression::symbol(x.clone()),
     ///     Expression::function("exp", vec![Expression::symbol(x.clone())])
@@ -125,7 +128,7 @@ impl IntegrationMethods {
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))
     /// ]);

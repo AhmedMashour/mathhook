@@ -3,8 +3,8 @@
 //! Implements symbolic summation including finite sums, infinite series,
 //! products, and convergence analysis.
 
-use crate::simplify::Simplify;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Trait for summation and product operations
 pub trait Summation {
@@ -16,7 +16,7 @@ pub trait Summation {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Summation;
     ///
-    /// let i = Symbol::new("i");
+    /// let i = symbol!(i);
     /// let expr = Expression::symbol(i.clone());
     /// let start = Expression::integer(1);
     /// let end = Expression::integer(10);
@@ -32,7 +32,7 @@ pub trait Summation {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Summation;
     ///
-    /// let n = Symbol::new("n");
+    /// let n = symbol!(n);
     /// let expr = Expression::pow(Expression::symbol(n.clone()), Expression::integer(-2));
     /// let start = Expression::integer(1);
     /// let result = expr.infinite_sum(&n, &start);
@@ -47,7 +47,7 @@ pub trait Summation {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Summation;
     ///
-    /// let i = Symbol::new("i");
+    /// let i = symbol!(i);
     /// let expr = Expression::symbol(i.clone());
     /// let start = Expression::integer(1);
     /// let end = Expression::integer(5);
@@ -64,7 +64,7 @@ pub trait Summation {
     /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::calculus::Summation;
     ///
-    /// let n = Symbol::new("n");
+    /// let n = symbol!(n);
     /// let expr = Expression::add(vec![
     ///     Expression::integer(1),
     ///     Expression::pow(Expression::symbol(n.clone()), Expression::integer(-2))
@@ -356,6 +356,7 @@ impl Summation for Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::symbol;
 
     #[test]
     fn test_arithmetic_series() {
@@ -404,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_finite_sum_linear() {
-        let i = Symbol::new("i");
+        let i = symbol!(i);
         let expr = Expression::symbol(i.clone());
         let start = Expression::integer(1);
         let end = Expression::integer(4);

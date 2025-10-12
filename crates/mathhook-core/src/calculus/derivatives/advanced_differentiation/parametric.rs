@@ -3,9 +3,9 @@
 //! Handles differentiation of curves defined parametrically as x = f(t), y = g(t)
 //! using the chain rule: dy/dx = (dy/dt) / (dx/dt)
 
-use crate::simplify::Simplify;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
+use crate::simplify::Simplify;
 
 /// Parametric differentiation operations
 pub struct ParametricDifferentiation;
@@ -18,10 +18,11 @@ impl ParametricDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
     /// let y_param = Expression::function("sin", vec![Expression::symbol(t.clone())]);
     /// let dy_dx = ParametricDifferentiation::first_derivative(&x_param, &y_param, t);
@@ -42,10 +43,11 @@ impl ParametricDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::symbol(t.clone());
     /// let y_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(2));
     /// let d2y_dx2 = ParametricDifferentiation::second_derivative(&x_param, &y_param, t);
@@ -71,10 +73,11 @@ impl ParametricDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::symbol(t.clone());
     /// let y_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(2));
     /// let arc_length_diff = ParametricDifferentiation::arc_length_differential(&x_param, &y_param, t);
@@ -101,10 +104,11 @@ impl ParametricDifferentiation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricDifferentiation;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::function("cos", vec![Expression::symbol(t.clone())]);
     /// let y_param = Expression::function("sin", vec![Expression::symbol(t.clone())]);
     /// let curvature = ParametricDifferentiation::curvature(&x_param, &y_param, t);
@@ -206,10 +210,11 @@ impl ParametricCurveAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricCurveAnalysis;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(2));
     /// let y_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(3));
     /// let critical_t = ParametricCurveAnalysis::critical_points(&x_param, &y_param, t);
@@ -229,10 +234,11 @@ impl ParametricCurveAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ParametricCurveAnalysis;
     ///
-    /// let t = Symbol::new("t");
+    /// let t = symbol!(t);
     /// let x_param = Expression::symbol(t.clone());
     /// let y_param = Expression::pow(Expression::symbol(t.clone()), Expression::integer(2));
     /// let tangent = ParametricCurveAnalysis::tangent_vector(&x_param, &y_param, t);

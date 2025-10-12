@@ -12,7 +12,7 @@ mod equation_construction {
     #[test]
     fn test_equation_creation_correctness() {
         /// Verify equations are constructed with correct structure
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let left = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
         let right = Expression::integer(5);
 
@@ -31,8 +31,8 @@ mod equation_construction {
     #[test]
     fn test_equation_with_complex_expressions() {
         /// Test equations with polynomial and rational expressions
-        let x = Symbol::new("x");
-        let y = Symbol::new("y");
+        let x = symbol!(x);
+        let y = symbol!(y);
 
         let polynomial = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -240,11 +240,11 @@ mod equation_properties {
         /// Property: a = a (reflexive property of equality)
         let expressions = vec![
             Expression::integer(5),
-            Expression::symbol(Symbol::new("x")),
+            Expression::symbol(symbol!(x)),
             Expression::add(vec![Expression::integer(2), Expression::integer(3)]),
             Expression::mul(vec![
                 Expression::integer(2),
-                Expression::symbol(Symbol::new("y")),
+                Expression::symbol(symbol!(y)),
             ]),
         ];
 
@@ -287,7 +287,7 @@ mod equation_properties {
     #[test]
     fn test_equation_symmetry_property() {
         /// Test mathematical properties of equation construction
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let polynomial = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::symbol(x.clone()),
@@ -317,7 +317,7 @@ mod solver_integration {
     #[test]
     fn test_solver_basic_functionality() {
         /// Test solver with simplest possible cases
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let simple_equation =
             Expression::equation(Expression::symbol(x.clone()), Expression::integer(5));
 
@@ -352,7 +352,7 @@ mod solver_integration {
         let solver = MathSolver::new();
 
         // Test basic solver operations don't panic
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let equation = Expression::equation(Expression::symbol(x.clone()), Expression::integer(1));
 
         // Should handle basic operations without crashing
@@ -373,7 +373,7 @@ mod solver_integration {
     #[test]
     fn test_solver_with_different_equation_types() {
         /// Test solver handles different types of equations gracefully
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let mut solver = MathSolver::new();
 
         let equation_types = vec![
@@ -414,7 +414,7 @@ mod equation_workflows {
     #[test]
     fn test_equation_construction_to_verification_workflow() {
         /// Complete workflow: construct equation, verify solution by substitution
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Construct equation: 3x + 2 = 11
         let left_side = Expression::add(vec![
@@ -451,7 +451,7 @@ mod equation_workflows {
     #[test]
     fn test_multiple_solution_verification_workflow() {
         /// Workflow for equations with multiple solutions
-        let x = Symbol::new("x");
+        let x = symbol!(x);
 
         // Quadratic: x² - 5x + 6 = 0, solutions: x = 2, 3
         let quadratic = Expression::add(vec![
