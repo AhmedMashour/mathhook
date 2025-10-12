@@ -37,11 +37,11 @@ pub trait Derivative {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{expr, symbol};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
-    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
+    /// let x = symbol!(x);
+    /// let expr = expr!(x ^ 2);
     /// let result = expr.derivative(x);
     /// ```
     fn derivative(&self, variable: Symbol) -> Expression;
@@ -51,11 +51,11 @@ pub trait Derivative {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{expr, symbol};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
-    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(4));
+    /// let x = symbol!(x);
+    /// let expr = expr!(x ^ 4);
     /// let second_derivative = expr.nth_derivative(x, 2);
     /// ```
     fn nth_derivative(&self, variable: Symbol, order: u32) -> Expression;
@@ -65,11 +65,11 @@ pub trait Derivative {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{expr, symbol};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
-    /// let x = Symbol::new("x");
-    /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
+    /// let x = symbol!(x);
+    /// let expr = expr!(sin(x));
     /// let is_diff = expr.is_differentiable(x);
     /// ```
     fn is_differentiable(&self, variable: Symbol) -> bool;

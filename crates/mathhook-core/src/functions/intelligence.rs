@@ -188,9 +188,13 @@ mod tests {
     fn test_registry_initialization() {
         let registry = UniversalFunctionRegistry::new();
 
-        // Test that registry is properly initialized (capacity may grow)
-        assert!(registry.properties.capacity() >= 256);
-        assert!(registry.step_generators.capacity() >= 256);
+        // Test that registry is properly initialized with optimized capacity
+        // Capacity is 64 (power of 2) for optimal hash table performance
+        assert!(registry.properties.capacity() >= 64);
+        assert!(registry.step_generators.capacity() >= 64);
+
+        // Verify registry actually has functions registered
+        assert!(registry.registry_size() > 0, "Registry should have functions registered");
     }
 
     #[test]
