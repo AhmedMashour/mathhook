@@ -1,0 +1,114 @@
+[
+  {
+    "id": "implicit_mult_latex",
+    "language": "latex",
+    "category": "basic_arithmetic",
+    "input": "2x + 3y - 5",
+    "expected_expr": "2 * x + 3 * y - 1 * 5",
+    "description": "Mixed operations with implicit multiplication"
+  },
+  {
+    "id": "complex_number_latex",
+    "language": "latex",
+    "category": "complex_numbers",
+    "input": "3 + 4i",
+    "expected_expr": "Complex(Box(ComplexData{real: Number(Integer(3)), imag: Number(Integer(4))}))",
+    "description": "Complex number"
+  },
+  {
+    "id": "limit_latex",
+    "language": "latex",
+    "category": "calculus_first_class",
+    "input": "\\lim_{x \\to 0} \\sin x",
+    "expected_expr": "Calculus(Box(Calculus(Box(Limit{expression: Function{name:sin, args: Box([Symbol(Symbol { name: \"x\" })))])}, variable: Symbol { name: \"x\" }, point: Number(Integer(0)), direction: Both}))",
+    "description": "Limit - FIRST CLASS"
+  },
+  {
+    "id": "quadratic_formula_latex",
+    "language": "latex",
+    "category": "complex_expressions",
+    "input": "\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}",
+    "expected_expr": "Mul(Box([Add([Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"b\" })]), Function{name:pm, args:Box([Pow(Box(Add([Pow(Box(Symbol(Symbol { name: \"b\" })), Number(Integer(2))), Mul(Box([Number(Integer(-4)), Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"c\" })])]))), Box(Number(Rational(1, 2))))])}])), Pow(Box(Mul([Number(Integer(2)), Symbol(Symbol { name: \"a\" })])), Box(Number(Integer(-1))))]))",
+    "description": "Quadratic formula with plus-minus"
+  },
+  {
+    "id": "definite_integral_trig_latex",
+    "language": "latex",
+    "category": "complex_expressions",
+    "input": "\\int_0^{2\\pi} \\sin^2(x) dx",
+    "expected_expr": "Calculus(Box(Integral{integrand: Box(Pow(Box(Function{name:sin, args:Box([Symbol(Symbol { name: \"x\" })))])}), Box(Number(Integer(2))))), variable: Symbol { name: \"x\" }, bounds: Some((Box(Number(Integer(0))), Box(Mul([Number(Integer(2)), Constant(Pi)]))))}",
+    "description": "Definite integral with trig - FIRST CLASS"
+  },
+  {
+    "id": "second_order_ode_latex",
+    "language": "latex",
+    "category": "differential_equations",
+    "input": "\\frac{d^2y}{dx^2} + p(x)\\frac{dy}{dx} + q(x)y = g(x)",
+    "expected_expr": "Relation{left: Box(Add(Box([Calculus(Box(Derivative{expression: Box(Symbol(Symbol { name: \"y\" })))), variable: Symbol { name: \"x\" }, order: 2}, Mul(Box([Function{name:p, args:Box([Symbol(Symbol { name: \"x\" })])}, Calculus(Box(Derivative{expression: Box(Symbol(Symbol { name: \"y\" })))), variable: Symbol { name: \"x\" }, order: 1}])), Mul(Box([Function{name:q, args:Box([Symbol(Symbol { name: \"x\" })])}, Symbol(Symbol { name: \"y\" })]))]))), right: Box(Function{name:g, args:Box([Symbol(Symbol { name: \"x\" })])}), relation_type: Equal}",
+    "description": "Second-order linear ODE"
+  },
+  {
+    "id": "hypergeometric_function_latex",
+    "language": "latex",
+    "category": "special_functions_advanced",
+    "input": "{}_2F_1(a, b; c; z)",
+    "expected_expr": "Function{name:hypergeometric_2f1, args:Box([Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b\" }), Symbol(Symbol { name: \"c\" }), Symbol(Symbol { name: \"z\" })])}",
+    "description": "Hypergeometric function 2F1"
+  },
+  {
+    "id": "chi_squared_latex",
+    "language": "latex",
+    "category": "probability_statistics",
+    "input": "\\chi^2(k)",
+    "expected_expr": "Function{name:chi_squared, args:Box([Symbol(Symbol { name: \"k\" })])}",
+    "description": "Chi-squared distribution"
+  },
+  {
+    "id": "convolution_latex",
+    "language": "latex",
+    "category": "transforms",
+    "input": "(f * g)(t) = \\int_{-\\infty}^{\\infty} f(\\tau) g(t-\\tau) d\\tau",
+    "expected_expr": "Relation{left: Box(Function{name:convolution, args:Box([Symbol(Symbol { name: \"f\" }), Symbol(Symbol { name: \"g\" }), Symbol(Symbol { name: \"t\" })])}), right: Box(Calculus(Box(Integral{integrand: Box(Mul(Box([Function{name:f, args:Box([Symbol(Symbol { name: \"tau\" })))])}, Function{name:g, args:Box([Add([Symbol(Symbol { name: \"t\" }), Mul(Box([Number(Integer(-1)), Symbol(Symbol { name: \"tau\" })])]))])}]))), variable: Symbol { name: \"tau\" }, bounds: Some((Box(Mul([Number(Integer(-1)), Constant(Infinity)])), Box(Constant(Infinity))))}), relation_type: Equal}",
+    "description": "Convolution integral"
+  },
+  {
+    "id": "hypergeometric_function_wolfram",
+    "language": "wolfram",
+    "category": "special_functions_advanced",
+    "input": "Hypergeometric2F1[a, b, c, z]",
+    "expected_expr": "Function{name:hypergeometric_2f1, args:Box([Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b\" }), Symbol(Symbol { name: \"c\" }), Symbol(Symbol { name: \"z\" })])}",
+    "description": "Hypergeometric function 2F1"
+  },
+  {
+    "id": "fundamental_group_latex",
+    "language": "latex",
+    "category": "topology",
+    "input": "\\pi_1(X, x_0)",
+    "expected_expr": "Function{name: \"fundamental_group\", args: Box([Symbol(Symbol { name: \"X\" }), Symbol(Symbol { name: \"x_0\" })])}",
+    "description": "Fundamental group"
+  },
+  {
+    "id": "appellf1_latex",
+    "language": "latex",
+    "category": "hypergeometric_advanced",
+    "input": "F_1(a; b_1, b_2; c; x, y)",
+    "expected_expr": "Function{name: \"appell_f1\", args: Box([Symbol(Symbol { name: \"a\" }), Symbol(Symbol { name: \"b_1\" }), Symbol(Symbol { name: \"b_2\" }), Symbol(Symbol { name: \"c\" }), Symbol(Symbol { name: \"x\" }), Symbol(Symbol { name: \"y\" })])}",
+    "description": "Appell hypergeometric function F1"
+  },
+  {
+    "id": "bragg_law_latex",
+    "language": "latex",
+    "category": "crystallography",
+    "input": "n\\lambda = 2d\\sin\\theta",
+    "expected_expr": "Function{name: \"bragg_law\", args: Box([Symbol(Symbol { name: \"n\" }), Symbol(Symbol { name: \"lambda\" }), Symbol(Symbol { name: \"d\" }), Symbol(Symbol { name: \"theta\" })])}",
+    "description": "Bragg's law"
+  },
+  {
+    "id": "schwarzschild_radius_latex",
+    "language": "latex",
+    "category": "astrophysics",
+    "input": "r_s = \\frac{2GM}{c^2}",
+    "expected_expr": "Function{name: \"schwarzschild_radius\", args: Box([Symbol(Symbol { name: \"G\" }), Symbol(Symbol { name: \"M\" }), Symbol(Symbol { name: \"c\" })])}",
+    "description": "Schwarzschild radius"
+  }
+]

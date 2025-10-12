@@ -148,6 +148,80 @@ x y       → x * y (when both are identifiers)
 "x^-2"            // Should: x^(-2) = 1/x^2
 ```
 
+**Grammar Rule Ordering and Ambiguity Resolution**:
+
+LALRPOP (LR(1) parser) has strict limitations that require careful grammar design:
+
+1. **More Specific Patterns Must Come First**:
+   - In choice alternatives (e.g., `Atom: Expression = { ... }`), LALRPOP matches in order
+   - Put longer, more specific patterns before shorter, more general ones
+   - Example: `FractionNotation` must come before `IdentifierOrFunction` in the `Atom` alternatives
+
+2. **Ambiguity with Lookahead**:
+   - LR(1) has only ONE token lookahead
+   - Patterns like `\frac{dy}{dx}` (derivative) vs `\frac{a}{b}` (fraction) are ambiguous
+   - The parser cannot distinguish until it sees the SECOND token inside the numerator
+   - **Solution**: Either handle in lexer preprocessing OR use separate entry points
+
+3. **Operator Body Expressions**:
+   - Use `Atom` level (not `Power` or `Multiplication`) for operator bodies to avoid ambiguity
+   - Example: `LATEX_SUM ... <summand:Atom>` prevents ambiguity with factorial
+   - **Trade-off**: Complex expressions need parentheses (`\int (x^2) dx`, not `\int x^2 dx`)
+   - This is acceptable: most mathematical notation uses parentheses anyway
+
+4. **Calculus Operators**:
+   - `\int`, `\sum`, `\prod`, `\lim` are function-like prefix operators, not atoms
+   - Place them in `IdentifierOrFunction` rule, not as standalone rules
+   - Use `Atom` for their body expressions to prevent grammar conflicts
+
+5. **Fraction Notation**:
+   - `\frac{num}{den}` successfully added by placing early in `Atom` alternatives
+   - Converts to division: `Expression::mul(vec![num, Expression::pow(den, Expression::integer(-1))])`
+   - Partial derivatives also supported: `\frac{\partial f}{\partial x}`
+
+6. **Known Limitations**:
+   - Full derivative notation (`\frac{d}{dx} expr`, `\frac{dy}{dx}`) deferred due to LR(1) ambiguity
+   - Would require lexer preprocessing or procedural macro parser
+   - Current workaround: Parse as regular fractions, users can use explicit derivative functions
+
+7. **Avoid Left Recursion** (CRITICAL for LALRPOP):
+   - **Direct left recursion**: `A: Expression = { A ... => ... }` will cause infinite loop during parser generation
+   - **Indirect left recursion**: More subtle and dangerous:
+     ```
+     Atom: Expression = { NablaOperators, ... };
+     NablaOperators: Expression = { LATEX_NABLA <expr:Factorial> => ... };
+     Factorial: Expression = { Atom, ... };
+     ```
+     This creates cycle: `Atom → NablaOperators → Factorial → Atom` (infinite loop!)
+   - **Solution**: Break the cycle by creating restricted rule types that don't include the problematic alternative
+   - **Example Fix**: Create `NablaArgument` rule that includes all `Atom` alternatives EXCEPT `NablaOperators`:
+     ```rust
+     NablaArgument: Expression = {
+         VectorWrappers,
+         FractionNotation,
+         GreekSymbol,
+         Number,
+         Constant,
+         ParenExpression,
+         IdentifierOrFunction,
+         AbsoluteValue,
+         Set,
+         Interval,
+     };
+
+     NablaOperators: Expression = {
+         LATEX_NABLA <expr:NablaArgument> => ...  // Now safe!
+     };
+     ```
+   - **Detection**: If `cargo build` hangs forever during parser generation, you likely have left recursion
+   - **Testing After Fix**: Verify the specific operators still parse correctly
+
+**When Modifying Grammar**:
+- Test with `lalrpop grammar.lalrpop` first to see errors before cargo build
+- Always run `cargo test -p mathhook-core parser` after changes
+- Check the generated `.rs` file for shift/reduce conflicts (LALRPOP reports these)
+- If ambiguity errors occur, reorder rules or simplify patterns
+
 #### Zero-Copy Parsing
 - Parse strings directly into AST without intermediate allocations where possible
 - Use string slices (`&str`) over `String` during parsing
@@ -1412,3 +1486,4 @@ Update CLAUDE.md when:
 - You discover a better way to organize or explain something
 
 **Tell me immediately when you update this file and explain why.**
+- To build the parser alone when you're working on it, you must use only "lalrpop crates/mathhook-core/src/parser/grammar.lalrpop" command not cargo build

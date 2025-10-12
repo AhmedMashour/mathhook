@@ -119,7 +119,9 @@ match {
     "\\inf" => LATEX_INF,
     "\\gcd" => LATEX_GCD,
     "\\lcm" => LATEX_LCM,
-    
+    "\\bmod" => LATEX_BMOD,
+    "\\pmod" => LATEX_PMOD,
+
     // Phase 3: More mathematical symbols
     "\\leq" => LATEX_LEQ,
     "\\geq" => LATEX_GEQ,
@@ -376,6 +378,7 @@ Multiplication: Expression = {
     <l:Multiplication> LATEX_VEE <r:Power> => Expression::function("vee", vec![l, r]),
     <l:Multiplication> LATEX_CAP <r:Power> => Expression::function("intersection", vec![l, r]),
     <l:Multiplication> LATEX_CUP <r:Power> => Expression::function("union", vec![l, r]),
+    <l:Multiplication> LATEX_BMOD <r:Power> => Expression::function("mod", vec![l, r]),
     Power,
 };
 
@@ -395,6 +398,9 @@ Factorial: Expression = {
 
 // 7. Atoms
 Atom: Expression = {
+    FractionNotation,
+    NablaOperators,
+    VectorWrappers,
     GreekSymbol,
     Number,
     Constant,
@@ -407,6 +413,42 @@ Atom: Expression = {
 
 // Simplified identifier handling - no conflicts
 IdentifierOrFunction: Expression = {
+    // ===== CALCULUS OPERATORS - HIGHEST PRIORITY =====
+    // Note: Use Atom for body to avoid ambiguity with Factorial
+    // This means complex expressions need parentheses: \int (x+y) dx
+
+    // Integrals with bounds: \int_a^b expr dx
+    LATEX_INT SUBSCRIPT LBRACE <lower:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("definite_integral", vec![integrand, Expression::symbol(Symbol::new(var)), lower, upper])
+    },
+
+    // Indefinite integrals: \int expr dx or \int (expr) dx
+    LATEX_INT <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("indefinite_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+
+    // Contour integrals: \oint expr dx
+    LATEX_OINT <integrand:Atom> DIFFERENTIAL <var:IDENTIFIER> => {
+        Expression::function("contour_integral", vec![integrand, Expression::symbol(Symbol::new(var))])
+    },
+
+    // Sums with bounds: \sum_{i=1}^n expr
+    LATEX_SUM SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <summand:Atom> => {
+        Expression::function("sum", vec![summand, index_expr, upper])
+    },
+
+    // Products with bounds: \prod_{i=1}^n expr
+    LATEX_PROD SUBSCRIPT LBRACE <index_expr:Expression> RBRACE POWER LBRACE <upper:Expression> RBRACE <term:Atom> => {
+        Expression::function("product", vec![term, index_expr, upper])
+    },
+
+    // Limits: \lim_{x \to a} expr
+    LATEX_LIM SUBSCRIPT LBRACE <limit_expr:Atom> RBRACE <expr:Atom> => {
+        Expression::function("limit", vec![expr, limit_expr])
+    },
+
+    // ===== INDEXED FUNCTIONS =====
+
     // Indexed function tokens: J_n(x), P_l(x), etc. - HIGHEST PRIORITY
     <token:BESSEL_J_SUBSCRIPT> <sub:IDENTIFIER> LPAREN <args:ExprList> RPAREN => {
         let indexed_name = cache::get_cached_function_name("bessel_j", "indexed");
@@ -590,6 +632,12 @@ IdentifierOrFunction: Expression = {
     LATEX_LN LPAREN <args:ExprList> RPAREN => Expression::function("ln", args),
     LATEX_LOG LPAREN <args:ExprList> RPAREN => Expression::function("log", args),
 
+    // Number theory functions
+    LATEX_GCD LPAREN <args:ExprList> RPAREN => Expression::function("gcd", args),
+    LATEX_LCM LPAREN <args:ExprList> RPAREN => Expression::function("lcm", args),
+    LATEX_MAX LPAREN <args:ExprList> RPAREN => Expression::function("max", args),
+    LATEX_MIN LPAREN <args:ExprList> RPAREN => Expression::function("min", args),
+
     // LaTeX Functions with braces: \sin{x}
     LATEX_SIN LBRACE <args:ExprList> RBRACE => Expression::function("sin", args),
     LATEX_COS LBRACE <args:ExprList> RBRACE => Expression::function("cos", args),
@@ -714,6 +762,76 @@ Interval: Expression = {
     LPAREN <start:Expression> COMMA <end:Expression> RPAREN => Expression::interval(start, end, false, false),
     LBRACKET <start:Expression> COMMA <end:Expression> RPAREN => Expression::interval(start, end, true, false),
     LPAREN <start:Expression> COMMA <end:Expression> RBRACKET => Expression::interval(start, end, false, true),
+};
+
+// ===== FRACTION NOTATION =====
+
+// TODO: Add derivative notation support - currently deferred due to LALRPOP ambiguity issues
+// with patterns like \frac{dy}{dx} vs \frac{a}{b}. Will need lexer preprocessing or
+// procedural macro parser in the future.
+
+// Regular fraction notation
+FractionNotation: Expression = {
+    // Regular fraction: \frac{numerator}{denominator}
+    LATEX_FRAC LBRACE <num:Expression> RBRACE LBRACE <den:Expression> RBRACE => {
+        Expression::mul(vec![num, Expression::pow(den, Expression::integer(-1))])
+    },
+};
+
+// ===== NABLA OPERATORS (Vector Calculus) =====
+
+// Nabla arguments must not include NablaOperators to avoid left recursion
+NablaArgument: Expression = {
+    VectorWrappers,      // Must come first for \vec{F}
+    FractionNotation,
+    GreekSymbol,
+    Number,
+    Constant,
+    ParenExpression,
+    IdentifierOrFunction,
+    AbsoluteValue,
+    Set,
+    Interval,
+};
+
+NablaOperators: Expression = {
+    // Laplacian: \nabla^2 f
+    LATEX_NABLA POWER LBRACE <n:INTEGER> RBRACE <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap();
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(&format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+    LATEX_NABLA POWER <n:INTEGER> <expr:NablaArgument> => {
+        let order = n.parse::<i64>().unwrap();
+        if order == 2 {
+            Expression::function("laplacian", vec![expr])
+        } else {
+            Expression::function(&format!("nabla_power_{}", order), vec![expr])
+        }
+    },
+
+    // Curl: \nabla \times \vec{F}
+    LATEX_NABLA LATEX_TIMES <expr:NablaArgument> => Expression::function("curl", vec![expr]),
+
+    // Divergence: \nabla \cdot \vec{F}
+    LATEX_NABLA LATEX_CDOT <expr:NablaArgument> => Expression::function("divergence", vec![expr]),
+
+    // Gradient: \nabla f (lowest priority - must come after specific patterns)
+    LATEX_NABLA <expr:NablaArgument> => Expression::function("gradient", vec![expr]),
+};
+
+// ===== VECTOR AND OPERATOR WRAPPERS =====
+
+VectorWrappers: Expression = {
+    LATEX_VEC LBRACE <arg:Expression> RBRACE => Expression::function("vector", vec![arg]),
+    LATEX_HAT LBRACE <arg:Expression> RBRACE => Expression::function("hat", vec![arg]),
+    LATEX_BAR LBRACE <arg:Expression> RBRACE => Expression::function("bar", vec![arg]),
+    LATEX_TILDE LBRACE <arg:Expression> RBRACE => Expression::function("tilde", vec![arg]),
+    LATEX_DOT LBRACE <arg:Expression> RBRACE => Expression::function("dot", vec![arg]),
+    LATEX_DDOT LBRACE <arg:Expression> RBRACE => Expression::function("ddot", vec![arg]),
 };
 
 // Expression lists (for function arguments)

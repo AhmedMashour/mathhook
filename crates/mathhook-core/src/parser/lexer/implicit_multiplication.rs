@@ -208,16 +208,35 @@ impl ImplicitMultiplicationProcessor {
         if chars[*i].is_alphabetic() {
             let identifier_start = *i;
 
-            // First, consume only alphabetic characters (not underscores)
+            // First, consume alphabetic characters
             while *i < chars.len() && chars[*i].is_alphabetic() {
                 *i += 1;
             }
 
             let base_identifier = chars[identifier_start..*i].iter().collect::<String>();
 
-            // If followed by underscore, this might be a subscripted function like J_n
-            // Don't consume the underscore - let it be tokenized separately
-            let full_identifier = base_identifier;
+            // Check if this is a subscripted function like J_n, P_l, H_n
+            // These should be kept together as single tokens
+            let full_identifier = if *i < chars.len() && chars[*i] == '_' {
+                // Check if base is a known special function
+                if ["J", "Y", "I", "K", "P", "Q", "H", "L", "T", "C", "S", "F", "B", "E"].contains(&base_identifier.as_str()) {
+                    let underscore_pos = *i;
+                    *i += 1; // Consume underscore
+
+                    // Consume subscript (alphanumeric characters)
+                    let subscript_start = *i;
+                    while *i < chars.len() && (chars[*i].is_alphanumeric() || chars[*i] == '_') {
+                        *i += 1;
+                    }
+
+                    // Return the full token including underscore and subscript
+                    chars[identifier_start..*i].iter().collect::<String>()
+                } else {
+                    base_identifier
+                }
+            } else {
+                base_identifier
+            };
 
             // O(1) HashMap lookup for standard tokens
             if let Some(&token_type) = STANDARD_TOKEN_MAP.get(full_identifier.as_str()) {

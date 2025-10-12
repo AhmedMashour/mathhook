@@ -4,56 +4,60 @@
     "received": "x + y"
   },
   {
-    "input": "x - y",
-    "received": "x - y"
+    "received": "x - y",
+    "input": "x - y"
   },
   {
-    "input": "x \\cdot y",
-    "received": "x * y"
+    "received": "x * y",
+    "input": "x \\cdot y"
   },
   {
-    "input": "2x + 3y - 5",
-    "received": "2 * x + 3 * y - 5"
+    "received": "\\frac{x}{y}",
+    "input": "\\frac{x}{y}"
   },
   {
     "input": "x + y",
     "received": "x + y"
   },
   {
-    "input": "x / y",
-    "received": "\\frac{x}{y}"
+    "received": "\\frac{x}{y}",
+    "input": "x / y"
   },
   {
-    "received": "x^{2}",
-    "input": "x^2"
+    "input": "\\frac{1}{2}",
+    "received": "\\frac{1}{2}"
   },
   {
-    "received": "\\sqrt{x}",
-    "input": "\\sqrt{x}"
+    "input": "x^2",
+    "received": "x^{2}"
   },
   {
-    "received": "e^{x}",
-    "input": "e^x"
+    "input": "\\sqrt{x}",
+    "received": "\\sqrt{x}"
   },
   {
-    "received": "x^{2}",
-    "input": "x^2"
+    "input": "e^x",
+    "received": "e^{x}"
+  },
+  {
+    "input": "x^2",
+    "received": "x^{2}"
   },
   {
     "received": "\\sin(x)",
     "input": "\\sin(x)"
   },
   {
-    "received": "\\cos(x)",
-    "input": "\\cos(x)"
+    "input": "\\cos(x)",
+    "received": "\\cos(x)"
   },
   {
     "received": "\\sin(x)",
     "input": "Sin[x]"
   },
   {
-    "input": "\\ln(x)",
-    "received": "\\ln(x)"
+    "received": "\\ln(x)",
+    "input": "\\ln(x)"
   },
   {
     "received": "\\log(x)",
@@ -72,56 +76,76 @@
     "received": "i"
   },
   {
-    "received": "∞",
-    "input": "\\infty"
+    "input": "\\infty",
+    "received": "∞"
   },
   {
     "received": "π",
     "input": "Pi"
   },
   {
-    "input": "E",
-    "received": "e"
+    "received": "e",
+    "input": "E"
   },
   {
-    "received": "i",
-    "input": "I"
+    "input": "I",
+    "received": "i"
   },
   {
-    "input": "3 + 4i",
+    "input": "3 + 4*I",
     "received": "3 + 4i"
   },
   {
-    "received": "3 + 4i",
-    "input": "3 + 4*I"
+    "received": "\\{\\{1, 2\\}, \\{3, 4\\}\\}",
+    "input": "{{1, 2}, {3, 4}}"
   },
   {
-    "input": "{{1, 2}, {3, 4}}",
-    "received": "\\{\\{1, 2\\}, \\{3, 4\\}\\}"
+    "input": "\\{1, 2, 3\\}",
+    "received": "\\{1, 2, 3\\}"
   },
   {
     "input": "[0, 1]",
     "received": "[0, 1]"
   },
   {
-    "received": "(0, 1)",
-    "input": "(0, 1)"
+    "input": "(0, 1)",
+    "received": "(0, 1)"
   },
   {
     "input": "{1, 2, 3}",
     "received": "\\{1, 2, 3\\}"
   },
   {
-    "received": "x = 5",
-    "input": "x = 5"
+    "input": "x = 5",
+    "received": "x = 5"
   },
   {
-    "input": "x < y",
-    "received": "x < y"
+    "received": "x < y",
+    "input": "x < y"
   },
   {
     "input": "x == 5",
     "received": "x = 5"
+  },
+  {
+    "received": "\\sum(\\factorial^{-1}(n) * x^{n}, n = 0, ∞)",
+    "input": "\\sum_{n=0}^{\\infty} \\frac{x^n}{n!}"
+  },
+  {
+    "input": "\\nabla f",
+    "received": "\\gradient(f)"
+  },
+  {
+    "received": "\\divergence(\\vector(F))",
+    "input": "\\nabla \\cdot \\vec{F}"
+  },
+  {
+    "received": "\\curl(\\vector(F))",
+    "input": "\\nabla \\times \\vec{F}"
+  },
+  {
+    "input": "\\nabla^2 f",
+    "received": "\\laplacian(f)"
   },
   {
     "received": "J_f",
@@ -140,12 +164,36 @@
     "input": "Div[{Fx, Fy, Fz}, {x, y, z}]"
   },
   {
-    "input": "Curl[{Fx, Fy, Fz}, {x, y, z}]",
-    "received": "\\curl(\\{Fx, Fy, Fz\\}, \\{x, y, z\\})"
+    "received": "\\curl(\\{Fx, Fy, Fz\\}, \\{x, y, z\\})",
+    "input": "Curl[{Fx, Fy, Fz}, {x, y, z}]"
   },
   {
-    "received": "e^{At}",
-    "input": "e^{At}"
+    "received": "\\sum^{n}(\\a_n(x - c))",
+    "input": "\\sum_{n=0}^{\\infty} a_n (x-c)^n"
+  },
+  {
+    "input": "\\sum_{n=-\\infty}^{\\infty} a_n (z-c)^n",
+    "received": "\\sum^{n}(\\a_n(z - c))"
+  },
+  {
+    "received": "\\sum^{n}(ar)",
+    "input": "\\sum_{n=0}^{\\infty} ar^n"
+  },
+  {
+    "received": "\\frac{dy}{dx} = \\f(x, y)",
+    "input": "\\frac{dy}{dx} = f(x, y)"
+  },
+  {
+    "received": "\\laplacian(u) = 0",
+    "input": "\\nabla^2 u = 0"
+  },
+  {
+    "input": "\\nabla^2 u = f",
+    "received": "\\laplacian(u) = f"
+  },
+  {
+    "input": "e^{At}",
+    "received": "e^{At}"
   },
   {
     "input": "A = QR",
@@ -160,68 +208,64 @@
     "input": "|z|"
   },
   {
-    "received": "J_n * x",
+    "received": "\\bessel_j_indexed(n, x)",
     "input": "J_n(x)"
   },
   {
-    "received": "Y_n * x",
-    "input": "Y_n(x)"
+    "input": "Y_n(x)",
+    "received": "\\bessel_y_indexed(n, x)"
   },
   {
-    "input": "P_n(x)",
-    "received": "P_n * x"
+    "received": "\\legendre_p_indexed(n, x)",
+    "input": "P_n(x)"
   },
   {
-    "input": "P_l^m(x)",
-    "received": "P_l^{m} * x"
+    "received": "P_l^{\\m(x)}",
+    "input": "P_l^m(x)"
   },
   {
-    "input": "Y_l^m(\\theta, \\phi)",
-    "received": "Y_l^{m} * (theta, φ)"
+    "received": "Y_l^{\\m(theta, φ)}",
+    "input": "Y_l^m(\\theta, \\phi)"
   },
   {
     "input": "H_n(x)",
-    "received": "H_n * x"
+    "received": "\\hermite_indexed(n, x)"
   },
   {
-    "received": "L_n * x",
-    "input": "L_n(x)"
+    "input": "L_n(x)",
+    "received": "\\laguerre_indexed(n, x)"
   },
   {
-    "input": "T_n(x)",
-    "received": "T_n * x"
+    "received": "\\chebyshev_first_indexed(n, x)",
+    "input": "T_n(x)"
   },
   {
     "input": "F(\\phi, k)",
-    "received": "F * (φ, k)"
+    "received": "\\F(φ, k)"
   },
   {
-    "input": "E(\\phi, k)",
-    "received": "e * (φ, k)"
-  },
-  {
-    "received": "B * (x, y)",
+    "received": "\\B(x, y)",
     "input": "B(x, y)"
   },
   {
-    "input": "\\psi(x)",
-    "received": "\\digamma(x)"
+    "received": "\\digamma(x)",
+    "input": "\\psi(x)"
   },
   {
     "input": "\\zeta(s)",
     "received": "\\riemann_zeta(s)"
   },
   {
-    "received": "S * x",
+    "received": "\\S(x)",
     "input": "S(x)"
   },
   {
-    "received": "C * x",
+    "received": "\\C(x)",
     "input": "C(x)"
   },
   {
-    "input": "n!",
-    "received": "n!"
+    "received": "n!",
+    "input": "n!"
   },
   {
     "input": "n!!",
@@ -229,23 +273,23 @@
   },
   {
     "input": "s(n, k)",
-    "received": "s * (n, k)"
+    "received": "\\s(n, k)"
   },
   {
-    "input": "S(n, k)",
-    "received": "S * (n, k)"
+    "received": "\\S(n, k)",
+    "input": "S(n, k)"
   },
   {
-    "received": "B_n",
-    "input": "B_n"
+    "input": "B_n",
+    "received": "B_n"
   },
   {
     "input": "C_n",
     "received": "C_n"
   },
   {
-    "received": "F_n",
-    "input": "F_n"
+    "input": "F_n",
+    "received": "F_n"
   },
   {
     "input": "L_n",
@@ -256,16 +300,16 @@
     "received": "\\euler_phi(n)"
   },
   {
-    "received": "\\mobius(n)",
-    "input": "\\mu(n)"
+    "input": "\\mu(n)",
+    "received": "\\mobius(n)"
   },
   {
-    "input": "\\pi(x)",
-    "received": "\\prime_pi(x)"
+    "received": "\\prime_pi(x)",
+    "input": "\\pi(x)"
   },
   {
-    "received": "p * n",
-    "input": "p(n)"
+    "input": "p(n)",
+    "received": "\\p(n)"
   },
   {
     "input": "\\tau(n)",
@@ -276,28 +320,28 @@
     "received": "\\sinh(x)"
   },
   {
-    "input": "\\cosh(x)",
-    "received": "\\cosh(x)"
+    "received": "\\cosh(x)",
+    "input": "\\cosh(x)"
   },
   {
-    "input": "\\tanh(x)",
-    "received": "\\tanh(x)"
+    "received": "\\tanh(x)",
+    "input": "\\tanh(x)"
   },
   {
-    "received": "\\arcsin(x)",
-    "input": "\\arcsin(x)"
+    "input": "\\arcsin(x)",
+    "received": "\\arcsin(x)"
   },
   {
-    "input": "\\arccos(x)",
-    "received": "\\arccos(x)"
+    "received": "\\arccos(x)",
+    "input": "\\arccos(x)"
   },
   {
     "input": "\\arctan(x)",
     "received": "\\arctan(x)"
   },
   {
-    "input": "\\sec(x)",
-    "received": "\\sec(x)"
+    "received": "\\sec(x)",
+    "input": "\\sec(x)"
   },
   {
     "input": "\\csc(x)",
@@ -309,103 +353,147 @@
   },
   {
     "input": "f_X(x)",
-    "received": "f_X * x"
+    "received": "\\f_X(x)"
   },
   {
-    "received": "F_X * x",
-    "input": "F_X(x)"
+    "input": "F_X(x)",
+    "received": "\\F_X(x)"
   },
   {
-    "received": "chi^{2} * k",
-    "input": "\\chi^2(k)"
+    "input": "t(\\nu)",
+    "received": "\\t(nu)"
   },
   {
-    "received": "t * nu",
-    "input": "t(\\nu)"
+    "received": "\\F(d_1, d_2)",
+    "input": "F(d_1, d_2)"
   },
   {
-    "input": "F(d_1, d_2)",
-    "received": "F * (d_1, d_2)"
+    "received": "\\vector(a) * \\vector(b)",
+    "input": "\\vec{a} \\times \\vec{b}"
+  },
+  {
+    "input": "\\vec{a} \\cdot \\vec{b}",
+    "received": "\\vector(a) * \\vector(b)"
   },
   {
     "received": "\\sqrt{\\left(x_2 - x_1\\right)^{2} + \\left(y_2 - y_1\\right)^{2}}",
     "input": "\\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}"
   },
   {
-    "input": "(x-a)^2 + (y-b)^2 + (z-c)^2 = r^2",
-    "received": "\\left(x - a\\right)^{2} + \\left(y - b\\right)^{2} + \\left(z - c\\right)^{2} = r^{2}"
+    "received": "\\left(x - a\\right)^{2} + \\left(y - b\\right)^{2} + \\left(z - c\\right)^{2} = r^{2}",
+    "input": "(x-a)^2 + (y-b)^2 + (z-c)^2 = r^2"
   },
   {
-    "received": "\\left(x - h\\right)^{2} + \\left(y - k\\right)^{2} = r^{2}",
-    "input": "(x-h)^2 + (y-k)^2 = r^2"
+    "input": "(x-h)^2 + (y-k)^2 = r^2",
+    "received": "\\left(x - h\\right)^{2} + \\left(y - k\\right)^{2} = r^{2}"
+  },
+  {
+    "received": "a^{-2} * x^{2} + b^{-2} * y^{2} = 1",
+    "input": "\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1"
+  },
+  {
+    "input": "\\frac{x^2}{a^2} - \\frac{y^2}{b^2} = 1",
+    "received": "-1 * b^{-2} * y^{2} + a^{-2} * x^{2} = 1"
   },
   {
     "input": "y = ax^2 + bx + c",
-    "received": "y = a * x^{2} + b * x + c"
+    "received": "y = bx + c + ax^{2}"
   },
   {
-    "input": "\\delta(x)",
-    "received": "\\dirac_delta(x)"
+    "received": "\\dirac_delta(x)",
+    "input": "\\delta(x)"
   },
   {
     "input": "H(x)",
-    "received": "H * x"
+    "received": "\\hermite(x)"
   },
   {
     "received": "\\{x\\}",
     "input": "\\{x\\}"
   },
   {
-    "input": "Sinh[x]",
-    "received": "\\sinh(x)"
+    "input": "\\min(x, y)",
+    "received": "\\min(x, y)"
+  },
+  {
+    "received": "\\max(x, y)",
+    "input": "\\max(x, y)"
+  },
+  {
+    "received": "\\hermite(q, p, t)",
+    "input": "H(q, p, t)"
+  },
+  {
+    "received": "\\sinh(x)",
+    "input": "Sinh[x]"
   },
   {
     "input": "Cosh[x]",
     "received": "\\cosh(x)"
   },
   {
-    "input": "Tanh[x]",
-    "received": "\\tanh(x)"
+    "received": "\\tanh(x)",
+    "input": "Tanh[x]"
   },
   {
     "input": "ArcSinh[x]",
     "received": "\\arc_sinh(x)"
   },
   {
-    "input": "ArcCosh[x]",
-    "received": "\\arc_cosh(x)"
+    "received": "\\arc_cosh(x)",
+    "input": "ArcCosh[x]"
   },
   {
-    "received": "\\arc_tanh(x)",
-    "input": "ArcTanh[x]"
+    "input": "ArcTanh[x]",
+    "received": "\\arc_tanh(x)"
   },
   {
-    "input": "ArcSin[x]",
-    "received": "\\arcsin(x)"
+    "received": "\\arcsin(x)",
+    "input": "ArcSin[x]"
   },
   {
     "received": "\\arccos(x)",
     "input": "ArcCos[x]"
   },
   {
-    "received": "\\arctan(x)",
-    "input": "ArcTan[x]"
+    "input": "ArcTan[x]",
+    "received": "\\arctan(x)"
   },
   {
     "received": "\\arctan(x, y)",
     "input": "ArcTan[x, y]"
   },
   {
-    "received": "\\sec(x)",
-    "input": "Sec[x]"
+    "input": "Sec[x]",
+    "received": "\\sec(x)"
   },
   {
-    "input": "Csc[x]",
-    "received": "\\csc(x)"
+    "received": "\\csc(x)",
+    "input": "Csc[x]"
   },
   {
-    "input": "Cot[x]",
-    "received": "\\cot(x)"
+    "received": "\\cot(x)",
+    "input": "Cot[x]"
+  },
+  {
+    "received": "\\p_d_f(dist, x)",
+    "input": "PDF[dist, x]"
+  },
+  {
+    "input": "CDF[dist, x]",
+    "received": "\\c_d_f(dist, x)"
+  },
+  {
+    "input": "Expectation[X, dist]",
+    "received": "\\expectation(X, dist)"
+  },
+  {
+    "input": "Variance[X, dist]",
+    "received": "\\variance(X, dist)"
+  },
+  {
+    "input": "StandardDeviation[X, dist]",
+    "received": "\\std(X, dist)"
   },
   {
     "received": "\\covariance(X, Y)",
@@ -432,8 +520,8 @@
     "input": "Probability[A, B]"
   },
   {
-    "input": "EuclideanDistance[x, y]",
-    "received": "\\euclidean_distance(x, y)"
+    "received": "\\euclidean_distance(x, y)",
+    "input": "EuclideanDistance[x, y]"
   },
   {
     "input": "LaplaceTransform[f[t], t, s]",
@@ -444,24 +532,24 @@
     "received": "\\z_transform(\\x(n), n, z)"
   },
   {
-    "received": "\\dirac_delta(x)",
-    "input": "DiracDelta[x]"
+    "input": "DiracDelta[x]",
+    "received": "\\dirac_delta(x)"
   },
   {
     "received": "\\heaviside_theta(x)",
     "input": "HeavisideTheta[x]"
   },
   {
-    "input": "FractionalPart[x]",
-    "received": "\\fractional_part(x)"
+    "received": "\\fractional_part(x)",
+    "input": "FractionalPart[x]"
   },
   {
     "input": "ArgMin[f[x], x]",
     "received": "\\arg_min(\\f(x), x)"
   },
   {
-    "input": "ArgMax[f[x], x]",
-    "received": "\\arg_max(\\f(x), x)"
+    "received": "\\arg_max(\\f(x), x)",
+    "input": "ArgMax[f[x], x]"
   },
   {
     "input": "BesselJ[n, x]",
@@ -472,52 +560,52 @@
     "input": "BesselY[n, x]"
   },
   {
-    "input": "HankelH1[n, x]",
-    "received": "\\hankel_h1(n, x)"
+    "received": "\\hankel_h1(n, x)",
+    "input": "HankelH1[n, x]"
   },
   {
-    "received": "\\legendre_p(n, x)",
-    "input": "LegendreP[n, x]"
+    "input": "LegendreP[n, x]",
+    "received": "\\legendre_p(n, x)"
   },
   {
     "received": "\\legendre_p(l, m, x)",
     "input": "LegendreP[l, m, x]"
   },
   {
-    "input": "HermiteH[n, x]",
-    "received": "\\hermite(n, x)"
+    "received": "\\hermite(n, x)",
+    "input": "HermiteH[n, x]"
   },
   {
     "input": "LaguerreL[n, x]",
     "received": "\\laguerre(n, x)"
   },
   {
-    "input": "ChebyshevT[n, x]",
-    "received": "\\chebyshev_first(n, x)"
+    "received": "\\chebyshev_first(n, x)",
+    "input": "ChebyshevT[n, x]"
   },
   {
     "input": "Hypergeometric2F1[a, b, c, z]",
-    "received": "Hypergeometric2 * \\f1(a, b, c, z)"
+    "received": "\\hypergeometric2_f1(a, b, c, z)"
   },
   {
     "received": "\\beta(x, y)",
     "input": "Beta[x, y]"
   },
   {
-    "input": "PolyGamma[x]",
-    "received": "\\poly_gamma(x)"
+    "received": "\\poly_gamma(x)",
+    "input": "PolyGamma[x]"
   },
   {
-    "input": "PolyGamma[n, x]",
-    "received": "\\poly_gamma(n, x)"
+    "received": "\\poly_gamma(n, x)",
+    "input": "PolyGamma[n, x]"
   },
   {
     "input": "Zeta[s]",
     "received": "\\zeta(s)"
   },
   {
-    "received": "\\dirichlet_eta(s)",
-    "input": "DirichletEta[s]"
+    "input": "DirichletEta[s]",
+    "received": "\\dirichlet_eta(s)"
   },
   {
     "input": "Erf[x]",
@@ -528,8 +616,8 @@
     "input": "Erfc[x]"
   },
   {
-    "input": "FresnelS[x]",
-    "received": "\\fresnel_s(x)"
+    "received": "\\fresnel_s(x)",
+    "input": "FresnelS[x]"
   },
   {
     "input": "FresnelC[x]",
@@ -552,32 +640,32 @@
     "received": "\\stirling_s2(n, k)"
   },
   {
-    "received": "\\bell_b(n)",
-    "input": "BellB[n]"
+    "input": "BellB[n]",
+    "received": "\\bell_b(n)"
   },
   {
-    "received": "\\catalan_number(n)",
-    "input": "CatalanNumber[n]"
+    "input": "CatalanNumber[n]",
+    "received": "\\catalan_number(n)"
   },
   {
     "input": "Fibonacci[n]",
     "received": "\\fibonacci(n)"
   },
   {
-    "received": "\\lucas_l(n)",
-    "input": "LucasL[n]"
+    "input": "LucasL[n]",
+    "received": "\\lucas_l(n)"
   },
   {
-    "input": "DivisorSigma[k, n]",
-    "received": "\\divisor_sigma(k, n)"
+    "received": "\\divisor_sigma(k, n)",
+    "input": "DivisorSigma[k, n]"
   },
   {
-    "received": "\\jacobi_symbol(a, p)",
-    "input": "JacobiSymbol[a, p]"
+    "input": "JacobiSymbol[a, p]",
+    "received": "\\jacobi_symbol(a, p)"
   },
   {
-    "received": "\\jacobi_symbol(a, n)",
-    "input": "JacobiSymbol[a, n]"
+    "input": "JacobiSymbol[a, n]",
+    "received": "\\jacobi_symbol(a, n)"
   },
   {
     "input": "PartitionsP[n]",
@@ -592,28 +680,52 @@
     "received": "\\series(\\f(x), \\{x, a, n\\})"
   },
   {
-    "received": "\\fourier_series(\\f(x), x, n)",
-    "input": "FourierSeries[f[x], x, n]"
+    "input": "FourierSeries[f[x], x, n]",
+    "received": "\\fourier_series(\\f(x), x, n)"
   },
   {
-    "received": "\\residue(\\f(z), \\{z, z0\\})",
-    "input": "Residue[f[z], {z, z0}]"
+    "input": "Residue[f[z], {z, z0}]",
+    "received": "\\residue(\\f(z), \\{z, z0\\})"
   },
   {
-    "input": "[A, B]",
-    "received": "[A, B]"
+    "received": "\\gcd(a, b)",
+    "input": "\\gcd(a, b)"
   },
   {
-    "received": "\\{A, B\\}",
-    "input": "\\{A, B\\}"
+    "input": "a \\bmod n",
+    "received": "\\mod(a, n)"
+  },
+  {
+    "received": "A * B",
+    "input": "A \\otimes B"
+  },
+  {
+    "received": "[A, B]",
+    "input": "[A, B]"
+  },
+  {
+    "input": "\\{A, B\\}",
+    "received": "\\{A, B\\}"
+  },
+  {
+    "received": "\\compose(g, h)",
+    "input": "g \\circ h"
   },
   {
     "input": "g^{-1}",
-    "received": "g^{-1 * 1}"
+    "received": "g^{-1}"
   },
   {
-    "received": "\\mobius(e)",
-    "input": "\\mu(E)"
+    "input": "\\mu(E)",
+    "received": "\\mobius(e)"
+  },
+  {
+    "input": "C_n(a, q, z)",
+    "received": "\\C_n(a, q, z)"
+  },
+  {
+    "received": "\\S_n(a, q, z)",
+    "input": "S_n(a, q, z)"
   },
   {
     "input": "AiryAi[x]",
@@ -624,48 +736,44 @@
     "input": "AiryBi[x]"
   },
   {
-    "received": "T_n",
-    "input": "T_n"
+    "input": "T_n",
+    "received": "T_n"
   },
   {
     "received": "M_n",
     "input": "M_n"
   },
   {
-    "received": "G_n",
-    "input": "G_n"
+    "input": "G_n",
+    "received": "G_n"
   },
   {
     "input": "A_n",
     "received": "A_n"
   },
   {
-    "input": "Q_M(a, b)",
-    "received": "Q_M * (a, b)"
-  },
-  {
-    "input": "\\lambda(n)",
-    "received": "\\reduced_totient(n)"
-  },
-  {
-    "input": "\\nu(n)",
-    "received": "\\primenu(n)"
+    "received": "\\legendre_q_indexed(M, a, b)",
+    "input": "Q_M(a, b)"
   },
   {
     "received": "\\reduced_totient(n)",
     "input": "\\lambda(n)"
   },
   {
-    "input": "\\xi(s)",
-    "received": "xi * s"
+    "input": "\\nu(n)",
+    "received": "\\primenu(n)"
+  },
+  {
+    "input": "\\lambda(n)",
+    "received": "\\reduced_totient(n)"
   },
   {
     "input": "S(x)",
-    "received": "S * x"
+    "received": "\\S(x)"
   },
   {
-    "received": "\\tribonacci(n)",
-    "input": "Tribonacci[n]"
+    "input": "Tribonacci[n]",
+    "received": "\\tribonacci(n)"
   },
   {
     "input": "MarcumQ[M, a, b]",
@@ -692,8 +800,8 @@
     "received": "\\stieltjes_gamma(n)"
   },
   {
-    "received": "rho",
-    "input": "\\rho"
+    "input": "\\rho",
+    "received": "rho"
   },
   {
     "received": "delta",
@@ -708,55 +816,71 @@
     "received": "e^{A}"
   },
   {
-    "received": "\\log(A)",
-    "input": "\\log(A)"
+    "input": "\\log(A)",
+    "received": "\\log(A)"
   },
   {
-    "input": "A^{1/2}",
-    "received": "A^{\\frac{1}{2}}"
+    "received": "A^{\\frac{1}{2}}",
+    "input": "A^{1/2}"
   },
   {
-    "received": "\\matrix_log(A)",
-    "input": "MatrixLog[A]"
+    "input": "MatrixLog[A]",
+    "received": "\\matrix_log(A)"
   },
   {
     "input": "F = F_0 \\cdot (a + b \\cdot v)/(b + v)",
-    "received": "F = \\frac{F_0 * a + b * v}{b + v}"
+    "received": "F = F_0 * \\left(b + v\\right)^{-1} * \\left(a + b * v\\right)"
   },
   {
     "input": "\\gamma^\\mu",
     "received": "γ^{mu}"
   },
   {
-    "input": "a",
-    "received": "a"
+    "received": "a",
+    "input": "a"
   },
   {
     "input": "(hkl)",
-    "received": "h * k * l"
+    "received": "hkl"
+  },
+  {
+    "input": "Pr = \\frac{\\nu}{\\alpha}",
+    "received": "Pr = \\frac{nu}{alpha}"
+  },
+  {
+    "input": "Ma = \\frac{v}{c}",
+    "received": "Ma = \\frac{v}{c}"
+  },
+  {
+    "input": "\\gamma = \\frac{1}{\\sqrt{1 - v^2/c^2}}",
+    "received": "γ = \\sqrt^{-1}(1 + -1 * c^{-2} * v^{2})"
   },
   {
     "input": "p^\\mu",
     "received": "p^{mu}"
   },
   {
-    "received": "a * t",
+    "received": "\\a(t)",
     "input": "a(t)"
   },
   {
-    "received": "\\dirac_gamma(mu)",
-    "input": "DiracGamma[mu]"
+    "received": "\\transfer_function_model(\\{\\{num\\}\\}, \\{\\{den\\}\\}, s)",
+    "input": "TransferFunctionModel[{{num}}, {{den}}, s]"
   },
   {
-    "received": "\\pauli_matrix(i)",
-    "input": "PauliMatrix[i]"
+    "input": "DiracGamma[mu]",
+    "received": "\\dirac_gamma(mu)"
   },
   {
-    "received": "y^{2} = x^{3} + a * x + b",
+    "input": "PauliMatrix[i]",
+    "received": "\\pauli_matrix(i)"
+  },
+  {
+    "received": "y^{2} = ax + b + x^{3}",
     "input": "y^2 = x^3 + ax + b"
   },
   {
-    "received": "a * x^{2} + b * x * y + c * y^{2}",
+    "received": "bxy + ax^{2} + cy^{2}",
     "input": "ax^2 + bxy + cy^2"
   },
   {
@@ -764,11 +888,15 @@
     "received": "x^{2} - Dy^{2} = 1"
   },
   {
-    "input": "r_k(n)",
-    "received": "r_k * n"
+    "received": "\\r_k(n)",
+    "input": "r_k(n)"
   },
   {
-    "received": "H_I * t",
+    "received": "\\gcd(\\f(x), \\g(x))",
+    "input": "\\gcd(f(x), g(x))"
+  },
+  {
+    "received": "\\hermite_indexed(I, t)",
     "input": "H_I(t)"
   },
   {
