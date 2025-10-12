@@ -2,6 +2,7 @@ use mathhook_core::formatter::MathLanguage;
 use mathhook_core::parser::config::ParserConfig;
 use mathhook_core::parser::Parser;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs::{read_to_string, write};
 
 fn main() {
@@ -30,15 +31,40 @@ struct TestResult {
     // Parsing results
     parse_success: bool,
     parse_error: Option<String>,
+    parse_error_category: Option<String>,
 
     // Formatting results
     formatted_latex: Option<String>,
     formatted_wolfram: Option<String>,
 
-    // Validation results
-    input_language_format_match: Option<bool>, // Does formatted output in SAME language as input match?
-    latex_round_trip: Option<bool>,
-    wolfram_round_trip: Option<bool>,
+    // Validation results (strict)
+    exact_string_match: Option<bool>, // Does formatted output EXACTLY match input?
+    normalized_match: Option<bool>,   // Does it match after normalization (whitespace)?
+    semantic_match: Option<bool>,     // Does reparsing yield same expression?
+}
+
+fn categorize_parse_error(error: &str) -> String {
+    if error.contains("UnrecognizedToken") {
+        "UnrecognizedToken".to_string()
+    } else if error.contains("UnrecognizedEof") {
+        "UnrecognizedEOF".to_string()
+    } else if error.contains("ExtraToken") {
+        "ExtraToken".to_string()
+    } else if error.contains("InvalidToken") {
+        "InvalidToken".to_string()
+    } else if error.contains("\\text") {
+        "MissingTextSupport".to_string()
+    } else if error.contains("\\begin") || error.contains("\\end") {
+        "MissingEnvironmentSupport".to_string()
+    } else if error.contains("dx") {
+        "DifferentialTokenization".to_string()
+    } else {
+        "Other".to_string()
+    }
+}
+
+fn normalize_whitespace(s: &str) -> String {
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
 fn test_explicit_cases() {
@@ -46,7 +72,6 @@ fn test_explicit_cases() {
         enable_implicit_multiplication: false,
     });
 
-    // Read explicit test cases (without implicit multiplication)
     let test_cases_str = read_to_string("./crates/mathhook-core/tests/parsing/cases_explicit.json")
         .expect("Failed to read cases_explicit.json");
     let test_cases: Vec<TestCase> =
@@ -59,6 +84,7 @@ fn test_explicit_cases() {
 
     let mut results = Vec::new();
     let mut stats = TestStats::default();
+    let mut error_categories: HashMap<String, usize> = HashMap::new();
 
     for (idx, case) in test_cases.iter().enumerate() {
         if idx % 50 == 0 {
@@ -67,25 +93,36 @@ fn test_explicit_cases() {
 
         let result = test_single_case(&parser, case);
 
+        // Count error categories
+        if let Some(ref cat) = result.parse_error_category {
+            *error_categories.entry(cat.clone()).or_insert(0) += 1;
+        }
+
         // Update stats
         if result.parse_success {
             stats.parse_success += 1;
 
             if case.language == "latex" {
                 stats.latex_parse_success += 1;
-                if result.input_language_format_match == Some(true) {
-                    stats.latex_format_match_success += 1;
+                if result.exact_string_match == Some(true) {
+                    stats.latex_exact_match += 1;
                 }
-                if result.latex_round_trip == Some(true) {
-                    stats.latex_round_trip_success += 1;
+                if result.normalized_match == Some(true) {
+                    stats.latex_normalized_match += 1;
+                }
+                if result.semantic_match == Some(true) {
+                    stats.latex_semantic_match += 1;
                 }
             } else if case.language == "wolfram" {
                 stats.wolfram_parse_success += 1;
-                if result.input_language_format_match == Some(true) {
-                    stats.wolfram_format_match_success += 1;
+                if result.exact_string_match == Some(true) {
+                    stats.wolfram_exact_match += 1;
                 }
-                if result.wolfram_round_trip == Some(true) {
-                    stats.wolfram_round_trip_success += 1;
+                if result.normalized_match == Some(true) {
+                    stats.wolfram_normalized_match += 1;
+                }
+                if result.semantic_match == Some(true) {
+                    stats.wolfram_semantic_match += 1;
                 }
             }
         } else {
@@ -125,41 +162,56 @@ fn test_explicit_cases() {
         .filter(|c| c.language == "wolfram")
         .count();
 
-    println!("\n📝 LATEX:");
-    println!("  Total LaTeX cases: {}", latex_total);
+    println!("\n📝 LATEX ({} cases):", latex_total);
     println!(
         "  ✅ Parsed: {} ({:.1}%)",
         stats.latex_parse_success,
         100.0 * stats.latex_parse_success as f64 / latex_total as f64
     );
     println!(
-        "  📋 Format matches input: {} ({:.1}%)",
-        stats.latex_format_match_success,
-        100.0 * stats.latex_format_match_success as f64 / latex_total as f64
+        "  🎯 Exact string match: {} ({:.1}%)",
+        stats.latex_exact_match,
+        100.0 * stats.latex_exact_match as f64 / latex_total as f64
     );
     println!(
-        "  🔄 Cross-language round-trip: {} ({:.1}%)",
-        stats.latex_round_trip_success,
-        100.0 * stats.latex_round_trip_success as f64 / latex_total as f64
+        "  📋 Normalized match: {} ({:.1}%)",
+        stats.latex_normalized_match,
+        100.0 * stats.latex_normalized_match as f64 / latex_total as f64
+    );
+    println!(
+        "  🔄 Semantic match: {} ({:.1}%)",
+        stats.latex_semantic_match,
+        100.0 * stats.latex_semantic_match as f64 / latex_total as f64
     );
 
-    println!("\n🅦 WOLFRAM:");
-    println!("  Total Wolfram cases: {}", wolfram_total);
+    println!("\n🅦 WOLFRAM ({} cases):", wolfram_total);
     println!(
         "  ✅ Parsed: {} ({:.1}%)",
         stats.wolfram_parse_success,
         100.0 * stats.wolfram_parse_success as f64 / wolfram_total as f64
     );
     println!(
-        "  📋 Format matches input: {} ({:.1}%)",
-        stats.wolfram_format_match_success,
-        100.0 * stats.wolfram_format_match_success as f64 / wolfram_total as f64
+        "  🎯 Exact string match: {} ({:.1}%)",
+        stats.wolfram_exact_match,
+        100.0 * stats.wolfram_exact_match as f64 / wolfram_total as f64
     );
     println!(
-        "  🔄 Cross-language round-trip: {} ({:.1}%)",
-        stats.wolfram_round_trip_success,
-        100.0 * stats.wolfram_round_trip_success as f64 / wolfram_total as f64
+        "  📋 Normalized match: {} ({:.1}%)",
+        stats.wolfram_normalized_match,
+        100.0 * stats.wolfram_normalized_match as f64 / wolfram_total as f64
     );
+    println!(
+        "  🔄 Semantic match: {} ({:.1}%)",
+        stats.wolfram_semantic_match,
+        100.0 * stats.wolfram_semantic_match as f64 / wolfram_total as f64
+    );
+
+    println!("\n❌ ERROR CATEGORIES:");
+    let mut categories: Vec<_> = error_categories.iter().collect();
+    categories.sort_by_key(|(_, count)| std::cmp::Reverse(**count));
+    for (category, count) in categories.iter().take(10) {
+        println!("  {} : {} cases", category, count);
+    }
 
     println!("\n💾 Results written to: {}", output_path);
     println!("{}", "=".repeat(70));
@@ -174,27 +226,28 @@ fn test_single_case(parser: &Parser, case: &TestCase) -> TestResult {
             let formatted_latex = expr.format_as(MathLanguage::LaTeX).ok();
             let formatted_wolfram = expr.format_as(MathLanguage::Wolfram).ok();
 
-            // Test round-trip: Parse → Format → Parse again
-            let latex_round_trip = formatted_latex.as_ref().and_then(|latex_str| {
-                parser.parse(latex_str).ok().map(|reparsed| {
-                    // Compare expressions (should be equal or canonical form)
-                    reparsed.to_string() == expr.to_string()
-                })
+            // Get the formatted output for the SAME language as input
+            let formatted_same_lang = match case.language.as_str() {
+                "latex" => formatted_latex.as_ref(),
+                "wolfram" => formatted_wolfram.as_ref(),
+                _ => None,
+            };
+
+            // Check 1: Exact string match
+            let exact_string_match = formatted_same_lang.map(|formatted| formatted == &case.input);
+
+            // Check 2: Normalized match (ignoring whitespace differences)
+            let normalized_match = formatted_same_lang.map(|formatted| {
+                normalize_whitespace(formatted) == normalize_whitespace(&case.input)
             });
 
-            let wolfram_round_trip = formatted_wolfram.as_ref().and_then(|wolfram_str| {
+            // Check 3: Semantic match (round-trip parsing)
+            let semantic_match = formatted_same_lang.and_then(|formatted| {
                 parser
-                    .parse(wolfram_str)
+                    .parse(formatted)
                     .ok()
                     .map(|reparsed| reparsed.to_string() == expr.to_string())
             });
-
-            // Validate: Does formatted output in SAME language as input match?
-            let input_language_format_match = match case.language.as_str() {
-                "latex" => latex_round_trip,
-                "wolfram" => wolfram_round_trip,
-                _ => None,
-            };
 
             TestResult {
                 id: case.id.clone(),
@@ -204,15 +257,18 @@ fn test_single_case(parser: &Parser, case: &TestCase) -> TestResult {
                 description: case.description.clone(),
                 parse_success: true,
                 parse_error: None,
+                parse_error_category: None,
                 formatted_latex,
                 formatted_wolfram,
-                input_language_format_match,
-                latex_round_trip,
-                wolfram_round_trip,
+                exact_string_match,
+                normalized_match,
+                semantic_match,
             }
         }
         Err(e) => {
-            // Parse failed
+            let error_str = format!("{:?}", e);
+            let error_category = categorize_parse_error(&error_str);
+
             TestResult {
                 id: case.id.clone(),
                 input: case.input.clone(),
@@ -220,12 +276,13 @@ fn test_single_case(parser: &Parser, case: &TestCase) -> TestResult {
                 category: case.category.clone(),
                 description: case.description.clone(),
                 parse_success: false,
-                parse_error: Some(format!("{:?}", e)),
+                parse_error: Some(error_str),
+                parse_error_category: Some(error_category),
                 formatted_latex: None,
                 formatted_wolfram: None,
-                input_language_format_match: None,
-                latex_round_trip: None,
-                wolfram_round_trip: None,
+                exact_string_match: None,
+                normalized_match: None,
+                semantic_match: None,
             }
         }
     }
@@ -236,9 +293,11 @@ struct TestStats {
     parse_success: usize,
     parse_failure: usize,
     latex_parse_success: usize,
-    latex_format_match_success: usize, // LaTeX input → LaTeX format matches
-    latex_round_trip_success: usize,
+    latex_exact_match: usize,      // Exact string match
+    latex_normalized_match: usize, // Match after whitespace normalization
+    latex_semantic_match: usize,   // Round-trip semantic match
     wolfram_parse_success: usize,
-    wolfram_format_match_success: usize, // Wolfram input → Wolfram format matches
-    wolfram_round_trip_success: usize,
+    wolfram_exact_match: usize,
+    wolfram_normalized_match: usize,
+    wolfram_semantic_match: usize,
 }

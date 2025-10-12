@@ -183,6 +183,19 @@ impl LaTeXFormatter for Expression {
                     })
                 }
             }
+            "double_factorial" => {
+                if args.len() == 1 {
+                    format!("{}!!", args[0].to_latex_with_depth(context, depth + 1)?)
+                } else {
+                    format!("\\text{{double_factorial}}({})", {
+                        let mut arg_strs = Vec::with_capacity(args.len());
+                        for arg in args.iter() {
+                            arg_strs.push(arg.to_latex_with_depth(context, depth + 1)?);
+                        }
+                        arg_strs.join(", ")
+                    })
+                }
+            }
             // Calculus
             "integrate" => {
                 if args.len() == 2 {
@@ -239,20 +252,197 @@ impl LaTeXFormatter for Expression {
                 "\\Gamma({})",
                 args[0].to_latex_with_depth(context, depth + 1)?
             ),
-            "abs" => format!(
-                "\\left|{}\\right|",
+            "digamma" | "psi" => format!(
+                "\\psi({})",
                 args[0].to_latex_with_depth(context, depth + 1)?
             ),
-            // Generic LaTeX function formatting: \functionname(args)
+            "riemann_zeta" => format!(
+                "\\zeta({})",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "eta" => format!(
+                "\\eta({})",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "abs" => format!(
+                "|{}|",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "conjugate" => format!(
+                "\\overline{{{}}}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            // Vector calculus
+            "gradient" => format!(
+                "\\nabla {}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "divergence" => format!(
+                "\\nabla \\cdot {}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "curl" => format!(
+                "\\nabla \\times {}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "laplacian" => format!(
+                "\\nabla^2 {}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            "vector" => format!(
+                "\\vec{{{}}}",
+                args[0].to_latex_with_depth(context, depth + 1)?
+            ),
+            // Indexed special functions with smart subscript bracing
+            "bessel_j_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "J_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "bessel_y_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "Y_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "legendre_p_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "P_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "legendre_q_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "Q_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "hermite_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "H_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "laguerre_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "L_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+            "chebyshev_first_indexed" if args.len() >= 2 => {
+                let subscript = args[0].to_latex_with_depth(context, depth + 1)?;
+                let subscript_formatted = if subscript.len() == 1 {
+                    subscript
+                } else {
+                    format!("{{{}}}", subscript)
+                };
+                format!(
+                    "T_{}({})",
+                    subscript_formatted,
+                    args[1..].iter()
+                        .map(|arg| arg.to_latex_with_depth(context, depth + 1))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .join(", ")
+                )
+            }
+
+            // Generic LaTeX function formatting
             _ => {
+                // List of known LaTeX functions that should have backslashes
+                const KNOWN_LATEX_FUNCTIONS: &[&str] = &[
+                    // Trigonometric
+                    "sin", "cos", "tan", "cot", "sec", "csc",
+                    "arcsin", "arccos", "arctan", "arccot", "arcsec", "arccsc",
+                    // Hyperbolic
+                    "sinh", "cosh", "tanh", "coth", "sech", "csch",
+                    "arcsinh", "arccosh", "arctanh", "arccoth", "arcsech", "arccsch",
+                    // Logarithmic
+                    "ln", "lg",
+                    // Special functions
+                    "erf", "erfc", "min", "max", "gcd", "lcm",
+                    // Other
+                    "det", "dim", "ker", "hom", "arg", "deg", "lim", "sup", "inf",
+                ];
+
+                let should_add_backslash = KNOWN_LATEX_FUNCTIONS.contains(&name);
+
                 if args.is_empty() {
-                    format!("\\{}", name)
+                    if should_add_backslash {
+                        format!("\\{}", name)
+                    } else {
+                        name.to_string()
+                    }
                 } else {
                     let arg_strs: Vec<String> = args
                         .iter()
                         .map(|arg| arg.to_latex_with_depth(context, depth + 1))
                         .collect::<Result<Vec<_>, _>>()?;
-                    format!("\\{}({})", name, arg_strs.join(", "))
+                    if should_add_backslash {
+                        format!("\\{}({})", name, arg_strs.join(", "))
+                    } else {
+                        format!("{}({})", name, arg_strs.join(", "))
+                    }
                 }
             }
         })
@@ -355,22 +545,23 @@ impl LaTeXFormatter for Expression {
                         factor_strs.push(f.to_latex_with_depth(context, depth + 1)?);
                     }
                 }
-                // Use simpler multiplication format for better roundtrip consistency
+                // Use \cdot for multiplication to match LaTeX input
                 if factors.len() == 2 {
                     // For simple cases like 2π, use implicit multiplication
                     let first = factors[0].to_latex_with_depth(context, depth + 1)?;
                     let second = factors[1].to_latex_with_depth(context, depth + 1)?;
 
-                    // Check if this is number * constant (like 2π)
+                    // Check if this is number * constant (like 2π) - use implicit
                     if let (Expression::Number(_), Expression::Constant(_)) =
                         (&factors[0], &factors[1])
                     {
                         format!("{}{}", first, second)
                     } else {
-                        format!("{} * {}", first, second)
+                        // Use \cdot for explicit multiplication
+                        format!("{} \\cdot {}", first, second)
                     }
                 } else {
-                    factor_strs.join(" * ")
+                    factor_strs.join(" \\cdot ")
                 }
             }
             Expression::Pow(base, exp) => {
@@ -417,22 +608,34 @@ impl LaTeXFormatter for Expression {
                     exp_str
                 };
 
-                format!("{}^{{{}}}", base_str, clean_exp_str)
+                // Only use braces if exponent is multi-character or contains special chars
+                if clean_exp_str.len() == 1 ||
+                   (clean_exp_str.len() == 2 && clean_exp_str.starts_with('-')) {
+                    // Simple exponent: x^2, x^n, x^{-1} -> keep braces for negative
+                    if clean_exp_str.starts_with('-') {
+                        format!("{}^{{{}}}", base_str, clean_exp_str)
+                    } else {
+                        format!("{}^{}", base_str, clean_exp_str)
+                    }
+                } else {
+                    // Complex exponent: always use braces
+                    format!("{}^{{{}}}", base_str, clean_exp_str)
+                }
             }
             Expression::Function { name, args } => {
                 self.function_to_latex_with_depth(name, args, context, depth + 1)?
             }
-            // Mathematical constants with consistent formatting
+            // Mathematical constants with LaTeX formatting (not Unicode)
             Expression::Constant(c) => match c {
-                MathConstant::Pi => "π".to_string(),
+                MathConstant::Pi => "\\pi".to_string(),
                 MathConstant::E => "e".to_string(),
                 MathConstant::I => "i".to_string(),
-                MathConstant::Infinity => "∞".to_string(),
-                MathConstant::NegativeInfinity => "-∞".to_string(),
+                MathConstant::Infinity => "\\infty".to_string(),
+                MathConstant::NegativeInfinity => "-\\infty".to_string(),
                 MathConstant::Undefined => "\\text{undefined}".to_string(),
-                MathConstant::GoldenRatio => "φ".to_string(),
-                MathConstant::EulerGamma => "γ".to_string(),
-                MathConstant::TribonacciConstant => "α₃".to_string(),
+                MathConstant::GoldenRatio => "\\phi".to_string(),
+                MathConstant::EulerGamma => "\\gamma".to_string(),
+                MathConstant::TribonacciConstant => "\\alpha_3".to_string(),
             },
             // New expression types - implement later
             Expression::Complex(complex_data) => format!(
