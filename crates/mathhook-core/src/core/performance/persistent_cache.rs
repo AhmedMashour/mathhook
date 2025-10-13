@@ -383,7 +383,7 @@ mod tests {
 
     #[test]
     fn test_persistent_cache_creation() {
-        let temp_dir = TempDir::new().unwrap();
+        let temp_dir = TempDir::new().expect("Failed to create temp directory for test");
         let config = PersistentCacheConfig {
             cache_directory: temp_dir.path().to_path_buf(),
             ..Default::default()
@@ -398,7 +398,7 @@ mod tests {
 
     #[test]
     fn test_cache_file_path() {
-        let temp_dir = TempDir::new().unwrap();
+        let temp_dir = TempDir::new().expect("Failed to create temp directory for test");
         let config = PersistentCacheConfig {
             cache_directory: temp_dir.path().to_path_buf(),
             ..Default::default()

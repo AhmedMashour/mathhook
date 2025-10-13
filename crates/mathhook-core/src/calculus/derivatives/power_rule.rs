@@ -96,6 +96,8 @@ impl PowerRule {
 
     /// Create division expression helper for derivatives
     ///
+    /// Uses the symbolic division constructor since derivatives are symbolic operations.
+    ///
     /// # Examples
     ///
     /// ```rust
@@ -108,10 +110,7 @@ impl PowerRule {
     /// let division = PowerRule::div(numerator, denominator);
     /// ```
     pub fn div(numerator: Expression, denominator: Expression) -> Expression {
-        Expression::mul(vec![
-            numerator,
-            Expression::pow(denominator, Expression::integer(-1)),
-        ]) // a/b = a * b^(-1)
+        Expression::div(numerator, denominator)
     }
 }
 

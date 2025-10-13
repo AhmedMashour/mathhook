@@ -304,7 +304,10 @@ impl RuntimeProfiler {
 
     /// Get performance statistics for monitoring
     pub fn get_statistics(&self) -> ProfilerStatistics {
-        let measurements = self.measurements.read().unwrap();
+        let measurements = self
+            .measurements
+            .read()
+            .expect("BUG: Profiler measurements lock poisoned - indicates panic during profiler read in another thread");
         let thresholds = self.get_thresholds();
 
         let total_measurements = measurements.len();

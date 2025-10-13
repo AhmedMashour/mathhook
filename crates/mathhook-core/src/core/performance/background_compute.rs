@@ -92,7 +92,10 @@ impl BackgroundCompute {
         likelihood: f64,
     ) -> u64 {
         let task_id = {
-            let mut next_id = self.next_task_id.lock().unwrap();
+            let mut next_id = self
+                .next_task_id
+                .lock()
+                .expect("BUG: Background compute task ID lock poisoned - indicates panic during task submission in another thread");
             let id = *next_id;
             *next_id += 1;
             id
@@ -359,13 +362,19 @@ impl BackgroundCompute {
         let max_cached = self.max_cached_results;
 
         // Set worker as running
-        *running.lock().unwrap() = true;
+        *running
+            .lock()
+            .expect("BUG: Background compute running flag lock poisoned - indicates panic during worker initialization in another thread") = true;
 
         thread::spawn(move || {
-            while *running.lock().unwrap() {
+            while *running
+                .lock()
+                .expect("BUG: Background compute running flag lock poisoned - indicates panic during worker loop check in another thread") {
                 // Get next task
                 let task = {
-                    let mut queue_guard = queue.lock().unwrap();
+                    let mut queue_guard = queue
+                        .lock()
+                        .expect("BUG: Background compute task queue lock poisoned - indicates panic during task retrieval in another thread");
                     queue_guard.pop_front()
                 };
 
@@ -409,14 +418,20 @@ impl BackgroundCompute {
 
     /// Stop the background worker
     pub fn stop_worker(&self) {
-        *self.worker_running.lock().unwrap() = false;
+        *self
+            .worker_running
+            .lock()
+            .expect("BUG: Background compute running flag lock poisoned - indicates panic during worker stop in another thread") = false;
     }
 
     /// Get statistics about background computation
     pub fn get_statistics(&self) -> BackgroundComputeStatistics {
         let queue_size = self.task_queue.lock().map(|q| q.len()).unwrap_or(0);
         let cache_size = self.results_cache.lock().map(|c| c.len()).unwrap_or(0);
-        let worker_running = *self.worker_running.lock().unwrap();
+        let worker_running = *self
+            .worker_running
+            .lock()
+            .expect("BUG: Background compute running flag lock poisoned - indicates panic during statistics read in another thread");
 
         // Calculate priority distribution
         let mut priority_counts = HashMap::new();

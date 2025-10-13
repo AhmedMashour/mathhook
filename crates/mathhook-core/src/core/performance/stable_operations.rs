@@ -141,7 +141,10 @@ fn stable_mixed_addition(
 
     match result_terms.len() {
         0 => Expression::integer(0),
-        1 => result_terms.into_iter().next().unwrap(),
+        1 => result_terms
+            .into_iter()
+            .next()
+            .expect("BUG: result_terms has length 1 but iterator is empty"),
         _ => Expression::Add(Box::new(result_terms)),
     }
 }
@@ -271,7 +274,10 @@ fn stable_mixed_multiplication(
 
     match result_factors.len() {
         0 => Expression::integer(1),
-        1 => result_factors.into_iter().next().unwrap(),
+        1 => result_factors
+            .into_iter()
+            .next()
+            .expect("BUG: result_factors has length 1 but iterator is empty"),
         _ => Expression::Mul(Box::new(result_factors)),
     }
 }

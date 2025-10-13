@@ -382,7 +382,10 @@ pub fn pascal_to_snake_case(name: &str) -> String {
             if !result.is_empty() {
                 result.push('_');
             }
-            result.push(ch.to_lowercase().next().unwrap());
+            // to_lowercase() always returns at least one character for valid Unicode
+            for lowercase_ch in ch.to_lowercase() {
+                result.push(lowercase_ch);
+            }
         } else {
             result.push(ch);
         }

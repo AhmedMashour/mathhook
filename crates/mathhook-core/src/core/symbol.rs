@@ -63,7 +63,9 @@ impl Symbol {
 
     /// Internal method to intern symbols using the global cache
     fn intern_symbol(name: &str) -> Arc<str> {
-        let mut cache_guard = SYMBOL_CACHE.lock().unwrap();
+        let mut cache_guard = SYMBOL_CACHE
+            .lock()
+            .expect("BUG: Symbol cache lock poisoned - indicates panic during symbol interning in another thread");
         let cache = cache_guard.get_or_insert_with(HashMap::new);
 
         if let Some(existing) = cache.get(name) {

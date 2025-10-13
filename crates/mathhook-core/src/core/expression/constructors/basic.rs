@@ -372,4 +372,79 @@ impl Expression {
             relation_type,
         }))
     }
+
+    /// Create a division expression (symbolic, always succeeds)
+    ///
+    /// This constructor is for symbolic division where the denominator may be unknown
+    /// or symbolic. It converts division to multiplication by the reciprocal: `a / b` → `a * b^(-1)`
+    ///
+    /// For numerical evaluation contexts where you need to detect division by zero,
+    /// use `div_checked()` instead.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// // Symbolic division (denominator is unknown)
+    /// let x = symbol!(x);
+    /// let expr = Expression::div(Expression::integer(1), Expression::symbol(x));
+    /// // Produces: 1 * x^(-1)
+    ///
+    /// // Constant division (still symbolic context)
+    /// let expr = Expression::div(Expression::integer(3), Expression::integer(4));
+    /// // Produces: 3 * 4^(-1), which simplifies to 3/4
+    /// ```
+    pub fn div(numerator: Expression, denominator: Expression) -> Self {
+        Expression::mul(vec![
+            numerator,
+            Expression::pow(denominator, Expression::integer(-1)),
+        ])
+    }
+
+    /// Create a division expression with division-by-zero checking
+    ///
+    /// This constructor checks if the denominator is zero and returns an error if so.
+    /// Use this in evaluation contexts where division by zero should be detected.
+    ///
+    /// For symbolic contexts where the denominator is unknown or symbolic, use `div()` instead.
+    ///
+    /// # Errors
+    ///
+    /// Returns `MathError::DivisionByZero` if the denominator is exactly zero.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, MathError};
+    ///
+    /// // Valid division
+    /// let result = Expression::div_checked(
+    ///     Expression::integer(10),
+    ///     Expression::integer(2),
+    /// );
+    /// assert!(result.is_ok());
+    ///
+    /// // Division by zero
+    /// let result = Expression::div_checked(
+    ///     Expression::integer(1),
+    ///     Expression::integer(0),
+    /// );
+    /// assert!(matches!(result, Err(MathError::DivisionByZero)));
+    /// ```
+    pub fn div_checked(
+        numerator: Expression,
+        denominator: Expression,
+    ) -> Result<Self, crate::error::MathError> {
+        use crate::error::MathError;
+
+        if denominator.is_zero() {
+            return Err(MathError::DivisionByZero);
+        }
+
+        Ok(Expression::mul(vec![
+            numerator,
+            Expression::pow(denominator, Expression::integer(-1)),
+        ]))
+    }
 }

@@ -3,9 +3,9 @@
 use crate::error::MathError;
 use num_bigint::BigInt;
 use num_rational::BigRational;
-use num_traits::{One, Zero};
+use num_traits::{One, Pow, Zero};
 use serde::{Deserialize, Serialize};
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 /// Unified number type supporting integers, rationals, and floats
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -115,6 +115,119 @@ impl Number {
             Number::Rational(r) => **r == BigRational::new(BigInt::from(-1), BigInt::from(1)),
         }
     }
+
+    /// Power operation with overflow checking
+    ///
+    /// Computes self raised to the power of exponent. For integer bases and positive
+    /// integer exponents, uses checked arithmetic with promotion to BigInt on overflow.
+    /// For other cases, converts to float and checks for infinity/NaN.
+    ///
+    /// # Arguments
+    ///
+    /// * `exponent` - The exponent to raise self to
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Number;
+    ///
+    /// let base = Number::integer(2);
+    /// let exp = Number::integer(3);
+    /// let result = base.pow(&exp).unwrap();
+    /// assert_eq!(result, Number::integer(8));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Returns `MathError::NumericOverflow` if:
+    /// - Float power results in infinity or NaN
+    /// - Exponentiation produces non-representable result
+    pub fn pow(&self, exponent: &Number) -> Result<Number, MathError> {
+        match (self, exponent) {
+            (Number::Integer(base), Number::Integer(exp)) if *exp >= 0 => {
+                if *exp > u32::MAX as i64 {
+                    return Err(MathError::NumericOverflow {
+                        operation: "exponent too large for integer power".to_string(),
+                    });
+                }
+
+                let exp_u32 = *exp as u32;
+
+                if let Some(result) = Self::checked_pow_i64(*base, exp_u32) {
+                    Ok(Number::Integer(result))
+                } else {
+                    let base_bigint = BigInt::from(*base);
+                    Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(base_bigint, exp_u32))))
+                }
+            }
+
+            (Number::BigInteger(base), Number::Integer(exp)) if *exp >= 0 => {
+                if *exp > u32::MAX as i64 {
+                    return Err(MathError::NumericOverflow {
+                        operation: "exponent too large for BigInteger power".to_string(),
+                    });
+                }
+                Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(base.as_ref().clone(), *exp as u32))))
+            }
+
+            _ => {
+                let base_float = self.to_float()?;
+                let exp_float = exponent.to_float()?;
+                let result = base_float.powf(exp_float);
+
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float power".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
+            }
+        }
+    }
+
+    /// Helper function for checked integer power
+    fn checked_pow_i64(base: i64, exp: u32) -> Option<i64> {
+        if exp == 0 {
+            return Some(1);
+        }
+
+        let mut result = 1i64;
+        let mut base = base;
+        let mut exp = exp;
+
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = result.checked_mul(base)?;
+            }
+            base = base.checked_mul(base)?;
+            exp /= 2;
+        }
+
+        Some(result)
+    }
+
+    /// Convert to float with overflow checking
+    fn to_float(&self) -> Result<f64, MathError> {
+        match self {
+            Number::Integer(i) => Ok(*i as f64),
+            Number::Float(f) => Ok(*f),
+            Number::BigInteger(bi) => {
+                bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })
+            }
+            Number::Rational(r) => {
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                Ok(numer_float / denom_float)
+            }
+        }
+    }
 }
 
 impl From<i64> for Number {
@@ -203,21 +316,57 @@ impl Add for Number {
             }
 
             (Number::Float(a), Number::Float(b)) => {
-                Ok(Number::Float(a + b))
+                let result = a + b;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float addition".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Integer(i), Number::Float(f)) | (Number::Float(f), Number::Integer(i)) => {
-                Ok(Number::Float(i as f64 + f))
+                let result = i as f64 + f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "integer-float addition".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::BigInteger(bi), Number::Float(f)) | (Number::Float(f), Number::BigInteger(bi)) => {
-                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) + f))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = bi_float + f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "BigInteger-float addition".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Rational(r), Number::Float(f)) | (Number::Float(f), Number::Rational(r)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(r_float + f))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = r_float + f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "Rational-float addition".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
         }
     }
@@ -288,35 +437,100 @@ impl Sub for Number {
             }
 
             (Number::Float(a), Number::Float(b)) => {
-                Ok(Number::Float(a - b))
+                let result = a - b;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Integer(i), Number::Float(f)) => {
-                Ok(Number::Float(i as f64 - f))
+                let result = i as f64 - f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "integer-float subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::Integer(i)) => {
-                Ok(Number::Float(f - i as f64))
+                let result = f - i as f64;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-integer subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::BigInteger(bi), Number::Float(f)) => {
-                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) - f))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = bi_float - f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "BigInteger-float subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::BigInteger(bi)) => {
-                Ok(Number::Float(f - bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY)))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = f - bi_float;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-BigInteger subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Rational(r), Number::Float(f)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(r_float - f))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = r_float - f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "Rational-float subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::Rational(r)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(f - r_float))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = f - r_float;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-Rational subtraction".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
         }
     }
@@ -373,21 +587,57 @@ impl Mul for Number {
             }
 
             (Number::Float(a), Number::Float(b)) => {
-                Ok(Number::Float(a * b))
+                let result = a * b;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float multiplication".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Integer(i), Number::Float(f)) | (Number::Float(f), Number::Integer(i)) => {
-                Ok(Number::Float(i as f64 * f))
+                let result = i as f64 * f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "integer-float multiplication".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::BigInteger(bi), Number::Float(f)) | (Number::Float(f), Number::BigInteger(bi)) => {
-                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) * f))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = bi_float * f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "BigInteger-float multiplication".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Rational(r), Number::Float(f)) | (Number::Float(f), Number::Rational(r)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(r_float * f))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = r_float * f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "Rational-float multiplication".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
         }
     }
@@ -469,35 +719,140 @@ impl Div for Number {
             }
 
             (Number::Float(a), Number::Float(b)) => {
-                Ok(Number::Float(a / b))
+                let result = a / b;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Integer(i), Number::Float(f)) => {
-                Ok(Number::Float(i as f64 / f))
+                let result = i as f64 / f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "integer-float division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::Integer(i)) => {
-                Ok(Number::Float(f / i as f64))
+                let result = f / i as f64;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-integer division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::BigInteger(bi), Number::Float(f)) => {
-                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) / f))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = bi_float / f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "BigInteger-float division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::BigInteger(bi)) => {
-                Ok(Number::Float(f / bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY)))
+                let bi_float = bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "BigInteger to float conversion".to_string(),
+                })?;
+                let result = f / bi_float;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-BigInteger division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Rational(r), Number::Float(f)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(r_float / f))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = r_float / f;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "Rational-float division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
             }
 
             (Number::Float(f), Number::Rational(r)) => {
-                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
-                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
-                Ok(Number::Float(f / r_float))
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational numerator to float conversion".to_string(),
+                })?;
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
+                    operation: "Rational denominator to float conversion".to_string(),
+                })?;
+                let r_float = numer_float / denom_float;
+                let result = f / r_float;
+                if result.is_infinite() || result.is_nan() {
+                    Err(MathError::NumericOverflow {
+                        operation: "float-Rational division".to_string(),
+                    })
+                } else {
+                    Ok(Number::Float(result))
+                }
+            }
+        }
+    }
+}
+
+/// Negation with overflow checking
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::Number;
+///
+/// let a = Number::integer(5);
+/// let result = (-a).unwrap();
+/// assert_eq!(result, Number::integer(-5));
+/// ```
+impl Neg for Number {
+    type Output = Result<Number, MathError>;
+
+    fn neg(self) -> Result<Number, MathError> {
+        match self {
+            Number::Integer(i) => {
+                match i.checked_neg() {
+                    Some(result) => Ok(Number::Integer(result)),
+                    None => {
+                        Ok(Number::BigInteger(Box::new(-BigInt::from(i))))
+                    }
+                }
+            }
+
+            Number::BigInteger(bi) => {
+                Ok(Number::BigInteger(Box::new(-*bi)))
+            }
+
+            Number::Float(f) => {
+                Ok(Number::Float(-f))
+            }
+
+            Number::Rational(r) => {
+                Ok(Number::Rational(Box::new(-*r)))
             }
         }
     }

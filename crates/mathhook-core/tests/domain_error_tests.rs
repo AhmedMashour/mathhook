@@ -133,6 +133,47 @@ fn test_log_domain_restriction() {
     }
 }
 
+/// Test that ln requires positive input in real domain
+#[test]
+fn test_ln_domain_restriction() {
+    let test_cases = vec![
+        (-2, true),   // Negative: branch cut in real domain
+        (-1, true),   // Negative: branch cut in real domain
+        (0, true),    // Zero: pole
+        (1, false),   // Valid: ln(1) = 0
+        (2, false),   // Valid: ln(2) ≈ 0.693
+    ];
+
+    for (value, should_error) in test_cases {
+        let expr = Expression::function("ln".to_string(), vec![Expression::integer(value)]);
+        let result = expr.evaluate();
+
+        if should_error {
+            assert!(result.is_err(), "Expected error for ln({})", value);
+        } else {
+            assert!(result.is_ok(), "Expected success for ln({})", value);
+        }
+    }
+}
+
+/// Test that ln(0) produces pole error
+#[test]
+fn test_ln_zero_pole() {
+    let expr = Expression::function("ln".to_string(), vec![Expression::integer(0)]);
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "ln"));
+}
+
+/// Test that ln of negative numbers produces branch cut error
+#[test]
+fn test_ln_negative_branch_cut() {
+    let expr = Expression::function("ln".to_string(), vec![Expression::integer(-1)]);
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::BranchCut { .. })));
+}
+
 /// Test that log of negative numbers produces branch cut error in real domain
 #[test]
 fn test_log_negative_branch_cut() {
@@ -358,6 +399,124 @@ fn test_error_traits() {
 fn test_error_trait_implementation() {
     let err: Box<dyn std::error::Error> = Box::new(MathError::DivisionByZero);
     let _msg = err.to_string(); // Should work since Error trait is implemented
+}
+
+/// Test helper methods is_negative_number and is_positive_number
+#[test]
+fn test_number_sign_helpers() {
+    // Test negative numbers
+    assert!(Expression::integer(-5).is_negative_number());
+    assert!(Expression::rational(-1, 2).is_negative_number());
+    assert!(Expression::Number(Number::float(-3.14)).is_negative_number());
+
+    // Test positive numbers
+    assert!(Expression::integer(5).is_positive_number());
+    assert!(Expression::rational(1, 2).is_positive_number());
+    assert!(Expression::Number(Number::float(3.14)).is_positive_number());
+
+    // Test zero (neither positive nor negative)
+    assert!(!Expression::integer(0).is_negative_number());
+    assert!(!Expression::integer(0).is_positive_number());
+
+    // Test symbolic expressions (not numbers)
+    use mathhook_core::symbol;
+    assert!(!Expression::symbol(symbol!(x)).is_negative_number());
+    assert!(!Expression::symbol(symbol!(x)).is_positive_number());
+}
+
+/// Test that symbolic sqrt expressions don't trigger domain errors
+///
+/// Mathematical reasoning: sqrt(x) is valid symbolically even though x might
+/// evaluate to negative at runtime. Domain checking should only happen during
+/// numerical evaluation, not during symbolic construction.
+#[test]
+fn test_sqrt_symbolic_allowed() {
+    use mathhook_core::symbol;
+
+    // Symbolic sqrt should be allowed
+    let x = symbol!(x);
+    let expr = Expression::sqrt(Expression::symbol(x.clone()));
+
+    // Construction should succeed
+    assert!(matches!(&expr, Expression::Function { name, .. } if name == "sqrt"));
+
+    // Evaluation should succeed for symbolic expressions (no numeric value to check)
+    let result = expr.evaluate();
+    assert!(result.is_ok(), "Symbolic sqrt(x) should not error during evaluation");
+}
+
+/// Test that symbolic log expressions don't trigger domain errors
+#[test]
+fn test_log_symbolic_allowed() {
+    use mathhook_core::symbol;
+
+    // Symbolic log should be allowed
+    let x = symbol!(x);
+    let expr = Expression::function("log", vec![Expression::symbol(x.clone())]);
+
+    // Construction should succeed
+    assert!(matches!(&expr, Expression::Function { name, .. } if name == "log"));
+
+    // Evaluation should succeed for symbolic expressions
+    let result = expr.evaluate();
+    assert!(result.is_ok(), "Symbolic log(x) should not error during evaluation");
+}
+
+/// Test that symbolic ln expressions don't trigger domain errors
+#[test]
+fn test_ln_symbolic_allowed() {
+    use mathhook_core::symbol;
+
+    // Symbolic ln should be allowed
+    let x = symbol!(x);
+    let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
+
+    // Construction should succeed
+    assert!(matches!(&expr, Expression::Function { name, .. } if name == "ln"));
+
+    // Evaluation should succeed for symbolic expressions
+    let result = expr.evaluate();
+    assert!(result.is_ok(), "Symbolic ln(x) should not error during evaluation");
+}
+
+/// Test that negative rationals are caught by domain checking
+#[test]
+fn test_sqrt_negative_rational() {
+    let expr = Expression::sqrt(Expression::rational(-1, 2));
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::DomainError { .. })),
+        "sqrt of negative rational should error");
+}
+
+/// Test that negative floats are caught by domain checking
+#[test]
+fn test_sqrt_negative_float() {
+    let expr = Expression::sqrt(Expression::Number(Number::float(-2.5)));
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::DomainError { .. })),
+        "sqrt of negative float should error");
+}
+
+/// Test that log catches negative rationals
+#[test]
+fn test_log_negative_rational() {
+    let expr = Expression::function("log", vec![Expression::rational(-3, 4)]);
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::BranchCut { .. })),
+        "log of negative rational should error with branch cut");
+}
+
+/// Test that log catches negative floats
+#[test]
+fn test_log_negative_float() {
+    let expr = Expression::function("log", vec![Expression::Number(Number::float(-1.5))]);
+
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::BranchCut { .. })),
+        "log of negative float should error with branch cut");
 }
 
 /// Test future evaluation API structure

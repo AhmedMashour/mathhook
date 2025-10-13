@@ -169,12 +169,8 @@ impl QuadraticSolver {
             }
             _ => {
                 // Symbolic case: x = -c/b
-                // Use Expression::mul with power of -1 for division
                 let neg_c = Expression::mul(vec![Expression::integer(-1), c.clone()]);
-                let result = Expression::mul(vec![
-                    neg_c,
-                    Expression::pow(b.clone(), Expression::integer(-1)),
-                ]);
+                let result = Expression::div(neg_c, b.clone());
                 SolverResult::Single(result)
             }
         }
@@ -267,21 +263,19 @@ impl QuadraticSolver {
                 let sqrt_discriminant = Expression::function("sqrt", vec![discriminant_simplified.clone()]);
 
                 // Solutions: (-b ± √discriminant) / (2a)
-                let solution1 = Expression::mul(vec![
-                    Expression::add(vec![
-                        Expression::mul(vec![Expression::integer(-1), b.clone()]),
-                        sqrt_discriminant.clone(),
-                    ]),
-                    Expression::pow(two_a.clone(), Expression::integer(-1)),
-                ]);
+                let neg_b = Expression::mul(vec![Expression::integer(-1), b.clone()]);
+                let solution1 = Expression::div(
+                    Expression::add(vec![neg_b.clone(), sqrt_discriminant.clone()]),
+                    two_a.clone(),
+                );
 
-                let solution2 = Expression::mul(vec![
+                let solution2 = Expression::div(
                     Expression::add(vec![
-                        Expression::mul(vec![Expression::integer(-1), b.clone()]),
+                        neg_b,
                         Expression::mul(vec![Expression::integer(-1), sqrt_discriminant]),
                     ]),
-                    Expression::pow(two_a, Expression::integer(-1)),
-                ]);
+                    two_a,
+                );
 
                 SolverResult::Multiple(vec![solution1, solution2])
             }

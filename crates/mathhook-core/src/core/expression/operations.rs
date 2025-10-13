@@ -6,6 +6,7 @@ use super::Expression;
 use crate::core::{Number, Symbol};
 use crate::matrix::unified::CoreMatrixOps;
 use crate::simplify::Simplify;
+use num_traits::Signed;
 
 impl Expression {
     /// Check if the expression is zero (robust version with simplification)
@@ -155,6 +156,56 @@ impl Expression {
         match self {
             Expression::Symbol(s) => Some(s),
             _ => None,
+        }
+    }
+
+    /// Check if this expression is a negative number
+    ///
+    /// Returns true if the expression is a negative integer, rational, or float.
+    /// Returns false for symbolic expressions (even if they might evaluate to negative).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// assert!(Expression::integer(-5).is_negative_number());
+    /// assert!(Expression::rational(-1, 2).is_negative_number());
+    /// assert!(!Expression::integer(5).is_negative_number());
+    /// assert!(!Expression::symbol("x").is_negative_number()); // Symbolic, not a number
+    /// ```
+    #[inline]
+    pub fn is_negative_number(&self) -> bool {
+        match self {
+            Expression::Number(Number::Integer(i)) => *i < 0,
+            Expression::Number(Number::Rational(r)) => r.is_negative(),
+            Expression::Number(Number::Float(f)) => *f < 0.0,
+            _ => false,
+        }
+    }
+
+    /// Check if this expression is a positive number
+    ///
+    /// Returns true if the expression is a positive integer, rational, or float.
+    /// Returns false for symbolic expressions (even if they might evaluate to positive).
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::Expression;
+    ///
+    /// assert!(Expression::integer(5).is_positive_number());
+    /// assert!(Expression::rational(1, 2).is_positive_number());
+    /// assert!(!Expression::integer(-5).is_positive_number());
+    /// assert!(!Expression::symbol("x").is_positive_number()); // Symbolic, not a number
+    /// ```
+    #[inline]
+    pub fn is_positive_number(&self) -> bool {
+        match self {
+            Expression::Number(Number::Integer(i)) => *i > 0,
+            Expression::Number(Number::Rational(r)) => r.is_positive(),
+            Expression::Number(Number::Float(f)) => *f > 0.0,
+            _ => false,
         }
     }
 

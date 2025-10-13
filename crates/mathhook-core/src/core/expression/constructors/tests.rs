@@ -230,3 +230,79 @@ fn test_combining_like_terms() {
         _ => panic!("Expected Mul expression for 5x"),
     }
 }
+
+#[test]
+fn test_div_symbolic() {
+    let x = Expression::symbol("x");
+    let y = Expression::symbol("y");
+
+    let expr = Expression::div(x.clone(), y.clone());
+
+    match &expr {
+        Expression::Mul(factors) => {
+            assert_eq!(factors.len(), 2, "Division should be a * b^(-1)");
+            assert_eq!(factors[0], x);
+            assert!(matches!(factors[1], Expression::Pow(_, _)));
+        }
+        _ => panic!("Expected Mul expression for division"),
+    }
+}
+
+#[test]
+fn test_div_checked_valid() {
+    let result = Expression::div_checked(Expression::integer(10), Expression::integer(2));
+
+    assert!(result.is_ok(), "Valid division should succeed");
+
+    let result = Expression::div_checked(
+        Expression::symbol("x"),
+        Expression::symbol("y"),
+    );
+
+    assert!(
+        result.is_ok(),
+        "Symbolic division with non-zero denominator should succeed"
+    );
+}
+
+#[test]
+fn test_div_checked_zero_denominator() {
+    use crate::error::MathError;
+
+    let result = Expression::div_checked(Expression::integer(1), Expression::integer(0));
+
+    assert!(
+        matches!(result, Err(MathError::DivisionByZero)),
+        "Division by zero should return DivisionByZero error"
+    );
+
+    let result = Expression::div_checked(
+        Expression::symbol("x"),
+        Expression::integer(0),
+    );
+
+    assert!(
+        matches!(result, Err(MathError::DivisionByZero)),
+        "Division by exact zero should return DivisionByZero error"
+    );
+}
+
+#[test]
+fn test_div_vs_div_checked() {
+    let x = Expression::symbol("x");
+
+    let div_result = Expression::div(x.clone(), Expression::integer(0));
+
+    assert!(
+        !div_result.is_zero(),
+        "div() should succeed even with zero denominator (symbolic context)"
+    );
+
+    let div_checked_result =
+        Expression::div_checked(x.clone(), Expression::integer(0));
+
+    assert!(
+        div_checked_result.is_err(),
+        "div_checked() should fail with zero denominator"
+    );
+}

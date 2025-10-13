@@ -24,7 +24,10 @@ fn ensure_global_config() -> &'static Arc<RwLock<PerformanceConfig>> {
 /// Get the current global performance configuration
 pub fn get_global_config() -> PerformanceConfig {
     let config_lock = ensure_global_config();
-    config_lock.read().unwrap().clone()
+    config_lock
+        .read()
+        .expect("BUG: Global performance config lock poisoned - indicates panic during config read in another thread")
+        .clone()
 }
 
 /// Set the global performance configuration
@@ -46,7 +49,9 @@ pub fn get_global_config() -> PerformanceConfig {
 /// ```
 pub fn set_global_config(config: PerformanceConfig) {
     let config_lock = ensure_global_config();
-    *config_lock.write().unwrap() = config;
+    *config_lock
+        .write()
+        .expect("BUG: Global performance config lock poisoned - indicates panic during config write in another thread") = config;
 }
 
 /// Set global configuration for a specific binding context
