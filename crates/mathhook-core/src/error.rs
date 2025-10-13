@@ -108,6 +108,9 @@ impl fmt::Display for MathError {
 
 impl std::error::Error for MathError {}
 
+/// Type alias for mathematical operations that can fail
+pub type MathResult<T> = Result<T, MathError>;
+
 #[cfg(test)]
 mod tests {
     use super::*;

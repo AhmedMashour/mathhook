@@ -5,6 +5,11 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 
 #[test]
+fn test_number_type_size_is_16_bytes() {
+    assert_eq!(std::mem::size_of::<Number>(), 16, "Number type must be exactly 16 bytes");
+}
+
+#[test]
 fn test_integer_addition_basic() {
     let a = Number::integer(5);
     let b = Number::integer(3);
@@ -331,6 +336,256 @@ fn test_distributive_property() {
     let term1 = (a.clone() * b).unwrap();
     let term2 = (a * c).unwrap();
     let right = (term1 + term2).unwrap();
+
+    assert_eq!(left, right);
+}
+
+#[test]
+fn test_integer_max_overflow_addition() {
+    let a = Number::integer(i64::MAX);
+    let b = Number::integer(i64::MAX);
+    let result = (a + b).unwrap();
+
+    match result {
+        Number::BigInteger(n) => {
+            assert_eq!(*n, BigInt::from(i64::MAX) + BigInt::from(i64::MAX));
+        }
+        _ => panic!("Expected BigInteger promotion on large overflow"),
+    }
+}
+
+#[test]
+fn test_integer_min_underflow_subtraction() {
+    let a = Number::integer(i64::MIN);
+    let b = Number::integer(i64::MAX);
+    let result = (a - b).unwrap();
+
+    match result {
+        Number::BigInteger(n) => {
+            assert_eq!(*n, BigInt::from(i64::MIN) - BigInt::from(i64::MAX));
+        }
+        _ => panic!("Expected BigInteger promotion on large underflow"),
+    }
+}
+
+#[test]
+fn test_integer_max_squared_overflow() {
+    let a = Number::integer(i64::MAX);
+    let result = (a.clone() * a).unwrap();
+
+    match result {
+        Number::BigInteger(_) => {}
+        _ => panic!("Expected BigInteger promotion on MAX squared"),
+    }
+}
+
+#[test]
+fn test_no_overflow_stays_integer() {
+    let a = Number::integer(100);
+    let b = Number::integer(200);
+    let result = (a + b).unwrap();
+
+    match result {
+        Number::Integer(300) => {}
+        _ => panic!("Should stay as Integer when no overflow"),
+    }
+}
+
+#[test]
+fn test_mixed_bigint_rational_multiplication() {
+    let a = Number::BigInteger(Box::new(BigInt::from(12)));
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(2), BigInt::from(3))));
+    let result = (a * b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(8));
+            assert_eq!(r.denom(), &BigInt::from(1));
+        }
+        _ => panic!("Expected rational result"),
+    }
+}
+
+#[test]
+fn test_mixed_bigint_rational_division() {
+    let a = Number::BigInteger(Box::new(BigInt::from(10)));
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(2), BigInt::from(5))));
+    let result = (a / b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(25));
+            assert_eq!(r.denom(), &BigInt::from(1));
+        }
+        _ => panic!("Expected rational result"),
+    }
+}
+
+#[test]
+fn test_mixed_float_rational_addition() {
+    let a = Number::Float(2.5);
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(1), BigInt::from(2))));
+    let result = (a + b).unwrap();
+
+    match result {
+        Number::Float(f) => {
+            assert!((f - 3.0).abs() < 1e-10);
+        }
+        _ => panic!("Expected float result"),
+    }
+}
+
+#[test]
+fn test_mixed_bigint_float_multiplication() {
+    let a = Number::BigInteger(Box::new(BigInt::from(5)));
+    let b = Number::Float(2.5);
+    let result = (a * b).unwrap();
+
+    match result {
+        Number::Float(f) => {
+            assert!((f - 12.5).abs() < 1e-10);
+        }
+        _ => panic!("Expected float result"),
+    }
+}
+
+#[test]
+fn test_rational_subtraction() {
+    let a = Number::Rational(Box::new(BigRational::new(BigInt::from(3), BigInt::from(4))));
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(1), BigInt::from(4))));
+    let result = (a - b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(1));
+            assert_eq!(r.denom(), &BigInt::from(2));
+        }
+        _ => panic!("Expected rational 1/2"),
+    }
+}
+
+#[test]
+fn test_mixed_integer_rational_subtraction() {
+    let a = Number::integer(5);
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(3), BigInt::from(2))));
+    let result = (a - b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(7));
+            assert_eq!(r.denom(), &BigInt::from(2));
+        }
+        _ => panic!("Expected rational 7/2"),
+    }
+}
+
+#[test]
+fn test_mixed_integer_rational_multiplication() {
+    let a = Number::integer(6);
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(2), BigInt::from(3))));
+    let result = (a * b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(4));
+            assert_eq!(r.denom(), &BigInt::from(1));
+        }
+        _ => panic!("Expected rational 4/1"),
+    }
+}
+
+#[test]
+fn test_mixed_integer_rational_division() {
+    let a = Number::integer(10);
+    let b = Number::Rational(Box::new(BigRational::new(BigInt::from(5), BigInt::from(2))));
+    let result = (a / b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(4));
+            assert_eq!(r.denom(), &BigInt::from(1));
+        }
+        _ => panic!("Expected rational 4/1"),
+    }
+}
+
+#[test]
+fn test_bigint_subtraction() {
+    let a = Number::BigInteger(Box::new(BigInt::from(5000)));
+    let b = Number::BigInteger(Box::new(BigInt::from(3000)));
+    let result = (a - b).unwrap();
+
+    match result {
+        Number::BigInteger(n) => {
+            assert_eq!(*n, BigInt::from(2000));
+        }
+        _ => panic!("Expected BigInteger"),
+    }
+}
+
+#[test]
+fn test_bigint_division_exact() {
+    let a = Number::BigInteger(Box::new(BigInt::from(100)));
+    let b = Number::BigInteger(Box::new(BigInt::from(10)));
+    let result = (a / b).unwrap();
+
+    match result {
+        Number::BigInteger(n) => {
+            assert_eq!(*n, BigInt::from(10));
+        }
+        _ => panic!("Expected BigInteger"),
+    }
+}
+
+#[test]
+fn test_bigint_division_creates_rational() {
+    let a = Number::BigInteger(Box::new(BigInt::from(10)));
+    let b = Number::BigInteger(Box::new(BigInt::from(3)));
+    let result = (a / b).unwrap();
+
+    match result {
+        Number::Rational(r) => {
+            assert_eq!(r.numer(), &BigInt::from(10));
+            assert_eq!(r.denom(), &BigInt::from(3));
+        }
+        _ => panic!("Expected rational 10/3"),
+    }
+}
+
+#[test]
+fn test_float_subtraction() {
+    let a = Number::float(10.5);
+    let b = Number::float(3.5);
+    let result = (a - b).unwrap();
+
+    match result {
+        Number::Float(f) => {
+            assert!((f - 7.0).abs() < 1e-10);
+        }
+        _ => panic!("Expected float"),
+    }
+}
+
+#[test]
+fn test_associative_addition() {
+    let a = Number::integer(2);
+    let b = Number::integer(3);
+    let c = Number::integer(4);
+
+    let left = ((a.clone() + b.clone()).unwrap() + c.clone()).unwrap();
+    let right = (a + (b + c).unwrap()).unwrap();
+
+    assert_eq!(left, right);
+}
+
+#[test]
+fn test_associative_multiplication() {
+    let a = Number::integer(2);
+    let b = Number::integer(3);
+    let c = Number::integer(4);
+
+    let left = ((a.clone() * b.clone()).unwrap() * c.clone()).unwrap();
+    let right = (a * (b * c).unwrap()).unwrap();
 
     assert_eq!(left, right);
 }

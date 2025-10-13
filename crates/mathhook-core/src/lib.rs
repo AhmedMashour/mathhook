@@ -13,7 +13,7 @@ pub mod functions;
 pub mod macros;
 pub mod matrix;
 pub mod parser;
-// pub mod pattern; // Temporarily disabled - has compilation errors
+pub mod pattern;
 pub mod serialize;
 pub mod simplify;
 pub mod solvers;
@@ -27,7 +27,7 @@ pub use functions::*;
 pub use macros::*;
 pub use matrix::*;
 pub use parser::*;
-// pub use pattern::*; // Temporarily disabled - has compilation errors
+pub use pattern::*;
 pub use simplify::*;
 pub use solvers::*;
 

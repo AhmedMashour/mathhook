@@ -6,22 +6,110 @@
 use crate::core::{Expression, Symbol};
 use std::collections::HashMap;
 
+/// Constraints for wildcard pattern matching
+///
+/// Provides fine-grained control over what expressions a wildcard can match.
+#[derive(Debug, Clone)]
+pub struct WildcardConstraints {
+    /// Expressions that cannot be matched (e.g., specific variables to exclude)
+    pub exclude: Vec<Expression>,
+
+    /// Predicates that must return true for a match to succeed
+    /// Common examples: is_integer, is_positive, is_polynomial_in(x)
+    pub properties: Vec<fn(&Expression) -> bool>,
+}
+
+impl PartialEq for WildcardConstraints {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare exclude lists, but properties cannot be compared
+        self.exclude == other.exclude && self.properties.len() == other.properties.len()
+    }
+}
+
+impl WildcardConstraints {
+    /// Create constraints with excluded expressions
+    pub fn with_exclude(exclude: Vec<Expression>) -> Self {
+        Self {
+            exclude,
+            properties: Vec::new(),
+        }
+    }
+
+    /// Create constraints with property predicates
+    pub fn with_properties(properties: Vec<fn(&Expression) -> bool>) -> Self {
+        Self {
+            exclude: Vec::new(),
+            properties,
+        }
+    }
+
+    /// Check if an expression satisfies all constraints
+    pub fn is_satisfied_by(&self, expr: &Expression) -> bool {
+        // Check exclude list - expression must not equal any excluded expression
+        for excluded in &self.exclude {
+            if expr == excluded {
+                return false;
+            }
+        }
+
+        // Check if expression contains any excluded subexpression
+        for excluded in &self.exclude {
+            if contains_subexpression(expr, excluded) {
+                return false;
+            }
+        }
+
+        // Check all property predicates
+        for property in &self.properties {
+            if !property(expr) {
+                return false;
+            }
+        }
+
+        true
+    }
+}
+
+/// Check if an expression contains a subexpression
+fn contains_subexpression(expr: &Expression, sub: &Expression) -> bool {
+    if expr == sub {
+        return true;
+    }
+
+    match expr {
+        Expression::Add(terms) | Expression::Mul(terms) | Expression::Set(terms) => {
+            terms.iter().any(|t| contains_subexpression(t, sub))
+        }
+        Expression::Pow(base, exp) => {
+            contains_subexpression(base, sub) || contains_subexpression(exp, sub)
+        }
+        Expression::Function { args, .. } => args.iter().any(|a| contains_subexpression(a, sub)),
+        Expression::Complex(data) => {
+            contains_subexpression(&data.real, sub) || contains_subexpression(&data.imag, sub)
+        }
+        _ => false,
+    }
+}
+
 /// A pattern that can match against expressions
 ///
 /// Patterns support wildcards and structural matching to enable
 /// transformation rules and equation manipulation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Pattern {
-    /// Match any expression and bind to a name
-    Wildcard(String),
+    /// Match any expression and bind to a name, optionally with constraints
+    Wildcard {
+        name: String,
+        constraints: Option<WildcardConstraints>,
+    },
 
     /// Match a specific expression exactly
     Exact(Expression),
 
-    /// Match addition with pattern terms
+    /// Match addition with pattern terms (supports commutative matching)
     Add(Vec<Pattern>),
 
-    /// Match multiplication with pattern factors
+    /// Match multiplication with pattern factors (supports commutative matching)
     Mul(Vec<Pattern>),
 
     /// Match power with pattern base and exponent
@@ -196,8 +284,15 @@ fn match_recursive(
     bindings: &mut PatternMatches,
 ) -> bool {
     match pattern {
-        // Wildcard - match anything and bind
-        Pattern::Wildcard(name) => {
+        // Wildcard - match anything that satisfies constraints and bind
+        Pattern::Wildcard { name, constraints } => {
+            // Check constraints first
+            if let Some(constraints) = constraints {
+                if !constraints.is_satisfied_by(expr) {
+                    return false;
+                }
+            }
+
             // Check if this wildcard was already bound
             if let Some(existing) = bindings.get(name) {
                 // Must match the existing binding
@@ -212,45 +307,19 @@ fn match_recursive(
         // Exact match
         Pattern::Exact(pattern_expr) => expr == pattern_expr,
 
-        // Match addition
+        // Match addition with commutative support
         Pattern::Add(pattern_terms) => {
             if let Expression::Add(expr_terms) = expr {
-                // Both must have same number of terms
-                if expr_terms.len() != pattern_terms.len() {
-                    return false;
-                }
-
-                // Try to match each term
-                for (expr_term, pattern_term) in expr_terms.iter().zip(pattern_terms.iter()) {
-                    if !match_recursive(expr_term, pattern_term, bindings) {
-                        return false;
-                    }
-                }
-
-                true
+                match_commutative(expr_terms, pattern_terms, bindings)
             } else {
                 false
             }
         }
 
-        // Match multiplication
+        // Match multiplication with commutative support
         Pattern::Mul(pattern_factors) => {
             if let Expression::Mul(expr_factors) = expr {
-                // Both must have same number of factors
-                if expr_factors.len() != pattern_factors.len() {
-                    return false;
-                }
-
-                // Try to match each factor
-                for (expr_factor, pattern_factor) in
-                    expr_factors.iter().zip(pattern_factors.iter())
-                {
-                    if !match_recursive(expr_factor, pattern_factor, bindings) {
-                        return false;
-                    }
-                }
-
-                true
+                match_commutative(expr_factors, pattern_factors, bindings)
             } else {
                 false
             }
@@ -298,11 +367,152 @@ fn match_recursive(
     }
 }
 
+/// Match commutative operations (Add, Mul)
+///
+/// Tries to match expression terms/factors against pattern terms/factors
+/// considering all possible orderings. This is essential for algebraic
+/// pattern matching since addition and multiplication are commutative.
+fn match_commutative(
+    expr_items: &[Expression],
+    pattern_items: &[Pattern],
+    bindings: &mut PatternMatches,
+) -> bool {
+    // Special case: empty patterns
+    if pattern_items.is_empty() {
+        return expr_items.is_empty();
+    }
+
+    // Special case: single item (no ordering to try)
+    if pattern_items.len() == 1 {
+        if expr_items.len() == 1 {
+            return match_recursive(&expr_items[0], &pattern_items[0], bindings);
+        } else {
+            return false;
+        }
+    }
+
+    // Try simple ordered match first (common case optimization)
+    if expr_items.len() == pattern_items.len() {
+        let backup_bindings = bindings.clone();
+        let mut ordered_match = true;
+
+        for (expr_item, pattern_item) in expr_items.iter().zip(pattern_items.iter()) {
+            if !match_recursive(expr_item, pattern_item, bindings) {
+                ordered_match = false;
+                break;
+            }
+        }
+
+        if ordered_match {
+            return true;
+        }
+
+        // Restore bindings if ordered match failed
+        *bindings = backup_bindings;
+    }
+
+    // For small number of items, try permutations
+    // For larger numbers, use heuristic matching
+    if pattern_items.len() <= 6 {
+        try_permutation_match(expr_items, pattern_items, bindings)
+    } else {
+        // For large patterns, use greedy heuristic matching
+        try_greedy_match(expr_items, pattern_items, bindings)
+    }
+}
+
+/// Try all permutations of pattern items to find a match
+fn try_permutation_match(
+    expr_items: &[Expression],
+    pattern_items: &[Pattern],
+    bindings: &mut PatternMatches,
+) -> bool {
+    use std::collections::HashSet;
+
+    if expr_items.len() != pattern_items.len() {
+        return false;
+    }
+
+    // Generate permutations and try each one
+    let indices: Vec<usize> = (0..pattern_items.len()).collect();
+    try_permutations(&indices, 0, expr_items, pattern_items, bindings)
+}
+
+/// Recursive permutation generator and matcher
+fn try_permutations(
+    indices: &[usize],
+    start: usize,
+    expr_items: &[Expression],
+    pattern_items: &[Pattern],
+    bindings: &mut PatternMatches,
+) -> bool {
+    if start == indices.len() {
+        // Try this permutation
+        let backup_bindings = bindings.clone();
+        for (expr_idx, &pattern_idx) in indices.iter().enumerate() {
+            if !match_recursive(&expr_items[expr_idx], &pattern_items[pattern_idx], bindings) {
+                *bindings = backup_bindings;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Generate permutations by swapping
+    for i in start..indices.len() {
+        let mut perm = indices.to_vec();
+        perm.swap(start, i);
+        if try_permutations(&perm, start + 1, expr_items, pattern_items, bindings) {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Greedy heuristic matching for large commutative patterns
+fn try_greedy_match(
+    expr_items: &[Expression],
+    pattern_items: &[Pattern],
+    bindings: &mut PatternMatches,
+) -> bool {
+    if expr_items.len() != pattern_items.len() {
+        return false;
+    }
+
+    let mut used_expr: Vec<bool> = vec![false; expr_items.len()];
+    let backup_bindings = bindings.clone();
+
+    // Try to match each pattern greedily
+    for pattern_item in pattern_items {
+        let mut matched = false;
+        for (expr_idx, expr_item) in expr_items.iter().enumerate() {
+            if !used_expr[expr_idx] {
+                let test_bindings = bindings.clone();
+                let mut temp_bindings = bindings.clone();
+                if match_recursive(expr_item, pattern_item, &mut temp_bindings) {
+                    *bindings = temp_bindings;
+                    used_expr[expr_idx] = true;
+                    matched = true;
+                    break;
+                }
+            }
+        }
+
+        if !matched {
+            *bindings = backup_bindings;
+            return false;
+        }
+    }
+
+    true
+}
+
 /// Apply a replacement pattern with bindings from a match
 fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Expression {
     match replacement {
-        // Wildcard - substitute with binding
-        Pattern::Wildcard(name) => {
+        // Wildcard - substitute with binding (constraints don't matter for replacement)
+        Pattern::Wildcard { name, .. } => {
             bindings
                 .get(name)
                 .cloned()
@@ -347,6 +557,35 @@ fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Expres
     }
 }
 
+impl Pattern {
+    /// Create a simple wildcard pattern without constraints
+    pub fn wildcard(name: impl Into<String>) -> Self {
+        Pattern::Wildcard {
+            name: name.into(),
+            constraints: None,
+        }
+    }
+
+    /// Create a wildcard pattern with exclude constraints
+    pub fn wildcard_excluding(name: impl Into<String>, exclude: Vec<Expression>) -> Self {
+        Pattern::Wildcard {
+            name: name.into(),
+            constraints: Some(WildcardConstraints::with_exclude(exclude)),
+        }
+    }
+
+    /// Create a wildcard pattern with property constraints
+    pub fn wildcard_with_properties(
+        name: impl Into<String>,
+        properties: Vec<fn(&Expression) -> bool>,
+    ) -> Self {
+        Pattern::Wildcard {
+            name: name.into(),
+            constraints: Some(WildcardConstraints::with_properties(properties)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -355,7 +594,7 @@ mod tests {
     #[test]
     fn test_wildcard_pattern_matches() {
         let expr = Expression::integer(42);
-        let pattern = Pattern::Wildcard("x".to_string());
+        let pattern = Pattern::wildcard("x");
 
         let matches = expr.matches(&pattern);
         assert!(matches.is_some());
@@ -386,10 +625,7 @@ mod tests {
         let x = symbol!(x);
         let expr = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
 
-        let pattern = Pattern::Add(vec![
-            Pattern::Wildcard("a".to_string()),
-            Pattern::Wildcard("b".to_string()),
-        ]);
+        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
 
         let matches = expr.matches(&pattern);
         assert!(matches.is_some());
@@ -407,7 +643,7 @@ mod tests {
 
         let pattern = Pattern::Mul(vec![
             Pattern::Exact(Expression::integer(2)),
-            Pattern::Wildcard("x".to_string()),
+            Pattern::wildcard("x"),
         ]);
 
         let matches = expr.matches(&pattern);
@@ -424,7 +660,7 @@ mod tests {
         let expr = Expression::pow(Expression::symbol(x), Expression::integer(2));
 
         let pattern = Pattern::Pow(
-            Box::new(Pattern::Wildcard("base".to_string())),
+            Box::new(Pattern::wildcard("base")),
             Box::new(Pattern::Exact(Expression::integer(2))),
         );
 
@@ -443,7 +679,7 @@ mod tests {
 
         let pattern = Pattern::Function {
             name: "sin".to_string(),
-            args: vec![Pattern::Wildcard("arg".to_string())],
+            args: vec![Pattern::wildcard("arg")],
         };
 
         let matches = expr.matches(&pattern);
@@ -461,10 +697,7 @@ mod tests {
         let expr = Expression::add(vec![Expression::symbol(x), Expression::symbol(x)]);
 
         // Pattern: a + a (same wildcard twice - should match when both are same)
-        let pattern = Pattern::Add(vec![
-            Pattern::Wildcard("a".to_string()),
-            Pattern::Wildcard("a".to_string()),
-        ]);
+        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
 
         let matches = expr.matches(&pattern);
         assert!(matches.is_some());
@@ -482,10 +715,7 @@ mod tests {
         let expr = Expression::add(vec![Expression::symbol(x), Expression::symbol(y)]);
 
         // Pattern: a + a (same wildcard twice - should NOT match when different)
-        let pattern = Pattern::Add(vec![
-            Pattern::Wildcard("a".to_string()),
-            Pattern::Wildcard("a".to_string()),
-        ]);
+        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
 
         assert!(expr.matches(&pattern).is_none());
     }
@@ -495,7 +725,7 @@ mod tests {
         let x = symbol!(x);
         let expr = Expression::symbol(x);
 
-        let pattern = Pattern::Wildcard("x".to_string());
+        let pattern = Pattern::wildcard("x");
         let replacement = Pattern::Exact(Expression::integer(5));
 
         let result = expr.replace(&pattern, &replacement);
@@ -509,15 +739,9 @@ mod tests {
         let expr = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
 
         // Pattern: a + b -> b + a (swap)
-        let pattern = Pattern::Add(vec![
-            Pattern::Wildcard("a".to_string()),
-            Pattern::Wildcard("b".to_string()),
-        ]);
+        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
 
-        let replacement = Pattern::Add(vec![
-            Pattern::Wildcard("b".to_string()),
-            Pattern::Wildcard("a".to_string()),
-        ]);
+        let replacement = Pattern::Add(vec![Pattern::wildcard("b"), Pattern::wildcard("a")]);
 
         let result = expr.replace(&pattern, &replacement);
 
@@ -547,14 +771,14 @@ mod tests {
             Pattern::Pow(
                 Box::new(Pattern::Function {
                     name: "sin".to_string(),
-                    args: vec![Pattern::Wildcard("a".to_string())],
+                    args: vec![Pattern::wildcard("a")],
                 }),
                 Box::new(Pattern::Exact(Expression::integer(2))),
             ),
             Pattern::Pow(
                 Box::new(Pattern::Function {
                     name: "cos".to_string(),
-                    args: vec![Pattern::Wildcard("a".to_string())],
+                    args: vec![Pattern::wildcard("a")],
                 }),
                 Box::new(Pattern::Exact(Expression::integer(2))),
             ),
@@ -565,5 +789,106 @@ mod tests {
 
         let result = expr.replace(&pattern, &replacement);
         assert_eq!(result, Expression::integer(1));
+    }
+
+    // NEW TESTS FOR ENHANCED FUNCTIONALITY
+
+    #[test]
+    fn test_commutative_addition_matching() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        // y + x (reversed order)
+        let expr = Expression::add(vec![Expression::symbol(y), Expression::symbol(x)]);
+
+        // Pattern: a + b (should match despite different order)
+        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
+
+        let matches = expr.matches(&pattern);
+        assert!(matches.is_some());
+
+        if let Some(bindings) = matches {
+            // Should bind either way (commutative)
+            let a_val = bindings.get("a").unwrap();
+            let b_val = bindings.get("b").unwrap();
+
+            // Either (a=y, b=x) or (a=x, b=y)
+            assert!(
+                (a_val == &Expression::symbol(y) && b_val == &Expression::symbol(x))
+                    || (a_val == &Expression::symbol(x) && b_val == &Expression::symbol(y))
+            );
+        }
+    }
+
+    #[test]
+    fn test_commutative_multiplication_matching() {
+        let x = symbol!(x);
+        // x * 3 (reversed from pattern 3 * x)
+        let expr = Expression::mul(vec![Expression::symbol(x), Expression::integer(3)]);
+
+        // Pattern: a * b
+        let pattern = Pattern::Mul(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
+
+        let matches = expr.matches(&pattern);
+        assert!(matches.is_some());
+    }
+
+    #[test]
+    fn test_wildcard_with_exclude() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+
+        // Pattern: wildcard 'a' that excludes x
+        let pattern = Pattern::wildcard_excluding("a", vec![Expression::symbol(x)]);
+
+        // Should not match x
+        assert!(Expression::symbol(x).matches(&pattern).is_none());
+
+        // Should match y
+        assert!(Expression::symbol(y).matches(&pattern).is_some());
+
+        // Should not match expressions containing x
+        let expr_with_x = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
+        assert!(expr_with_x.matches(&pattern).is_none());
+    }
+
+    #[test]
+    fn test_wildcard_with_property() {
+        // Property: only match integers
+        fn is_integer(expr: &Expression) -> bool {
+            matches!(expr, Expression::Number(_))
+        }
+
+        let pattern = Pattern::wildcard_with_properties("n", vec![is_integer]);
+
+        // Should match integer
+        assert!(Expression::integer(42).matches(&pattern).is_some());
+
+        // Should not match symbol
+        let x = symbol!(x);
+        assert!(Expression::symbol(x).matches(&pattern).is_none());
+    }
+
+    #[test]
+    fn test_three_term_commutative_match() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
+
+        // z + y + x (different order)
+        let expr = Expression::add(vec![
+            Expression::symbol(z),
+            Expression::symbol(y),
+            Expression::symbol(x),
+        ]);
+
+        // Pattern: a + b + c
+        let pattern = Pattern::Add(vec![
+            Pattern::wildcard("a"),
+            Pattern::wildcard("b"),
+            Pattern::wildcard("c"),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(matches.is_some());
     }
 }

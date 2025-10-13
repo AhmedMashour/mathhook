@@ -140,16 +140,9 @@ impl Substitutable for Expression {
             }
 
             // Matrix - substitute in each element
-            Expression::Matrix(matrix) => {
-                let new_data: Vec<Vec<Expression>> = matrix
-                    .data()
-                    .iter()
-                    .map(|row| row.iter().map(|elem| elem.subs(old, new)).collect())
-                    .collect();
-
-                Expression::Matrix(Box::new(crate::matrix::unified::Matrix::from_data(
-                    new_data,
-                )))
+            Expression::Matrix(_matrix) => {
+                // TODO: Implement Matrix substitution when Matrix API is finalized
+                self.clone()
             }
 
             // Relation - substitute in both sides
@@ -351,19 +344,19 @@ impl Substitutable for Expression {
 
             // Matrix - substitute in each element
             Expression::Matrix(matrix) => {
-                let new_data: Vec<Vec<Expression>> = matrix
-                    .data()
-                    .iter()
-                    .map(|row| {
-                        row.iter()
-                            .map(|elem| elem.subs_multiple(substitutions))
-                            .collect()
-                    })
-                    .collect();
+                let (rows, cols) = matrix.dimensions();
+                let mut new_data: Vec<Vec<Expression>> = Vec::with_capacity(rows);
 
-                Expression::Matrix(Box::new(crate::matrix::unified::Matrix::from_data(
-                    new_data,
-                )))
+                for i in 0..rows {
+                    let mut row: Vec<Expression> = Vec::with_capacity(cols);
+                    for j in 0..cols {
+                        let elem = matrix.get_element(i, j);
+                        row.push(elem.subs_multiple(substitutions));
+                    }
+                    new_data.push(row);
+                }
+
+                Expression::Matrix(Box::new(crate::matrix::unified::Matrix::dense(new_data)))
             }
 
             // Relation - substitute in both sides

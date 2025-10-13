@@ -14,13 +14,12 @@ impl ChainRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let result = expr.derivative(x);
+    /// let result = expr.derivative(x.clone());
     /// ```
     pub fn handle_function(name: &str, args: &[Expression], variable: Symbol) -> Expression {
         if args.len() != 1 {
@@ -36,11 +35,11 @@ impl ChainRule {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, symbol};
-    /// use mathhook_core::calculus::derivatives::chain_rule::ChainRule;
+    /// use mathhook_core::calculus::derivatives::ChainRule;
     ///
     /// let x = symbol!(x);
     /// let arg = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-    /// let result = ChainRule::apply("sin", &arg, x);
+    /// let result = ChainRule::apply("sin", &arg, x.clone());
     /// ```
     pub fn apply(function_name: &str, arg: &Expression, variable: Symbol) -> Expression {
         let arg_derivative = arg.derivative(variable.clone());
@@ -60,11 +59,11 @@ impl FunctionDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, symbol};
-    /// use mathhook_core::calculus::derivatives::chain_rule::FunctionDerivatives;
+    /// use mathhook_core::calculus::derivatives::FunctionDerivatives;
     ///
     /// let x = symbol!(x);
     /// let arg = Expression::symbol(x.clone());
-    /// let result = FunctionDerivatives::get("sin", &arg, x);
+    /// let result = FunctionDerivatives::get("sin", &arg, x.clone());
     /// ```
     pub fn get(name: &str, arg: &Expression, variable: Symbol) -> Expression {
         match name {

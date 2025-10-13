@@ -12,11 +12,11 @@ impl DifferentiabilityChecker {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, symbol};
-    /// use mathhook_core::calculus::derivatives::checker::DifferentiabilityChecker;
+    /// use mathhook_core::calculus::derivatives::DifferentiabilityChecker;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let is_diff = DifferentiabilityChecker::check(&expr, x);
+    /// let is_diff = DifferentiabilityChecker::check(&expr, x.clone());
     /// ```
     pub fn check(expr: &Expression, variable: Symbol) -> bool {
         match expr {
@@ -40,7 +40,7 @@ impl DifferentiabilityChecker {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::calculus::derivatives::checker::DifferentiabilityChecker;
+    /// use mathhook_core::calculus::derivatives::DifferentiabilityChecker;
     ///
     /// let is_sin_diff = DifferentiabilityChecker::is_function_differentiable("sin");
     /// let is_abs_diff = DifferentiabilityChecker::is_function_differentiable("abs");

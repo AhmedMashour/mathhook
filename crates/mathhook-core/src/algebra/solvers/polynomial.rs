@@ -91,44 +91,35 @@ impl PolynomialSolver {
         // This is x³ = 8, so x = ∛8 = 2
 
         // Check if it's the form x³ + constant = 0
+        // Note: Expression::add sorts in canonical order, so constant may come first or second
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
-                if let (Expression::Pow(base, exp), Expression::Number(Number::Integer(constant))) =
-                    (&terms[0], &terms[1])
-                {
+                // Try both orderings: (constant, x³) or (x³, constant)
+                let (power_term, constant_term) = match (&terms[0], &terms[1]) {
+                    (Expression::Number(Number::Integer(c)), p@Expression::Pow(..)) => (p, c),
+                    (p@Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
+                    _ => {
+                        // Doesn't match the pattern, fall through to rational root theorem
+                        return self.solve_cubic_rational_root_theorem(equation, variable);
+                    }
+                };
+
+                if let Expression::Pow(base, exp) = power_term {
                     if **base == Expression::symbol(variable.clone())
                         && **exp == Expression::integer(3)
                     {
                         // x³ + constant = 0 → x³ = -constant → x = ∛(-constant)
-                        let cube_root_value = (-constant as f64).cbrt();
+                        let cube_root_value = (-constant_term as f64).cbrt();
 
                         if cube_root_value.fract() == 0.0 {
-                            // Real cube root
+                            // Real cube root found
                             let real_root = Expression::integer(cube_root_value as i64);
 
-                            // For cubic, we also have complex roots
-                            // x³ = a has roots: ∛a, ∛a·ω, ∛a·ω² where ω = e^(2πi/3)
-                            return SolverResult::Multiple(vec![
-                                real_root,
-                                Expression::function(
-                                    "complex",
-                                    vec![
-                                        Expression::Number(Number::float(-cube_root_value / 2.0)),
-                                        Expression::Number(Number::float(
-                                            cube_root_value * 3.0_f64.sqrt() / 2.0,
-                                        )),
-                                    ],
-                                ),
-                                Expression::function(
-                                    "complex",
-                                    vec![
-                                        Expression::Number(Number::float(-cube_root_value / 2.0)),
-                                        Expression::Number(Number::float(
-                                            -cube_root_value * 3.0_f64.sqrt() / 2.0,
-                                        )),
-                                    ],
-                                ),
-                            ]);
+                            // For x³ = a, there are also two complex roots: a∛·ω and a∛·ω² where ω = e^(2πi/3)
+                            // However, our current system cannot properly verify complex roots
+                            // Per CLAUDE.md mathematical correctness: ONLY return roots we can verify
+                            // Return partial result with just the real root we found
+                            return SolverResult::Partial(vec![real_root]);
                         }
                     }
                 }
@@ -136,6 +127,11 @@ impl PolynomialSolver {
         }
 
         // Fallback: try rational root theorem
+        self.solve_cubic_rational_root_theorem(equation, variable)
+    }
+
+    /// Try to solve cubic using rational root theorem
+    fn solve_cubic_rational_root_theorem(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
         let potential_roots = vec![-3, -2, -1, 0, 1, 2, 3];
         let mut found_roots = Vec::new();
 
@@ -164,19 +160,28 @@ impl PolynomialSolver {
         // This is x⁴ = 16, so x = ±2, ±2i
 
         // Check if it's the form x⁴ + constant = 0
+        // Note: Expression::add sorts in canonical order, so constant may come first or second
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
-                if let (Expression::Pow(base, exp), Expression::Number(Number::Integer(constant))) =
-                    (&terms[0], &terms[1])
-                {
+                // Try both orderings: (constant, x⁴) or (x⁴, constant)
+                let (power_term, constant_term) = match (&terms[0], &terms[1]) {
+                    (Expression::Number(Number::Integer(c)), p@Expression::Pow(..)) => (p, c),
+                    (p@Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
+                    _ => {
+                        // Doesn't match the pattern, fall through to rational root theorem
+                        return self.solve_quartic_rational_root_theorem(equation, variable);
+                    }
+                };
+
+                if let Expression::Pow(base, exp) = power_term {
                     if **base == Expression::symbol(variable.clone())
                         && **exp == Expression::integer(4)
                     {
                         // x⁴ + constant = 0 → x⁴ = -constant
-                        let fourth_root_value = (-constant as f64).powf(0.25);
+                        let fourth_root_value = (-constant_term as f64).powf(0.25);
 
                         if fourth_root_value.is_finite() {
-                            // x⁴ = a has roots: ±⁴√a, ±i⁴√a
+                            // x⁴ = a has roots: ±⁴√a (real) and ±i⁴√a (imaginary)
                             let real_root = fourth_root_value.abs();
 
                             // Return integers if possible
@@ -192,24 +197,11 @@ impl PolynomialSolver {
                                 Expression::Number(Number::float(-real_root))
                             };
 
-                            return SolverResult::Multiple(vec![
-                                real_root_expr,
-                                neg_real_root_expr,
-                                Expression::function(
-                                    "complex",
-                                    vec![
-                                        Expression::integer(0),
-                                        Expression::Number(Number::float(real_root)),
-                                    ],
-                                ),
-                                Expression::function(
-                                    "complex",
-                                    vec![
-                                        Expression::integer(0),
-                                        Expression::Number(Number::float(-real_root)),
-                                    ],
-                                ),
-                            ]);
+                            // For x⁴ = a, there are also two imaginary roots: ±i⁴√a
+                            // However, our current system cannot properly verify complex roots
+                            // Per CLAUDE.md mathematical correctness: ONLY return roots we can verify
+                            // Return partial result with just the real roots we found
+                            return SolverResult::Partial(vec![real_root_expr, neg_real_root_expr]);
                         }
                     }
                 }
@@ -217,6 +209,11 @@ impl PolynomialSolver {
         }
 
         // Fallback: try rational root theorem for quartic
+        self.solve_quartic_rational_root_theorem(equation, variable)
+    }
+
+    /// Try to solve quartic using rational root theorem
+    fn solve_quartic_rational_root_theorem(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
         let potential_roots = vec![-3, -2, -1, 0, 1, 2, 3];
         let mut found_roots = Vec::new();
 
@@ -318,10 +315,14 @@ mod tests {
         let solver = PolynomialSolver::new();
         let result = solver.solve(&equation, &x);
 
+        // x³ - 8 = 0 has roots: 2 (real), and two complex roots
+        // We expect Partial with just the real root since we can't verify complex roots yet
         match result {
-            SolverResult::Multiple(roots) => {
-                assert_eq!(roots.len(), 3, "Cubic should have 3 roots");
+            SolverResult::Partial(roots) => {
+                assert_eq!(roots.len(), 1, "Should find 1 real root");
+                assert_eq!(roots[0], Expression::integer(2), "Real root should be 2");
 
+                // Verify the root actually solves the equation
                 for root in &roots {
                     assert!(
                         verify_root_solves_equation(&equation, &x, root),
@@ -330,7 +331,7 @@ mod tests {
                     );
                 }
             }
-            _ => panic!("Expected Multiple roots for cubic equation"),
+            _ => panic!("Expected Partial result with real root for cubic equation"),
         }
     }
 
@@ -376,10 +377,17 @@ mod tests {
         let solver = PolynomialSolver::new();
         let result = solver.solve(&equation, &x);
 
+        // x⁴ - 16 = 0 has roots: ±2 (real), and ±2i (imaginary)
+        // We expect Partial with just the real roots since we can't verify complex roots yet
         match result {
-            SolverResult::Multiple(roots) => {
-                assert_eq!(roots.len(), 4, "Quartic should have 4 roots");
+            SolverResult::Partial(roots) => {
+                assert_eq!(roots.len(), 2, "Should find 2 real roots");
 
+                // Check we have both 2 and -2
+                assert!(roots.contains(&Expression::integer(2)), "Should include root 2");
+                assert!(roots.contains(&Expression::integer(-2)), "Should include root -2");
+
+                // Verify all roots actually solve the equation
                 for root in &roots {
                     assert!(
                         verify_root_solves_equation(&equation, &x, root),
@@ -388,7 +396,7 @@ mod tests {
                     );
                 }
             }
-            _ => panic!("Expected Multiple roots for quartic equation"),
+            _ => panic!("Expected Partial result with real roots for quartic equation"),
         }
     }
 

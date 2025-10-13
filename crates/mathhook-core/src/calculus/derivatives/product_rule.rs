@@ -67,8 +67,8 @@ impl GeneralProductRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, ProductRule};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::GeneralProductRule;
     ///
     /// let x = symbol!(x);
     /// let factors = vec![
@@ -76,7 +76,7 @@ impl GeneralProductRule {
     ///     Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ///     Expression::function("cos", vec![Expression::symbol(x.clone())])
     /// ];
-    /// let result = GeneralProductRule::apply(&factors, x);
+    /// let result = GeneralProductRule::apply(&factors, x.clone());
     /// ```
     pub fn apply(factors: &[Expression], variable: Symbol) -> Expression {
         let derivative_terms: Vec<Expression> = (0..factors.len())

@@ -59,12 +59,13 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol, PowerRule};
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::PowerRule;
     ///
     /// let x = symbol!(x);
     /// let base = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     /// let exponent = Expression::symbol(x.clone());
-    /// let result = PowerRule::logarithmic_differentiation(&base, &exponent, x);
+    /// let result = PowerRule::logarithmic_differentiation(&base, &exponent, x.clone());
     /// ```
     pub fn logarithmic_differentiation(
         base: &Expression,
@@ -96,10 +97,12 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::PowerRule;
     ///
+    /// let x = symbol!(x);
     /// let numerator = Expression::integer(1);
-    /// let denominator = Expression::symbol("x");
+    /// let denominator = Expression::symbol(x);
     /// let division = PowerRule::div(numerator, denominator);
     /// ```
     pub fn div(numerator: Expression, denominator: Expression) -> Expression {

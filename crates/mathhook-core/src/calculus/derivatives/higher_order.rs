@@ -42,7 +42,7 @@ impl HigherOrderDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, symbol};
-    /// use mathhook_core::calculus::derivatives::higher_order::HigherOrderDerivatives;
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -50,7 +50,7 @@ impl HigherOrderDerivatives {
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::symbol(y.clone())
     /// ]);
-    /// let mixed_partial = HigherOrderDerivatives::mixed_partial(&expr, vec![(x, 1), (y, 1)]);
+    /// let mixed_partial = HigherOrderDerivatives::mixed_partial(&expr, vec![(x.clone(), 1), (y.clone(), 1)]);
     /// ```
     pub fn mixed_partial(expr: &Expression, derivatives: Vec<(Symbol, u32)>) -> Expression {
         let mut result = expr.clone();
@@ -69,11 +69,12 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let exists = HigherOrderDerivatives::exists(&expr, x, 5);
+    /// let exists = HigherOrderDerivatives::exists(&expr, x.clone(), 5);
     /// ```
     pub fn exists(expr: &Expression, variable: Symbol, order: u32) -> bool {
         if order == 0 {
@@ -97,12 +98,12 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let table = HigherOrderDerivatives::derivative_table(&expr, x, 4);
+    /// let table = HigherOrderDerivatives::derivative_table(&expr, x.clone(), 4);
     /// ```
     pub fn derivative_table(
         expr: &Expression,
@@ -127,12 +128,12 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let pattern = HigherOrderDerivatives::find_pattern(&expr, x, 8);
+    /// let pattern = HigherOrderDerivatives::find_pattern(&expr, x.clone(), 8);
     /// ```
     pub fn find_pattern(expr: &Expression, variable: Symbol, check_orders: u32) -> Option<u32> {
         let derivatives = Self::derivative_table(expr, variable, check_orders);
@@ -166,13 +167,13 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let u = Expression::symbol(x.clone());
     /// let v = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    /// let nth_product = HigherOrderDerivatives::leibniz_rule(&u, &v, x, 3);
+    /// let nth_product = HigherOrderDerivatives::leibniz_rule(&u, &v, x.clone(), 3);
     /// ```
     pub fn leibniz_rule(u: &Expression, v: &Expression, variable: Symbol, n: u32) -> Expression {
         let mut terms = Vec::with_capacity((n + 1) as usize);
@@ -219,13 +220,13 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let inner = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let outer_name = "sin";
-    /// let chain_derivative = HigherOrderDerivatives::faa_di_bruno(outer_name, &inner, x, 2);
+    /// let chain_derivative = HigherOrderDerivatives::faa_di_bruno(outer_name, &inner, x.clone(), 2);
     /// ```
     pub fn faa_di_bruno(
         outer_function: &str,
