@@ -3,7 +3,6 @@
 //! This module provides GPU acceleration for computationally intensive mathematical operations
 //! using WebGPU for cross-platform compatibility and optional CUDA for maximum performance.
 
-use crate::core::Expression;
 use std::sync::{Arc, OnceLock};
 
 /// GPU acceleration backend types

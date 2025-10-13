@@ -2,14 +2,16 @@
 //!
 //! This module provides allocation-free, lock-free operations designed to eliminate
 //! performance outliers and provide consistent, predictable performance.
+use crate::matrix::unified::Matrix;
 
-use crate::core::{Expression, Number};
+use crate::{
+    core::{Expression, Number},
+    expr, MatrixOperations,
+};
 use num_traits::{ToPrimitive, Zero};
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// Thread-local cache to avoid lock contention
 thread_local! {
     static LOCAL_CACHE: std::cell::RefCell<std::collections::HashMap<u64, Expression>> =
         std::cell::RefCell::new(std::collections::HashMap::new());
@@ -20,12 +22,12 @@ static SIMD_OPERATIONS: AtomicUsize = AtomicUsize::new(0);
 static CACHE_HITS: AtomicUsize = AtomicUsize::new(0);
 static CACHE_MISSES: AtomicUsize = AtomicUsize::new(0);
 
-/// Ultra-fast bulk addition with zero allocations
+/// Bulk addition with zero allocations
 #[inline(always)]
 pub fn stable_bulk_addition(terms: &[Expression]) -> Expression {
     // Fast path: no allocations for simple cases
     match terms.len() {
-        0 => return Expression::integer(0),
+        0 => return expr!(0),
         1 => return terms[0].clone(),
         2 => return stable_add_two(&terms[0], &terms[1]),
         _ => {}
@@ -418,10 +420,8 @@ impl StableMatrix {
 
         // Check if matrix is already simplified (avoid unnecessary work)
         let mut needs_simplification = false;
-        let mut total_elements = 0;
 
         for row in rows {
-            total_elements += row.len();
             for element in row {
                 if !is_simple_numeric(element) {
                     needs_simplification = true;
@@ -434,19 +434,15 @@ impl StableMatrix {
         }
 
         if !needs_simplification {
-            // Matrix is already simplified
-            use crate::matrix::unified::Matrix;
             return Expression::Matrix(Box::new(Matrix::Dense(matrix.clone())));
         }
 
-        // Process elements in-place to minimize allocations
         let mut simplified_rows = Vec::with_capacity(rows.len());
 
         for row in rows {
             let mut simplified_row = Vec::with_capacity(row.len());
             for element in row {
-                // Use stable operations for element simplification
-                simplified_row.push(element.clone()); // TODO: Replace with actual simplification
+                simplified_row.push(element.clone().simplify_matrix());
             }
             simplified_rows.push(simplified_row);
         }
@@ -455,7 +451,6 @@ impl StableMatrix {
     }
 }
 
-/// Check if expression is simple numeric (no simplification needed)
 #[inline(always)]
 fn is_simple_numeric(expr: &Expression) -> bool {
     matches!(
@@ -472,26 +467,18 @@ mod tests {
 
     #[test]
     fn test_stable_bulk_addition() {
-        let terms = vec![
-            Expression::integer(1),
-            Expression::integer(2),
-            Expression::integer(3),
-        ];
+        let terms = vec![expr!(1), expr!(2), expr!(3)];
 
         let result = stable_bulk_addition(&terms);
-        assert_eq!(result, Expression::integer(6));
+        assert_eq!(result, expr!(6));
     }
 
     #[test]
     fn test_stable_bulk_multiplication() {
-        let factors = vec![
-            Expression::integer(2),
-            Expression::integer(3),
-            Expression::integer(4),
-        ];
+        let factors = vec![expr!(2), expr!(3), Expression::integer(4)];
 
         let result = stable_bulk_multiplication(&factors);
-        assert_eq!(result, Expression::integer(24));
+        assert_eq!(result, expr!(24));
     }
 
     #[test]
@@ -508,16 +495,13 @@ mod tests {
     #[test]
     fn test_stable_cache() {
         let hash = 12345;
-        let expr = Expression::integer(42);
+        let num_expr = expr!(42);
 
-        // Should miss initially
         assert!(StableCache::get(hash).is_none());
 
-        // Store and retrieve
-        StableCache::store(hash, expr.clone());
-        assert_eq!(StableCache::get(hash), Some(expr));
+        StableCache::store(hash, num_expr.clone());
+        assert_eq!(StableCache::get(hash), Some(num_expr));
 
-        // Check stats
         let (hits, misses, _) = StableCache::stats();
         assert!(hits > 0);
         assert!(misses > 0);
