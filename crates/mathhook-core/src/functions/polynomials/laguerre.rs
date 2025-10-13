@@ -3,9 +3,10 @@
 //! Mathematically accurate implementation of Laguerre polynomials L_n(x)
 //! for hydrogen atom radial wavefunctions with verified properties.
 
-use crate::core::Expression;
+use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Laguerre Polynomial Intelligence
 ///
@@ -132,7 +133,15 @@ impl LaguerreIntelligence {
                 evaluation_method: EvaluationMethod::Recurrence,
                 
                 antiderivative_rule: AntiderivativeRule {
-                    rule_type: AntiderivativeRuleType::NonElementary,
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            // Integration not yet implemented - return symbolic integral
+                            Expression::integral(
+                                Expression::function("laguerre", vec![Expression::symbol(var.clone())]),
+                                var
+                            )
+                        }),
+                    },
                     result_template: "Integration not yet implemented".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 },

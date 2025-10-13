@@ -3,9 +3,10 @@
 //! Mathematically accurate implementation of Hermite polynomials H_n(x)
 //! for quantum harmonic oscillator eigenfunctions with verified properties.
 
-use crate::core::Expression;
+use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Hermite Polynomial Intelligence
 ///
@@ -113,7 +114,15 @@ impl HermiteIntelligence {
                 evaluation_method: EvaluationMethod::Recurrence,
                 
                 antiderivative_rule: AntiderivativeRule {
-                    rule_type: AntiderivativeRuleType::NonElementary,
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            // Integration not yet implemented - return symbolic integral
+                            Expression::integral(
+                                Expression::function("hermite", vec![Expression::symbol(var.clone())]),
+                                var
+                            )
+                        }),
+                    },
                     result_template: "Integration not yet implemented".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 },

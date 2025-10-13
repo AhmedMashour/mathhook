@@ -2,9 +2,10 @@
 //!
 //! with verified derivatives, special values, and logarithm laws.
 
-use crate::core::Expression;
+use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Logarithmic Function Intelligence
 ///
@@ -22,6 +23,7 @@ impl LogarithmicIntelligence {
         };
 
         intelligence.initialize_ln();
+        intelligence.initialize_log();
 
         intelligence
     }
@@ -47,7 +49,24 @@ impl LogarithmicIntelligence {
                     rule_type: DerivativeRuleType::Simple("1/x".to_string()),
                     result_template: "1/x".to_string(),
                 }),
-                antiderivative_rule: None,
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::add(vec![
+                                Expression::mul(vec![
+                                    Expression::symbol(var.clone()),
+                                    Expression::function("ln", vec![Expression::symbol(var.clone())]),
+                                ]),
+                                Expression::mul(vec![
+                                    Expression::integer(-1),
+                                    Expression::symbol(var),
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫ln(x)dx = x·ln(x) - x + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
 
                 // SPECIAL VALUES
                 special_values: vec![
@@ -95,6 +114,65 @@ impl LogarithmicIntelligence {
                 periodicity: None,
                 numerical_evaluator: Some(
                     crate::functions::properties::NumericalEvaluator::StandardLib(f64::ln),
+                ),
+            })),
+        );
+    }
+
+    /// Initialize base-10 logarithm
+    fn initialize_log(&mut self) {
+        self.properties.insert(
+            "log".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("1/(x·ln(10))".to_string()),
+                    result_template: "1/(x·ln(10))".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::mul(vec![
+                                Expression::pow(
+                                    Expression::function("ln", vec![Expression::integer(10)]),
+                                    Expression::integer(-1),
+                                ),
+                                Expression::add(vec![
+                                    Expression::mul(vec![
+                                        Expression::symbol(var.clone()),
+                                        Expression::function("ln", vec![Expression::symbol(var.clone())]),
+                                    ]),
+                                    Expression::mul(vec![
+                                        Expression::integer(-1),
+                                        Expression::symbol(var),
+                                    ]),
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫log(x)dx = (1/ln(10))·(x·ln(x) - x) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![
+                    SpecialValue {
+                        input: "1".to_string(),
+                        output: Expression::integer(0),
+                        latex_explanation: "\\log(1) = 0".to_string(),
+                    },
+                    SpecialValue {
+                        input: "10".to_string(),
+                        output: Expression::integer(1),
+                        latex_explanation: "\\log(10) = 1".to_string(),
+                    },
+                ],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Interval(Expression::integer(0), Expression::symbol("∞")),
+                    range: Range::Real,
+                    singularities: vec![Expression::integer(0)],
+                }),
+                periodicity: None,
+                numerical_evaluator: Some(
+                    crate::functions::properties::NumericalEvaluator::StandardLib(f64::log10),
                 ),
             })),
         );

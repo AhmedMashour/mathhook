@@ -3,9 +3,10 @@
 //! Mathematically accurate implementation of Chebyshev polynomials T_n(x), U_n(x)
 //! for approximation theory with verified properties.
 
-use crate::core::Expression;
+use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Chebyshev Polynomial Intelligence
 ///
@@ -127,7 +128,15 @@ impl ChebyshevIntelligence {
                 evaluation_method: EvaluationMethod::Recurrence,
                 
                 antiderivative_rule: AntiderivativeRule {
-                    rule_type: AntiderivativeRuleType::NonElementary,
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            // Integration not yet implemented - return symbolic integral
+                            Expression::integral(
+                                Expression::function("chebyshev_first", vec![Expression::symbol(var.clone())]),
+                                var
+                            )
+                        }),
+                    },
                     result_template: "Integration not yet implemented".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 },
@@ -197,9 +206,17 @@ impl ChebyshevIntelligence {
                 ],
 
                 evaluation_method: EvaluationMethod::Recurrence,
-                
+
                 antiderivative_rule: AntiderivativeRule {
-                    rule_type: AntiderivativeRuleType::NonElementary,
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            // Integration not yet implemented - return symbolic integral
+                            Expression::integral(
+                                Expression::function("chebyshev_second", vec![Expression::symbol(var.clone())]),
+                                var
+                            )
+                        }),
+                    },
                     result_template: "Integration not yet implemented".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 },

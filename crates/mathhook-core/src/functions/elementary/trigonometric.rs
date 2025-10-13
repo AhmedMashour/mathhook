@@ -3,9 +3,10 @@
 //! Complete mathematical intelligence for trigonometric functions:
 //! sin, cos, tan, sec, csc, cot with derivatives, identities, and special values.
 
-use crate::core::Expression;
+use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Trigonometric Function Intelligence
 ///
@@ -26,6 +27,7 @@ impl TrigonometricIntelligence {
         intelligence.initialize_sin_cos();
         intelligence.initialize_tan_cot();
         intelligence.initialize_sec_csc();
+        intelligence.initialize_inverse_trig();
 
         intelligence
     }
@@ -50,7 +52,14 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("cos".to_string()),
                     result_template: "cos(x)".to_string(),
                 }),
-                antiderivative_rule: None,
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Simple {
+                        antiderivative_fn: "cos".to_string(),
+                        coefficient: Expression::integer(-1),
+                    },
+                    result_template: "∫sin(x)dx = -cos(x) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
                 special_values: vec![
                     SpecialValue {
                         input: "0".to_string(),
@@ -106,7 +115,14 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("-sin".to_string()),
                     result_template: "-sin(x)".to_string(),
                 }),
-                antiderivative_rule: None,
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Simple {
+                        antiderivative_fn: "sin".to_string(),
+                        coefficient: Expression::integer(1),
+                    },
+                    result_template: "∫cos(x)dx = sin(x) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
                 special_values: vec![
                     // Fundamental cosine values - essential for mathematical accuracy
                     SpecialValue {
@@ -162,7 +178,22 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("sec²".to_string()),
                     result_template: "sec²(x)".to_string(),
                 }),
-                antiderivative_rule: None,
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::mul(vec![
+                                Expression::integer(-1),
+                                Expression::function("ln", vec![
+                                    Expression::function("abs", vec![
+                                        Expression::function("cos", vec![Expression::symbol(var)])
+                                    ])
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫tan(x)dx = -ln|cos(x)| + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
                 special_values: vec![
                     SpecialValue {
                         input: "0".to_string(),
@@ -195,12 +226,291 @@ impl TrigonometricIntelligence {
                 ),
             })),
         );
+
+        // Cotangent function
+        self.properties.insert(
+            "cot".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("-csc²".to_string()),
+                    result_template: "-csc²(x)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::function("ln", vec![
+                                Expression::function("abs", vec![
+                                    Expression::function("sin", vec![Expression::symbol(var)])
+                                ])
+                            ])
+                        }),
+                    },
+                    result_template: "∫cot(x)dx = ln|sin(x)| + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![
+                    SpecialValue {
+                        input: "π/4".to_string(),
+                        output: Expression::integer(1),
+                        latex_explanation: "\\cot(\\frac{\\pi}{4}) = 1".to_string(),
+                    },
+                ],
+                identities: Box::new(vec![MathIdentity {
+                    name: "Cotangent Identity".to_string(),
+                    lhs: Expression::function("cot", vec![Expression::symbol("x")]),
+                    rhs: Expression::function("cos_over_sin", vec![Expression::symbol("x")]),
+                    conditions: vec!["sin(x) ≠ 0".to_string()],
+                }]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Real,
+                    range: Range::Real,
+                    singularities: vec![Expression::function(
+                        "cot_singularities",
+                        vec![Expression::symbol("n")],
+                    )],
+                }),
+                periodicity: Some(Expression::pi()),
+                numerical_evaluator: None,
+            })),
+        );
     }
 
     /// Initialize sec and csc functions
     fn initialize_sec_csc(&mut self) {
-        // Placeholder for sec, csc functions
-        // Will be implemented as needed
+        self.properties.insert(
+            "sec".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("sec·tan".to_string()),
+                    result_template: "sec(x)·tan(x)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::function("ln", vec![
+                                Expression::function("abs", vec![
+                                    Expression::add(vec![
+                                        Expression::function("sec", vec![Expression::symbol(var.clone())]),
+                                        Expression::function("tan", vec![Expression::symbol(var)]),
+                                    ])
+                                ])
+                            ])
+                        }),
+                    },
+                    result_template: "∫sec(x)dx = ln|sec(x)+tan(x)| + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Real,
+                    range: Range::Real,
+                    singularities: vec![],
+                }),
+                periodicity: Some(Expression::mul(vec![
+                    Expression::integer(2),
+                    Expression::pi(),
+                ])),
+                numerical_evaluator: None,
+            })),
+        );
+
+        self.properties.insert(
+            "csc".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("-csc·cot".to_string()),
+                    result_template: "-csc(x)·cot(x)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::mul(vec![
+                                Expression::integer(-1),
+                                Expression::function("ln", vec![
+                                    Expression::function("abs", vec![
+                                        Expression::add(vec![
+                                            Expression::function("csc", vec![Expression::symbol(var.clone())]),
+                                            Expression::function("cot", vec![Expression::symbol(var)]),
+                                        ])
+                                    ])
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫csc(x)dx = -ln|csc(x)+cot(x)| + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Real,
+                    range: Range::Real,
+                    singularities: vec![],
+                }),
+                periodicity: Some(Expression::mul(vec![
+                    Expression::integer(2),
+                    Expression::pi(),
+                ])),
+                numerical_evaluator: None,
+            })),
+        );
+    }
+
+    /// Initialize inverse trigonometric functions
+    fn initialize_inverse_trig(&mut self) {
+        self.properties.insert(
+            "arcsin".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("1/√(1-x²)".to_string()),
+                    result_template: "1/√(1-x²)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::add(vec![
+                                Expression::mul(vec![
+                                    Expression::symbol(var.clone()),
+                                    Expression::function("arcsin", vec![Expression::symbol(var.clone())]),
+                                ]),
+                                Expression::function("sqrt", vec![
+                                    Expression::add(vec![
+                                        Expression::integer(1),
+                                        Expression::mul(vec![
+                                            Expression::integer(-1),
+                                            Expression::pow(Expression::symbol(var), Expression::integer(2)),
+                                        ]),
+                                    ])
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫arcsin(x)dx = x·arcsin(x) + √(1-x²) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Interval(Expression::integer(-1), Expression::integer(1)),
+                    range: Range::Bounded(
+                        Expression::mul(vec![
+                            Expression::rational(-1, 2),
+                            Expression::pi(),
+                        ]),
+                        Expression::mul(vec![
+                            Expression::rational(1, 2),
+                            Expression::pi(),
+                        ]),
+                    ),
+                    singularities: vec![],
+                }),
+                periodicity: None,
+                numerical_evaluator: Some(
+                    crate::functions::properties::NumericalEvaluator::StandardLib(f64::asin),
+                ),
+            })),
+        );
+
+        self.properties.insert(
+            "arccos".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("-1/√(1-x²)".to_string()),
+                    result_template: "-1/√(1-x²)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::add(vec![
+                                Expression::mul(vec![
+                                    Expression::symbol(var.clone()),
+                                    Expression::function("arccos", vec![Expression::symbol(var.clone())]),
+                                ]),
+                                Expression::mul(vec![
+                                    Expression::integer(-1),
+                                    Expression::function("sqrt", vec![
+                                        Expression::add(vec![
+                                            Expression::integer(1),
+                                            Expression::mul(vec![
+                                                Expression::integer(-1),
+                                                Expression::pow(Expression::symbol(var), Expression::integer(2)),
+                                            ]),
+                                        ])
+                                    ]),
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫arccos(x)dx = x·arccos(x) - √(1-x²) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Interval(Expression::integer(-1), Expression::integer(1)),
+                    range: Range::Bounded(Expression::integer(0), Expression::pi()),
+                    singularities: vec![],
+                }),
+                periodicity: None,
+                numerical_evaluator: Some(
+                    crate::functions::properties::NumericalEvaluator::StandardLib(f64::acos),
+                ),
+            })),
+        );
+
+        self.properties.insert(
+            "arctan".to_string(),
+            FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                derivative_rule: Some(DerivativeRule {
+                    rule_type: DerivativeRuleType::Simple("1/(1+x²)".to_string()),
+                    result_template: "1/(1+x²)".to_string(),
+                }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Custom {
+                        builder: Arc::new(|var: Symbol| {
+                            Expression::add(vec![
+                                Expression::mul(vec![
+                                    Expression::symbol(var.clone()),
+                                    Expression::function("arctan", vec![Expression::symbol(var.clone())]),
+                                ]),
+                                Expression::mul(vec![
+                                    Expression::rational(-1, 2),
+                                    Expression::function("ln", vec![
+                                        Expression::add(vec![
+                                            Expression::integer(1),
+                                            Expression::pow(Expression::symbol(var), Expression::integer(2)),
+                                        ])
+                                    ]),
+                                ]),
+                            ])
+                        }),
+                    },
+                    result_template: "∫arctan(x)dx = x·arctan(x) - ½ln(1+x²) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
+                special_values: vec![],
+                identities: Box::new(vec![]),
+                domain_range: Box::new(DomainRangeData {
+                    domain: Domain::Real,
+                    range: Range::Bounded(
+                        Expression::mul(vec![
+                            Expression::rational(-1, 2),
+                            Expression::pi(),
+                        ]),
+                        Expression::mul(vec![
+                            Expression::rational(1, 2),
+                            Expression::pi(),
+                        ]),
+                    ),
+                    singularities: vec![],
+                }),
+                periodicity: None,
+                numerical_evaluator: Some(
+                    crate::functions::properties::NumericalEvaluator::StandardLib(f64::atan),
+                ),
+            })),
+        );
     }
 }
 

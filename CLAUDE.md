@@ -555,6 +555,7 @@ For multi-valued functions, document which branch:
    - Explaining algorithm rationale or mathematical properties
    - Clarifying non-obvious edge cases or domain restrictions
    - Avoid stating the obvious; let code be self-documenting when possible
+   - Avoid exaggerating in what you say about something
 
 ### Documentation Requirements
 

@@ -6,6 +6,7 @@
 use crate::core::{Expression, Symbol};
 use crate::functions::evaluation::EvaluationResult;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Mathematical properties for all function types
 ///
@@ -451,7 +452,6 @@ pub struct AntiderivativeRule {
 ///
 /// Each variant represents a different integration technique or pattern,
 /// enabling the registry to efficiently compute integrals based on function properties.
-#[derive(Debug, Clone)]
 pub enum AntiderivativeRuleType {
     /// Simple substitution: ∫sin(x)dx = -cos(x) + C
     ///
@@ -465,37 +465,25 @@ pub enum AntiderivativeRuleType {
         coefficient: Expression,
     },
 
+    /// Custom antiderivative with expression builder
+    ///
+    /// Stores a closure that constructs the antiderivative expression
+    /// given the integration variable. Used for complex expressions like
+    /// tan, cot, sec, csc, ln, log, arcsin, arccos, arctan, tanh, sqrt.
+    ///
+    /// Example: ∫tan(x)dx = builder(x) → -ln|cos(x)|
+    Custom {
+        #[allow(clippy::type_complexity)]
+        builder: Arc<dyn Fn(Symbol) -> Expression + Send + Sync>,
+    },
+
     /// Linear substitution: ∫f(ax)dx = (1/a)F(ax) + C
     ///
     /// Used for patterns like ∫sin(3x)dx = -(1/3)cos(3x) + C
     /// where the inner function is a linear transformation.
     LinearSubstitution {
-        /// Antiderivative of f(x)
-        base_antiderivative: Box<AntiderivativeRule>,
-    },
-
-    /// Composite function requiring u-substitution
-    ///
-    /// Handles integrals of the form ∫f(g(x))g'(x)dx = F(g(x)) + C
-    /// where pattern matching is required to identify the substitution.
-    USubstitution {
-        /// Pattern to match g'(x)
-        derivative_pattern: String,
-
-        /// Antiderivative in terms of u
-        antiderivative_of_u: String,
-    },
-
-    /// Integration by parts: ∫u dv = uv - ∫v du
-    ///
-    /// Stores the strategic choice of which part to differentiate (u)
-    /// and which part to integrate (dv).
-    ByParts {
-        /// Choice of u (the part to differentiate)
-        u_pattern: String,
-
-        /// Choice of dv (the part to integrate)
-        dv_pattern: String,
+        coefficient: Expression,
+        inner_rule: Box<AntiderivativeRule>,
     },
 
     /// Trigonometric substitution patterns
@@ -503,14 +491,7 @@ pub enum AntiderivativeRuleType {
     /// Used for integrals like ∫1/√(1-x²)dx = arcsin(x) + C
     /// where a trigonometric substitution simplifies the integral.
     TrigSubstitution {
-        /// Pattern to match (e.g., √(1-x²), √(x²+1))
-        pattern: String,
-
-        /// Substitution to use (e.g., x = sin(θ), x = tan(θ))
-        substitution: String,
-
-        /// Resulting antiderivative
-        result: String,
+        substitution_type: String,
     },
 
     /// Partial fraction decomposition (for rational functions)
@@ -518,39 +499,76 @@ pub enum AntiderivativeRuleType {
     /// Indicates that the integral requires partial fraction decomposition
     /// before integration can proceed.
     PartialFractions {
-        /// Degree constraint (only if denominator degree > numerator degree)
-        requires_proper_fraction: bool,
+        decomposition: Vec<Expression>,
     },
+}
 
-    /// Reduction formula (recursive integration)
-    ///
-    /// Example: ∫sin^n(x)dx in terms of ∫sin^(n-2)(x)dx
-    /// Enables recursive computation for powers of functions.
-    ReductionFormula {
-        /// Recursion relation
-        recursion: String,
+impl Clone for AntiderivativeRuleType {
+    fn clone(&self) -> Self {
+        match self {
+            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
+                AntiderivativeRuleType::Simple {
+                    antiderivative_fn: antiderivative_fn.clone(),
+                    coefficient: coefficient.clone(),
+                }
+            }
+            AntiderivativeRuleType::Custom { builder } => {
+                AntiderivativeRuleType::Custom {
+                    builder: Arc::clone(builder),
+                }
+            }
+            AntiderivativeRuleType::LinearSubstitution { coefficient, inner_rule } => {
+                AntiderivativeRuleType::LinearSubstitution {
+                    coefficient: coefficient.clone(),
+                    inner_rule: inner_rule.clone(),
+                }
+            }
+            AntiderivativeRuleType::TrigSubstitution { substitution_type } => {
+                AntiderivativeRuleType::TrigSubstitution {
+                    substitution_type: substitution_type.clone(),
+                }
+            }
+            AntiderivativeRuleType::PartialFractions { decomposition } => {
+                AntiderivativeRuleType::PartialFractions {
+                    decomposition: decomposition.clone(),
+                }
+            }
+        }
+    }
+}
 
-        /// Base cases
-        base_cases: Vec<(usize, String)>,
-    },
-
-    /// Special function integral (e.g., ∫e^(-x²)dx = √π/2 erf(x) + C)
-    ///
-    /// For integrals that result in special functions rather than
-    /// elementary functions.
-    SpecialFunction {
-        /// Name of special function result
-        special_fn: String,
-
-        /// Coefficients and transformations
-        coefficients: Vec<Expression>,
-    },
-
-    /// Not integrable in elementary functions
-    ///
-    /// Indicates that the integral cannot be expressed in terms of
-    /// elementary functions and must remain as a symbolic integral.
-    NonElementary,
+impl std::fmt::Debug for AntiderivativeRuleType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
+                f.debug_struct("Simple")
+                    .field("antiderivative_fn", antiderivative_fn)
+                    .field("coefficient", coefficient)
+                    .finish()
+            }
+            AntiderivativeRuleType::Custom { .. } => {
+                f.debug_struct("Custom")
+                    .field("builder", &"<closure>")
+                    .finish()
+            }
+            AntiderivativeRuleType::LinearSubstitution { coefficient, inner_rule } => {
+                f.debug_struct("LinearSubstitution")
+                    .field("coefficient", coefficient)
+                    .field("inner_rule", inner_rule)
+                    .finish()
+            }
+            AntiderivativeRuleType::TrigSubstitution { substitution_type } => {
+                f.debug_struct("TrigSubstitution")
+                    .field("substitution_type", substitution_type)
+                    .finish()
+            }
+            AntiderivativeRuleType::PartialFractions { decomposition } => {
+                f.debug_struct("PartialFractions")
+                    .field("decomposition", decomposition)
+                    .finish()
+            }
+        }
+    }
 }
 
 /// Constant of integration handling

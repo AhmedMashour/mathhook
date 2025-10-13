@@ -5,6 +5,8 @@
 //! infrastructure.
 
 use crate::core::{Expression, Symbol};
+use crate::functions::intelligence::get_universal_registry;
+use crate::functions::properties::{AntiderivativeRule, AntiderivativeRuleType};
 
 /// Function integration handler
 pub struct FunctionIntegrals;
@@ -20,7 +22,13 @@ impl FunctionIntegrals {
     ///
     /// let x = symbol!(x);
     /// let args = vec![Expression::symbol(x.clone())];
-    /// let result = FunctionIntegrals::integrate("sin", &args, x);
+    /// let result = FunctionIntegrals::integrate("sin", &args, x.clone());
+    ///
+    /// let expected = Expression::mul(vec![
+    ///     Expression::integer(-1),
+    ///     Expression::function("cos", vec![Expression::symbol(x)]),
+    /// ]);
+    /// assert_eq!(result, expected);
     /// ```
     pub fn integrate(name: &str, args: &[Expression], variable: Symbol) -> Expression {
         if args.len() == 1 {
@@ -54,179 +62,92 @@ impl FunctionIntegrals {
     /// use mathhook_core::symbol;
     ///
     /// let x = symbol!(x);
-    /// let result = FunctionIntegrals::integrate_simple_function("sin", x);
+    /// let result = FunctionIntegrals::integrate_simple_function("sin", x.clone());
+    ///
+    /// let expected = Expression::mul(vec![
+    ///     Expression::integer(-1),
+    ///     Expression::function("cos", vec![Expression::symbol(x)]),
+    /// ]);
+    /// assert_eq!(result, expected);
     /// ```
     pub fn integrate_simple_function(name: &str, variable: Symbol) -> Expression {
-        match name {
-            // Trigonometric functions
-            "sin" => Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::function("cos", vec![Expression::symbol(variable)]),
-            ]),
-            "cos" => Expression::function("sin", vec![Expression::symbol(variable)]),
-            "tan" => Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::function(
-                    "ln",
-                    vec![Expression::function(
-                        "abs",
-                        vec![Expression::function(
-                            "cos",
-                            vec![Expression::symbol(variable)],
-                        )],
-                    )],
-                ),
-            ]),
-            "sec" => Expression::function(
-                "ln",
-                vec![Expression::function(
-                    "abs",
-                    vec![Expression::add(vec![
-                        Expression::function("sec", vec![Expression::symbol(variable.clone())]),
-                        Expression::function("tan", vec![Expression::symbol(variable)]),
-                    ])],
-                )],
-            ),
-            "csc" => Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::function(
-                    "ln",
-                    vec![Expression::function(
-                        "abs",
-                        vec![Expression::add(vec![
-                            Expression::function("csc", vec![Expression::symbol(variable.clone())]),
-                            Expression::function("cot", vec![Expression::symbol(variable)]),
-                        ])],
-                    )],
-                ),
-            ]),
-            "cot" => Expression::function(
-                "ln",
-                vec![Expression::function(
-                    "abs",
-                    vec![Expression::function(
-                        "sin",
-                        vec![Expression::symbol(variable)],
-                    )],
-                )],
-            ),
+        let registry = get_universal_registry();
 
-            // Exponential and logarithmic functions
-            "exp" => Expression::function("exp", vec![Expression::symbol(variable)]),
-            "ln" => Expression::add(vec![
-                Expression::mul(vec![
-                    Expression::symbol(variable.clone()),
-                    Expression::function("ln", vec![Expression::symbol(variable.clone())]),
-                ]),
-                Expression::mul(vec![Expression::integer(-1), Expression::symbol(variable)]),
-            ]),
-            "log" => Expression::mul(vec![
-                Expression::mul(vec![
-                    Expression::integer(1),
-                    Expression::pow(
-                        Expression::function("ln", vec![Expression::integer(10)]),
-                        Expression::integer(-1),
-                    ),
-                ]),
-                Expression::add(vec![
-                    Expression::mul(vec![
-                        Expression::symbol(variable.clone()),
-                        Expression::function("ln", vec![Expression::symbol(variable.clone())]),
-                    ]),
-                    Expression::mul(vec![Expression::integer(-1), Expression::symbol(variable)]),
-                ]),
-            ]),
+        if let Some(props) = registry.get_properties(name) {
+            if let Some(rule) = props.get_antiderivative_rule() {
+                return Self::apply_antiderivative_rule(rule, name, variable);
+            }
+        }
 
-            // Inverse trigonometric functions
-            "arcsin" => Expression::add(vec![
-                Expression::mul(vec![
-                    Expression::symbol(variable.clone()),
-                    Expression::function("arcsin", vec![Expression::symbol(variable.clone())]),
-                ]),
-                Expression::function(
-                    "sqrt",
-                    vec![Expression::add(vec![
-                        Expression::integer(1),
-                        Expression::mul(vec![
-                            Expression::integer(-1),
-                            Expression::pow(Expression::symbol(variable), Expression::integer(2)),
-                        ]),
-                    ])],
-                ),
-            ]),
-            "arccos" => Expression::add(vec![
-                Expression::mul(vec![
-                    Expression::symbol(variable.clone()),
-                    Expression::function("arccos", vec![Expression::symbol(variable.clone())]),
-                ]),
-                Expression::mul(vec![
-                    Expression::integer(-1),
-                    Expression::function(
-                        "sqrt",
-                        vec![Expression::add(vec![
-                            Expression::integer(1),
-                            Expression::mul(vec![
-                                Expression::integer(-1),
-                                Expression::pow(
-                                    Expression::symbol(variable),
-                                    Expression::integer(2),
-                                ),
-                            ]),
-                        ])],
-                    ),
-                ]),
-            ]),
-            "arctan" => Expression::add(vec![
-                Expression::mul(vec![
-                    Expression::symbol(variable.clone()),
-                    Expression::function("arctan", vec![Expression::symbol(variable.clone())]),
-                ]),
-                Expression::mul(vec![
-                    Expression::mul(vec![
-                        Expression::integer(-1),
-                        Expression::pow(Expression::integer(2), Expression::integer(-1)),
-                    ]),
-                    Expression::function(
-                        "ln",
-                        vec![Expression::add(vec![
-                            Expression::integer(1),
-                            Expression::pow(Expression::symbol(variable), Expression::integer(2)),
-                        ])],
-                    ),
-                ]),
-            ]),
+        Expression::integral(
+            Expression::function(name, vec![Expression::symbol(variable.clone())]),
+            variable
+        )
+    }
 
-            // Hyperbolic functions
-            "sinh" => Expression::function("cosh", vec![Expression::symbol(variable)]),
-            "cosh" => Expression::function("sinh", vec![Expression::symbol(variable)]),
-            "tanh" => Expression::function(
-                "ln",
-                vec![Expression::function(
-                    "cosh",
-                    vec![Expression::symbol(variable)],
-                )],
-            ),
-
-            // Square root and other power functions
-            "sqrt" => Expression::mul(vec![
+    /// Apply antiderivative rule from registry to compute integral
+    ///
+    /// Takes a rule from the function intelligence registry and constructs
+    /// the corresponding antiderivative expression.
+    ///
+    /// # Arguments
+    ///
+    /// * `rule` - The antiderivative rule from function intelligence registry
+    /// * `function_name` - Original function name (for error messages and fallback)
+    /// * `variable` - Integration variable
+    ///
+    /// # Returns
+    ///
+    /// The antiderivative expression. For unknown rule types, returns symbolic integral.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::symbol;
+    /// ```
+    fn apply_antiderivative_rule(
+        rule: &AntiderivativeRule,
+        function_name: &str,
+        variable: Symbol,
+    ) -> Expression {
+        match &rule.rule_type {
+            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
+                // ∫f(x)dx = c * F(x)
                 Expression::mul(vec![
-                    Expression::integer(2),
-                    Expression::pow(Expression::integer(3), Expression::integer(-1)),
-                ]),
-                Expression::pow(
-                    Expression::symbol(variable),
-                    Expression::mul(vec![
-                        Expression::integer(3),
-                        Expression::pow(Expression::integer(2), Expression::integer(-1)),
-                    ]),
-                ),
-            ]),
+                    coefficient.clone(),
+                    Expression::function(antiderivative_fn, vec![Expression::symbol(variable)])
+                ])
+            }
 
-            // Fall back to symbolic representation
-            _ => Expression::integral(
-                Expression::function(name, vec![Expression::symbol(variable.clone())]),
-                variable,
-            ),
+            AntiderivativeRuleType::Custom { builder } => {
+                // Builder constructs the expression directly
+                builder(variable)
+            }
+
+            AntiderivativeRuleType::LinearSubstitution { .. } => {
+                // Future implementation
+                Expression::integral(
+                    Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
+                    variable
+                )
+            }
+
+            AntiderivativeRuleType::TrigSubstitution { .. } => {
+                // Future implementation
+                Expression::integral(
+                    Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
+                    variable
+                )
+            }
+
+            AntiderivativeRuleType::PartialFractions { .. } => {
+                // Future implementation
+                Expression::integral(
+                    Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
+                    variable
+                )
+            }
         }
     }
 
@@ -239,37 +160,48 @@ impl FunctionIntegrals {
     /// use mathhook_core::symbol;
     ///
     /// let x = symbol!(x);
-    /// let inner = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-    /// let result = FunctionIntegrals::integrate_composite_function("sin", &inner, x);
+    /// let inner = Expression::mul(vec![
+    ///     Expression::integer(2),
+    ///     Expression::symbol(x.clone()),
+    /// ]);
+    /// let result = FunctionIntegrals::integrate_composite_function("sin", &inner, x.clone());
+    ///
+    /// let expected = Expression::mul(vec![
+    ///     Expression::pow(Expression::integer(2), Expression::integer(-1)),
+    ///     Expression::mul(vec![
+    ///         Expression::integer(-1),
+    ///         Expression::function("cos", vec![
+    ///             Expression::mul(vec![
+    ///                 Expression::integer(2),
+    ///                 Expression::symbol(x),
+    ///             ])
+    ///         ]),
+    ///     ]),
+    /// ]);
+    /// assert_eq!(result, expected);
     /// ```
     pub fn integrate_composite_function(
         name: &str,
         inner: &Expression,
         variable: Symbol,
     ) -> Expression {
-        // Try simple substitution patterns
-        match (name, inner) {
-            // sin(ax), cos(ax), etc. where inner is ax
-            ("sin" | "cos" | "exp", Expression::Mul(factors)) => {
-                if factors.len() == 2 {
-                    if let (Expression::Number(_), Expression::Symbol(sym)) =
-                        (&factors[0], &factors[1])
-                    {
-                        if *sym == variable {
-                            return Self::integrate_linear_substitution(
-                                name,
-                                &factors[0],
-                                variable,
-                            );
+        let registry = get_universal_registry();
+
+        if let Some(props) = registry.get_properties(name) {
+            if let Some(_rule) = props.get_antiderivative_rule() {
+                if let Expression::Mul(factors) = inner {
+                    if factors.len() == 2 {
+                        if let (Expression::Number(_), Expression::Symbol(sym)) = (&factors[0], &factors[1]) {
+                            if *sym == variable {
+                                return Self::integrate_linear_substitution(name, &factors[0], variable);
+                            }
                         }
                     }
                 }
-                Expression::integral(Expression::function(name, vec![inner.clone()]), variable)
             }
-
-            // More complex cases - fall back to symbolic
-            _ => Expression::integral(Expression::function(name, vec![inner.clone()]), variable),
         }
+
+        Expression::integral(Expression::function(name, vec![inner.clone()]), variable)
     }
 
     /// Handle integration of f(ax) where a is constant
@@ -282,7 +214,21 @@ impl FunctionIntegrals {
     ///
     /// let x = symbol!(x);
     /// let a = Expression::integer(3);
-    /// let result = FunctionIntegrals::integrate_linear_substitution("sin", &a, x);
+    /// let result = FunctionIntegrals::integrate_linear_substitution("sin", &a, x.clone());
+    ///
+    /// let expected = Expression::mul(vec![
+    ///     Expression::pow(Expression::integer(3), Expression::integer(-1)),
+    ///     Expression::mul(vec![
+    ///         Expression::integer(-1),
+    ///         Expression::function("cos", vec![
+    ///             Expression::mul(vec![
+    ///                 Expression::integer(3),
+    ///                 Expression::symbol(x),
+    ///             ])
+    ///         ]),
+    ///     ]),
+    /// ]);
+    /// assert_eq!(result, expected);
     /// ```
     pub fn integrate_linear_substitution(
         name: &str,
