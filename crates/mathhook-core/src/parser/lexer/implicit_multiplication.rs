@@ -220,11 +220,11 @@ impl ImplicitMultiplicationProcessor {
             let full_identifier = if *i < chars.len() && chars[*i] == '_' {
                 // Check if base is a known special function
                 if ["J", "Y", "I", "K", "P", "Q", "H", "L", "T", "C", "S", "F", "B", "E"].contains(&base_identifier.as_str()) {
-                    let underscore_pos = *i;
+                    let _underscore_pos = *i;
                     *i += 1; // Consume underscore
 
                     // Consume subscript (alphanumeric characters)
-                    let subscript_start = *i;
+                    let _subscript_start = *i;
                     while *i < chars.len() && (chars[*i].is_alphanumeric() || chars[*i] == '_') {
                         *i += 1;
                     }

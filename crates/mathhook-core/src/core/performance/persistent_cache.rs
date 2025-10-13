@@ -3,7 +3,9 @@
 //! This module implements a persistent cache that survives across sessions,
 //! storing frequently used expression simplifications to disk for faster startup.
 
+use crate::config::ParserConfig;
 use crate::core::Expression;
+use crate::parser::Parser;
 use dirs;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -88,12 +90,11 @@ impl PersistentCache {
     pub fn get(&self, expression_hash: u64) -> Option<Expression> {
         if let Ok(mut entries) = self.entries.write() {
             if let Some(entry) = entries.get_mut(&expression_hash) {
-                // Update access statistics
+                let parser = Parser::new(ParserConfig::default());
                 entry.access_count += 1;
                 entry.last_access = current_timestamp();
 
-                // Try to deserialize the expression
-                if let Ok(expr) = self.deserialize_expression(&entry.simplified_expression) {
+                if let Ok(expr) = parser.parse(&entry.simplified_expression) {
                     self.increment_operations();
                     return Some(expr);
                 }
@@ -253,13 +254,6 @@ impl PersistentCache {
         // For now, use debug format as a simple serialization
         // In a real implementation, you'd want a proper serialization format
         Ok(format!("{:?}", expr))
-    }
-
-    /// Deserialize an expression from string (placeholder implementation)
-    fn deserialize_expression(&self, serialized: &str) -> Result<Expression, String> {
-        // This is a placeholder - in a real implementation, you'd parse the serialized format
-        // For now, we'll return an error to indicate deserialization is not implemented
-        Err("Deserialization not implemented yet".to_string())
     }
 
     /// Get cache statistics

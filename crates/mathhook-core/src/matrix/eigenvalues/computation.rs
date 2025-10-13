@@ -252,13 +252,23 @@ impl Matrix {
     }
 
     /// Power iteration method for finding dominant eigenvalue
-    fn power_iteration_eigenvalues(&self) -> Option<EigenDecomposition> {
+    /// # Examples
+    ///
+    /// ```
+    /// use mathhook_core::matrix::Matrix;
+    /// use mathhook_core::{Expression, expr};
+    ///
+    /// let matrix = Matrix::diagonal(vec![expr!(2), expr!(3)]);
+    /// let eigen = matrix.power_iteration_eigenvalues().unwrap();
+    /// assert_eq!(eigen.eigenvalues[0], expr!(2));
+    /// ```
+    pub fn power_iteration_eigenvalues(&self) -> Option<EigenDecomposition> {
         let (n, _) = self.dimensions();
 
         // Start with random vector (simplified as [1, 1, ..., 1])
         let mut v: Vec<Expression> = vec![Expression::integer(1); n];
         let max_iterations = 10; // Reduced iterations for symbolic computation
-        let tolerance = Expression::rational(1, 100); // More relaxed tolerance
+        let _tolerance = Expression::rational(1, 100); // More relaxed tolerance
 
         for iteration in 0..max_iterations {
             // v_new = A * v
@@ -327,7 +337,7 @@ impl Matrix {
     }
 
     /// Compute norm of a vector
-    fn compute_vector_norm(&self, v: &[Expression]) -> Expression {
+    pub fn compute_vector_norm(&self, v: &[Expression]) -> Expression {
         let sum_of_squares: Vec<Expression> = v
             .iter()
             .map(|x| Expression::pow(x.clone(), Expression::integer(2)))
@@ -338,7 +348,7 @@ impl Matrix {
     }
 
     /// Check if a value is small (simplified convergence test)
-    fn is_small_value(&self, value: &Expression, tolerance: &Expression) -> bool {
+    pub fn is_small_value(&self, value: &Expression, tolerance: &Expression) -> bool {
         // Simplified check - in practice would need numerical comparison
         value.is_zero() || *value == *tolerance
     }

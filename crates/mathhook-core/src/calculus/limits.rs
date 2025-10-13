@@ -255,7 +255,7 @@ impl LimitMethods {
 
         // Check for common indeterminate forms
         match &substituted {
-            Expression::Function { name, args } if name == "undefined" => true,
+            Expression::Function { name, args: _ } if name == "undefined" => true,
             Expression::Mul(factors) if factors.len() == 2 => {
                 // Check for 0 * ∞ form
                 (factors[0].is_zero() && Self::is_infinite(&factors[1]))

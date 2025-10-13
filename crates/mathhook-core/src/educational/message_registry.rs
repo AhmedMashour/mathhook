@@ -440,7 +440,7 @@ impl MessageHashSystem {
     }
 
     /// Get message by hash (for performance-critical paths)
-    pub fn get_message_by_hash(hash: u64) -> Option<&'static MessageTemplate> {
+    pub fn get_message_by_hash(_hash: u64) -> Option<&'static MessageTemplate> {
         // This would use a hash-based lookup for O(1) access
         // For now, we'll iterate (can be optimized later)
         MESSAGE_REGISTRY.values().next()

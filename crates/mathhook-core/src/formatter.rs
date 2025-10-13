@@ -9,7 +9,6 @@ pub use simple::SimpleFormatter;
 pub use wolfram::WolframFormatter;
 
 use crate::core::Expression;
-use crate::expr;
 use std::fmt;
 /// Mathematical language/format for expressions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -209,7 +208,7 @@ impl Expression {
 mod tests {
     use super::*;
     use crate::core::Expression;
-    use crate::symbol;
+    use crate::{expr, symbol};
 
     /// Test context that defaults to LaTeX
     #[derive(Debug, Default, Clone)]

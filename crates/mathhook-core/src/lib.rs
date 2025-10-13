@@ -39,6 +39,7 @@ pub mod prelude {
     pub use crate::{MathSolver, SolverConfig, SolverResult};
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

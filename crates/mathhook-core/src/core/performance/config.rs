@@ -203,39 +203,30 @@ const CACHE_SIZE_LIMIT: usize = 10000; // 10K expressions = ~10MB cache
 pub const PARALLEL_THRESHOLD: usize = 1000; // 1000+ elements benefit from parallelism
 
 /// Global memoization cache for expensive operations
-static mut GLOBAL_CACHE: Option<Arc<RwLock<HashMap<u64, Expression>>>> = None;
-static CACHE_INIT: std::sync::Once = std::sync::Once::new();
+static GLOBAL_CACHE: OnceLock<Arc<RwLock<HashMap<u64, Expression>>>> = OnceLock::new();
 
-/// Initialize global cache (called automatically)
-fn ensure_cache_initialized() {
-    unsafe {
-        CACHE_INIT.call_once(|| {
-            GLOBAL_CACHE = Some(Arc::new(RwLock::new(HashMap::new())));
-        });
-    }
+/// Get reference to global cache (initializes if needed)
+fn get_global_cache() -> &'static Arc<RwLock<HashMap<u64, Expression>>> {
+    GLOBAL_CACHE.get_or_init(|| Arc::new(RwLock::new(HashMap::new())))
 }
 
 /// Get cached result for expression hash
 pub fn get_cached_result(expr_hash: u64) -> Option<Expression> {
-    ensure_cache_initialized();
-    unsafe { GLOBAL_CACHE.as_ref()?.read().ok()?.get(&expr_hash).cloned() }
+    let cache = get_global_cache();
+    cache.read().ok()?.get(&expr_hash).cloned()
 }
 
 /// Cache a computation result
 pub fn cache_result(expr_hash: u64, result: Expression) {
-    ensure_cache_initialized();
-    unsafe {
-        if let Some(cache) = GLOBAL_CACHE.as_ref() {
-            if let Ok(mut cache) = cache.write() {
-                // Simple LRU: remove oldest if cache is full
-                if cache.len() >= CACHE_SIZE_LIMIT {
-                    if let Some(oldest_key) = cache.keys().next().copied() {
-                        cache.remove(&oldest_key);
-                    }
-                }
-                cache.insert(expr_hash, result);
+    let cache_arc = get_global_cache();
+    if let Ok(mut cache) = cache_arc.write() {
+        // Simple LRU: remove oldest if cache is full
+        if cache.len() >= CACHE_SIZE_LIMIT {
+            if let Some(oldest_key) = cache.keys().next().copied() {
+                cache.remove(&oldest_key);
             }
         }
+        cache.insert(expr_hash, result);
     }
 }
 
@@ -323,25 +314,22 @@ pub fn compute_expr_hash(expr: &Expression) -> u64 {
 
 /// Get comprehensive cache statistics for monitoring
 pub fn cache_stats() -> CacheStatistics {
-    ensure_cache_initialized();
-    unsafe {
-        if let Some(cache) = GLOBAL_CACHE.as_ref() {
-            if let Ok(cache) = cache.read() {
-                let current_size = cache.len();
-                let memory_estimate = current_size * 512; // Rough estimate: 512 bytes per expression
-                let utilization = (current_size as f64 / CACHE_SIZE_LIMIT as f64) * 100.0;
+    let cache_arc = get_global_cache();
+    if let Ok(cache) = cache_arc.read() {
+        let current_size = cache.len();
+        let memory_estimate = current_size * 512; // Rough estimate: 512 bytes per expression
+        let utilization = (current_size as f64 / CACHE_SIZE_LIMIT as f64) * 100.0;
 
-                return CacheStatistics {
-                    current_size,
-                    max_size: CACHE_SIZE_LIMIT,
-                    memory_estimate_bytes: memory_estimate,
-                    utilization_percent: utilization,
-                    is_full: current_size >= CACHE_SIZE_LIMIT,
-                };
-            }
+        CacheStatistics {
+            current_size,
+            max_size: CACHE_SIZE_LIMIT,
+            memory_estimate_bytes: memory_estimate,
+            utilization_percent: utilization,
+            is_full: current_size >= CACHE_SIZE_LIMIT,
         }
+    } else {
+        CacheStatistics::default()
     }
-    CacheStatistics::default()
 }
 
 /// Get comprehensive performance metrics for monitoring and debugging
@@ -406,13 +394,9 @@ pub fn get_performance_summary() -> String {
 
 /// Clear the global cache
 pub fn clear_cache() {
-    ensure_cache_initialized();
-    unsafe {
-        if let Some(cache) = GLOBAL_CACHE.as_ref() {
-            if let Ok(mut cache) = cache.write() {
-                cache.clear();
-            }
-        }
+    let cache_arc = get_global_cache();
+    if let Ok(mut cache) = cache_arc.write() {
+        cache.clear();
     }
 }
 

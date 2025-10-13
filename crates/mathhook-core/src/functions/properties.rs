@@ -40,7 +40,7 @@ impl FunctionProperties {
         match self {
             FunctionProperties::Elementary(props) => props.derivative_rule.is_some(),
             FunctionProperties::Special(props) => props.has_derivative,
-            FunctionProperties::Polynomial(props) => true, // All polynomials are differentiable
+            FunctionProperties::Polynomial(_props) => true, // All polynomials are differentiable
             FunctionProperties::UserDefined(_) => false,
         }
     }

@@ -188,11 +188,7 @@ impl Expression {
                 match calculus_data.as_ref() {
                     CalculusData::Derivative { expression, .. } => expression.is_valid_expression(),
                     CalculusData::Integral { integrand, .. } => integrand.is_valid_expression(),
-                    CalculusData::Limit {
-                        expression,
-                        direction,
-                        ..
-                    } => expression.is_valid_expression(),
+                    CalculusData::Limit { expression, .. } => expression.is_valid_expression(),
                     CalculusData::Sum {
                         expression,
                         start,

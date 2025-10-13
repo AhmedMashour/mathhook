@@ -239,11 +239,10 @@ impl ResidueMethods {
 
     /// Find poles by analyzing denominator
     pub fn find_rational_poles(
-        numerator: &Expression,
+        _numerator: &Expression,
         denominator: &Expression,
         variable: &Symbol,
     ) -> Vec<Expression> {
-        // Simplified pole finding - look for zeros of denominator
         Expression::function(
             "solve",
             vec![denominator.clone(), Expression::symbol(variable.clone())],
@@ -258,8 +257,7 @@ impl ResidueMethods {
         variable: &Symbol,
         point: &Expression,
     ) -> SingularityType {
-        // Try Laurent series expansion
-        let laurent = expr.laurent_series(variable, point, 10);
+        let _laurent = expr.laurent_series(variable, point, 10);
 
         // Analyze the Laurent series to classify the singularity
         // This is a simplified classification
@@ -362,11 +360,10 @@ impl ComplexAnalysis for Expression {
         !poles.contains(point)
     }
 
-    fn pole_order(&self, variable: &Symbol, pole: &Expression) -> u32 {
-        // Simplified pole order determination
+    fn pole_order(&self, _variable: &Symbol, _pole: &Expression) -> u32 {
         if let Expression::Mul(factors) = self {
             if factors.len() == 2 {
-                if let Expression::Pow(denom, exp) = &factors[1] {
+                if let Expression::Pow(_denom, exp) = &factors[1] {
                     if let Expression::Number(n) = exp.as_ref() {
                         if let crate::core::Number::Integer(order) = n {
                             if *order < 0 {
@@ -382,7 +379,7 @@ impl ComplexAnalysis for Expression {
 
     fn is_removable_singularity(&self, variable: &Symbol, point: &Expression) -> bool {
         // Check if limit exists and is finite
-        let limit_result = Expression::function(
+        let _limit_result = Expression::function(
             "limit",
             vec![
                 self.clone(),
@@ -395,7 +392,7 @@ impl ComplexAnalysis for Expression {
         false
     }
 
-    fn is_essential_singularity(&self, variable: &Symbol, point: &Expression) -> bool {
+    fn is_essential_singularity(&self, _variable: &Symbol, _point: &Expression) -> bool {
         // Essential singularities have Laurent series with infinitely many negative powers
         // Simplified check
         false

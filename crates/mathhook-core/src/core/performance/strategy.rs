@@ -5,7 +5,7 @@
 
 use crate::core::Expression;
 use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, OnceLock, RwLock};
 
 /// Binding context for performance optimization
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -187,21 +187,16 @@ pub struct CacheStats {
 }
 
 /// Global performance optimizer instance
-static mut GLOBAL_OPTIMIZER: Option<PerformanceOptimizer> = None;
-static OPTIMIZER_INIT: std::sync::Once = std::sync::Once::new();
+static GLOBAL_OPTIMIZER: OnceLock<PerformanceOptimizer> = OnceLock::new();
 
 /// Initialize global performance optimizer
 pub fn init_performance_optimizer(config: PerformanceConfig) {
-    unsafe {
-        OPTIMIZER_INIT.call_once(|| {
-            GLOBAL_OPTIMIZER = Some(PerformanceOptimizer::new(config));
-        });
-    }
+    let _ = GLOBAL_OPTIMIZER.get_or_init(|| PerformanceOptimizer::new(config));
 }
 
 /// Get global performance optimizer
 pub fn get_performance_optimizer() -> Option<&'static PerformanceOptimizer> {
-    unsafe { GLOBAL_OPTIMIZER.as_ref() }
+    GLOBAL_OPTIMIZER.get()
 }
 
 #[cfg(test)]

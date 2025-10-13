@@ -215,7 +215,7 @@ pub struct ElementaryStepGenerator {
 }
 
 impl StepGenerator for ElementaryStepGenerator {
-    fn generate_steps(&self, name: &str, args: &[Expression]) -> Vec<Step> {
+    fn generate_steps(&self, _name: &str, args: &[Expression]) -> Vec<Step> {
         vec![
             Step::new(
                 "Function Type",
@@ -237,7 +237,7 @@ impl StepGenerator for ElementaryStepGenerator {
         ]
     }
 
-    fn generate_latex_explanation(&self, name: &str, args: &[Expression]) -> String {
+    fn generate_latex_explanation(&self, _name: &str, args: &[Expression]) -> String {
         format!("{}({})", self.latex_name, format!("{}", args[0]))
     }
 
@@ -258,7 +258,7 @@ pub struct PolynomialStepGenerator {
 }
 
 impl StepGenerator for PolynomialStepGenerator {
-    fn generate_steps(&self, name: &str, args: &[Expression]) -> Vec<Step> {
+    fn generate_steps(&self, _name: &str, args: &[Expression]) -> Vec<Step> {
         vec![
             Step::new("Polynomial Family", format!("{:?} polynomial", self.family)),
             Step::new("Mathematical Context", self.mathematical_context.clone()),
@@ -278,7 +278,7 @@ impl StepGenerator for PolynomialStepGenerator {
         ]
     }
 
-    fn generate_latex_explanation(&self, name: &str, args: &[Expression]) -> String {
+    fn generate_latex_explanation(&self, _name: &str, args: &[Expression]) -> String {
         format!("{}_{{{}}}", self.latex_name, format!("{}", args[0]))
     }
 

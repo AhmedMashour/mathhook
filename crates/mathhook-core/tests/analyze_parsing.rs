@@ -1,4 +1,4 @@
-use mathhook_core::parser::{Parser, config::ParserConfig};
+use mathhook_core::parser::{config::ParserConfig, Parser};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -9,17 +9,15 @@ struct TestCase {
     language: String,
     category: String,
     input: String,
-    expected_expr: String,
     description: String,
 }
 
 #[test]
 fn analyze_all_parsing_cases() {
-    let content = fs::read_to_string("tests/parsing/cases.json")
-        .expect("Failed to read cases.json");
+    let content =
+        fs::read_to_string("tests/parsing/cases.json").expect("Failed to read cases.json");
 
-    let cases: Vec<TestCase> = serde_json::from_str(&content)
-        .expect("Failed to parse JSON");
+    let cases: Vec<TestCase> = serde_json::from_str(&content).expect("Failed to parse JSON");
 
     println!("\n========== PARSING ANALYSIS ==========");
     println!("Total test cases: {}\n", cases.len());
@@ -54,7 +52,10 @@ fn analyze_all_parsing_cases() {
                     .entry(case.language.clone())
                     .or_insert(0) += 1;
 
-                println!("❌ FAILED: {} [{}] [{}]", case.id, case.language, case.category);
+                println!(
+                    "❌ FAILED: {} [{}] [{}]",
+                    case.id, case.language, case.category
+                );
                 println!("   Input: {}", case.input);
                 println!("   Error: {:?}\n", e);
             }
@@ -63,8 +64,16 @@ fn analyze_all_parsing_cases() {
 
     println!("\n========== SUMMARY ==========");
     println!("Total: {}", total);
-    println!("Success: {} ({:.1}%)", success, (success as f64 / total as f64) * 100.0);
-    println!("Failed: {} ({:.1}%)", failed, (failed as f64 / total as f64) * 100.0);
+    println!(
+        "Success: {} ({:.1}%)",
+        success,
+        (success as f64 / total as f64) * 100.0
+    );
+    println!(
+        "Failed: {} ({:.1}%)",
+        failed,
+        (failed as f64 / total as f64) * 100.0
+    );
 
     println!("\n========== FAILURES BY LANGUAGE ==========");
     for (lang, count) in &failures_by_language {

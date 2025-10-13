@@ -16,7 +16,6 @@ struct TestCase {
     language: String,
     category: String,
     input: String,
-    expected_expr: String,
     description: String,
 }
 

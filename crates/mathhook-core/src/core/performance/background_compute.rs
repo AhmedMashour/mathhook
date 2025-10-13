@@ -278,7 +278,7 @@ impl BackgroundCompute {
                 ));
             }
 
-            Expression::Pow(base, exponent) => {
+            Expression::Pow(base, _exponent) => {
                 // Likely to simplify the power
                 predictions.push((expr.clone(), 0.8));
 
@@ -294,7 +294,7 @@ impl BackgroundCompute {
                 }
             }
 
-            Expression::Function { name, args } => {
+            Expression::Function { name, args: _ } => {
                 match name.as_str() {
                     "sin" | "cos" | "tan" => {
                         // Trigonometric functions often get differentiated

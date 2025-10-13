@@ -1,10 +1,9 @@
-//! 🔧 Function System Extensibility
+//! Function System Extensibility
 //!
 //! Future-proof extension system that allows adding new function families
 //! and mathematical properties without breaking existing code.
 //! Designed for long-term maintainability and evolution.
 
-use crate::core::Expression;
 use crate::functions::properties::FunctionProperties;
 use std::collections::HashMap;
 
