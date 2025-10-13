@@ -11,19 +11,19 @@ fn test_physics_kinematics() {
     let u = Expression::symbol(Symbol::new("u"));
     let a = Expression::symbol(Symbol::new("a"));
     let t = Expression::symbol(Symbol::new("t"));
-    
+
     let displacement = Expression::add(vec![
         Expression::mul(vec![u, t.clone()]),
         Expression::mul(vec![
             Expression::pow(Expression::integer(2), Expression::integer(-1)),
             a,
-            Expression::pow(t, Expression::integer(2))
-        ])
+            Expression::pow(t, Expression::integer(2)),
+        ]),
     ]);
-    
+
     let simplified = displacement.simplify();
     println!("Kinematic equation: s = {}", simplified);
-    
+
     // Should maintain physics equation structure
     match simplified {
         Expression::Add(_) => assert!(true),
@@ -39,18 +39,18 @@ fn test_engineering_beam_deflection() {
     let l = Expression::symbol(Symbol::new("L")); // beam length
     let e = Expression::symbol(Symbol::new("E")); // elastic modulus
     let i = Expression::symbol(Symbol::new("I")); // moment of inertia
-    
+
     let deflection = Expression::mul(vec![
         w,
         Expression::pow(l, Expression::integer(4)),
         Expression::pow(Expression::integer(8), Expression::integer(-1)),
         Expression::pow(e, Expression::integer(-1)),
-        Expression::pow(i, Expression::integer(-1))
+        Expression::pow(i, Expression::integer(-1)),
     ]);
-    
+
     let simplified = deflection.simplify();
     println!("Beam deflection: δ = {}", simplified);
-    
+
     // Should maintain engineering formula structure
     assert!(!simplified.is_zero());
 }
@@ -63,21 +63,21 @@ fn test_economics_compound_interest() {
     let r = Expression::symbol(Symbol::new("r"));
     let n = Expression::symbol(Symbol::new("n"));
     let t = Expression::symbol(Symbol::new("t"));
-    
+
     let compound_interest = Expression::mul(vec![
         p,
         Expression::pow(
             Expression::add(vec![
                 Expression::integer(1),
-                Expression::mul(vec![r, Expression::pow(n.clone(), Expression::integer(-1))])
+                Expression::mul(vec![r, Expression::pow(n.clone(), Expression::integer(-1))]),
             ]),
-            Expression::mul(vec![n, t])
-        )
+            Expression::mul(vec![n, t]),
+        ),
     ]);
-    
+
     let simplified = compound_interest.simplify();
     println!("Compound interest: A = {}", simplified);
-    
+
     // Should maintain financial formula structure
     assert!(!simplified.is_zero());
 }
@@ -85,23 +85,22 @@ fn test_economics_compound_interest() {
 #[test]
 fn test_chemistry_ideal_gas_law() {
     // Chemistry: Ideal gas law PV = nRT
-    let p = Expression::symbol(Symbol::new("P"));
     let v = Expression::symbol(Symbol::new("V"));
     let n = Expression::symbol(Symbol::new("n"));
     let r = Expression::symbol(Symbol::new("R"));
     let temp = Expression::symbol(Symbol::new("T"));
-    
+
     // Rearrange to solve for pressure: P = nRT/V
     let pressure = Expression::mul(vec![
         n,
         r,
         temp,
-        Expression::pow(v, Expression::integer(-1))
+        Expression::pow(v, Expression::integer(-1)),
     ]);
-    
+
     let simplified = pressure.simplify();
     println!("Ideal gas pressure: P = {}", simplified);
-    
+
     // Should maintain chemistry equation structure
     assert!(!simplified.is_zero());
 }
@@ -114,31 +113,35 @@ fn test_statistics_normal_distribution() {
     let mu = Expression::symbol(Symbol::new("mu"));
     let sigma = Expression::symbol(Symbol::new("sigma"));
     let pi = Expression::symbol(Symbol::new("pi"));
-    
+
     let normal_pdf = Expression::mul(vec![
         Expression::pow(sigma.clone(), Expression::integer(-1)),
         Expression::pow(
             Expression::mul(vec![Expression::integer(2), pi]),
-            Expression::pow(Expression::integer(2), Expression::integer(-1))
+            Expression::pow(Expression::integer(2), Expression::integer(-1)),
         ),
-        Expression::function("exp", vec![
-            Expression::mul(vec![
+        Expression::function(
+            "exp",
+            vec![Expression::mul(vec![
                 Expression::integer(-1),
                 Expression::pow(
                     Expression::add(vec![x, Expression::mul(vec![Expression::integer(-1), mu])]),
-                    Expression::integer(2)
+                    Expression::integer(2),
                 ),
                 Expression::pow(
-                    Expression::mul(vec![Expression::integer(2), Expression::pow(sigma, Expression::integer(2))]),
-                    Expression::integer(-1)
-                )
-            ])
-        ])
+                    Expression::mul(vec![
+                        Expression::integer(2),
+                        Expression::pow(sigma, Expression::integer(2)),
+                    ]),
+                    Expression::integer(-1),
+                ),
+            ])],
+        ),
     ]);
-    
+
     let simplified = normal_pdf.simplify();
     println!("Normal PDF: f(x) = {}", simplified);
-    
+
     // Should maintain statistical formula structure
     assert!(!simplified.is_zero());
 }
@@ -150,15 +153,19 @@ fn test_calculus_optimization_problem() {
     let r = Expression::symbol(Symbol::new("r"));
     let h = Expression::symbol(Symbol::new("h"));
     let pi = Expression::symbol(Symbol::new("pi"));
-    
+
     let surface_area = Expression::add(vec![
-        Expression::mul(vec![Expression::integer(2), pi.clone(), Expression::pow(r.clone(), Expression::integer(2))]),
-        Expression::mul(vec![Expression::integer(2), pi, r.clone(), h])
+        Expression::mul(vec![
+            Expression::integer(2),
+            pi.clone(),
+            Expression::pow(r.clone(), Expression::integer(2)),
+        ]),
+        Expression::mul(vec![Expression::integer(2), pi, r.clone(), h]),
     ]);
-    
+
     let simplified = surface_area.simplify();
     println!("Cylinder surface area: A = {}", simplified);
-    
+
     // Should maintain optimization problem structure
     match simplified {
         Expression::Add(_) => assert!(true),
@@ -175,22 +182,25 @@ fn test_signal_processing_fourier_series() {
     let a1 = Expression::symbol(Symbol::new("a1"));
     let b1 = Expression::symbol(Symbol::new("b1"));
     let n = Expression::symbol(Symbol::new("n"));
-    
+
     let fourier_series = Expression::add(vec![
-        Expression::mul(vec![a0, Expression::pow(Expression::integer(2), Expression::integer(-1))]),
+        Expression::mul(vec![
+            a0,
+            Expression::pow(Expression::integer(2), Expression::integer(-1)),
+        ]),
         Expression::mul(vec![
             a1,
-            Expression::function("cos", vec![Expression::mul(vec![n.clone(), x.clone()])])
+            Expression::function("cos", vec![Expression::mul(vec![n.clone(), x.clone()])]),
         ]),
         Expression::mul(vec![
             b1,
-            Expression::function("sin", vec![Expression::mul(vec![n, x])])
-        ])
+            Expression::function("sin", vec![Expression::mul(vec![n, x])]),
+        ]),
     ]);
-    
+
     let simplified = fourier_series.simplify();
     println!("Fourier series: f(x) = {}", simplified);
-    
+
     // Should maintain signal processing structure
     assert!(!simplified.is_zero());
 }
@@ -203,25 +213,25 @@ fn test_machine_learning_cost_function() {
     let x = Expression::symbol(Symbol::new("x"));
     let y = Expression::symbol(Symbol::new("y"));
     let m = Expression::symbol(Symbol::new("m"));
-    
+
     // Simplified version: J = (1/2m) * (θx - y)²
     let cost_function = Expression::mul(vec![
         Expression::pow(
             Expression::mul(vec![Expression::integer(2), m]),
-            Expression::integer(-1)
+            Expression::integer(-1),
         ),
         Expression::pow(
             Expression::add(vec![
                 Expression::mul(vec![theta, x]),
-                Expression::mul(vec![Expression::integer(-1), y])
+                Expression::mul(vec![Expression::integer(-1), y]),
             ]),
-            Expression::integer(2)
-        )
+            Expression::integer(2),
+        ),
     ]);
-    
+
     let simplified = cost_function.simplify();
     println!("ML cost function: J(θ) = {}", simplified);
-    
+
     // Should maintain ML formula structure
     assert!(!simplified.is_zero());
 }
@@ -235,7 +245,7 @@ fn test_quantum_mechanics_schrodinger() {
     let hbar = Expression::symbol(Symbol::new("hbar"));
     let m = Expression::symbol(Symbol::new("m"));
     let v = Expression::symbol(Symbol::new("V"));
-    
+
     // Hamiltonian operator pattern (kinetic + potential energy)
     let hamiltonian = Expression::add(vec![
         Expression::mul(vec![
@@ -243,22 +253,22 @@ fn test_quantum_mechanics_schrodinger() {
             Expression::pow(hbar, Expression::integer(2)),
             Expression::pow(
                 Expression::mul(vec![Expression::integer(2), m]),
-                Expression::integer(-1)
+                Expression::integer(-1),
             ),
-            Expression::function("laplacian", vec![psi.clone()])
+            Expression::function("laplacian", vec![psi.clone()]),
         ]),
-        Expression::mul(vec![v, psi.clone()])
+        Expression::mul(vec![v, psi.clone()]),
     ]);
-    
+
     // Eigenvalue equation: Hψ = Eψ
     let eigenvalue_eq = Expression::add(vec![
         hamiltonian,
-        Expression::mul(vec![Expression::integer(-1), e, psi])
+        Expression::mul(vec![Expression::integer(-1), e, psi]),
     ]);
-    
+
     let simplified = eigenvalue_eq.simplify();
     println!("Schrödinger equation: {}", simplified);
-    
+
     // Should maintain quantum mechanics structure
     assert!(!simplified.is_zero());
 }
@@ -269,40 +279,43 @@ fn test_real_world_performance_benchmark() {
     let x = Expression::symbol(Symbol::new("x"));
     let y = Expression::symbol(Symbol::new("y"));
     let z = Expression::symbol(Symbol::new("z"));
-    
+
     let start = Instant::now();
-    
+
     // Complex real-world expression
     let complex_expr = Expression::add(vec![
         Expression::mul(vec![
             Expression::integer(2),
             Expression::pow(x.clone(), Expression::integer(3)),
-            Expression::pow(y.clone(), Expression::integer(2))
+            Expression::pow(y.clone(), Expression::integer(2)),
         ]),
         Expression::mul(vec![
             Expression::integer(3),
             x.clone(),
-            Expression::pow(z.clone(), Expression::integer(2))
+            Expression::pow(z.clone(), Expression::integer(2)),
         ]),
         Expression::mul(vec![
             Expression::integer(5),
-            Expression::pow(y.clone(), Expression::integer(3))
+            Expression::pow(y.clone(), Expression::integer(3)),
         ]),
         Expression::add(vec![
             Expression::mul(vec![x, y]),
-            Expression::mul(vec![Expression::integer(7), z])
-        ])
+            Expression::mul(vec![Expression::integer(7), z]),
+        ]),
     ]);
-    
+
     // Perform multiple real-world operations
     let simplified = complex_expr.simplify();
-    let gcd_result = simplified.gcd(&Expression::mul(vec![Expression::integer(2), Expression::symbol(Symbol::new("x"))]));
+    let gcd_result = simplified.gcd(&Expression::mul(vec![
+        Expression::integer(2),
+        Expression::symbol(Symbol::new("x")),
+    ]));
     let factored = simplified.factor_gcd();
-    
+
     let duration = start.elapsed();
-    
+
     println!("Real-world problem solving time: {:?}", duration);
-    
+
     // Should solve real-world problems efficiently
     assert!(duration.as_millis() < 10); // < 10ms for complex problems
     assert!(!simplified.is_zero());

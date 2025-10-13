@@ -47,15 +47,22 @@ impl SystemEquationSolver for SystemSolver {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{SystemSolver, SystemEquationSolver};
-    /// use mathhook_core::symbol;
-    /// use mathhook_core::expr;
+    /// use mathhook_core::algebra::solvers::{SystemSolver, SystemEquationSolver};
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
     /// // System: 2x + y = 5, x - y = 1
-    /// let eq1 = expr!((2*x) + y + (-5));
-    /// let eq2 = expr!(x + (-y) + (-1));
+    /// let eq1 = Expression::add(vec![
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+    ///     Expression::symbol(y.clone()),
+    ///     Expression::integer(-5)
+    /// ]);
+    /// let eq2 = Expression::add(vec![
+    ///     Expression::symbol(x.clone()),
+    ///     Expression::mul(vec![Expression::integer(-1), Expression::symbol(y.clone())]),
+    ///     Expression::integer(-1)
+    /// ]);
     /// let solver = SystemSolver::new();
     /// let result = solver.solve_system(&[eq1, eq2], &[x, y]);
     /// // Solution: x = 2, y = 1

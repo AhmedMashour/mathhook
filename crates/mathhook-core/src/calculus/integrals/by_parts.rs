@@ -27,9 +27,9 @@ impl IntegrationByParts {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, IntegrationByParts};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::by_parts::IntegrationByParts;
     /// use mathhook_core::calculus::integrals::Integration;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// // ∫ x·e^x dx
@@ -63,8 +63,8 @@ impl IntegrationByParts {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, IntegrationByParts};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::by_parts::IntegrationByParts;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let u = Expression::symbol(x.clone());
@@ -116,8 +116,8 @@ impl IntegrationByParts {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, IntegrationByParts};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::by_parts::IntegrationByParts;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
@@ -176,8 +176,8 @@ impl IntegrationByParts {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, IntegrationByParts};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::by_parts::IntegrationByParts;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// // ∫ x²·e^x dx requires two applications of by parts

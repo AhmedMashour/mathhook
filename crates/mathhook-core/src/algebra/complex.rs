@@ -510,7 +510,7 @@ impl Expression {
     /// use mathhook_core::{Expression, expr};
     ///
     /// let magnitude = expr!(5);
-    /// let angle = Expression::rational(Expression::pi(), expr!(4));
+    /// let angle = Expression::pi();
     /// let z = Expression::from_polar(magnitude, angle);
     /// ```
     pub fn from_polar(magnitude: Expression, angle: Expression) -> Expression {

@@ -6,7 +6,7 @@
 //! infrastructure and Expression::function support.
 
 mod basic;
-mod by_parts;
+pub mod by_parts;
 // mod definite;
 mod function_integrals;
 // mod rational;
