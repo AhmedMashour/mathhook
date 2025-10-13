@@ -3,7 +3,8 @@
 //! This crate provides Python bindings using PyO3, exposing the hybrid API
 //! for Python users with both Expression-centric and object-oriented interfaces.
 
-use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
+use mathhook_core::parser::config::ParserConfig;
+use mathhook_core::{Expression, MathSolver, Parser, Simplify, Symbol};
 use pyo3::prelude::*;
 
 /// Python wrapper for Expression
@@ -112,12 +113,13 @@ impl PyExpression {
     ///
     /// ```python
     /// expr1 = PyExpression.parse("x^2 + 2*x + 1")        # Simple notation
-    /// expr2 = PyExpression.parse("\\frac{x^2}{2}")        # LaTeX auto-detected
+    /// expr2 = PyExpression.parse("\\frac{x^2}{2}")       # LaTeX auto-detected
     /// expr3 = PyExpression.parse("Sin[x] + Cos[y]")       # Wolfram auto-detected
     /// ```
     #[staticmethod]
     pub fn parse(input: &str) -> PyResult<Self> {
-        match Expression::parse(input, None) {
+        let parser = Parser::new(ParserConfig::default());
+        match parser.parse(input) {
             Ok(expr) => Ok(Self { inner: expr }),
             Err(e) => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
                 "Parse error: {}",

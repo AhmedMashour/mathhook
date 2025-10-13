@@ -3,6 +3,8 @@
 //! This crate provides Node.js bindings using NAPI-RS, exposing the hybrid API
 //! for JavaScript/TypeScript users with both Expression-centric and object-oriented interfaces.
 
+use mathhook_core::parser::config::ParserConfig;
+use mathhook_core::parser::Parser;
 use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -121,7 +123,8 @@ impl JsExpression {
     /// ```
     #[napi(factory)]
     pub fn parse(input: String) -> Result<JsExpression> {
-        match Expression::parse(&input, None) {
+        let parser = Parser::new(ParserConfig::default());
+        match parser.parse(&input) {
             Ok(expr) => Ok(JsExpression { inner: expr }),
             Err(e) => Err(Error::new(
                 Status::InvalidArg,

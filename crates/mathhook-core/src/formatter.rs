@@ -9,6 +9,7 @@ pub use simple::SimpleFormatter;
 pub use wolfram::WolframFormatter;
 
 use crate::core::Expression;
+use crate::expr;
 use std::fmt;
 /// Mathematical language/format for expressions
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -151,10 +152,10 @@ impl Expression {
     /// # Examples
     /// ```rust
     /// use mathhook_core::core::Expression;
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{expr};
     ///
-    /// let expr = Expression::symbol(symbol!(x));
-    /// let formatted = expr.format().unwrap();
+    /// let x_expr = expr!(x);
+    /// let formatted = x_expr.format().unwrap();
     /// // Returns LaTeX formatted string
     /// ```
     pub fn format(&self) -> Result<String, FormattingError> {
@@ -168,11 +169,11 @@ impl Expression {
     /// ```rust
     /// use mathhook_core::core::Expression;
     /// use mathhook_core::formatter::MathLanguage;
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::expr;
     ///
-    /// let expr = Expression::symbol(symbol!(x));
-    /// let latex = expr.format_as(MathLanguage::LaTeX).unwrap();
-    /// let simple = expr.format_as(MathLanguage::Simple).unwrap();
+    /// let x_expr = expr!(x);
+    /// let latex = x_expr.format_as(MathLanguage::LaTeX).unwrap();
+    /// let simple = x_expr.format_as(MathLanguage::Simple).unwrap();
     /// let wolfram = expr.format_as(MathLanguage::Wolfram).unwrap();
     /// ```
     pub fn format_as(&self, language: MathLanguage) -> Result<String, FormattingError> {
@@ -218,27 +219,27 @@ mod tests {
 
     #[test]
     fn test_format_defaults_to_latex() {
-        let expr = Expression::symbol(symbol!(x));
+        let x_expr = expr!(x);
         let context = TestContext::default();
 
         // Should use LaTeX formatting by default
-        let result = ExpressionFormatter::format(&expr, &context);
+        let result = ExpressionFormatter::format(&x_expr, &context);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_format_without_context() {
-        let expr = Expression::symbol(symbol!(x));
+        let x_expr = expr!(x);
 
         // Should work without providing context (defaults to LaTeX)
-        let result = expr.format();
+        let result = x_expr.format();
         assert!(result.is_ok());
 
         // Test format_as method
-        let latex_result = expr.format_as(MathLanguage::LaTeX);
+        let latex_result = x_expr.format_as(MathLanguage::LaTeX);
         assert!(latex_result.is_ok());
 
-        let simple_result = expr.format_as(MathLanguage::Simple);
+        let simple_result = x_expr.format_as(MathLanguage::Simple);
         assert!(simple_result.is_ok());
     }
 
@@ -247,12 +248,7 @@ mod tests {
         use crate::core::expression::RelationType;
 
         // Test interval formatting
-        let interval = Expression::interval(
-            Expression::integer(0),
-            Expression::integer(10),
-            true,  // start inclusive
-            false, // end exclusive
-        );
+        let interval = Expression::interval(expr!(0), expr!(10), true, false);
 
         let latex_interval = interval.format().unwrap();
         assert!(latex_interval.contains("[0"));
@@ -263,11 +259,7 @@ mod tests {
         assert!(simple_interval.contains("10)"));
 
         // Test relation formatting
-        let relation = Expression::relation(
-            Expression::symbol(symbol!(x)),
-            Expression::integer(5),
-            RelationType::Greater,
-        );
+        let relation = Expression::relation(expr!(x), expr!(5), RelationType::Greater);
 
         let latex_relation = relation.format().unwrap();
         assert!(latex_relation.contains("x"));
@@ -278,11 +270,8 @@ mod tests {
 
         // Test piecewise formatting
         let piecewise = Expression::piecewise(
-            vec![
-                (Expression::symbol(symbol!(x)), Expression::integer(1)),
-                (Expression::symbol(symbol!(y)), Expression::integer(2)),
-            ],
-            Some(Expression::integer(0)),
+            vec![(expr!(x), expr!(1)), (expr!(y), expr!(2))],
+            Some(expr!(0)),
         );
 
         let latex_piecewise = piecewise.format().unwrap();

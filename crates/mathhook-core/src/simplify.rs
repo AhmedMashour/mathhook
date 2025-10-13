@@ -169,40 +169,39 @@ impl Simplify for Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::symbol;
+    use crate::{expr, function};
 
     #[test]
     fn test_basic_simplification() {
         // Test integer addition
-        let expr = Expression::add(vec![Expression::integer(2), Expression::integer(3)]);
-        assert_eq!(expr.simplify(), Expression::integer(5));
+        let expr = expr!(2 + 3);
+        assert_eq!(expr.simplify(), expr!(5));
 
         // Test multiplication
-        let expr = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
-        assert_eq!(expr.simplify(), Expression::integer(6));
+        let expr = expr!(2 * 3);
+        assert_eq!(expr.simplify(), expr!(6));
 
         // Test power
-        let x = symbol!(x);
-        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(1));
-        assert_eq!(expr.simplify(), Expression::symbol(x));
+        let expr = expr!(x ^ 1);
+        assert_eq!(expr.simplify(), expr!(x));
     }
 
     #[test]
     fn test_function_simplification() {
         // Test sin(0) = 0
-        let expr = Expression::function("sin", vec![Expression::integer(0)]);
-        assert_eq!(expr.simplify(), Expression::integer(0));
+        let expr = function!(sin, expr!(0));
+        assert_eq!(expr.simplify(), expr!(0));
 
         // Test cos(0) = 1
-        let expr = Expression::function("cos", vec![Expression::integer(0)]);
-        assert_eq!(expr.simplify(), Expression::integer(1));
+        let expr = function!(cos, expr!(0));
+        assert_eq!(expr.simplify(), expr!(1));
     }
 
     #[test]
     fn test_zero_detection() {
         // Test zero multiplication
-        let expr = Expression::mul(vec![Expression::integer(0), Expression::integer(5)]);
+        let expr = expr!(0 * 5);
         let result = expr.simplify();
-        assert_eq!(result, Expression::integer(0));
+        assert_eq!(result, expr!(0));
     }
 }

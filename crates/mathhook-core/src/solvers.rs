@@ -49,15 +49,12 @@ impl Default for SolverConfig {
 ///
 /// ```rust
 /// use mathhook_core::{MathSolver, Expression};
-/// use mathhook_core::symbol;
+/// use mathhook_core::{symbol, expr};
 ///
 /// let mut solver = MathSolver::new();
 /// let equation = Expression::equation(
-///     Expression::add(vec![
-///         Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(x))]),
-///         Expression::integer(3),
-///     ]),
-///     Expression::integer(7),
+///     expr!(add: (2*x), 3),
+///     expr!(7),
 /// );
 ///
 /// let result = solver.solve(&equation, &symbol!(x));
@@ -107,12 +104,12 @@ impl MathSolver {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{MathSolver, Expression, Symbol};
-    ///
+    /// use mathhook_core::{MathSolver, Expression};
+    /// use mathhook_core::{symbol, expr};
     /// let mut solver = MathSolver::new();
     /// let equation = Expression::equation(
-    ///     Expression::symbol("x"),
-    ///     Expression::integer(5),
+    ///     expr!(x),
+    ///     expr!(5),
     /// );
     /// let result = solver.solve(&equation, &symbol!(x));
     /// ```
@@ -144,12 +141,12 @@ impl MathSolver {
     ///
     /// ```rust
     /// use mathhook_core::{MathSolver, Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{symbol, expr};
     ///
     /// let mut solver = MathSolver::new();
     /// let equations = vec![
-    ///     Expression::equation(Expression::symbol(symbol!(x)), Expression::integer(1)),
-    ///     Expression::equation(Expression::symbol(symbol!(y)), Expression::integer(2)),
+    ///     Expression::equation(expr!(x), expr!(1)),
+    ///     Expression::equation(expr!(y), expr!(2)),
     /// ];
     /// let variables = vec![symbol!(x), symbol!(y)];
     /// let result = solver.solve_system(&equations, &variables);
