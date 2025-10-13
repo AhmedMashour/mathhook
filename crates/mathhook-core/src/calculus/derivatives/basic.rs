@@ -225,7 +225,7 @@ mod tests {
 
         // d/dx[3.14] = 0
         assert_eq!(
-            Expression::float(3.14).derivative(x.clone()),
+            Expression::float(std::f64::consts::PI).derivative(x.clone()),
             Expression::integer(0)
         );
     }
