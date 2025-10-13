@@ -13,7 +13,7 @@ pub trait Summation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Summation;
     ///
     /// let i = symbol!(i);
@@ -29,7 +29,7 @@ pub trait Summation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Summation;
     ///
     /// let n = symbol!(n);
@@ -44,7 +44,7 @@ pub trait Summation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Summation;
     ///
     /// let i = symbol!(i);
@@ -61,7 +61,7 @@ pub trait Summation {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Summation;
     ///
     /// let n = symbol!(n);

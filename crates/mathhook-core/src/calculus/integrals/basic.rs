@@ -13,9 +13,8 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
-    /// use mathhook_core::{Expression, BasicIntegrals};
-    /// use mathhook_core::symbol;
+/// use mathhook_core::calculus::integrals::{BasicIntegrals, Integration};
+/// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::integral(Expression::symbol(x.clone()), x.clone());

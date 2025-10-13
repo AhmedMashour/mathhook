@@ -15,7 +15,7 @@ pub trait ResidueCalculus {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
     /// let z = symbol!(z);
@@ -36,7 +36,7 @@ pub trait ResidueCalculus {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
     /// let z = symbol!(z);
@@ -56,7 +56,7 @@ pub trait ResidueCalculus {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ResidueCalculus;
     ///
     /// let z = symbol!(z);
@@ -76,7 +76,7 @@ pub trait ComplexAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
     /// let z = symbol!(z);
@@ -91,7 +91,7 @@ pub trait ComplexAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
     /// let z = symbol!(z);
@@ -112,7 +112,7 @@ pub trait ComplexAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
     /// let z = symbol!(z);
@@ -130,7 +130,7 @@ pub trait ComplexAnalysis {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::ComplexAnalysis;
     ///
     /// let z = symbol!(z);

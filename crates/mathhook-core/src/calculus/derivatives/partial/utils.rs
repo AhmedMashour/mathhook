@@ -84,7 +84,7 @@ impl MatrixUtils {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, calculus::derivatives::MatrixUtils};
     ///
     /// let matrix = vec![
     ///     vec![Expression::integer(1), Expression::integer(2)],

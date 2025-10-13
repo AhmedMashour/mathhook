@@ -251,4 +251,198 @@ impl Expression {
             None
         }
     }
+
+    /// Evaluate expression with domain checking
+    ///
+    /// Returns a Result that contains either the evaluated expression or a MathError
+    /// when domain violations occur. This method checks mathematical constraints like:
+    /// - sqrt(x) requires x >= 0 in real domain
+    /// - log(x) requires x > 0 (pole at 0)
+    /// - tan(x) has poles at π/2 + nπ
+    /// - arcsin/arccos require |x| <= 1 in real domain
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, MathError};
+    ///
+    /// // Valid sqrt
+    /// let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(4)]);
+    /// assert!(expr.evaluate().is_ok());
+    ///
+    /// // Invalid sqrt in real domain
+    /// let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
+    /// assert!(matches!(expr.evaluate(), Err(MathError::DomainError { .. })));
+    /// ```
+    pub fn evaluate(&self) -> Result<Expression, crate::MathError> {
+        use crate::MathError;
+        use std::f64::consts::PI;
+
+        match self {
+            Expression::Function { name, args } => {
+                // Check for undefined marker function (produced during simplification)
+                if name == "undefined" {
+                    return Err(MathError::DivisionByZero);
+                }
+
+                // First, recursively evaluate arguments
+                let evaluated_args: Result<Vec<Expression>, MathError> =
+                    args.iter().map(|arg| arg.evaluate()).collect();
+                let evaluated_args = evaluated_args?;
+
+                // Check domain restrictions for specific functions
+                match name.as_str() {
+                    "sqrt" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            // Check if argument is negative in real domain
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                if value < 0.0 {
+                                    return Err(MathError::DomainError {
+                                        operation: "sqrt".to_string(),
+                                        value: arg.clone(),
+                                        reason: "sqrt requires non-negative input in real domain"
+                                            .to_string(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "log" | "ln" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                if value == 0.0 {
+                                    return Err(MathError::Pole {
+                                        function: name.clone(),
+                                        at: arg.clone(),
+                                    });
+                                } else if value < 0.0 {
+                                    return Err(MathError::BranchCut {
+                                        function: name.clone(),
+                                        value: arg.clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "tan" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                // Check for poles at π/2 + nπ
+                                // tan is undefined when cos(x) = 0
+                                let normalized = value.rem_euclid(PI);
+                                if (normalized - PI / 2.0).abs() < 1e-10 {
+                                    return Err(MathError::Pole {
+                                        function: "tan".to_string(),
+                                        at: arg.clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "arcsin" | "asin" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                if value < -1.0 || value > 1.0 {
+                                    return Err(MathError::DomainError {
+                                        operation: "arcsin".to_string(),
+                                        value: arg.clone(),
+                                        reason: "arcsin requires input in [-1, 1] in real domain"
+                                            .to_string(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "arccos" | "acos" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                if value < -1.0 || value > 1.0 {
+                                    return Err(MathError::DomainError {
+                                        operation: "arccos".to_string(),
+                                        value: arg.clone(),
+                                        reason: "arccos requires input in [-1, 1] in real domain"
+                                            .to_string(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "csc" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                // csc(x) = 1/sin(x), undefined when sin(x) = 0 (at nπ)
+                                let normalized = value.rem_euclid(PI);
+                                if normalized.abs() < 1e-10 {
+                                    return Err(MathError::Pole {
+                                        function: "csc".to_string(),
+                                        at: arg.clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    "sec" => {
+                        if let Some(arg) = evaluated_args.get(0) {
+                            if let Some(value) = Self::try_extract_numeric_value(arg) {
+                                // sec(x) = 1/cos(x), undefined when cos(x) = 0 (at π/2 + nπ)
+                                let normalized = value.rem_euclid(PI);
+                                if (normalized - PI / 2.0).abs() < 1e-10 {
+                                    return Err(MathError::Pole {
+                                        function: "sec".to_string(),
+                                        at: arg.clone(),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+
+                // If no domain error, simplify the function
+                Ok(Expression::function(name.clone(), evaluated_args).simplify())
+            }
+            Expression::Pow(base, exp) => {
+                let eval_base = base.evaluate()?;
+                let eval_exp = exp.evaluate()?;
+
+                // Check for division by zero: 0^(-n)
+                if eval_base.is_zero_fast() {
+                    if let Some(exp_value) = Self::try_extract_numeric_value(&eval_exp) {
+                        if exp_value < 0.0 {
+                            return Err(MathError::DivisionByZero);
+                        }
+                    }
+                }
+
+                Ok(Expression::pow(eval_base, eval_exp).simplify())
+            }
+            Expression::Mul(factors) => {
+                let evaluated_factors: Result<Vec<Expression>, MathError> =
+                    factors.iter().map(|f| f.evaluate()).collect();
+                Ok(Expression::mul(evaluated_factors?).simplify())
+            }
+            Expression::Add(terms) => {
+                let evaluated_terms: Result<Vec<Expression>, MathError> =
+                    terms.iter().map(|t| t.evaluate()).collect();
+                Ok(Expression::add(evaluated_terms?).simplify())
+            }
+            _ => Ok(self.simplify()),
+        }
+    }
+
+    /// Helper to extract numeric value from an expression
+    ///
+    /// Returns Some(f64) if the expression is a Number, None otherwise
+    fn try_extract_numeric_value(expr: &Expression) -> Option<f64> {
+        match expr {
+            Expression::Number(Number::Integer(i)) => Some(*i as f64),
+            Expression::Number(Number::Float(f)) => Some(*f),
+            Expression::Number(Number::Rational(r)) => {
+                let num_float = r.numer().to_string().parse::<f64>().ok()?;
+                let denom_float = r.denom().to_string().parse::<f64>().ok()?;
+                Some(num_float / denom_float)
+            }
+            _ => None,
+        }
+    }
 }

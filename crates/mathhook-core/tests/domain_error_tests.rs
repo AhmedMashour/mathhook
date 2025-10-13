@@ -67,25 +67,17 @@ fn test_zero_to_negative_power_division_by_zero() {
 
 /// Test that sqrt(-1) in real domain produces domain error
 ///
-/// Note: This requires domain-aware evaluation (not yet implemented)
-/// In complex domain, sqrt(-1) = i is valid
+/// Note: In complex domain, sqrt(-1) = i is valid
 #[test]
-#[ignore] // Requires domain-aware evaluation
 fn test_sqrt_negative_real_domain() {
     let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
 
-    // When real-domain evaluation is implemented:
-    // let result = expr.evaluate_real();
-    // assert!(matches!(result, Err(MathError::DomainError { .. })));
-
-    // In complex domain, should return i:
-    // let result = expr.evaluate_complex();
-    // assert_eq!(result, Ok(Expression::i()));
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::DomainError { .. })));
 }
 
 /// Test that sqrt requires non-negative input in real domain
 #[test]
-#[ignore] // Requires domain-aware evaluation
 fn test_sqrt_domain_restriction() {
     let test_cases = vec![
         (-2, true),   // Should error
@@ -97,7 +89,13 @@ fn test_sqrt_domain_restriction() {
 
     for (value, should_error) in test_cases {
         let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(value)]);
-        // When implemented, check error vs success
+        let result = expr.evaluate();
+
+        if should_error {
+            assert!(result.is_err(), "Expected error for sqrt({})", value);
+        } else {
+            assert!(result.is_ok(), "Expected success for sqrt({})", value);
+        }
     }
 }
 
@@ -105,18 +103,15 @@ fn test_sqrt_domain_restriction() {
 ///
 /// Mathematical reasoning: log(x) → -∞ as x → 0+, so log(0) is a pole
 #[test]
-#[ignore] // Requires function domain checking
 fn test_log_zero_pole() {
     let expr = Expression::function("log".to_string(), vec![Expression::integer(0)]);
 
-    // When implemented:
-    // let result = expr.evaluate();
-    // assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "log"));
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "log"));
 }
 
 /// Test that log requires positive input in real domain
 #[test]
-#[ignore] // Requires domain-aware evaluation
 fn test_log_domain_restriction() {
     let test_cases = vec![
         (-2, true),   // Negative: branch cut in real domain
@@ -128,29 +123,27 @@ fn test_log_domain_restriction() {
 
     for (value, should_error) in test_cases {
         let expr = Expression::function("log".to_string(), vec![Expression::integer(value)]);
-        // When implemented, check error vs success
+        let result = expr.evaluate();
+
+        if should_error {
+            assert!(result.is_err(), "Expected error for log({})", value);
+        } else {
+            assert!(result.is_ok(), "Expected success for log({})", value);
+        }
     }
 }
 
 /// Test that log of negative numbers produces branch cut error in real domain
 #[test]
-#[ignore] // Requires domain-aware evaluation
 fn test_log_negative_branch_cut() {
     let expr = Expression::function("log".to_string(), vec![Expression::integer(-1)]);
 
-    // In real domain:
-    // let result = expr.evaluate_real();
-    // assert!(matches!(result, Err(MathError::BranchCut { .. })));
-
-    // In complex domain (principal branch):
-    // log(-1) = ln|-1| + i*arg(-1) = 0 + i*π = iπ
-    // let result = expr.evaluate_complex();
-    // Should succeed
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::BranchCut { .. })));
 }
 
 /// Test that division by zero is detected
 #[test]
-#[ignore] // Requires evaluation error handling
 fn test_division_by_zero() {
     // Division is represented as multiplication by negative power
     // 1/0 = 1 * 0^(-1)
@@ -159,16 +152,15 @@ fn test_division_by_zero() {
         Expression::pow(Expression::integer(0), Expression::integer(-1))
     ]);
 
-    // When evaluation is implemented:
-    // let result = expr.evaluate();
-    // assert!(matches!(result, Err(MathError::DivisionByZero)));
+    let result = expr.evaluate();
+    eprintln!("Result: {:?}", result);
+    assert!(matches!(result, Err(MathError::DivisionByZero)));
 }
 
 /// Test that tan(π/2) produces pole error
 ///
 /// Mathematical reasoning: tan(x) = sin(x)/cos(x), and cos(π/2) = 0
 #[test]
-#[ignore] // Requires function domain checking
 fn test_tan_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
@@ -176,14 +168,12 @@ fn test_tan_pole_at_pi_over_2() {
         Expression::Number(Number::float(PI / 2.0))
     ]);
 
-    // When implemented:
-    // let result = expr.evaluate();
-    // assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "tan"));
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "tan"));
 }
 
 /// Test that tan has poles at π/2 + nπ
 #[test]
-#[ignore] // Requires function domain checking
 fn test_tan_multiple_poles() {
     use std::f64::consts::PI;
 
@@ -198,13 +188,13 @@ fn test_tan_multiple_poles() {
         let expr = Expression::function("tan".to_string(), vec![
             Expression::Number(Number::float(pole))
         ]);
-        // Should produce pole error
+        let result = expr.evaluate();
+        assert!(matches!(result, Err(MathError::Pole { .. })), "Expected pole error at tan({})", pole);
     }
 }
 
 /// Test that arcsin domain is [-1, 1] in real numbers
 #[test]
-#[ignore] // Requires function domain checking
 fn test_arcsin_domain_restriction() {
     let test_cases = vec![
         (-2.0, true),   // Out of domain
@@ -221,13 +211,18 @@ fn test_arcsin_domain_restriction() {
         let expr = Expression::function("arcsin".to_string(), vec![
             Expression::Number(Number::float(value))
         ]);
-        // When implemented, check error vs success
+        let result = expr.evaluate();
+
+        if should_error {
+            assert!(result.is_err(), "Expected error for arcsin({})", value);
+        } else {
+            assert!(result.is_ok(), "Expected success for arcsin({})", value);
+        }
     }
 }
 
 /// Test that arccos domain is [-1, 1] in real numbers
 #[test]
-#[ignore] // Requires function domain checking
 fn test_arccos_domain_restriction() {
     let test_cases = vec![
         (-2.0, true),   // Out of domain
@@ -241,7 +236,13 @@ fn test_arccos_domain_restriction() {
         let expr = Expression::function("arccos".to_string(), vec![
             Expression::Number(Number::float(value))
         ]);
-        // When implemented, check error vs success
+        let result = expr.evaluate();
+
+        if should_error {
+            assert!(result.is_err(), "Expected error for arccos({})", value);
+        } else {
+            assert!(result.is_ok(), "Expected success for arccos({})", value);
+        }
     }
 }
 
@@ -249,18 +250,15 @@ fn test_arccos_domain_restriction() {
 ///
 /// Mathematical reasoning: csc(x) = 1/sin(x), and sin(0) = 0
 #[test]
-#[ignore] // Requires function domain checking
 fn test_csc_pole_at_zero() {
     let expr = Expression::function("csc".to_string(), vec![Expression::integer(0)]);
 
-    // When implemented:
-    // let result = expr.evaluate();
-    // assert!(matches!(result, Err(MathError::Pole { .. })));
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::Pole { .. })));
 }
 
 /// Test that csc has poles at nπ
 #[test]
-#[ignore] // Requires function domain checking
 fn test_csc_multiple_poles() {
     use std::f64::consts::PI;
 
@@ -276,7 +274,8 @@ fn test_csc_multiple_poles() {
         let expr = Expression::function("csc".to_string(), vec![
             Expression::Number(Number::float(pole))
         ]);
-        // Should produce pole error
+        let result = expr.evaluate();
+        assert!(matches!(result, Err(MathError::Pole { .. })), "Expected pole error at csc({})", pole);
     }
 }
 
@@ -284,7 +283,6 @@ fn test_csc_multiple_poles() {
 ///
 /// Mathematical reasoning: sec(x) = 1/cos(x), and cos(π/2) = 0
 #[test]
-#[ignore] // Requires function domain checking
 fn test_sec_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
@@ -292,9 +290,8 @@ fn test_sec_pole_at_pi_over_2() {
         Expression::Number(Number::float(PI / 2.0))
     ]);
 
-    // When implemented:
-    // let result = expr.evaluate();
-    // assert!(matches!(result, Err(MathError::Pole { .. })));
+    let result = expr.evaluate();
+    assert!(matches!(result, Err(MathError::Pole { .. })));
 }
 
 /// Test error messages are clear and helpful

@@ -29,7 +29,7 @@ pub trait SeriesExpansion {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
     /// let x = symbol!(x);
@@ -44,7 +44,7 @@ pub trait SeriesExpansion {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
     /// let x = symbol!(x);
@@ -62,7 +62,7 @@ pub trait SeriesExpansion {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
     /// let x = symbol!(x);
@@ -76,7 +76,7 @@ pub trait SeriesExpansion {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::SeriesExpansion;
     ///
     /// let x = symbol!(x);

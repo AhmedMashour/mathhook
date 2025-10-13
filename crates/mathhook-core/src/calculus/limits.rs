@@ -25,7 +25,7 @@ pub trait Limits {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Limits;
     ///
     /// let x = symbol!(x);
@@ -43,7 +43,7 @@ pub trait Limits {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::{Limits, LimitDirection};
     ///
     /// let x = symbol!(x);
@@ -63,7 +63,7 @@ pub trait Limits {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Limits;
     ///
     /// let x = symbol!(x);
@@ -77,7 +77,7 @@ pub trait Limits {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::Limits;
     ///
     /// let x = symbol!(x);
