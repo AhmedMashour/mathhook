@@ -49,7 +49,9 @@ impl Default for SolverConfig {
 ///
 /// ```rust
 /// use mathhook_core::{MathSolver, Expression};
+/// use mathhook_core::symbol;
 /// use mathhook_core::{symbol, expr};
+/// use mathhook_core::simplify::Simplify;
 ///
 /// let mut solver = MathSolver::new();
 /// let equation = Expression::equation(

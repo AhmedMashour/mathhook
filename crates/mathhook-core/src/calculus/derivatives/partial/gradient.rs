@@ -13,6 +13,8 @@ impl GradientOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::GradientOperations;
@@ -84,6 +86,7 @@ impl DirectionalDerivatives {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
@@ -132,6 +135,7 @@ impl DirectionalDerivatives {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::DirectionalDerivatives;
     ///
     /// let x = symbol!(x);

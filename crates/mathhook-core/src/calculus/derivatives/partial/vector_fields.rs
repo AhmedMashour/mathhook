@@ -14,6 +14,12 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
+/// use mathhook_core::calculus::derivatives::PartialUtils;
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
+/// use mathhook_core::calculus::derivatives::ConservativeFields;
+/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -56,6 +62,7 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -128,6 +135,9 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -159,6 +169,7 @@ impl VectorFieldOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -194,6 +205,8 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -239,6 +252,7 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -286,6 +300,9 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::PartialUtils;
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
+/// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -310,6 +327,7 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -336,6 +354,7 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -356,6 +375,7 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -388,6 +408,7 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///

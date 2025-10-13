@@ -30,6 +30,7 @@ pub trait Integration {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::integrals::IntegrationMethods;
     /// use mathhook_core::Expression;
     /// use mathhook_core::calculus::integrals::Integration;
     /// use mathhook_core::symbol;
@@ -108,6 +109,7 @@ impl IntegrationMethods {
     /// ```rust
     /// use mathhook_core::Expression;
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::IntegrationMethods;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::mul(vec![
@@ -127,6 +129,8 @@ impl IntegrationMethods {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::integrals::IntegrationMethods;
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::function("sin", vec![

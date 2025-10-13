@@ -15,6 +15,8 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
@@ -64,6 +66,7 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
@@ -126,6 +129,7 @@ impl VectorValuedDifferentiation {
     ///
     /// ```rust
     /// use mathhook_core::{Expression, Symbol};
+    /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;
     ///
     /// let t = symbol!(t);
@@ -150,6 +154,7 @@ impl VectorValuedDifferentiation {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::VectorValuedDifferentiation;

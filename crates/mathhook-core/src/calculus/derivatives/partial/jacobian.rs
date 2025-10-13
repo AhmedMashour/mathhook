@@ -15,8 +15,13 @@ impl JacobianOperations {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
+/// use mathhook_core::calculus::derivatives::PartialUtils;
+/// use mathhook_core::calculus::derivatives::MatrixUtils;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianOperations;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -46,6 +51,7 @@ impl JacobianOperations {
     /// ```rust
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianOperations;
     /// use std::collections::HashMap;
     ///
     /// let x = symbol!(x);
@@ -92,6 +98,7 @@ impl JacobianOperations {
     /// ```rust
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianOperations;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -140,6 +147,7 @@ impl JacobianDeterminant {
     /// ```rust
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianDeterminant;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -168,8 +176,9 @@ impl JacobianDeterminant {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{Expression, Symbol};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianDeterminant;
     ///
     /// let r = symbol!(r);
     /// let theta = Symbol::new("theta");
@@ -198,6 +207,7 @@ impl JacobianDeterminant {
     /// ```rust
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianDeterminant;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -220,6 +230,7 @@ impl JacobianDeterminant {
     /// ```rust
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
+    /// use mathhook_core::calculus::derivatives::JacobianDeterminant;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);

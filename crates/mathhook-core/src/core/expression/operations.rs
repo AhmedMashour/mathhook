@@ -25,6 +25,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::Expression;
     ///
     /// // Literal zero
@@ -87,6 +88,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::Expression;
     ///
     /// // Literal one

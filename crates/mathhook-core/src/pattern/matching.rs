@@ -141,7 +141,7 @@ pub trait Matchable {
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::add(vec![
-    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]),
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
     ///     Expression::integer(1)
     /// ]);
     ///
@@ -149,7 +149,7 @@ pub trait Matchable {
     /// let pattern = Pattern::Add(vec![
     ///     Pattern::Mul(vec![
     ///         Pattern::Wildcard("a".to_string()),
-    ///         Pattern::Exact(Expression::symbol(x))
+    ///         Pattern::Exact(Expression::symbol(x.clone()))
     ///     ]),
     ///     Pattern::Wildcard("b".to_string())
     /// ]);
@@ -184,11 +184,11 @@ pub trait Matchable {
     /// // sin(x)^2 + cos(x)^2
     /// let expr = Expression::add(vec![
     ///     Expression::pow(
-    ///         Expression::function("sin".to_string(), vec![Expression::symbol(x)]),
+    ///         Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]),
     ///         Expression::integer(2)
     ///     ),
     ///     Expression::pow(
-    ///         Expression::function("cos".to_string(), vec![Expression::symbol(x)]),
+    ///         Expression::function("cos".to_string(), vec![Expression::symbol(x.clone())]),
     ///         Expression::integer(2)
     ///     )
     /// ]);
@@ -623,7 +623,7 @@ mod tests {
     #[test]
     fn test_addition_pattern() {
         let x = symbol!(x);
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
 
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
 
@@ -631,15 +631,21 @@ mod tests {
         assert!(matches.is_some());
 
         if let Some(bindings) = matches {
-            assert_eq!(bindings.get("a"), Some(&Expression::symbol(x)));
-            assert_eq!(bindings.get("b"), Some(&Expression::integer(1)));
+            // Commutative matching - bindings can be in either order
+            let a_val = bindings.get("a").unwrap();
+            let b_val = bindings.get("b").unwrap();
+
+            assert!(
+                (a_val == &Expression::symbol(x.clone()) && b_val == &Expression::integer(1))
+                    || (a_val == &Expression::integer(1) && b_val == &Expression::symbol(x.clone()))
+            );
         }
     }
 
     #[test]
     fn test_multiplication_pattern() {
         let x = symbol!(x);
-        let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]);
+        let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
 
         let pattern = Pattern::Mul(vec![
             Pattern::Exact(Expression::integer(2)),
@@ -650,14 +656,14 @@ mod tests {
         assert!(matches.is_some());
 
         if let Some(bindings) = matches {
-            assert_eq!(bindings.get("x"), Some(&Expression::symbol(x)));
+            assert_eq!(bindings.get("x"), Some(&Expression::symbol(x.clone())));
         }
     }
 
     #[test]
     fn test_power_pattern() {
         let x = symbol!(x);
-        let expr = Expression::pow(Expression::symbol(x), Expression::integer(2));
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
         let pattern = Pattern::Pow(
             Box::new(Pattern::wildcard("base")),
@@ -668,14 +674,14 @@ mod tests {
         assert!(matches.is_some());
 
         if let Some(bindings) = matches {
-            assert_eq!(bindings.get("base"), Some(&Expression::symbol(x)));
+            assert_eq!(bindings.get("base"), Some(&Expression::symbol(x.clone())));
         }
     }
 
     #[test]
     fn test_function_pattern() {
         let x = symbol!(x);
-        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x)]);
+        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
 
         let pattern = Pattern::Function {
             name: "sin".to_string(),
@@ -686,7 +692,7 @@ mod tests {
         assert!(matches.is_some());
 
         if let Some(bindings) = matches {
-            assert_eq!(bindings.get("arg"), Some(&Expression::symbol(x)));
+            assert_eq!(bindings.get("arg"), Some(&Expression::symbol(x.clone())));
         }
     }
 
@@ -694,7 +700,7 @@ mod tests {
     fn test_wildcard_consistency() {
         let x = symbol!(x);
         // x + x (same variable twice)
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::symbol(x)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(x.clone())]);
 
         // Pattern: a + a (same wildcard twice - should match when both are same)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
@@ -703,7 +709,7 @@ mod tests {
         assert!(matches.is_some());
 
         if let Some(bindings) = matches {
-            assert_eq!(bindings.get("a"), Some(&Expression::symbol(x)));
+            assert_eq!(bindings.get("a"), Some(&Expression::symbol(x.clone())));
         }
     }
 
@@ -712,7 +718,7 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
         // x + y (different variables)
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::symbol(y)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]);
 
         // Pattern: a + a (same wildcard twice - should NOT match when different)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
@@ -723,7 +729,7 @@ mod tests {
     #[test]
     fn test_simple_replacement() {
         let x = symbol!(x);
-        let expr = Expression::symbol(x);
+        let expr = Expression::symbol(x.clone());
 
         let pattern = Pattern::wildcard("x");
         let replacement = Pattern::Exact(Expression::integer(5));
@@ -736,7 +742,7 @@ mod tests {
     fn test_replacement_in_addition() {
         let x = symbol!(x);
         // x + 1
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
 
         // Pattern: a + b -> b + a (swap)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
@@ -746,7 +752,7 @@ mod tests {
         let result = expr.replace(&pattern, &replacement);
 
         // Should be 1 + x
-        let expected = Expression::add(vec![Expression::integer(1), Expression::symbol(x)]);
+        let expected = Expression::add(vec![Expression::integer(1), Expression::symbol(x.clone())]);
 
         assert_eq!(result, expected);
     }
@@ -757,11 +763,11 @@ mod tests {
         // sin(x)^2 + cos(x)^2
         let expr = Expression::add(vec![
             Expression::pow(
-                Expression::function("sin".to_string(), vec![Expression::symbol(x)]),
+                Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]),
                 Expression::integer(2),
             ),
             Expression::pow(
-                Expression::function("cos".to_string(), vec![Expression::symbol(x)]),
+                Expression::function("cos".to_string(), vec![Expression::symbol(x.clone())]),
                 Expression::integer(2),
             ),
         ]);
@@ -798,7 +804,7 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
         // y + x (reversed order)
-        let expr = Expression::add(vec![Expression::symbol(y), Expression::symbol(x)]);
+        let expr = Expression::add(vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())]);
 
         // Pattern: a + b (should match despite different order)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
@@ -813,8 +819,8 @@ mod tests {
 
             // Either (a=y, b=x) or (a=x, b=y)
             assert!(
-                (a_val == &Expression::symbol(y) && b_val == &Expression::symbol(x))
-                    || (a_val == &Expression::symbol(x) && b_val == &Expression::symbol(y))
+                (a_val == &Expression::symbol(y.clone()) && b_val == &Expression::symbol(x.clone()))
+                    || (a_val == &Expression::symbol(x.clone()) && b_val == &Expression::symbol(y.clone()))
             );
         }
     }
@@ -823,7 +829,7 @@ mod tests {
     fn test_commutative_multiplication_matching() {
         let x = symbol!(x);
         // x * 3 (reversed from pattern 3 * x)
-        let expr = Expression::mul(vec![Expression::symbol(x), Expression::integer(3)]);
+        let expr = Expression::mul(vec![Expression::symbol(x.clone()), Expression::integer(3)]);
 
         // Pattern: a * b
         let pattern = Pattern::Mul(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
@@ -838,16 +844,16 @@ mod tests {
         let y = symbol!(y);
 
         // Pattern: wildcard 'a' that excludes x
-        let pattern = Pattern::wildcard_excluding("a", vec![Expression::symbol(x)]);
+        let pattern = Pattern::wildcard_excluding("a", vec![Expression::symbol(x.clone())]);
 
         // Should not match x
-        assert!(Expression::symbol(x).matches(&pattern).is_none());
+        assert!(Expression::symbol(x.clone()).matches(&pattern).is_none());
 
         // Should match y
-        assert!(Expression::symbol(y).matches(&pattern).is_some());
+        assert!(Expression::symbol(y.clone()).matches(&pattern).is_some());
 
         // Should not match expressions containing x
-        let expr_with_x = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
+        let expr_with_x = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
         assert!(expr_with_x.matches(&pattern).is_none());
     }
 
@@ -865,7 +871,7 @@ mod tests {
 
         // Should not match symbol
         let x = symbol!(x);
-        assert!(Expression::symbol(x).matches(&pattern).is_none());
+        assert!(Expression::symbol(x.clone()).matches(&pattern).is_none());
     }
 
     #[test]
@@ -876,9 +882,9 @@ mod tests {
 
         // z + y + x (different order)
         let expr = Expression::add(vec![
-            Expression::symbol(z),
-            Expression::symbol(y),
-            Expression::symbol(x),
+            Expression::symbol(z.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
         ]);
 
         // Pattern: a + b + c

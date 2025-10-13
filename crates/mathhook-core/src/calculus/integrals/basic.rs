@@ -13,6 +13,7 @@ impl BasicIntegrals {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression, BasicIntegrals};
     /// use mathhook_core::symbol;
     ///

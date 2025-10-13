@@ -27,11 +27,11 @@ pub trait Substitutable {
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::add(vec![
-    ///     Expression::symbol(x),
+    ///     Expression::symbol(x.clone()),
     ///     Expression::integer(1)
     /// ]);
     ///
-    /// let result = expr.subs(&Expression::symbol(x), &Expression::integer(5));
+    /// let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(5));
     /// let expected = Expression::add(vec![
     ///     Expression::integer(5),
     ///     Expression::integer(1)
@@ -59,13 +59,13 @@ pub trait Substitutable {
     /// let x = symbol!(x);
     /// let y = symbol!(y);
     /// let expr = Expression::add(vec![
-    ///     Expression::symbol(x),
-    ///     Expression::symbol(y)
+    ///     Expression::symbol(x.clone()),
+    ///     Expression::symbol(y.clone())
     /// ]);
     ///
     /// let result = expr.subs_multiple(&[
-    ///     (Expression::symbol(x), Expression::integer(1)),
-    ///     (Expression::symbol(y), Expression::integer(2)),
+    ///     (Expression::symbol(x.clone()), Expression::integer(1)),
+    ///     (Expression::symbol(y.clone()), Expression::integer(2)),
     /// ]);
     ///
     /// let expected = Expression::add(vec![
@@ -503,9 +503,9 @@ mod tests {
     #[test]
     fn test_basic_symbol_substitution() {
         let x = symbol!(x);
-        let expr = Expression::symbol(x);
+        let expr = Expression::symbol(x.clone());
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(5));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(5));
 
         assert_eq!(result, Expression::integer(5));
     }
@@ -513,45 +513,57 @@ mod tests {
     #[test]
     fn test_substitution_in_addition() {
         let x = symbol!(x);
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::integer(1)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(5));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(5));
 
+        // Substitution doesn't simplify - returns Add([5, 1])
         let expected = Expression::add(vec![Expression::integer(5), Expression::integer(1)]);
 
         assert_eq!(result, expected);
+
+        // To get 6, simplify
+        assert_eq!(result.simplify(), Expression::integer(6));
     }
 
     #[test]
     fn test_substitution_in_multiplication() {
         let x = symbol!(x);
-        let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]);
+        let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(3));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(3));
 
+        // Substitution doesn't simplify
         let expected = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
 
         assert_eq!(result, expected);
+
+        // To get 6, simplify
+        assert_eq!(result.simplify(), Expression::integer(6));
     }
 
     #[test]
     fn test_substitution_in_power() {
         let x = symbol!(x);
-        let expr = Expression::pow(Expression::symbol(x), Expression::integer(2));
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(3));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(3));
 
+        // Substitution doesn't simplify - returns 3^2, not 9
         let expected = Expression::pow(Expression::integer(3), Expression::integer(2));
 
         assert_eq!(result, expected);
+
+        // To get 9, you need to simplify
+        assert_eq!(result.simplify(), Expression::integer(9));
     }
 
     #[test]
     fn test_substitution_in_function() {
         let x = symbol!(x);
-        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x)]);
+        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(0));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(0));
 
         let expected = Expression::function("sin".to_string(), vec![Expression::integer(0)]);
 
@@ -563,14 +575,14 @@ mod tests {
         let x = symbol!(x);
         // (x + 1) * (x - 1)
         let expr = Expression::mul(vec![
-            Expression::add(vec![Expression::symbol(x), Expression::integer(1)]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
             Expression::add(vec![
-                Expression::symbol(x),
+                Expression::symbol(x.clone()),
                 Expression::mul(vec![Expression::integer(-1), Expression::integer(1)]),
             ]),
         ]);
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(2));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(2));
 
         // (2 + 1) * (2 - 1)
         let expected = Expression::mul(vec![
@@ -588,27 +600,31 @@ mod tests {
     fn test_no_substitution_when_not_present() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::symbol(y);
+        let expr = Expression::symbol(y.clone());
 
-        let result = expr.subs(&Expression::symbol(x), &Expression::integer(5));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(5));
 
-        assert_eq!(result, Expression::symbol(y));
+        assert_eq!(result, Expression::symbol(y.clone()));
     }
 
     #[test]
     fn test_multiple_substitution_both_variables() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::add(vec![Expression::symbol(x), Expression::symbol(y)]);
+        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]);
 
         let result = expr.subs_multiple(&[
-            (Expression::symbol(x), Expression::integer(1)),
-            (Expression::symbol(y), Expression::integer(2)),
+            (Expression::symbol(x.clone()), Expression::integer(1)),
+            (Expression::symbol(y.clone()), Expression::integer(2)),
         ]);
 
+        // Substitution doesn't simplify
         let expected = Expression::add(vec![Expression::integer(1), Expression::integer(2)]);
 
         assert_eq!(result, expected);
+
+        // To get 3, simplify
+        assert_eq!(result.simplify(), Expression::integer(3));
     }
 
     #[test]
@@ -617,18 +633,18 @@ mod tests {
         let y = symbol!(y);
         // x^2 + 2*x*y + y^2
         let expr = Expression::add(vec![
-            Expression::pow(Expression::symbol(x), Expression::integer(2)),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::mul(vec![
                 Expression::integer(2),
-                Expression::symbol(x),
-                Expression::symbol(y),
+                Expression::symbol(x.clone()),
+                Expression::symbol(y.clone()),
             ]),
-            Expression::pow(Expression::symbol(y), Expression::integer(2)),
+            Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),
         ]);
 
         let result = expr.subs_multiple(&[
-            (Expression::symbol(x), Expression::integer(3)),
-            (Expression::symbol(y), Expression::integer(4)),
+            (Expression::symbol(x.clone()), Expression::integer(3)),
+            (Expression::symbol(y.clone()), Expression::integer(4)),
         ]);
 
         // 3^2 + 2*3*4 + 4^2
@@ -649,15 +665,15 @@ mod tests {
     fn test_substitution_doesnt_recurse_into_replacement() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::symbol(x);
+        let expr = Expression::symbol(x.clone());
 
         // Substitute x with y
-        let result = expr.subs(&Expression::symbol(x), &Expression::symbol(y));
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::symbol(y.clone()));
 
-        assert_eq!(result, Expression::symbol(y));
+        assert_eq!(result, Expression::symbol(y.clone()));
 
         // Now substitute y - should not affect the result since we don't re-substitute
-        let result2 = result.subs(&Expression::symbol(y), &Expression::integer(5));
+        let result2 = result.subs(&Expression::symbol(y.clone()), &Expression::integer(5));
 
         assert_eq!(result2, Expression::integer(5));
     }

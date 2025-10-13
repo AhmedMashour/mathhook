@@ -15,6 +15,8 @@ pub trait CriticalPointSolver {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::simplify::Simplify;
+/// use mathhook_core::calculus::derivatives::Derivative;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -125,6 +127,7 @@ impl ImplicitDifferentiation {
     /// # Examples
     ///
     /// ```rust
+/// use mathhook_core::calculus::derivatives::Derivative;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::ImplicitDifferentiation;

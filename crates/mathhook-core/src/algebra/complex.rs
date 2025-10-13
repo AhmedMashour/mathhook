@@ -412,9 +412,10 @@ impl Expression {
     ///
     /// ```rust
     /// use mathhook_core::Expression;
+    /// use mathhook_core::simplify::Simplify;
     ///
     /// let z = Expression::complex(Expression::integer(3), Expression::integer(0));
-    /// let simplified = z.simplify(); // or Expression::simplify_complex(&z) (same result)
+    /// let simplified = z.simplify();
     /// ```
     pub fn simplify_complex(expr: &Expression) -> Expression {
         match expr {
