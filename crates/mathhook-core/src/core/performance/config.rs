@@ -333,12 +333,15 @@ pub fn cache_stats() -> CacheStatistics {
 }
 
 /// Get comprehensive performance metrics for monitoring and debugging
+///
+/// Note: SIMD and parallel statistics tracking is not yet implemented.
+/// These fields return default values until runtime tracking is added.
 pub fn get_performance_metrics() -> PerformanceMetrics {
     PerformanceMetrics {
         config: get_config_info(),
         cache: cache_stats(),
-        simd_stats: SimdStatistics::default(), // TODO: Implement SIMD tracking
-        parallel_stats: ParallelStatistics::default(), // TODO: Implement parallel tracking
+        simd_stats: SimdStatistics::default(),
+        parallel_stats: ParallelStatistics::default(),
     }
 }
 

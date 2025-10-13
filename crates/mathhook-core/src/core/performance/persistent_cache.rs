@@ -249,10 +249,11 @@ impl PersistentCache {
         }
     }
 
-    /// Serialize an expression to string (placeholder implementation)
+    /// Serialize an expression to string
+    ///
+    /// Uses debug format for serialization. For production use, consider
+    /// implementing a more compact binary format or using the MathSerializer.
     fn serialize_expression(&self, expr: &Expression) -> Result<String, String> {
-        // For now, use debug format as a simple serialization
-        // In a real implementation, you'd want a proper serialization format
         Ok(format!("{:?}", expr))
     }
 

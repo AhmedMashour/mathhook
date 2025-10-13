@@ -102,7 +102,10 @@ impl Integration for Expression {
 pub struct IntegrationMethods;
 
 impl IntegrationMethods {
-    /// Attempt integration by parts (placeholder implementation)
+    /// Attempt integration by parts
+    ///
+    /// Uses the IntegrationByParts module to attempt integration by parts.
+    /// Falls back to symbolic representation if unable to integrate.
     ///
     /// # Examples
     ///
@@ -123,7 +126,10 @@ impl IntegrationMethods {
             .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
     }
 
-    /// Attempt integration by substitution (placeholder implementation)
+    /// Attempt integration by substitution
+    ///
+    /// Integration by substitution is not yet fully implemented.
+    /// Returns symbolic integral representation.
     ///
     /// # Examples
     ///
@@ -139,7 +145,6 @@ impl IntegrationMethods {
     /// let result = IntegrationMethods::substitution(&expr, x);
     /// ```
     pub fn substitution(expr: &Expression, variable: Symbol) -> Expression {
-        // TODO: Implement integration by substitution
         Expression::integral(expr.clone(), variable)
     }
 }

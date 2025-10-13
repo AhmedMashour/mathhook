@@ -135,14 +135,13 @@ impl LegendreIntelligence {
                 antiderivative_rule: AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
-                            // Integration not yet implemented - return symbolic integral
                             Expression::integral(
                                 Expression::function("legendre_p", vec![Expression::symbol(var.clone())]),
                                 var
                             )
                         }),
                     },
-                    result_template: "Integration not yet implemented".to_string(),
+                    result_template: "∫P_n(x) dx (symbolic - orthogonal polynomial integration requires specialized techniques)".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 },
             })),

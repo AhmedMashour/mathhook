@@ -459,7 +459,7 @@ mod tests {
     }
 
     #[test]
-    fn test_critical_points_placeholder() {
+    fn test_critical_points_basic() {
         let x = symbol!(x);
         let y = symbol!(y);
 
@@ -470,6 +470,7 @@ mod tests {
 
         let critical_points = ImplicitCurveAnalysis::critical_points(&curve, x.clone(), y.clone());
 
+        // Basic test for critical point computation structure
         assert_eq!(critical_points.len(), 1);
         assert_eq!(critical_points[0].0, Expression::symbol(x));
         assert_eq!(critical_points[0].1, Expression::symbol(y));

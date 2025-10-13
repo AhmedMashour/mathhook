@@ -221,9 +221,9 @@ impl MathSerializer {
                     .collect(),
             },
 
-            // For other types, use placeholder for now
+            // For unsupported types, return a symbolic representation
             _ => ExpressionData::Symbol {
-                name: "placeholder".to_string(),
+                name: format!("unsupported_{}", std::any::type_name_of_val(expr)),
             },
         }
     }

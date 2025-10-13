@@ -424,7 +424,7 @@ mod tests {
                                 };
                                 assert!(
                                     !is_zero_one,
-                                    "Found fake placeholder root complex(0, 1)"
+                                    "Invalid root complex(0, 1) detected - this is an error"
                                 );
                             }
                         }

@@ -139,9 +139,20 @@ impl Substitutable for Expression {
             }
 
             // Matrix - substitute in each element
-            Expression::Matrix(_matrix) => {
-                // TODO: Implement Matrix substitution when Matrix API is finalized
-                self.clone()
+            Expression::Matrix(matrix) => {
+                let (rows, cols) = matrix.dimensions();
+                let mut new_data: Vec<Vec<Expression>> = Vec::with_capacity(rows);
+
+                for i in 0..rows {
+                    let mut row: Vec<Expression> = Vec::with_capacity(cols);
+                    for j in 0..cols {
+                        let elem = matrix.get_element(i, j);
+                        row.push(elem.subs(old, new));
+                    }
+                    new_data.push(row);
+                }
+
+                Expression::Matrix(Box::new(crate::matrix::unified::Matrix::dense(new_data)))
             }
 
             // Relation - substitute in both sides

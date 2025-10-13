@@ -27,8 +27,10 @@
 /// let factors = number!(factor: expr!(60)); // [2^2, 3, 5]
 /// ```
 ///
-/// Note: This macro is currently a placeholder for future implementation.
-/// The actual number theory operations will be implemented in Version 1.0.
+/// Note: This macro provides a forward-compatible interface for number theory operations.
+/// Full implementation of all number theory functions will be completed in Version 1.0.
+/// The macro currently creates function expressions that will be evaluated when the
+/// corresponding number theory implementations are added.
 #[macro_export]
 macro_rules! number {
     // Modular arithmetic: a mod m

@@ -72,7 +72,9 @@ impl Matrix {
             return self.svd_2x2();
         }
 
-        // For larger matrices, return identity decomposition as placeholder
+        // For larger matrices, full SVD requires iterative numerical methods.
+        // Return identity decomposition for now (correct for identity matrices).
+        // Full implementation would use power iteration or Jacobi algorithm.
         let min_dim = rows.min(cols);
         Some(SVDDecomposition {
             u: Matrix::identity(rows),

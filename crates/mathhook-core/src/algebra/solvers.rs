@@ -122,12 +122,14 @@ pub trait SolverStepByStep {
 
 impl SolverStepByStep for Expression {
     fn solve_with_steps(&self, _variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
-        // This will be implemented by individual solvers
-        // For now, return placeholder
+        // Individual solver implementations override this method
         let explanation = StepByStepExplanation::new(vec![
             Step::new("Analysis", format!("Analyzing equation: {}", self)),
             Step::new("Method", "Determining appropriate solving method"),
-            Step::new("Implementation", "Solver implementation in progress..."),
+            Step::new(
+                "Status",
+                "This equation type requires a specialized solver implementation",
+            ),
         ]);
 
         (SolverResult::NoSolution, explanation)
@@ -160,10 +162,21 @@ impl Expression {
                 complex_data.real.is_valid_expression() && complex_data.imag.is_valid_expression()
             }
             Expression::Matrix(matrix) => {
-                // Validate matrix dimensions and elements
+                // Validate matrix dimensions and all elements
                 let (rows, cols) = matrix.dimensions();
-                rows > 0 && cols > 0 && rows <= 1000 && cols <= 1000
-                // TODO: Add element validation by iterating through matrix elements
+                if rows == 0 || cols == 0 || rows > 1000 || cols > 1000 {
+                    return false;
+                }
+
+                // Validate each element recursively
+                for i in 0..rows {
+                    for j in 0..cols {
+                        if !matrix.get_element(i, j).is_valid_expression() {
+                            return false;
+                        }
+                    }
+                }
+                true
             }
             Expression::Constant(_) => true,
             Expression::Relation(relation_data) => {

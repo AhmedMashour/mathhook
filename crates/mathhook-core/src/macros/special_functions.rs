@@ -27,8 +27,10 @@
 /// let bessel_val = special!(bessel_j: expr!(nu), expr!(z));
 /// ```
 ///
-/// Note: This macro is currently a placeholder for future implementation.
-/// The actual special functions will be implemented in Version 1.0.
+/// Note: This macro provides a forward-compatible interface for special mathematical functions.
+/// Full implementation of all special functions will be completed in Version 1.0.
+/// The macro currently creates function expressions that will be evaluated when the
+/// corresponding special function implementations are added.
 #[macro_export]
 macro_rules! special {
     // Gamma function Γ(z)

@@ -167,7 +167,16 @@ impl QuadraticSolver {
                     SolverResult::NoSolution
                 }
             }
-            _ => SolverResult::NoSolution, // Complex case not implemented yet
+            _ => {
+                // Symbolic case: x = -c/b
+                // Use Expression::mul with power of -1 for division
+                let neg_c = Expression::mul(vec![Expression::integer(-1), c.clone()]);
+                let result = Expression::mul(vec![
+                    neg_c,
+                    Expression::pow(b.clone(), Expression::integer(-1)),
+                ]);
+                SolverResult::Single(result)
+            }
         }
     }
 
@@ -221,26 +230,61 @@ impl QuadraticSolver {
                     let real_part = -b_val as f64 / (2.0 * *a_val as f64);
                     let imag_part = sqrt_abs_discriminant / (2.0 * *a_val as f64);
 
-                    // For now, represent as functions until we have complex number type
-                    let solution1 = Expression::function(
-                        "complex",
-                        vec![
-                            Expression::Number(Number::float(real_part)),
-                            Expression::Number(Number::float(imag_part)),
-                        ],
+                    // Use Expression::complex for proper complex number representation
+                    let solution1 = Expression::complex(
+                        Expression::Number(Number::float(real_part)),
+                        Expression::Number(Number::float(imag_part)),
                     );
-                    let solution2 = Expression::function(
-                        "complex",
-                        vec![
-                            Expression::Number(Number::float(real_part)),
-                            Expression::Number(Number::float(-imag_part)),
-                        ],
+                    let solution2 = Expression::complex(
+                        Expression::Number(Number::float(real_part)),
+                        Expression::Number(Number::float(-imag_part)),
                     );
 
                     SolverResult::Multiple(vec![solution1, solution2])
                 }
             }
-            _ => SolverResult::NoSolution, // Complex case not implemented yet
+            _ => {
+                // Symbolic case: use quadratic formula symbolically
+                // Discriminant: b² - 4ac
+                let b_squared = Expression::pow(b.clone(), Expression::integer(2));
+                let four_a_c = Expression::mul(vec![
+                    Expression::integer(4),
+                    a.clone(),
+                    c.clone(),
+                ]);
+                let discriminant = Expression::add(vec![
+                    b_squared,
+                    Expression::mul(vec![Expression::integer(-1), four_a_c]),
+                ]);
+
+                // Check if discriminant simplifies to a number
+                let discriminant_simplified = discriminant.simplify();
+
+                // Two times a for denominator
+                let two_a = Expression::mul(vec![Expression::integer(2), a.clone()]);
+
+                // Square root of discriminant
+                let sqrt_discriminant = Expression::function("sqrt", vec![discriminant_simplified.clone()]);
+
+                // Solutions: (-b ± √discriminant) / (2a)
+                let solution1 = Expression::mul(vec![
+                    Expression::add(vec![
+                        Expression::mul(vec![Expression::integer(-1), b.clone()]),
+                        sqrt_discriminant.clone(),
+                    ]),
+                    Expression::pow(two_a.clone(), Expression::integer(-1)),
+                ]);
+
+                let solution2 = Expression::mul(vec![
+                    Expression::add(vec![
+                        Expression::mul(vec![Expression::integer(-1), b.clone()]),
+                        Expression::mul(vec![Expression::integer(-1), sqrt_discriminant]),
+                    ]),
+                    Expression::pow(two_a, Expression::integer(-1)),
+                ]);
+
+                SolverResult::Multiple(vec![solution1, solution2])
+            }
         }
     }
 

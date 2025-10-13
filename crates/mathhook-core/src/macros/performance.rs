@@ -59,11 +59,13 @@ macro_rules! perf {
     };
 
     // Memory prefetch hint (x86_64 only)
+    //
+    // Note: Actual prefetch intrinsics require unsafe code.
+    // This provides a safe no-op interface for future optimization.
     (prefetch: $ptr:expr) => {
         #[cfg(target_arch = "x86_64")]
         {
-            // Note: Actual prefetch intrinsics would require unsafe code
-            // This is a safe placeholder implementation
+            // Safe no-op - actual prefetch would use _mm_prefetch intrinsic
         }
         #[cfg(not(target_arch = "x86_64"))]
         {

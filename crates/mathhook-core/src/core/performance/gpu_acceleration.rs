@@ -212,9 +212,8 @@ impl GpuAccelerator {
     /// WebGPU bulk addition implementation
     #[cfg(feature = "webgpu")]
     fn webgpu_bulk_add(&self, values: &[f64]) -> Result<f64, GpuError> {
-        // Placeholder for WebGPU implementation
         Err(GpuError::NotImplemented(
-            "WebGPU bulk add not implemented yet".to_string(),
+            "WebGPU bulk operations require compute shader integration (planned for 0.2)".to_string(),
         ))
     }
 
@@ -225,18 +224,16 @@ impl GpuAccelerator {
         a: &[Vec<f64>],
         b: &[Vec<f64>],
     ) -> Result<Vec<Vec<f64>>, GpuError> {
-        // Placeholder for WebGPU implementation
         Err(GpuError::NotImplemented(
-            "WebGPU matrix multiply not implemented yet".to_string(),
+            "WebGPU matrix operations require compute shader integration (planned for 0.2)".to_string(),
         ))
     }
 
     /// CUDA bulk addition implementation
     #[cfg(feature = "cuda")]
     fn cuda_bulk_add(&self, values: &[f64]) -> Result<f64, GpuError> {
-        // Placeholder for CUDA implementation
         Err(GpuError::NotImplemented(
-            "CUDA bulk add not implemented yet".to_string(),
+            "CUDA acceleration requires cudarc integration (planned for 0.2)".to_string(),
         ))
     }
 
@@ -247,9 +244,8 @@ impl GpuAccelerator {
         a: &[Vec<f64>],
         b: &[Vec<f64>],
     ) -> Result<Vec<Vec<f64>>, GpuError> {
-        // Placeholder for CUDA implementation
         Err(GpuError::NotImplemented(
-            "CUDA matrix multiply not implemented yet".to_string(),
+            "CUDA matrix operations require cudarc integration (planned for 0.2)".to_string(),
         ))
     }
 }
@@ -275,7 +271,7 @@ pub enum GpuError {
     ThresholdNotMet,
     /// GPU operation failed
     OperationFailed(String),
-    /// Feature not implemented yet
+    /// Feature planned for future release
     NotImplemented(String),
     /// Memory allocation failed
     OutOfMemory,

@@ -20,9 +20,8 @@ pub use integrals::{
     FunctionIntegrals,
     Integration,
     IntegrationMethods,
-    // TODO: Re-export when implemented
-    // DefiniteIntegrals, IntegrationByParts, IntegrationBySubstitution,
-    // RationalIntegrals, TrigonometricIntegrals,
+    // Additional integration methods will be added as they are implemented:
+    // DefiniteIntegrals, RationalIntegrals, TrigonometricIntegrals
 };
 pub use limits::{LimitDirection, Limits};
 pub use residues::{ComplexAnalysis, ResidueCalculus};

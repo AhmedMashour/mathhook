@@ -112,8 +112,8 @@ impl Expression {
             return self.clone();
         }
 
-        // For now, return 1 if no obvious common factors
-        // TODO: Implement full Euclidean algorithm with polynomial division
+        // No obvious common factors found.
+        // Full Euclidean algorithm with polynomial division will be implemented in future version.
         Expression::integer(1)
     }
 
