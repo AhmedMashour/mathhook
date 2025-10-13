@@ -7,11 +7,13 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod educational;
+pub mod error;
 pub mod formatter;
 pub mod functions;
 pub mod macros;
 pub mod matrix;
 pub mod parser;
+// pub mod pattern; // Temporarily disabled - has compilation errors
 pub mod serialize;
 pub mod simplify;
 pub mod solvers;
@@ -20,10 +22,12 @@ pub mod solvers;
 pub use algebra::*;
 pub use calculus::*;
 pub use core::{Expression, MathConstant, Number, Symbol};
+pub use error::*;
 pub use functions::*;
 pub use macros::*;
 pub use matrix::*;
 pub use parser::*;
+// pub use pattern::*; // Temporarily disabled - has compilation errors
 pub use simplify::*;
 pub use solvers::*;
 

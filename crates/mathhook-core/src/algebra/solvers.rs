@@ -1,6 +1,7 @@
-//! 🎯 EQUATION SOLVERS MODULE - MODERN RUST STRUCTURE
-//! Comprehensive equation solving with step-by-step explanations
-//! Following modern Rust 2021+ conventions and TDD approach
+//! Equation solvers module with modern Rust structure
+//!
+//! Comprehensive equation solving with step-by-step explanations.
+//! Follows modern Rust 2021+ conventions and test-driven development approach.
 
 use crate::core::{Expression, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
@@ -18,7 +19,7 @@ pub use polynomial::PolynomialSolver;
 pub use quadratic::QuadraticSolver;
 pub use systems::SystemSolver;
 
-/// 🎯 SOLVER RESULT - UNIFIED RESULT TYPE
+/// Unified result type for equation solvers
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SolverResult {
     /// Single solution found
@@ -31,9 +32,14 @@ pub enum SolverResult {
     InfiniteSolutions,
     /// Parametric solutions (for systems)
     Parametric(Vec<Expression>),
+    /// Partial solutions found (some but not all roots)
+    /// Used when a solver can find some roots but not all expected roots.
+    /// For example, a cubic equation may have one real root found via rational root theorem,
+    /// but the remaining complex roots cannot be computed without implementing the full cubic formula.
+    Partial(Vec<Expression>),
 }
 
-/// 🎯 SOLVER ERROR - UNIFIED ERROR HANDLING
+/// Unified error handling for equation solvers
 #[derive(Debug, Clone, PartialEq)]
 pub enum SolverError {
     /// Malformed equation
@@ -46,12 +52,12 @@ pub enum SolverError {
     ComplexityLimit(String),
 }
 
-/// 🎯 EQUATION SOLVER TRAIT - COMMON INTERFACE
+/// Common interface for equation solvers
 pub trait EquationSolver {
     /// Solve equation for given variable
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult;
 
-    /// Solve with step-by-step explanation (CRITICAL USER REQUIREMENT)
+    /// Solve with step-by-step explanation
     fn solve_with_explanation(
         &self,
         equation: &Expression,
@@ -62,7 +68,7 @@ pub trait EquationSolver {
     fn can_solve(&self, equation: &Expression) -> bool;
 }
 
-/// 🎯 SYSTEM SOLVER TRAIT - FOR SYSTEM OF EQUATIONS
+/// Trait for solving systems of equations
 pub trait SystemEquationSolver {
     /// Solve system of equations
     fn solve_system(&self, equations: &[Expression], variables: &[Symbol]) -> SolverResult;
@@ -75,19 +81,18 @@ pub trait SystemEquationSolver {
     ) -> (SolverResult, StepByStepExplanation);
 }
 
-// ============================================================================
-// 🧪 SOLVER RESULT UTILITY METHODS
-// ============================================================================
+// Solver result utility methods
 
 impl SolverResult {
     /// Check if result represents a valid solution
     pub fn is_valid_solution(&self) -> bool {
         match self {
-            SolverResult::NoSolution => true, // Valid to have no solution
-            SolverResult::InfiniteSolutions => true, // Valid to have infinite solutions
+            SolverResult::NoSolution => true,
+            SolverResult::InfiniteSolutions => true,
             SolverResult::Single(expr) => expr.is_valid_expression(),
             SolverResult::Multiple(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
             SolverResult::Parametric(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
+            SolverResult::Partial(exprs) => exprs.iter().all(|e| e.is_valid_expression()),
         }
     }
 
@@ -97,15 +102,14 @@ impl SolverResult {
             SolverResult::Single(_) => Some(1),
             SolverResult::Multiple(exprs) => Some(exprs.len()),
             SolverResult::Parametric(exprs) => Some(exprs.len()),
+            SolverResult::Partial(exprs) => Some(exprs.len()),
             SolverResult::NoSolution => Some(0),
-            SolverResult::InfiniteSolutions => None, // Infinite
+            SolverResult::InfiniteSolutions => None,
         }
     }
 }
 
-// ============================================================================
-// 🎓 STEP-BY-STEP INTEGRATION (CRITICAL USER REQUIREMENT)
-// ============================================================================
+// Step-by-step integration for equation solvers
 
 /// Extension trait for Expression to add solver step-by-step support
 pub trait SolverStepByStep {
@@ -138,9 +142,7 @@ impl SolverStepByStep for Expression {
     }
 }
 
-// ============================================================================
-// 🔧 UTILITY FUNCTIONS
-// ============================================================================
+// Utility functions for expression validation
 
 impl Expression {
     /// Check if expression is a valid mathematical expression

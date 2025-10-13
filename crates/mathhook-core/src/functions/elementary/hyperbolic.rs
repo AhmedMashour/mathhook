@@ -1,6 +1,6 @@
 //! Hyperbolic Function Intelligence
 //!
-//! MATHEMATICALLY ACCURATE implementation of hyperbolic functions
+//! Mathematically accurate implementation of hyperbolic functions
 //! with verified derivatives, special values, and hyperbolic identities.
 
 use crate::core::Expression;
@@ -50,7 +50,7 @@ impl HyperbolicIntelligence {
                     result_template: "cosh(x)".to_string(),
                 }),
 
-                // SPECIAL VALUES (MATHEMATICALLY VERIFIED)
+                // Special values (mathematically verified)
                 special_values: vec![
                     // sinh(0) = 0
                     SpecialValue {
@@ -60,7 +60,7 @@ impl HyperbolicIntelligence {
                     },
                 ],
 
-                // HYPERBOLIC IDENTITIES (MATHEMATICALLY VERIFIED)
+                // Hyperbolic identities (mathematically verified)
                 identities: Box::new(vec![
                     // cosh²(x) - sinh²(x) = 1
                     MathIdentity {

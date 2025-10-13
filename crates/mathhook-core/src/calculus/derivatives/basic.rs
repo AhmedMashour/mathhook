@@ -13,11 +13,11 @@ impl BasicDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = symbol!(x);
-    /// let expr = Expression::derivative(Expression::symbol(x.clone()), x, 1);
+    /// let expr = Expression::derivative(Expression::symbol(x.clone()), x.clone(), 1);
     /// let second = expr.derivative(x);
     /// ```
     pub fn handle_calculus(
@@ -46,8 +46,8 @@ impl BasicDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::Derivative;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);

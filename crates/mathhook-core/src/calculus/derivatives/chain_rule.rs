@@ -35,8 +35,8 @@ impl ChainRule {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::chain_rule::ChainRule;
     ///
     /// let x = symbol!(x);
     /// let arg = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
@@ -59,8 +59,8 @@ impl FunctionDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::chain_rule::FunctionDerivatives;
     ///
     /// let x = symbol!(x);
     /// let arg = Expression::symbol(x.clone());

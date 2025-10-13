@@ -151,7 +151,7 @@ impl PersistentCache {
                                 .collect();
 
                             *entries = valid_entries;
-                            println!("📁 Loaded {} persistent cache entries", entries.len());
+                            println!("Loaded {} persistent cache entries", entries.len());
                         }
                     }
                     Err(e) => {
@@ -193,7 +193,7 @@ impl PersistentCache {
                         eprintln!("⚠️ Failed to write persistent cache: {}", e);
                     } else {
                         println!(
-                            "💾 Saved {} entries to persistent cache",
+                            "Saved {} entries to persistent cache",
                             persistent_entries.len()
                         );
                     }
@@ -235,7 +235,7 @@ impl PersistentCache {
             entries.remove(hash);
         }
 
-        println!("🧹 Cleaned up {} old cache entries", to_remove);
+        println!("Cleaned up {} old cache entries", to_remove);
     }
 
     /// Increment operation counter and save if needed

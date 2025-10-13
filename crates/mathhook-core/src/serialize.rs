@@ -10,21 +10,21 @@ use serde_json;
 pub struct MathSerializer;
 
 impl MathSerializer {
-    /// 🎯 PARSE - Convert serialized data to Expression
+    /// Parse - convert serialized data to Expression
     pub fn parse(data_str: &str) -> Result<Expression, SerializationError> {
         let expr_data: ExpressionData = serde_json::from_str(data_str)
             .map_err(|e| SerializationError::InvalidFormat(e.to_string()))?;
         Self::data_to_expression(expr_data)
     }
 
-    /// 🎯 STRINGIFY - Convert Expression to serialized format
+    /// Stringify - convert Expression to serialized format
     pub fn stringify(expr: &Expression) -> Result<String, SerializationError> {
         let expr_data = Self::expression_to_data(expr);
         serde_json::to_string_pretty(&expr_data)
             .map_err(|e| SerializationError::SerializationError(e.to_string()))
     }
 
-    /// 🎯 STRINGIFY COMPACT - Compact format
+    /// Stringify compact - compact format
     pub fn stringify_compact(expr: &Expression) -> Result<String, SerializationError> {
         let expr_data = Self::expression_to_data(expr);
         serde_json::to_string(&expr_data)

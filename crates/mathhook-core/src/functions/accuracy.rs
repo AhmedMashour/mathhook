@@ -1,4 +1,4 @@
-//! 🎯 Mathematical Accuracy Verification
+//! Mathematical accuracy verification
 //!
 //! Research-grade mathematical accuracy verification and enhancement system.
 //! All formulas, constants, and relationships are verified against authoritative

@@ -142,15 +142,15 @@ fn test_explicit_cases() {
     println!("{}", "=".repeat(70));
 
     let total = test_cases.len();
-    println!("\n📊 PARSING:");
+    println!("\nPARSING:");
     println!("  Total cases: {}", total);
     println!(
-        "  ✅ Parsed successfully: {} ({:.1}%)",
+        "  Parsed successfully: {} ({:.1}%)",
         stats.parse_success,
         100.0 * stats.parse_success as f64 / total as f64
     );
     println!(
-        "  ❌ Parse failures: {} ({:.1}%)",
+        "  Parse failures: {} ({:.1}%)",
         stats.parse_failure,
         100.0 * stats.parse_failure as f64 / total as f64
     );
@@ -161,58 +161,58 @@ fn test_explicit_cases() {
         .filter(|c| c.language == "wolfram")
         .count();
 
-    println!("\n📝 LATEX ({} cases):", latex_total);
+    println!("\nLATEX ({} cases):", latex_total);
     println!(
-        "  ✅ Parsed: {} ({:.1}%)",
+        "  Parsed: {} ({:.1}%)",
         stats.latex_parse_success,
         100.0 * stats.latex_parse_success as f64 / latex_total as f64
     );
     println!(
-        "  🎯 Exact string match: {} ({:.1}%)",
+        "  Exact string match: {} ({:.1}%)",
         stats.latex_exact_match,
         100.0 * stats.latex_exact_match as f64 / latex_total as f64
     );
     println!(
-        "  📋 Normalized match: {} ({:.1}%)",
+        "  Normalized match: {} ({:.1}%)",
         stats.latex_normalized_match,
         100.0 * stats.latex_normalized_match as f64 / latex_total as f64
     );
     println!(
-        "  🔄 Semantic match: {} ({:.1}%)",
+        "  Semantic match: {} ({:.1}%)",
         stats.latex_semantic_match,
         100.0 * stats.latex_semantic_match as f64 / latex_total as f64
     );
 
-    println!("\n🅦 WOLFRAM ({} cases):", wolfram_total);
+    println!("\nWOLFRAM ({} cases):", wolfram_total);
     println!(
-        "  ✅ Parsed: {} ({:.1}%)",
+        "  Parsed: {} ({:.1}%)",
         stats.wolfram_parse_success,
         100.0 * stats.wolfram_parse_success as f64 / wolfram_total as f64
     );
     println!(
-        "  🎯 Exact string match: {} ({:.1}%)",
+        "  Exact string match: {} ({:.1}%)",
         stats.wolfram_exact_match,
         100.0 * stats.wolfram_exact_match as f64 / wolfram_total as f64
     );
     println!(
-        "  📋 Normalized match: {} ({:.1}%)",
+        "  Normalized match: {} ({:.1}%)",
         stats.wolfram_normalized_match,
         100.0 * stats.wolfram_normalized_match as f64 / wolfram_total as f64
     );
     println!(
-        "  🔄 Semantic match: {} ({:.1}%)",
+        "  Semantic match: {} ({:.1}%)",
         stats.wolfram_semantic_match,
         100.0 * stats.wolfram_semantic_match as f64 / wolfram_total as f64
     );
 
-    println!("\n❌ ERROR CATEGORIES:");
+    println!("\nERROR CATEGORIES:");
     let mut categories: Vec<_> = error_categories.iter().collect();
     categories.sort_by_key(|(_, count)| std::cmp::Reverse(**count));
     for (category, count) in categories.iter().take(10) {
         println!("  {} : {} cases", category, count);
     }
 
-    println!("\n💾 Results written to: {}", output_path);
+    println!("\nResults written to: {}", output_path);
     println!("{}", "=".repeat(70));
 }
 

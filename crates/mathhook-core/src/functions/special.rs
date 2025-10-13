@@ -1,4 +1,4 @@
-//! 🌟 Special Function Intelligence
+//! Special function intelligence
 //!
 //! Complete implementation of special mathematical functions including
 //! elliptic functions, hypergeometric functions, and other advanced functions

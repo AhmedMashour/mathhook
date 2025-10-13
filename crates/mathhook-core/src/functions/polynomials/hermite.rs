@@ -1,6 +1,6 @@
 //! Hermite Polynomial Intelligence
 //!
-//! MATHEMATICALLY ACCURATE implementation of Hermite polynomials H_n(x)
+//! Mathematically accurate implementation of Hermite polynomials H_n(x)
 //! for quantum harmonic oscillator eigenfunctions with verified properties.
 
 use crate::core::Expression;
@@ -60,7 +60,7 @@ impl HermiteIntelligence {
                     // Coefficient of H_{n-1}(x): -2n
                     gamma_coeff: Expression::mul(vec![Expression::integer(-2), Expression::symbol("n")]),
                     
-                    // INITIAL CONDITIONS (MATHEMATICALLY VERIFIED)
+                    // Initial conditions (mathematically verified)
                     // H_0(x) = 1, H_1(x) = 2x
                     initial_conditions: (
                         Expression::integer(1), 
@@ -68,7 +68,7 @@ impl HermiteIntelligence {
                     ),
                 },
                 
-                // ORTHOGONALITY PROPERTIES (MATHEMATICALLY VERIFIED)
+                // Orthogonality properties (mathematically verified)
                 // ∫_{-∞}^{∞} H_m(x) H_n(x) e^{-x²} dx = √π 2^n n! δ_{mn}
                 orthogonality: Some(OrthogonalityData {
                     // Weight function: w(x) = e^{-x²}
@@ -84,7 +84,7 @@ impl HermiteIntelligence {
                     norm_squared: Expression::function("hermite_norm_squared", vec![Expression::symbol("n")]),
                 }),
                 
-                // RODRIGUES' FORMULA (MATHEMATICALLY VERIFIED)
+                // Rodrigues' formula (mathematically verified)
                 // H_n(x) = (-1)^n e^{x²} d^n/dx^n e^{-x²}
                 rodrigues_formula: Some(RodriguesFormula {
                     formula: "H_n(x) = (-1)^n e^{x²} d^n/dx^n e^{-x²}".to_string(),
@@ -92,14 +92,14 @@ impl HermiteIntelligence {
                     weight_function: Expression::function("gaussian_weight", vec![Expression::symbol("x")]),
                 }),
                 
-                // GENERATING FUNCTION (MATHEMATICALLY VERIFIED)
+                // Generating function (mathematically verified)
                 // e^{2xt - t²} = Σ_{n=0}^∞ H_n(x) t^n/n!
                 generating_function: Some(GeneratingFunction {
                     function: Expression::function("hermite_generating", vec![Expression::symbol("x"), Expression::symbol("t")]),
                     gf_type: GeneratingFunctionType::Exponential,
                 }),
                 
-                // SPECIAL VALUES (MATHEMATICALLY VERIFIED)
+                // Special values (mathematically verified)
                 special_values: vec![
                     // H_n(0) depends on parity of n
                     SpecialValue {
@@ -109,7 +109,7 @@ impl HermiteIntelligence {
                     },
                 ],
                 
-                // EVALUATION METHOD: Recurrence is most numerically stable
+                // Evaluation method: Recurrence is most numerically stable
                 evaluation_method: EvaluationMethod::Recurrence,
             })),
         );

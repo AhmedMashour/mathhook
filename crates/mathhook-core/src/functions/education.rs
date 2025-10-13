@@ -1,4 +1,4 @@
-//! 🎓 Educational Function System
+//! Educational function system
 //!
 //! Provides step-by-step explanations for ALL function operations
 //! to comply with MathHook's educational integration requirements.

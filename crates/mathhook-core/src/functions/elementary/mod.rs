@@ -1,4 +1,4 @@
-//! 📐 Elementary Function Intelligence
+//! Elementary function intelligence
 //!
 //! Dedicated module for elementary mathematical functions (sin, cos, exp, ln, etc.)
 //! with complete mathematical properties, derivatives, and educational explanations.

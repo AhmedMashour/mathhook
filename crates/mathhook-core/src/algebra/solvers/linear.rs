@@ -50,7 +50,7 @@ impl EquationSolver for LinearSolver {
         // Extract coefficients from simplified linear equation
         let (a, b) = self.extract_linear_coefficients(&simplified_equation, variable);
 
-        // 🧠 SMART SOLVER: Analyze original equation structure before simplification
+        // Smart solver: Analyze original equation structure before simplification
 
         // Check if original equation has patterns like 0*x + constant
         if let Some(special_result) = self.detect_special_linear_cases(equation, variable) {
@@ -129,7 +129,7 @@ impl EquationSolver for LinearSolver {
         let neg_b = self.negate_expression(&b_simplified).simplify();
         let solution = self.divide_expressions(&neg_b, &a_simplified).simplify();
 
-        // 🎯 SIMPLE STEP-BY-STEP EXPLANATION (WORKING TDD VERSION)
+        // Simple step-by-step explanation (working TDD version)
         let steps = vec![
             Step::new(
                 "Given Equation",
@@ -268,7 +268,7 @@ impl LinearSolver {
         }
     }
 
-    /// 🧠 SMART: Detect special linear cases before simplification
+    /// Detect special linear cases before simplification
     #[inline(always)]
     fn detect_special_linear_cases(
         &self,
@@ -307,7 +307,7 @@ impl LinearSolver {
         Expression::mul(vec![Expression::integer(-1), expr.clone()])
     }
 
-    /// 🧠 SMART: Evaluate expressions with fraction handling
+    /// Evaluate expressions with fraction handling
     #[inline(always)]
     fn try_numeric_evaluation(&self, expr: &Expression) -> Expression {
         match expr {
@@ -321,7 +321,7 @@ impl LinearSolver {
                     expr.clone()
                 }
             }
-            // 🧠 SMART: Handle fractions that should be evaluated
+            // Handle fractions that should be evaluated
             Expression::Function { name, args } if name == "fraction" && args.len() == 2 => {
                 self.evaluate_expression(expr)
             }

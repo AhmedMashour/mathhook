@@ -1,6 +1,6 @@
 //! Chebyshev Polynomial Intelligence
 //!
-//! MATHEMATICALLY ACCURATE implementation of Chebyshev polynomials T_n(x), U_n(x)
+//! Mathematically accurate implementation of Chebyshev polynomials T_n(x), U_n(x)
 //! for approximation theory with verified properties.
 
 use crate::core::Expression;
@@ -62,12 +62,12 @@ impl ChebyshevIntelligence {
                     // Coefficient of T_{n-1}(x): -1
                     gamma_coeff: Expression::integer(-1),
 
-                    // INITIAL CONDITIONS (MATHEMATICALLY VERIFIED)
+                    // Initial conditions (mathematically verified)
                     // T_0(x) = 1, T_1(x) = x
                     initial_conditions: (Expression::integer(1), Expression::symbol("x")),
                 },
 
-                // ORTHOGONALITY PROPERTIES (MATHEMATICALLY VERIFIED)
+                // Orthogonality properties (mathematically verified)
                 // ∫_{-1}^{1} T_m(x) T_n(x) / √(1-x²) dx = π/2 δ_{mn} (n > 0), π δ_{0n} (n = 0)
                 orthogonality: Some(OrthogonalityData {
                     // Weight function: w(x) = 1/√(1-x²)
@@ -86,7 +86,7 @@ impl ChebyshevIntelligence {
                     ),
                 }),
 
-                // RODRIGUES' FORMULA (Alternative representation)
+                // Rodrigues' formula (alternative representation)
                 rodrigues_formula: Some(RodriguesFormula {
                     formula: "T_n(x) = cos(n arccos(x))".to_string(),
                     normalization: Expression::integer(1),
@@ -96,7 +96,7 @@ impl ChebyshevIntelligence {
                     ),
                 }),
 
-                // GENERATING FUNCTION (MATHEMATICALLY VERIFIED)
+                // Generating function (mathematically verified)
                 // (1-tx)/(1-2tx+t²) = Σ_{n=0}^∞ T_n(x) t^n
                 generating_function: Some(GeneratingFunction {
                     function: Expression::function(
@@ -106,7 +106,7 @@ impl ChebyshevIntelligence {
                     gf_type: GeneratingFunctionType::Ordinary,
                 }),
 
-                // SPECIAL VALUES (MATHEMATICALLY VERIFIED)
+                // Special values (mathematically verified)
                 special_values: vec![
                     // T_n(1) = 1 for all n ≥ 0
                     SpecialValue {
@@ -123,7 +123,7 @@ impl ChebyshevIntelligence {
                     },
                 ],
 
-                // EVALUATION METHOD: Recurrence is most stable
+                // Evaluation method: Recurrence is most stable
                 evaluation_method: EvaluationMethod::Recurrence,
             })),
         );
@@ -145,7 +145,7 @@ impl ChebyshevIntelligence {
                     beta_coeff: Expression::integer(0),
                     gamma_coeff: Expression::integer(-1),
 
-                    // INITIAL CONDITIONS (MATHEMATICALLY VERIFIED)
+                    // Initial conditions (mathematically verified)
                     // U_0(x) = 1, U_1(x) = 2x
                     initial_conditions: (
                         Expression::integer(1),
@@ -153,7 +153,7 @@ impl ChebyshevIntelligence {
                     ),
                 },
 
-                // ORTHOGONALITY PROPERTIES (MATHEMATICALLY VERIFIED)
+                // Orthogonality properties (mathematically verified)
                 // ∫_{-1}^{1} U_m(x) U_n(x) √(1-x²) dx = π/2 δ_{mn}
                 orthogonality: Some(OrthogonalityData {
                     // Weight function: w(x) = √(1-x²)

@@ -1,9 +1,11 @@
 //! Number type for mathematical computations
 
+use crate::error::MathError;
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::{One, Zero};
 use serde::{Deserialize, Serialize};
+use std::ops::{Add, Div, Mul, Sub};
 
 /// Unified number type supporting integers, rationals, and floats
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -145,6 +147,357 @@ impl std::fmt::Display for Number {
                 } else {
                     write!(f, "{}/{}", r.numer(), r.denom())
                 }
+            }
+        }
+    }
+}
+
+/// Addition with overflow checking and promotion to BigInt
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::Number;
+///
+/// let a = Number::integer(5);
+/// let b = Number::integer(3);
+/// let result = (a + b).unwrap();
+/// assert_eq!(result, Number::integer(8));
+/// ```
+impl Add for Number {
+    type Output = Result<Number, MathError>;
+
+    fn add(self, other: Number) -> Result<Number, MathError> {
+        match (self, other) {
+            (Number::Integer(a), Number::Integer(b)) => {
+                match a.checked_add(b) {
+                    Some(result) => Ok(Number::Integer(result)),
+                    None => {
+                        Ok(Number::BigInteger(Box::new(
+                            BigInt::from(a) + BigInt::from(b)
+                        )))
+                    }
+                }
+            }
+
+            (Number::BigInteger(a), Number::BigInteger(b)) => {
+                Ok(Number::BigInteger(Box::new(*a + *b)))
+            }
+
+            (Number::Integer(i), Number::BigInteger(bi)) | (Number::BigInteger(bi), Number::Integer(i)) => {
+                Ok(Number::BigInteger(Box::new(*bi + BigInt::from(i))))
+            }
+
+            (Number::Rational(a), Number::Rational(b)) => {
+                Ok(Number::Rational(Box::new(*a + *b)))
+            }
+
+            (Number::Integer(i), Number::Rational(r)) | (Number::Rational(r), Number::Integer(i)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(i_rational + *r)))
+            }
+
+            (Number::BigInteger(bi), Number::Rational(r)) | (Number::Rational(r), Number::BigInteger(bi)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(bi_rational + *r)))
+            }
+
+            (Number::Float(a), Number::Float(b)) => {
+                Ok(Number::Float(a + b))
+            }
+
+            (Number::Integer(i), Number::Float(f)) | (Number::Float(f), Number::Integer(i)) => {
+                Ok(Number::Float(i as f64 + f))
+            }
+
+            (Number::BigInteger(bi), Number::Float(f)) | (Number::Float(f), Number::BigInteger(bi)) => {
+                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) + f))
+            }
+
+            (Number::Rational(r), Number::Float(f)) | (Number::Float(f), Number::Rational(r)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(r_float + f))
+            }
+        }
+    }
+}
+
+/// Subtraction with overflow checking and promotion to BigInt
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::Number;
+///
+/// let a = Number::integer(10);
+/// let b = Number::integer(3);
+/// let result = (a - b).unwrap();
+/// assert_eq!(result, Number::integer(7));
+/// ```
+impl Sub for Number {
+    type Output = Result<Number, MathError>;
+
+    fn sub(self, other: Number) -> Result<Number, MathError> {
+        match (self, other) {
+            (Number::Integer(a), Number::Integer(b)) => {
+                match a.checked_sub(b) {
+                    Some(result) => Ok(Number::Integer(result)),
+                    None => {
+                        Ok(Number::BigInteger(Box::new(
+                            BigInt::from(a) - BigInt::from(b)
+                        )))
+                    }
+                }
+            }
+
+            (Number::BigInteger(a), Number::BigInteger(b)) => {
+                Ok(Number::BigInteger(Box::new(*a - *b)))
+            }
+
+            (Number::Integer(i), Number::BigInteger(bi)) => {
+                Ok(Number::BigInteger(Box::new(BigInt::from(i) - *bi)))
+            }
+
+            (Number::BigInteger(bi), Number::Integer(i)) => {
+                Ok(Number::BigInteger(Box::new(*bi - BigInt::from(i))))
+            }
+
+            (Number::Rational(a), Number::Rational(b)) => {
+                Ok(Number::Rational(Box::new(*a - *b)))
+            }
+
+            (Number::Integer(i), Number::Rational(r)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(i_rational - *r)))
+            }
+
+            (Number::Rational(r), Number::Integer(i)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(*r - i_rational)))
+            }
+
+            (Number::BigInteger(bi), Number::Rational(r)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(bi_rational - *r)))
+            }
+
+            (Number::Rational(r), Number::BigInteger(bi)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(*r - bi_rational)))
+            }
+
+            (Number::Float(a), Number::Float(b)) => {
+                Ok(Number::Float(a - b))
+            }
+
+            (Number::Integer(i), Number::Float(f)) => {
+                Ok(Number::Float(i as f64 - f))
+            }
+
+            (Number::Float(f), Number::Integer(i)) => {
+                Ok(Number::Float(f - i as f64))
+            }
+
+            (Number::BigInteger(bi), Number::Float(f)) => {
+                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) - f))
+            }
+
+            (Number::Float(f), Number::BigInteger(bi)) => {
+                Ok(Number::Float(f - bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY)))
+            }
+
+            (Number::Rational(r), Number::Float(f)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(r_float - f))
+            }
+
+            (Number::Float(f), Number::Rational(r)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(f - r_float))
+            }
+        }
+    }
+}
+
+/// Multiplication with overflow checking and promotion to BigInt
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::Number;
+///
+/// let a = Number::integer(6);
+/// let b = Number::integer(7);
+/// let result = (a * b).unwrap();
+/// assert_eq!(result, Number::integer(42));
+/// ```
+impl Mul for Number {
+    type Output = Result<Number, MathError>;
+
+    fn mul(self, other: Number) -> Result<Number, MathError> {
+        match (self, other) {
+            (Number::Integer(a), Number::Integer(b)) => {
+                match a.checked_mul(b) {
+                    Some(result) => Ok(Number::Integer(result)),
+                    None => {
+                        Ok(Number::BigInteger(Box::new(
+                            BigInt::from(a) * BigInt::from(b)
+                        )))
+                    }
+                }
+            }
+
+            (Number::BigInteger(a), Number::BigInteger(b)) => {
+                Ok(Number::BigInteger(Box::new(*a * *b)))
+            }
+
+            (Number::Integer(i), Number::BigInteger(bi)) | (Number::BigInteger(bi), Number::Integer(i)) => {
+                Ok(Number::BigInteger(Box::new(*bi * BigInt::from(i))))
+            }
+
+            (Number::Rational(a), Number::Rational(b)) => {
+                Ok(Number::Rational(Box::new(*a * *b)))
+            }
+
+            (Number::Integer(i), Number::Rational(r)) | (Number::Rational(r), Number::Integer(i)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(i_rational * *r)))
+            }
+
+            (Number::BigInteger(bi), Number::Rational(r)) | (Number::Rational(r), Number::BigInteger(bi)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(bi_rational * *r)))
+            }
+
+            (Number::Float(a), Number::Float(b)) => {
+                Ok(Number::Float(a * b))
+            }
+
+            (Number::Integer(i), Number::Float(f)) | (Number::Float(f), Number::Integer(i)) => {
+                Ok(Number::Float(i as f64 * f))
+            }
+
+            (Number::BigInteger(bi), Number::Float(f)) | (Number::Float(f), Number::BigInteger(bi)) => {
+                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) * f))
+            }
+
+            (Number::Rational(r), Number::Float(f)) | (Number::Float(f), Number::Rational(r)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(r_float * f))
+            }
+        }
+    }
+}
+
+/// Division with division by zero check and automatic promotion to rational
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::Number;
+///
+/// let a = Number::integer(10);
+/// let b = Number::integer(2);
+/// let result = (a / b).unwrap();
+/// assert_eq!(result, Number::integer(5));
+/// ```
+impl Div for Number {
+    type Output = Result<Number, MathError>;
+
+    fn div(self, other: Number) -> Result<Number, MathError> {
+        if other.is_zero() {
+            return Err(MathError::DivisionByZero);
+        }
+
+        match (self, other) {
+            (Number::Integer(a), Number::Integer(b)) => {
+                if a % b == 0 {
+                    Ok(Number::Integer(a / b))
+                } else {
+                    Ok(Number::Rational(Box::new(
+                        BigRational::new(BigInt::from(a), BigInt::from(b))
+                    )))
+                }
+            }
+
+            (Number::BigInteger(a), Number::BigInteger(b)) => {
+                if (*a).clone() % (*b).clone() == BigInt::from(0) {
+                    Ok(Number::BigInteger(Box::new(*a / *b)))
+                } else {
+                    Ok(Number::Rational(Box::new(BigRational::new(*a, *b))))
+                }
+            }
+
+            (Number::Integer(i), Number::BigInteger(bi)) => {
+                Ok(Number::Rational(Box::new(
+                    BigRational::new(BigInt::from(i), *bi)
+                )))
+            }
+
+            (Number::BigInteger(bi), Number::Integer(i)) => {
+                Ok(Number::Rational(Box::new(
+                    BigRational::new(*bi, BigInt::from(i))
+                )))
+            }
+
+            (Number::Rational(a), Number::Rational(b)) => {
+                Ok(Number::Rational(Box::new(*a / *b)))
+            }
+
+            (Number::Integer(i), Number::Rational(r)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(i_rational / *r)))
+            }
+
+            (Number::Rational(r), Number::Integer(i)) => {
+                let i_rational = BigRational::from(BigInt::from(i));
+                Ok(Number::Rational(Box::new(*r / i_rational)))
+            }
+
+            (Number::BigInteger(bi), Number::Rational(r)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(bi_rational / *r)))
+            }
+
+            (Number::Rational(r), Number::BigInteger(bi)) => {
+                let bi_rational = BigRational::from(*bi);
+                Ok(Number::Rational(Box::new(*r / bi_rational)))
+            }
+
+            (Number::Float(a), Number::Float(b)) => {
+                Ok(Number::Float(a / b))
+            }
+
+            (Number::Integer(i), Number::Float(f)) => {
+                Ok(Number::Float(i as f64 / f))
+            }
+
+            (Number::Float(f), Number::Integer(i)) => {
+                Ok(Number::Float(f / i as f64))
+            }
+
+            (Number::BigInteger(bi), Number::Float(f)) => {
+                Ok(Number::Float(bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY) / f))
+            }
+
+            (Number::Float(f), Number::BigInteger(bi)) => {
+                Ok(Number::Float(f / bi.to_string().parse::<f64>().unwrap_or(f64::INFINITY)))
+            }
+
+            (Number::Rational(r), Number::Float(f)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(r_float / f))
+            }
+
+            (Number::Float(f), Number::Rational(r)) => {
+                let r_float = r.numer().to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+                    / r.denom().to_string().parse::<f64>().unwrap_or(1.0);
+                Ok(Number::Float(f / r_float))
             }
         }
     }

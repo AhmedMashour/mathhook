@@ -1,4 +1,4 @@
-//! 📈 Exponential Function Intelligence
+//! Exponential function intelligence
 //!
 //! Complete mathematical intelligence for exponential functions
 //! with derivatives, special values, and mathematical properties.

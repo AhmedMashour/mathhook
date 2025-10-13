@@ -41,8 +41,8 @@ impl HigherOrderDerivatives {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::symbol;
+    /// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::higher_order::HigherOrderDerivatives;
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);

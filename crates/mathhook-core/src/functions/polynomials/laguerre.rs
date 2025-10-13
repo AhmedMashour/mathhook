@@ -1,6 +1,6 @@
 //! Laguerre Polynomial Intelligence
 //!
-//! MATHEMATICALLY ACCURATE implementation of Laguerre polynomials L_n(x)
+//! Mathematically accurate implementation of Laguerre polynomials L_n(x)
 //! for hydrogen atom radial wavefunctions with verified properties.
 
 use crate::core::Expression;
@@ -64,7 +64,7 @@ impl LaguerreIntelligence {
                         vec![Expression::symbol("n")],
                     ),
 
-                    // INITIAL CONDITIONS (MATHEMATICALLY VERIFIED)
+                    // Initial conditions (mathematically verified)
                     // L_0(x) = 1, L_1(x) = 1 - x
                     initial_conditions: (
                         Expression::integer(1),
@@ -75,7 +75,7 @@ impl LaguerreIntelligence {
                     ),
                 },
 
-                // ORTHOGONALITY PROPERTIES (MATHEMATICALLY VERIFIED)
+                // Orthogonality properties (mathematically verified)
                 // ∫_0^∞ L_m(x) L_n(x) e^{-x} dx = δ_{mn}
                 orthogonality: Some(OrthogonalityData {
                     // Weight function: w(x) = e^{-x}
@@ -94,7 +94,7 @@ impl LaguerreIntelligence {
                     norm_squared: Expression::integer(1),
                 }),
 
-                // RODRIGUES' FORMULA (MATHEMATICALLY VERIFIED)
+                // Rodrigues' formula (mathematically verified)
                 // L_n(x) = (e^x/n!) d^n/dx^n (x^n e^{-x})
                 rodrigues_formula: Some(RodriguesFormula {
                     formula: "L_n(x) = (e^x/n!) d^n/dx^n (x^n e^{-x})".to_string(),
@@ -108,7 +108,7 @@ impl LaguerreIntelligence {
                     ),
                 }),
 
-                // GENERATING FUNCTION (MATHEMATICALLY VERIFIED)
+                // Generating function (mathematically verified)
                 // 1/(1-t) exp(-xt/(1-t)) = Σ_{n=0}^∞ L_n(x) t^n
                 generating_function: Some(GeneratingFunction {
                     function: Expression::function(
@@ -118,7 +118,7 @@ impl LaguerreIntelligence {
                     gf_type: GeneratingFunctionType::Ordinary,
                 }),
 
-                // SPECIAL VALUES (MATHEMATICALLY VERIFIED)
+                // Special values (mathematically verified)
                 special_values: vec![
                     // L_n(0) = 1 for all n ≥ 0
                     SpecialValue {
@@ -128,7 +128,7 @@ impl LaguerreIntelligence {
                     },
                 ],
 
-                // EVALUATION METHOD: Recurrence is most numerically stable
+                // Evaluation method: Recurrence is most numerically stable
                 evaluation_method: EvaluationMethod::Recurrence,
             })),
         );

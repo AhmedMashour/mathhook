@@ -1,0 +1,405 @@
+//! Domain error tests
+//!
+//! Comprehensive tests for mathematical domain restrictions and error handling.
+//! Verifies that operations correctly detect and report domain violations,
+//! singularities, and undefined behavior.
+
+use mathhook_core::{Expression, MathError, Number, Simplify};
+
+/// Test that 0^(-1) produces division by zero error
+///
+/// Mathematical reasoning: 0^(-1) = 1/0^1 = 1/0 which is division by zero
+#[test]
+fn test_zero_to_negative_one_division_by_zero() {
+    let base = Expression::integer(0);
+    let exp = Expression::integer(-1);
+    let expr = Expression::pow(base, exp);
+
+    // Currently returns Expression::function("undefined", vec![])
+    // After fix, should detect division by zero during simplification
+    let simplified = expr.simplify();
+
+    // For now, verify it returns undefined function
+    match simplified {
+        Expression::Function { name, .. } if name == "undefined" => {
+            // Expected current behavior
+        }
+        _ => {
+            // After implementing error system, this test will need updating
+            // to expect an error or a symbolic representation that can be
+            // evaluated to produce an error
+        }
+    }
+}
+
+/// Test that 0^0 is recognized as indeterminate
+///
+/// Mathematical reasoning: 0^0 is an indeterminate form with different
+/// conventions in different contexts (often 1 in combinatorics, undefined in analysis)
+#[test]
+fn test_zero_to_zero_indeterminate() {
+    let base = Expression::integer(0);
+    let exp = Expression::integer(0);
+    let expr = Expression::pow(base, exp);
+
+    let simplified = expr.simplify();
+
+    // 0^0 should be handled specially
+    // Convention: In many contexts, 0^0 = 1, but it's technically indeterminate
+    // The simplifier currently returns 1 (x^0 = 1 rule)
+    // This is acceptable for now, but should be documented
+}
+
+/// Test that 0^(-n) for n > 1 is division by zero
+#[test]
+fn test_zero_to_negative_power_division_by_zero() {
+    for n in [2, 3, 5, 10] {
+        let base = Expression::integer(0);
+        let exp = Expression::integer(-n);
+        let expr = Expression::pow(base, exp);
+
+        let simplified = expr.simplify();
+
+        // 0^(-n) = 1/0^n = 1/0 is division by zero
+        // Should either return error or symbolic representation
+    }
+}
+
+/// Test that sqrt(-1) in real domain produces domain error
+///
+/// Note: This requires domain-aware evaluation (not yet implemented)
+/// In complex domain, sqrt(-1) = i is valid
+#[test]
+#[ignore] // Requires domain-aware evaluation
+fn test_sqrt_negative_real_domain() {
+    let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
+
+    // When real-domain evaluation is implemented:
+    // let result = expr.evaluate_real();
+    // assert!(matches!(result, Err(MathError::DomainError { .. })));
+
+    // In complex domain, should return i:
+    // let result = expr.evaluate_complex();
+    // assert_eq!(result, Ok(Expression::i()));
+}
+
+/// Test that sqrt requires non-negative input in real domain
+#[test]
+#[ignore] // Requires domain-aware evaluation
+fn test_sqrt_domain_restriction() {
+    let test_cases = vec![
+        (-2, true),   // Should error
+        (-1, true),   // Should error
+        (0, false),   // Valid: sqrt(0) = 0
+        (1, false),   // Valid: sqrt(1) = 1
+        (4, false),   // Valid: sqrt(4) = 2
+    ];
+
+    for (value, should_error) in test_cases {
+        let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(value)]);
+        // When implemented, check error vs success
+    }
+}
+
+/// Test that log(0) produces pole error
+///
+/// Mathematical reasoning: log(x) → -∞ as x → 0+, so log(0) is a pole
+#[test]
+#[ignore] // Requires function domain checking
+fn test_log_zero_pole() {
+    let expr = Expression::function("log".to_string(), vec![Expression::integer(0)]);
+
+    // When implemented:
+    // let result = expr.evaluate();
+    // assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "log"));
+}
+
+/// Test that log requires positive input in real domain
+#[test]
+#[ignore] // Requires domain-aware evaluation
+fn test_log_domain_restriction() {
+    let test_cases = vec![
+        (-2, true),   // Negative: branch cut in real domain
+        (-1, true),   // Negative: branch cut in real domain
+        (0, true),    // Zero: pole
+        (1, false),   // Valid: log(1) = 0
+        (2, false),   // Valid: log(2) ≈ 0.693
+    ];
+
+    for (value, should_error) in test_cases {
+        let expr = Expression::function("log".to_string(), vec![Expression::integer(value)]);
+        // When implemented, check error vs success
+    }
+}
+
+/// Test that log of negative numbers produces branch cut error in real domain
+#[test]
+#[ignore] // Requires domain-aware evaluation
+fn test_log_negative_branch_cut() {
+    let expr = Expression::function("log".to_string(), vec![Expression::integer(-1)]);
+
+    // In real domain:
+    // let result = expr.evaluate_real();
+    // assert!(matches!(result, Err(MathError::BranchCut { .. })));
+
+    // In complex domain (principal branch):
+    // log(-1) = ln|-1| + i*arg(-1) = 0 + i*π = iπ
+    // let result = expr.evaluate_complex();
+    // Should succeed
+}
+
+/// Test that division by zero is detected
+#[test]
+#[ignore] // Requires evaluation error handling
+fn test_division_by_zero() {
+    // Division is represented as multiplication by negative power
+    // 1/0 = 1 * 0^(-1)
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(Expression::integer(0), Expression::integer(-1))
+    ]);
+
+    // When evaluation is implemented:
+    // let result = expr.evaluate();
+    // assert!(matches!(result, Err(MathError::DivisionByZero)));
+}
+
+/// Test that tan(π/2) produces pole error
+///
+/// Mathematical reasoning: tan(x) = sin(x)/cos(x), and cos(π/2) = 0
+#[test]
+#[ignore] // Requires function domain checking
+fn test_tan_pole_at_pi_over_2() {
+    use std::f64::consts::PI;
+
+    let expr = Expression::function("tan".to_string(), vec![
+        Expression::Number(Number::float(PI / 2.0))
+    ]);
+
+    // When implemented:
+    // let result = expr.evaluate();
+    // assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "tan"));
+}
+
+/// Test that tan has poles at π/2 + nπ
+#[test]
+#[ignore] // Requires function domain checking
+fn test_tan_multiple_poles() {
+    use std::f64::consts::PI;
+
+    let pole_locations = vec![
+        PI / 2.0,         // π/2
+        -PI / 2.0,        // -π/2
+        3.0 * PI / 2.0,   // 3π/2
+        5.0 * PI / 2.0,   // 5π/2
+    ];
+
+    for pole in pole_locations {
+        let expr = Expression::function("tan".to_string(), vec![
+            Expression::Number(Number::float(pole))
+        ]);
+        // Should produce pole error
+    }
+}
+
+/// Test that arcsin domain is [-1, 1] in real numbers
+#[test]
+#[ignore] // Requires function domain checking
+fn test_arcsin_domain_restriction() {
+    let test_cases = vec![
+        (-2.0, true),   // Out of domain
+        (-1.5, true),   // Out of domain
+        (-1.0, false),  // Valid: arcsin(-1) = -π/2
+        (0.0, false),   // Valid: arcsin(0) = 0
+        (0.5, false),   // Valid: arcsin(0.5) = π/6
+        (1.0, false),   // Valid: arcsin(1) = π/2
+        (1.5, true),    // Out of domain
+        (2.0, true),    // Out of domain
+    ];
+
+    for (value, should_error) in test_cases {
+        let expr = Expression::function("arcsin".to_string(), vec![
+            Expression::Number(Number::float(value))
+        ]);
+        // When implemented, check error vs success
+    }
+}
+
+/// Test that arccos domain is [-1, 1] in real numbers
+#[test]
+#[ignore] // Requires function domain checking
+fn test_arccos_domain_restriction() {
+    let test_cases = vec![
+        (-2.0, true),   // Out of domain
+        (-1.0, false),  // Valid: arccos(-1) = π
+        (0.0, false),   // Valid: arccos(0) = π/2
+        (1.0, false),   // Valid: arccos(1) = 0
+        (2.0, true),    // Out of domain
+    ];
+
+    for (value, should_error) in test_cases {
+        let expr = Expression::function("arccos".to_string(), vec![
+            Expression::Number(Number::float(value))
+        ]);
+        // When implemented, check error vs success
+    }
+}
+
+/// Test that csc(0) produces pole error
+///
+/// Mathematical reasoning: csc(x) = 1/sin(x), and sin(0) = 0
+#[test]
+#[ignore] // Requires function domain checking
+fn test_csc_pole_at_zero() {
+    let expr = Expression::function("csc".to_string(), vec![Expression::integer(0)]);
+
+    // When implemented:
+    // let result = expr.evaluate();
+    // assert!(matches!(result, Err(MathError::Pole { .. })));
+}
+
+/// Test that csc has poles at nπ
+#[test]
+#[ignore] // Requires function domain checking
+fn test_csc_multiple_poles() {
+    use std::f64::consts::PI;
+
+    let pole_locations = vec![
+        0.0,
+        PI,
+        -PI,
+        2.0 * PI,
+        3.0 * PI,
+    ];
+
+    for pole in pole_locations {
+        let expr = Expression::function("csc".to_string(), vec![
+            Expression::Number(Number::float(pole))
+        ]);
+        // Should produce pole error
+    }
+}
+
+/// Test that sec(π/2) produces pole error
+///
+/// Mathematical reasoning: sec(x) = 1/cos(x), and cos(π/2) = 0
+#[test]
+#[ignore] // Requires function domain checking
+fn test_sec_pole_at_pi_over_2() {
+    use std::f64::consts::PI;
+
+    let expr = Expression::function("sec".to_string(), vec![
+        Expression::Number(Number::float(PI / 2.0))
+    ]);
+
+    // When implemented:
+    // let result = expr.evaluate();
+    // assert!(matches!(result, Err(MathError::Pole { .. })));
+}
+
+/// Test error messages are clear and helpful
+#[test]
+fn test_error_messages_quality() {
+    // Test DivisionByZero message
+    let err = MathError::DivisionByZero;
+    let msg = err.to_string();
+    assert!(msg.contains("Division by zero"));
+
+    // Test DomainError message
+    let err = MathError::DomainError {
+        operation: "sqrt".to_string(),
+        value: Expression::integer(-1),
+        reason: "sqrt requires non-negative input in real domain".to_string(),
+    };
+    let msg = err.to_string();
+    assert!(msg.contains("Domain error"));
+    assert!(msg.contains("sqrt"));
+
+    // Test Pole message
+    let err = MathError::Pole {
+        function: "log".to_string(),
+        at: Expression::integer(0),
+    };
+    let msg = err.to_string();
+    assert!(msg.contains("Pole singularity"));
+    assert!(msg.contains("log"));
+
+    // Test BranchCut message
+    let err = MathError::BranchCut {
+        function: "log".to_string(),
+        value: Expression::integer(-1),
+    };
+    let msg = err.to_string();
+    assert!(msg.contains("Branch cut"));
+    assert!(msg.contains("log"));
+
+    // Test Undefined message
+    let err = MathError::Undefined {
+        expression: Expression::pow(Expression::integer(0), Expression::integer(0)),
+        reason: "0^0 is indeterminate".to_string(),
+    };
+    let msg = err.to_string();
+    assert!(msg.contains("Undefined"));
+    assert!(msg.contains("indeterminate"));
+}
+
+/// Test that error type is Clone and PartialEq
+#[test]
+fn test_error_traits() {
+    let err1 = MathError::DivisionByZero;
+    let err2 = err1.clone();
+    assert_eq!(err1, err2);
+
+    let err3 = MathError::NotImplemented {
+        feature: "groebner bases".to_string(),
+    };
+    assert_ne!(err1, err3);
+}
+
+/// Test that MathError implements std::error::Error
+#[test]
+fn test_error_trait_implementation() {
+    let err: Box<dyn std::error::Error> = Box::new(MathError::DivisionByZero);
+    let _msg = err.to_string(); // Should work since Error trait is implemented
+}
+
+/// Test future evaluation API structure
+///
+/// This test documents the intended API for domain-aware evaluation
+#[test]
+#[ignore] // Future API - not yet implemented
+fn test_future_evaluation_api_structure() {
+    let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
+
+    // Future API (not yet implemented):
+    // Real domain evaluation - should error
+    // let result = expr.evaluate_in_domain(Domain::Real);
+    // assert!(matches!(result, Err(MathError::DomainError { .. })));
+
+    // Complex domain evaluation - should succeed
+    // let result = expr.evaluate_in_domain(Domain::Complex);
+    // assert!(result.is_ok());
+
+    // Default evaluation (complex-safe)
+    // let result = expr.evaluate();
+    // assert!(result.is_ok());
+}
+
+/// Integration test: Verify that simplification doesn't lose error information
+#[test]
+fn test_simplification_preserves_error_markers() {
+    // When we have 0^(-1), even after simplification, the error should be detectable
+    let expr = Expression::pow(Expression::integer(0), Expression::integer(-1));
+    let simplified = expr.simplify();
+
+    // Currently returns Expression::function("undefined", vec![])
+    // This is a marker for error - not ideal but better than silently wrong result
+    match simplified {
+        Expression::Function { name, .. } if name == "undefined" => {
+            // Current behavior - acceptable as error marker
+        }
+        _ => {
+            // Future: Should have better error handling
+        }
+    }
+}

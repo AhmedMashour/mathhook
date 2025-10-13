@@ -117,7 +117,7 @@ impl RuntimeProfiler {
             if old_simd != thresholds.simd_threshold
                 || old_parallel != thresholds.parallel_threshold
             {
-                println!("🔧 Adaptive thresholds updated: SIMD {} -> {}, Parallel {} -> {} (confidence: {:.2})",
+                println!("Adaptive thresholds updated: SIMD {} -> {}, Parallel {} -> {} (confidence: {:.2})",
                     old_simd, thresholds.simd_threshold,
                     old_parallel, thresholds.parallel_threshold,
                     thresholds.confidence

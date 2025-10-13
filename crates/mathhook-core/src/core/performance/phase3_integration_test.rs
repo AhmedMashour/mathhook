@@ -18,11 +18,11 @@ use std::time::{Duration, Instant};
 
 /// Demonstrates Phase 3 advanced integration with comprehensive features
 pub fn demonstrate_phase3_integration() {
-    println!("🚀 MathHook Phase 3: Advanced Demo");
-    println!("===================================\n");
+    println!("MathHook Phase 3: Advanced Demo");
+    println!("================================\n");
 
     // Test 1: Runtime Performance Profiling & Adaptive Thresholds
-    println!("📊 Testing Runtime Performance Profiling:");
+    println!("Testing Runtime Performance Profiling:");
 
     // Simulate various operation types with different performance characteristics
     simulate_performance_measurements();
@@ -50,7 +50,7 @@ pub fn demonstrate_phase3_integration() {
     );
 
     // Test 2: Persistent Cache Across Sessions
-    println!("\n🧠 Testing Persistent Cache:");
+    println!("\nTesting Persistent Cache:");
 
     // Clear cache for clean test
     clear_persistent_cache();
@@ -87,15 +87,15 @@ pub fn demonstrate_phase3_integration() {
     let first_hash = compute_simple_hash(&test_expressions[0]);
     if let Some(cached) = get_persistent_cached_result(first_hash) {
         println!(
-            "   ✅ Successfully retrieved cached result: {}",
+            "   Successfully retrieved cached result: {}",
             format_expr(&cached)
         );
     } else {
-        println!("   ❌ Failed to retrieve cached result");
+        println!("   Failed to retrieve cached result");
     }
 
     // Test 3: Background Precomputation
-    println!("\n🔄 Testing Background Precomputation:");
+    println!("\nTesting Background Precomputation:");
 
     // Clear background compute for clean test
     clear_background_compute();
@@ -150,7 +150,7 @@ pub fn demonstrate_phase3_integration() {
     );
 
     // Test 4: Integrated Performance System
-    println!("\n⚡ Testing Integrated Performance System:");
+    println!("\nTesting Integrated Performance System:");
 
     // Perform operations that trigger all systems
     let complex_expr = Expression::add(vec![
@@ -179,7 +179,7 @@ pub fn demonstrate_phase3_integration() {
     predict_and_precompute(&result);
 
     // Test 5: System Integration Verification
-    println!("\n🔍 Testing System Integration:");
+    println!("\nTesting System Integration:");
 
     // Verify all systems are working together
     let final_thresholds = get_adaptive_thresholds();
@@ -211,18 +211,18 @@ pub fn demonstrate_phase3_integration() {
         &final_bg_stats,
     );
 
-    println!("   Integration Score: {:.1}/100 🎯", integration_score);
+    println!("   Integration Score: {:.1}/100", integration_score);
 
     if integration_score >= 80.0 {
-        println!("\n✅ Phase 3 Advanced Integration: EXCELLENT!");
-        println!("   🚀 Adaptive thresholds: ✅");
-        println!("   🧠 Persistent cache: ✅");
-        println!("   🔄 Background precomputation: ✅");
-        println!("   ⚡ System integration: ✅");
+        println!("\nPhase 3 Advanced Integration: EXCELLENT!");
+        println!("   Adaptive thresholds: Enabled");
+        println!("   Persistent cache: Enabled");
+        println!("   Background precomputation: Enabled");
+        println!("   System integration: Enabled");
     } else if integration_score >= 60.0 {
-        println!("\n✅ Phase 3 Advanced Integration: GOOD!");
+        println!("\nPhase 3 Advanced Integration: GOOD!");
     } else {
-        println!("\n⚠️ Phase 3 Advanced Integration: NEEDS IMPROVEMENT");
+        println!("\nPhase 3 Advanced Integration: NEEDS IMPROVEMENT");
     }
 }
 

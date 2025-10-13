@@ -121,7 +121,7 @@ pub struct EducationalResult {
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// 🎯 ENHANCED STEP - COMPLETE STEP WITH HUMAN + API DATA
+/// Enhanced step - complete step with human and API data
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EnhancedStep {
     /// Unique identifier for this step type
@@ -146,7 +146,7 @@ pub struct EnhancedStep {
     pub presentation: PresentationHints,
 }
 
-/// 📊 STEP API DATA - STRUCTURED DATA FOR EXTERNAL APPS
+/// Step API data - structured data for external applications
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StepApiData {
     /// Step category (linear, quadratic, etc.)
@@ -168,7 +168,7 @@ pub struct StepApiData {
     pub properties: HashMap<String, serde_json::Value>,
 }
 
-/// 🔑 MESSAGE KEY - FOR EXTERNAL MESSAGE SYSTEMS
+/// Message key - for external message systems
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MessageKey {
     /// Category identifier
@@ -187,7 +187,7 @@ pub struct MessageKey {
     pub template_params: Vec<String>,
 }
 
-/// 🧮 MATH CONTEXT - MATHEMATICAL INFORMATION
+/// Math context - mathematical information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MathContext {
     /// Original equation
@@ -386,8 +386,8 @@ impl StepFactory {
 
         EnhancedStepBuilder::new("linear_intro_001")
             .with_human_message(
-                "📝 Given Equation",
-                &format!("We need to solve: {} = 0\nThis is a linear equation because {} appears only to the first power.", 
+                "Given Equation",
+                &format!("We need to solve: {} = 0\nThis is a linear equation because {} appears only to the first power.",
                         equation_formatted, variable.name())
             )
             .with_api_data("linear_equation", "introduction", "equation_analysis")
@@ -413,8 +413,8 @@ impl StepFactory {
     ) -> EnhancedStep {
         EnhancedStepBuilder::new("linear_strategy_001")
             .with_human_message(
-                "🎯 Solution Strategy",
-                &format!("To solve for {}, we'll isolate it using inverse operations.\nWhatever operation is applied to {}, we'll undo it step by step.", 
+                "Solution Strategy",
+                &format!("To solve for {}, we'll isolate it using inverse operations.\nWhatever operation is applied to {}, we'll undo it step by step.",
                         variable.name(), variable.name())
             )
             .with_api_data("linear_equation", "strategy", "isolation_method")
@@ -453,8 +453,8 @@ impl StepFactory {
 
         SmartStepBuilder::new("linear_coeffs_001")
             .with_human_message(
-                "🔍 Identify Components",
-                &format!("In our equation, we can identify:\n• Coefficient of {}: {}\n• Constant term: {}\nForm: {}·{} + {} = 0", 
+                "Identify Components",
+                &format!("In our equation, we can identify:\n• Coefficient of {}: {}\n• Constant term: {}\nForm: {}·{} + {} = 0",
                         variable.name(), a_formatted, b_formatted, a_formatted, variable.name(), b_formatted)
             )
             .with_api_data("linear_equation", "analysis", "coefficient_extraction")
@@ -498,8 +498,8 @@ impl StepFactory {
 
         SmartStepBuilder::new("linear_calc_001")
             .with_human_message(
-                "📊 Calculate Solution",
-                &format!("Using the linear equation formula:\n{} = -({}) ÷ ({})\n{} = {}\nThis gives us our solution.", 
+                "Calculate Solution",
+                &format!("Using the linear equation formula:\n{} = -({}) ÷ ({})\n{} = {}\nThis gives us our solution.",
                         variable.name(), b_formatted, a_formatted, variable.name(), solution_formatted)
             )
             .with_api_data("linear_equation", "calculation", "division_operation")
@@ -546,9 +546,9 @@ impl StepFactory {
 
         SmartStepBuilder::new("linear_verify_001")
             .with_human_message(
-                "✅ Verify Solution",
+                "Verify Solution",
                 &format!(
-                    "Let's check our answer:\n{}\nResult: The equation is satisfied. ✓",
+                    "Let's check our answer:\n{}\nResult: The equation is satisfied.",
                     verification_text
                 ),
             )
@@ -578,8 +578,8 @@ impl StepFactory {
 
         SmartStepBuilder::new("linear_no_solution_001")
             .with_human_message(
-                "⚠️ No Solution",
-                &format!("This equation: {} = 0\nSimplifies to a contradiction (like 5 = 0).\nTherefore, no solution exists.", 
+                "No Solution",
+                &format!("This equation: {} = 0\nSimplifies to a contradiction (like 5 = 0).\nTherefore, no solution exists.",
                         equation_formatted)
             )
             .with_api_data("linear_equation", "error", "no_solution")
@@ -607,8 +607,8 @@ impl StepFactory {
 
         SmartStepBuilder::new("linear_infinite_001")
             .with_human_message(
-                "📊 Infinite Solutions",
-                &format!("This equation: {} = 0\nSimplifies to 0 = 0, which is always true.\nTherefore, any value of {} is a solution.", 
+                "Infinite Solutions",
+                &format!("This equation: {} = 0\nSimplifies to 0 = 0, which is always true.\nTherefore, any value of {} is a solution.",
                         equation_formatted, variable.name())
             )
             .with_api_data("linear_equation", "result", "infinite_solutions")
@@ -636,7 +636,7 @@ pub struct EnhancedStepExplanation {
     pub summary: ExplanationSummary,
 }
 
-/// 📊 EXPLANATION METADATA - OVERALL EXPLANATION INFO
+/// Explanation metadata - overall explanation information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExplanationMetadata {
     /// Total number of steps
@@ -658,7 +658,7 @@ pub struct ExplanationMetadata {
     pub prerequisites: Vec<String>,
 }
 
-/// 📋 EXPLANATION SUMMARY - QUICK OVERVIEW
+/// Explanation summary - quick overview
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExplanationSummary {
     /// Problem statement
@@ -847,7 +847,7 @@ impl EnhancedStepExplanation {
     }
 }
 
-/// 🔄 CONVERSION TO LEGACY STEP SYSTEM
+/// Conversion to legacy step system
 impl From<EnhancedStep> for crate::educational::step_by_step::Step {
     fn from(enhanced_step: EnhancedStep) -> Self {
         Self::new(enhanced_step.title, enhanced_step.human_message)

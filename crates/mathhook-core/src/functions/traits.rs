@@ -1,4 +1,4 @@
-//! 🏗️ Function System Trait Architecture
+//! Function system trait architecture
 //!
 //! Clean trait-based architecture that defines clear boundaries between
 //! different components of the function intelligence system.

@@ -102,7 +102,7 @@ impl FunctionEvaluator {
 
     /// Check if function supports bulk numerical evaluation using intelligence
     ///
-    /// NO HARDCODED MATCHES - uses function properties to determine capability
+    /// No hardcoded matches - uses function properties to determine capability
     fn supports_bulk_numerical_evaluation(
         &self,
         _name: &str,

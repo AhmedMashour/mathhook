@@ -1,6 +1,6 @@
 //! Legendre Polynomial Intelligence
 //!
-//! MATHEMATICALLY ACCURATE implementation of Legendre polynomials P_n(x)
+//! Mathematically accurate implementation of Legendre polynomials P_n(x)
 //! with verified recurrence relations, orthogonality properties, and special values.
 
 use crate::core::Expression;
@@ -71,12 +71,12 @@ impl LegendreIntelligence {
                     // Coefficient of P_{n-1}(x): -n/(n+1)
                     gamma_coeff: Expression::function("legendre_gamma", vec![Expression::symbol("n")]),
                     
-                    // INITIAL CONDITIONS (MATHEMATICALLY VERIFIED)
+                    // Initial conditions (mathematically verified)
                     // P_0(x) = 1, P_1(x) = x
                     initial_conditions: (Expression::integer(1), Expression::symbol("x")),
                 },
                 
-                // ORTHOGONALITY PROPERTIES (MATHEMATICALLY VERIFIED)
+                // Orthogonality properties (mathematically verified)
                 // ∫_{-1}^{1} P_m(x) P_n(x) dx = (2/(2n+1)) δ_{mn}
                 orthogonality: Some(OrthogonalityData {
                     // Weight function: w(x) = 1 (constant)
@@ -89,7 +89,7 @@ impl LegendreIntelligence {
                     norm_squared: Expression::function("legendre_norm_squared", vec![Expression::symbol("n")]),
                 }),
                 
-                // RODRIGUES' FORMULA (MATHEMATICALLY VERIFIED)
+                // Rodrigues' formula (mathematically verified)
                 // P_n(x) = (1/2^n n!) d^n/dx^n (x²-1)^n
                 rodrigues_formula: Some(RodriguesFormula {
                     formula: "P_n(x) = (1/2^n n!) d^n/dx^n (x²-1)^n".to_string(),
@@ -97,14 +97,14 @@ impl LegendreIntelligence {
                     weight_function: Expression::function("legendre_rodrigues_weight", vec![Expression::symbol("n"), Expression::symbol("x")]),
                 }),
                 
-                // GENERATING FUNCTION (MATHEMATICALLY VERIFIED)
+                // Generating function (mathematically verified)
                 // 1/√(1-2xt+t²) = Σ_{n=0}^∞ P_n(x) t^n
                 generating_function: Some(GeneratingFunction {
                     function: Expression::function("legendre_generating", vec![Expression::symbol("x"), Expression::symbol("t")]),
                     gf_type: GeneratingFunctionType::Ordinary,
                 }),
                 
-                // SPECIAL VALUES (MATHEMATICALLY VERIFIED)
+                // Special values (mathematically verified)
                 special_values: vec![
                     // P_n(1) = 1 for all n ≥ 0
                     SpecialValue {
@@ -128,7 +128,7 @@ impl LegendreIntelligence {
                     },
                 ],
                 
-                // EVALUATION METHOD: Recurrence is most stable and efficient
+                // Evaluation method: Recurrence is most stable and efficient
                 evaluation_method: EvaluationMethod::Recurrence,
             })),
         );
