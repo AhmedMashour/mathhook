@@ -34,9 +34,9 @@
 //! let result = solver.solve(&equation, &Symbol::new("x"));
 //!
 //! // Parser API (multi-format support)
-//! let parser = MathParser::new();
-//! let parsed = parser.parse("x^2 + 2*x + 1", MathLanguage::Standard)?;
-//! # Ok::<(), mathhook_parser::ParseError>(())
+//! let parser = Parser::new(ParserConfig::default());
+//! let parsed = parser.parse("x^2 + 2*x + 1")?;
+//! # Ok::<(), ParseError>(())
 //! ```
 
 pub use mathhook_core as core;
@@ -60,7 +60,7 @@ pub use serde_json;
 /// ```rust
 /// use mathhook::prelude::*;
 ///
-/// let expr = Expression::symbol("x").pow(Expression::integer(2));
+/// let expr = expr!(x ^ 2);
 /// let simplified = expr.simplify();
 /// ```
 pub mod prelude {
@@ -72,6 +72,7 @@ pub mod prelude {
     };
     pub use crate::core::{error::ParseError, formatter::MathLanguage};
     pub use crate::core::{MathSolver, SolverConfig, SolverResult};
+    pub use mathhook_core::{expr, function, parse, symbol};
 }
 
 #[cfg(test)]
