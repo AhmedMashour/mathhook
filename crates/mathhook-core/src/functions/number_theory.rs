@@ -46,6 +46,7 @@ impl NumberTheoryIntelligence {
             "gcd".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 derivative_rule: None, // GCD is not differentiable
+                antiderivative_rule: None,
                 special_values: vec![SpecialValue {
                     input: "0".to_string(),
                     output: Expression::symbol(symbol!(b)),
@@ -67,6 +68,7 @@ impl NumberTheoryIntelligence {
             "lcm".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 derivative_rule: None, // LCM is not differentiable
+                antiderivative_rule: None,
                 special_values: vec![SpecialValue {
                     input: "1".to_string(),
                     output: Expression::symbol(symbol!(b)),
@@ -91,6 +93,7 @@ impl NumberTheoryIntelligence {
             "mod".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 derivative_rule: None,
+                antiderivative_rule: None,
                 special_values: vec![SpecialValue {
                     input: "0".to_string(),
                     output: Expression::integer(0),
@@ -115,6 +118,7 @@ impl NumberTheoryIntelligence {
             "is_prime".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 derivative_rule: None,
+                antiderivative_rule: None,
                 special_values: vec![SpecialValue {
                     input: "2".to_string(),
                     output: Expression::integer(1), // Use 1 for true, 0 for false

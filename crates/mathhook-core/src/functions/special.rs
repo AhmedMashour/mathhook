@@ -52,6 +52,8 @@ impl SpecialIntelligence {
             "jacobi_sn".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 // Differential equation: d²sn/du² + (1 + k²)sn - 2k²sn³ = 0
                 differential_equation: Some(DifferentialEquation {
@@ -95,6 +97,8 @@ impl SpecialIntelligence {
             "jacobi_cn".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 differential_equation: Some(DifferentialEquation {
                     order: 2,
@@ -137,6 +141,8 @@ impl SpecialIntelligence {
             "jacobi_dn".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 differential_equation: Some(DifferentialEquation {
                     order: 2,
@@ -179,6 +185,8 @@ impl SpecialIntelligence {
             "hypergeometric_1f1".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 // Kummer's differential equation: z d²y/dz² + (b-z) dy/dz - ay = 0
                 differential_equation: Some(DifferentialEquation {
@@ -229,6 +237,8 @@ impl SpecialIntelligence {
             "riemann_zeta".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 differential_equation: None, // No simple differential equation
 
@@ -267,6 +277,8 @@ impl SpecialIntelligence {
             "erf".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 // Differential equation: dy/dx = (2/√π) e^{-x²}
                 differential_equation: Some(DifferentialEquation {
@@ -313,6 +325,8 @@ impl SpecialIntelligence {
             "erfc".to_string(),
             FunctionProperties::Special(Box::new(SpecialProperties {
                 has_derivative: true,
+                has_antiderivative: false,
+                antiderivative_rule: None,
 
                 differential_equation: Some(DifferentialEquation {
                     order: 1,

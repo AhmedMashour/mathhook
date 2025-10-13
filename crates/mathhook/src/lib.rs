@@ -46,7 +46,7 @@ pub use mathhook_core::{
     Expression, MathConstant, MathSolver, Number, Simplify, SolverConfig, SolverResult, Symbol,
 };
 
-pub use core::{error::ParseError, formatter::MathLanguage};
+pub use core::{formatter::MathLanguage, parser::error::ParseError};
 
 pub use core::parser::Parser;
 pub use num_bigint;
@@ -70,9 +70,9 @@ pub mod prelude {
         algebra::{Expand, Factor},
         Expression, MathConstant, Number, Simplify, Symbol,
     };
-    pub use crate::core::{error::ParseError, formatter::MathLanguage};
+    pub use crate::core::{expr, function, parse, symbol};
+    pub use crate::core::{formatter::MathLanguage, parser::error::ParseError};
     pub use crate::core::{MathSolver, SolverConfig, SolverResult};
-    pub use mathhook_core::{expr, function, parse, symbol};
 }
 
 #[cfg(test)]

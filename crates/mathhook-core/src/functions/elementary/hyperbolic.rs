@@ -49,6 +49,7 @@ impl HyperbolicIntelligence {
                     rule_type: DerivativeRuleType::Simple("cosh".to_string()),
                     result_template: "cosh(x)".to_string(),
                 }),
+                antiderivative_rule: None,
 
                 // Special values (mathematically verified)
                 special_values: vec![

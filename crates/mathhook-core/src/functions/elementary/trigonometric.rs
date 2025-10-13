@@ -50,6 +50,7 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("cos".to_string()),
                     result_template: "cos(x)".to_string(),
                 }),
+                antiderivative_rule: None,
                 special_values: vec![
                     SpecialValue {
                         input: "0".to_string(),
@@ -105,6 +106,7 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("-sin".to_string()),
                     result_template: "-sin(x)".to_string(),
                 }),
+                antiderivative_rule: None,
                 special_values: vec![
                     // Fundamental cosine values - essential for mathematical accuracy
                     SpecialValue {
@@ -160,6 +162,7 @@ impl TrigonometricIntelligence {
                     rule_type: DerivativeRuleType::Simple("sec²".to_string()),
                     result_template: "sec²(x)".to_string(),
                 }),
+                antiderivative_rule: None,
                 special_values: vec![
                     SpecialValue {
                         input: "0".to_string(),

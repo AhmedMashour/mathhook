@@ -130,6 +130,12 @@ impl LegendreIntelligence {
                 
                 // Evaluation method: Recurrence is most stable and efficient
                 evaluation_method: EvaluationMethod::Recurrence,
+                
+                antiderivative_rule: AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::NonElementary,
+                    result_template: "Integration not yet implemented".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                },
             })),
         );
     }

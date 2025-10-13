@@ -45,6 +45,32 @@ impl FunctionProperties {
         }
     }
 
+    /// Check if function has antiderivative rule
+    ///
+    /// Hot path method for performance-critical operations
+    #[inline(always)]
+    pub fn has_antiderivative(&self) -> bool {
+        match self {
+            FunctionProperties::Elementary(props) => props.antiderivative_rule.is_some(),
+            FunctionProperties::Special(props) => props.has_antiderivative,
+            FunctionProperties::Polynomial(_props) => true, // All polynomials are integrable
+            FunctionProperties::UserDefined(_) => false,
+        }
+    }
+
+    /// Get antiderivative rule if available
+    ///
+    /// Returns a reference to the antiderivative rule for registry-based integration
+    #[inline(always)]
+    pub fn get_antiderivative_rule(&self) -> Option<&AntiderivativeRule> {
+        match self {
+            FunctionProperties::Elementary(props) => props.antiderivative_rule.as_ref(),
+            FunctionProperties::Special(props) => props.antiderivative_rule.as_ref(),
+            FunctionProperties::Polynomial(props) => Some(&props.antiderivative_rule),
+            FunctionProperties::UserDefined(_) => None,
+        }
+    }
+
     /// Get special value count for caching optimization
     #[inline(always)]
     pub fn special_value_count(&self) -> usize {
@@ -254,6 +280,10 @@ pub struct ElementaryProperties {
     /// Most frequently accessed property (hot path data first)
     pub derivative_rule: Option<DerivativeRule>,
 
+    /// Antiderivative rule for integration
+    /// Placed second for cache locality with derivative_rule
+    pub antiderivative_rule: Option<AntiderivativeRule>,
+
     /// Special values for exact computation
     /// Examples: sin(0) = 0, cos(π/2) = 0, exp(0) = 1
     pub special_values: Vec<SpecialValue>,
@@ -280,6 +310,12 @@ pub struct ElementaryProperties {
 pub struct SpecialProperties {
     /// Quick derivative check
     pub has_derivative: bool,
+
+    /// Quick antiderivative check
+    pub has_antiderivative: bool,
+
+    /// Antiderivative rule (if known)
+    pub antiderivative_rule: Option<AntiderivativeRule>,
 
     /// Recurrence relations for symbolic computation
     /// Examples: Γ(n+1) = n·Γ(n), J_{n+1} = (2n/x)J_n - J_{n-1}
@@ -325,6 +361,10 @@ pub struct PolynomialProperties {
 
     /// Computational method for evaluation
     pub evaluation_method: EvaluationMethod,
+
+    /// Antiderivative rule (for polynomial integration)
+    /// All polynomials are integrable, so this is always Some(...)
+    pub antiderivative_rule: AntiderivativeRule,
 }
 
 /// User-defined function properties
@@ -372,6 +412,161 @@ pub enum DerivativeRuleType {
 
     /// Quotient rule: d/dx (u/v) = (u'v - uv')/v²
     QuotientRule,
+}
+
+/// Antiderivative rule for automatic integration
+///
+/// Stores the antiderivative formula for a function, analogous to DerivativeRule.
+/// Supports simple antiderivatives, substitution patterns, and special techniques.
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::functions::properties::{AntiderivativeRule, AntiderivativeRuleType, ConstantOfIntegration};
+/// use mathhook_core::core::Expression;
+///
+/// let sin_antiderivative = AntiderivativeRule {
+///     rule_type: AntiderivativeRuleType::Simple {
+///         antiderivative_fn: "cos".to_string(),
+///         coefficient: Expression::integer(-1),
+///     },
+///     result_template: "-cos(x) + C".to_string(),
+///     constant_handling: ConstantOfIntegration::AddConstant,
+/// };
+/// ```
+#[derive(Debug, Clone)]
+pub struct AntiderivativeRule {
+    /// Rule type for efficient computation
+    pub rule_type: AntiderivativeRuleType,
+
+    /// Result expression template (for documentation and validation)
+    /// Example: "∫sin(x)dx = -cos(x) + C"
+    pub result_template: String,
+
+    /// Constant of integration behavior
+    pub constant_handling: ConstantOfIntegration,
+}
+
+/// Types of antiderivative rules for performance optimization
+///
+/// Each variant represents a different integration technique or pattern,
+/// enabling the registry to efficiently compute integrals based on function properties.
+#[derive(Debug, Clone)]
+pub enum AntiderivativeRuleType {
+    /// Simple substitution: ∫sin(x)dx = -cos(x) + C
+    ///
+    /// Contains the antiderivative function name and multiplicative coefficient.
+    /// This is the most common case for elementary functions.
+    Simple {
+        /// Name of the antiderivative function
+        antiderivative_fn: String,
+
+        /// Multiplicative coefficient (e.g., -1 for sin → -cos)
+        coefficient: Expression,
+    },
+
+    /// Linear substitution: ∫f(ax)dx = (1/a)F(ax) + C
+    ///
+    /// Used for patterns like ∫sin(3x)dx = -(1/3)cos(3x) + C
+    /// where the inner function is a linear transformation.
+    LinearSubstitution {
+        /// Antiderivative of f(x)
+        base_antiderivative: Box<AntiderivativeRule>,
+    },
+
+    /// Composite function requiring u-substitution
+    ///
+    /// Handles integrals of the form ∫f(g(x))g'(x)dx = F(g(x)) + C
+    /// where pattern matching is required to identify the substitution.
+    USubstitution {
+        /// Pattern to match g'(x)
+        derivative_pattern: String,
+
+        /// Antiderivative in terms of u
+        antiderivative_of_u: String,
+    },
+
+    /// Integration by parts: ∫u dv = uv - ∫v du
+    ///
+    /// Stores the strategic choice of which part to differentiate (u)
+    /// and which part to integrate (dv).
+    ByParts {
+        /// Choice of u (the part to differentiate)
+        u_pattern: String,
+
+        /// Choice of dv (the part to integrate)
+        dv_pattern: String,
+    },
+
+    /// Trigonometric substitution patterns
+    ///
+    /// Used for integrals like ∫1/√(1-x²)dx = arcsin(x) + C
+    /// where a trigonometric substitution simplifies the integral.
+    TrigSubstitution {
+        /// Pattern to match (e.g., √(1-x²), √(x²+1))
+        pattern: String,
+
+        /// Substitution to use (e.g., x = sin(θ), x = tan(θ))
+        substitution: String,
+
+        /// Resulting antiderivative
+        result: String,
+    },
+
+    /// Partial fraction decomposition (for rational functions)
+    ///
+    /// Indicates that the integral requires partial fraction decomposition
+    /// before integration can proceed.
+    PartialFractions {
+        /// Degree constraint (only if denominator degree > numerator degree)
+        requires_proper_fraction: bool,
+    },
+
+    /// Reduction formula (recursive integration)
+    ///
+    /// Example: ∫sin^n(x)dx in terms of ∫sin^(n-2)(x)dx
+    /// Enables recursive computation for powers of functions.
+    ReductionFormula {
+        /// Recursion relation
+        recursion: String,
+
+        /// Base cases
+        base_cases: Vec<(usize, String)>,
+    },
+
+    /// Special function integral (e.g., ∫e^(-x²)dx = √π/2 erf(x) + C)
+    ///
+    /// For integrals that result in special functions rather than
+    /// elementary functions.
+    SpecialFunction {
+        /// Name of special function result
+        special_fn: String,
+
+        /// Coefficients and transformations
+        coefficients: Vec<Expression>,
+    },
+
+    /// Not integrable in elementary functions
+    ///
+    /// Indicates that the integral cannot be expressed in terms of
+    /// elementary functions and must remain as a symbolic integral.
+    NonElementary,
+}
+
+/// Constant of integration handling
+///
+/// Specifies how the constant of integration should be handled
+/// in the antiderivative result.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ConstantOfIntegration {
+    /// Automatically add +C to result
+    AddConstant,
+
+    /// Definite integral (no constant)
+    DefiniteIntegral,
+
+    /// User will handle constant explicitly
+    UserHandled,
 }
 
 /// Special value for exact computation
@@ -621,6 +816,14 @@ mod tests {
                     rule_type: DerivativeRuleType::Simple("cos".to_string()),
                     result_template: "cos(x)".to_string(),
                 }),
+                antiderivative_rule: Some(AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::Simple {
+                        antiderivative_fn: "cos".to_string(),
+                        coefficient: Expression::integer(-1),
+                    },
+                    result_template: "-cos(x) + C".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                }),
                 special_values: vec![],
                 identities: Box::new(vec![]),
                 domain_range: Box::new(DomainRangeData {
@@ -637,6 +840,15 @@ mod tests {
 
         // Test hot path methods
         assert!(props.has_derivative());
+        assert!(props.has_antiderivative());
         assert_eq!(props.special_value_count(), 0);
+
+        // Test antiderivative rule retrieval
+        let rule = props.get_antiderivative_rule();
+        assert!(rule.is_some());
+        if let Some(r) = rule {
+            assert_eq!(r.result_template, "-cos(x) + C");
+            assert_eq!(r.constant_handling, ConstantOfIntegration::AddConstant);
+        }
     }
 }

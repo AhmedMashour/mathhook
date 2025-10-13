@@ -47,6 +47,7 @@ impl ExponentialIntelligence {
                     rule_type: DerivativeRuleType::Simple("exp".to_string()),
                     result_template: "exp(x)".to_string(),
                 }),
+                antiderivative_rule: None,
                 special_values: vec![
                     SpecialValue {
                         input: "0".to_string(),

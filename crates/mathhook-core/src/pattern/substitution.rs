@@ -2,10 +2,8 @@
 //!
 //! Provides recursive tree-walking substitution for Expression types.
 
-use crate::core::{Expression, MathConstant, Number, Symbol};
-use crate::pattern::matching::Pattern;
+use crate::core::Expression;
 use crate::simplify::Simplify;
-use std::collections::HashMap;
 
 /// Trait for types that support substitution operations
 pub trait Substitutable {
@@ -286,9 +284,7 @@ impl Substitutable for Expression {
         // Otherwise, recursively substitute in subexpressions
         match self {
             // Atomic types - no substitution needed
-            Expression::Number(_) | Expression::Constant(_) | Expression::Symbol(_) => {
-                self.clone()
-            }
+            Expression::Number(_) | Expression::Constant(_) | Expression::Symbol(_) => self.clone(),
 
             // Add - substitute in each term
             Expression::Add(terms) => {
@@ -593,7 +589,10 @@ mod tests {
     fn test_multiple_substitution_both_variables() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]);
+        let expr = Expression::add(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+        ]);
 
         let result = expr.subs_multiple(&[
             (Expression::symbol(x.clone()), Expression::integer(1)),
@@ -636,7 +635,10 @@ mod tests {
         let expr = Expression::symbol(x.clone());
 
         // Substitute x with y
-        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::symbol(y.clone()));
+        let result = expr.subs(
+            &Expression::symbol(x.clone()),
+            &Expression::symbol(y.clone()),
+        );
 
         assert_eq!(result, Expression::symbol(y.clone()));
 

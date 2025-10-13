@@ -47,6 +47,7 @@ impl LogarithmicIntelligence {
                     rule_type: DerivativeRuleType::Simple("1/x".to_string()),
                     result_template: "1/x".to_string(),
                 }),
+                antiderivative_rule: None,
 
                 // SPECIAL VALUES
                 special_values: vec![

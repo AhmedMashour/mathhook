@@ -125,6 +125,12 @@ impl ChebyshevIntelligence {
 
                 // Evaluation method: Recurrence is most stable
                 evaluation_method: EvaluationMethod::Recurrence,
+                
+                antiderivative_rule: AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::NonElementary,
+                    result_template: "Integration not yet implemented".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                },
             })),
         );
 
@@ -191,6 +197,12 @@ impl ChebyshevIntelligence {
                 ],
 
                 evaluation_method: EvaluationMethod::Recurrence,
+                
+                antiderivative_rule: AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::NonElementary,
+                    result_template: "Integration not yet implemented".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                },
             })),
         );
     }

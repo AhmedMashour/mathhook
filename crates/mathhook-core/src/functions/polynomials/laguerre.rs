@@ -130,6 +130,12 @@ impl LaguerreIntelligence {
 
                 // Evaluation method: Recurrence is most numerically stable
                 evaluation_method: EvaluationMethod::Recurrence,
+                
+                antiderivative_rule: AntiderivativeRule {
+                    rule_type: AntiderivativeRuleType::NonElementary,
+                    result_template: "Integration not yet implemented".to_string(),
+                    constant_handling: ConstantOfIntegration::AddConstant,
+                },
             })),
         );
     }
