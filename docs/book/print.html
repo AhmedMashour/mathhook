@@ -1,0 +1,2187 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>MathHook CAS Documentation</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="High-performance educational computer algebra system in Rust">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">MathHook CAS Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/ahmedmashhour/mathhook" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
+<p>Welcome to the MathHook documentation! MathHook is a high-performance educational computer algebra system (CAS) written in Rust, designed to combine mathematical correctness with exceptional performance.</p>
+<h2 id="what-is-mathhook"><a class="header" href="#what-is-mathhook">What is MathHook?</a></h2>
+<p>MathHook is a symbolic mathematics engine that can:</p>
+<ul>
+<li><strong>Parse</strong> mathematical expressions from multiple formats (LaTeX, Wolfram Language, standard notation)</li>
+<li><strong>Simplify</strong> algebraic expressions using canonical forms and mathematical identities</li>
+<li><strong>Differentiate</strong> and <strong>integrate</strong> expressions symbolically</li>
+<li><strong>Solve</strong> equations and systems of equations</li>
+<li><strong>Manipulate</strong> matrices with full linear algebra support</li>
+<li><strong>Explain</strong> mathematical operations step-by-step for educational purposes</li>
+</ul>
+<h2 id="why-mathhook"><a class="header" href="#why-mathhook">Why MathHook?</a></h2>
+<h3 id="performance-first-design"><a class="header" href="#performance-first-design">Performance-First Design</a></h3>
+<p>MathHook is built from the ground up for speed:</p>
+<ul>
+<li><strong>32-byte expression representation</strong> fits perfectly in CPU cache lines</li>
+<li><strong>SIMD operations</strong> for vectorized arithmetic (2-4x speedup)</li>
+<li><strong>Zero-copy parsing</strong> directly constructs AST without intermediate allocations</li>
+<li><strong>Thread-safe immutable expressions</strong> enable parallel processing</li>
+<li><strong>10-100x faster</strong> than SymPy for common operations</li>
+</ul>
+<h3 id="mathematical-correctness"><a class="header" href="#mathematical-correctness">Mathematical Correctness</a></h3>
+<p>Every operation in MathHook is designed to be mathematically correct:</p>
+<ul>
+<li>Exact rational arithmetic (never loses precision)</li>
+<li>Proper domain handling (sqrt, log, division by zero)</li>
+<li>Canonical forms for reliable equality checking</li>
+<li>Validated against SymPy and Symbolica</li>
+</ul>
+<h3 id="educational-focus"><a class="header" href="#educational-focus">Educational Focus</a></h3>
+<p>MathHook provides step-by-step explanations for all mathematical operations, making it ideal for:</p>
+<ul>
+<li>Educational software</li>
+<li>Mathematics learning platforms</li>
+<li>Interactive mathematics tools</li>
+<li>Automated tutoring systems</li>
+</ul>
+<h3 id="multi-language-support"><a class="header" href="#multi-language-support">Multi-Language Support</a></h3>
+<p>MathHook provides first-class bindings for:</p>
+<ul>
+<li><strong>Rust</strong> (native API with ergonomic macros)</li>
+<li><strong>Python</strong> (via PyO3)</li>
+<li><strong>Node.js/TypeScript</strong> (via NAPI-RS)</li>
+<li><strong>WebAssembly</strong> (coming soon)</li>
+</ul>
+<h2 id="key-features"><a class="header" href="#key-features">Key Features</a></h2>
+<h3 id="expression-building"><a class="header" href="#expression-building">Expression Building</a></h3>
+<p>Create mathematical expressions naturally:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let expr = expr!((x ^ 2) + (2 * x) + 1);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symbolic-computation"><a class="header" href="#symbolic-computation">Symbolic Computation</a></h3>
+<p>Perform algebraic manipulations symbolically:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let simplified = expr.simplify();
+let expanded = expr.expand();
+let factored = expr.factor();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="calculus-operations"><a class="header" href="#calculus-operations">Calculus Operations</a></h3>
+<p>Compute derivatives and integrals:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let derivative = expr.derivative(&amp;x, 1);
+let integral = expr.integrate(&amp;x);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="equation-solving"><a class="header" href="#equation-solving">Equation Solving</a></h3>
+<p>Solve equations and systems:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut solver = MathSolver::new();
+let solutions = solver.solve(&amp;equation, &amp;x);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrix-operations"><a class="header" href="#matrix-operations">Matrix Operations</a></h3>
+<p>Full linear algebra support:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let matrix = Expression::matrix(vec![
+    vec![Expression::integer(1), Expression::integer(2)],
+    vec![Expression::integer(3), Expression::integer(4)],
+]);
+
+let det = matrix.determinant();
+let inverse = matrix.inverse();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>MathHook is organized as a multi-crate workspace:</p>
+<ul>
+<li><strong>mathhook-core</strong>: Core mathematical engine (pure Rust)</li>
+<li><strong>mathhook</strong>: High-level API with ergonomic macros</li>
+<li><strong>mathhook-python</strong>: Python bindings</li>
+<li><strong>mathhook-node</strong>: Node.js/TypeScript bindings</li>
+<li><strong>mathhook-benchmarks</strong>: Performance benchmarking suite</li>
+</ul>
+<h2 id="design-principles"><a class="header" href="#design-principles">Design Principles</a></h2>
+<p>MathHook follows five core principles (in priority order):</p>
+<ol>
+<li><strong>Mathematical Correctness First</strong>: Every operation must be mathematically correct</li>
+<li><strong>Performance</strong>: Cache-friendly data structures, SIMD operations, parallel processing</li>
+<li><strong>Ergonomic API</strong>: Macros and operator overloading for natural expression</li>
+<li><strong>Educational Value</strong>: Step-by-step explanations for all operations</li>
+<li><strong>Multi-Language</strong>: First-class bindings for Python, Node.js, and WebAssembly</li>
+</ol>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<p>Ready to start using MathHook? Continue to:</p>
+<ul>
+<li><a href="./getting-started/installation.html">Installation</a> - Set up MathHook in your project</li>
+<li><a href="./getting-started/quick-start.html">Quick Start</a> - Your first 5 minutes with MathHook</li>
+<li><a href="./getting-started/basic-usage.html">Basic Usage</a> - Learn the fundamentals</li>
+</ul>
+<h2 id="community-and-support"><a class="header" href="#community-and-support">Community and Support</a></h2>
+<ul>
+<li><strong>GitHub</strong>: <a href="https://github.com/ahmedmashhour/mathhook">https://github.com/ahmedmashhour/mathhook</a></li>
+<li><strong>Documentation</strong>: <a href="https://docs.rs/mathhook">https://docs.rs/mathhook</a></li>
+<li><strong>Issue Tracker</strong>: <a href="https://github.com/ahmedmashhour/mathhook/issues">https://github.com/ahmedmashhour/mathhook/issues</a></li>
+</ul>
+<h2 id="license"><a class="header" href="#license">License</a></h2>
+<p>MathHook is dual-licensed under MIT or Apache 2.0. You may choose either license for your use.</p>
+<h2 id="acknowledgments"><a class="header" href="#acknowledgments">Acknowledgments</a></h2>
+<p>MathHook builds on the shoulders of giants:</p>
+<ul>
+<li><strong>LALRPOP</strong> for parser generation</li>
+<li><strong>PyO3</strong> for Python bindings</li>
+<li><strong>NAPI-RS</strong> for Node.js bindings</li>
+<li><strong>SymPy</strong> and <strong>Symbolica</strong> for inspiration and validation</li>
+</ul>
+<hr />
+<p>Let's dive in and explore what MathHook can do!</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+<p>This guide covers installation of MathHook for Rust, Python, and Node.js.</p>
+<h2 id="rust"><a class="header" href="#rust">Rust</a></h2>
+<h3 id="requirements"><a class="header" href="#requirements">Requirements</a></h3>
+<ul>
+<li>Rust 1.70 or higher</li>
+<li>Cargo (comes with Rust)</li>
+</ul>
+<h3 id="adding-to-your-project"><a class="header" href="#adding-to-your-project">Adding to Your Project</a></h3>
+<p>Add MathHook to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+mathhook-core = "0.1"
+</code></pre>
+<p>For the high-level API with ergonomic macros:</p>
+<pre><code class="language-toml">[dependencies]
+mathhook = "0.1"
+</code></pre>
+<h3 id="verifying-installation"><a class="header" href="#verifying-installation">Verifying Installation</a></h3>
+<p>Create a simple test program:</p>
+<pre><pre class="playground"><code class="language-rust">use mathhook_core::prelude::*;
+
+fn main() {
+    let x = symbol!(x);
+    let expr = expr!(x ^ 2);
+    println!("Expression: {}", expr);
+}</code></pre></pre>
+<p>Run with:</p>
+<pre><code class="language-bash">cargo run
+</code></pre>
+<h2 id="python"><a class="header" href="#python">Python</a></h2>
+<h3 id="requirements-1"><a class="header" href="#requirements-1">Requirements</a></h3>
+<ul>
+<li>Python 3.8 or higher</li>
+<li>pip</li>
+</ul>
+<h3 id="installing-via-pip"><a class="header" href="#installing-via-pip">Installing via pip</a></h3>
+<pre><code class="language-bash">pip install mathhook
+</code></pre>
+<h3 id="installing-from-source"><a class="header" href="#installing-from-source">Installing from Source</a></h3>
+<p>For the latest development version:</p>
+<pre><code class="language-bash">git clone https://github.com/ahmedmashhour/mathhook.git
+cd mathhook/crates/mathhook-python
+pip install maturin
+maturin develop
+</code></pre>
+<h3 id="verifying-installation-1"><a class="header" href="#verifying-installation-1">Verifying Installation</a></h3>
+<pre><code class="language-python">from mathhook import Expression
+
+x = Expression.symbol('x')
+expr = x.pow(2)
+print(f"Expression: {expr}")
+</code></pre>
+<h3 id="virtual-environments"><a class="header" href="#virtual-environments">Virtual Environments</a></h3>
+<p>We recommend using a virtual environment:</p>
+<pre><code class="language-bash">python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install mathhook
+</code></pre>
+<h2 id="nodejstypescript"><a class="header" href="#nodejstypescript">Node.js/TypeScript</a></h2>
+<h3 id="requirements-2"><a class="header" href="#requirements-2">Requirements</a></h3>
+<ul>
+<li>Node.js 18 or higher</li>
+<li>npm or yarn</li>
+</ul>
+<h3 id="installing-via-npm"><a class="header" href="#installing-via-npm">Installing via npm</a></h3>
+<pre><code class="language-bash">npm install mathhook-node
+</code></pre>
+<p>Or with yarn:</p>
+<pre><code class="language-bash">yarn add mathhook-node
+</code></pre>
+<h3 id="installing-from-source-1"><a class="header" href="#installing-from-source-1">Installing from Source</a></h3>
+<p>For the latest development version:</p>
+<pre><code class="language-bash">git clone https://github.com/ahmedmashhour/mathhook.git
+cd mathhook/crates/mathhook-node
+npm install
+npm run build
+</code></pre>
+<h3 id="verifying-installation-2"><a class="header" href="#verifying-installation-2">Verifying Installation</a></h3>
+<p>Create a test file <code>test.ts</code>:</p>
+<pre><code class="language-typescript">import { Expression } from 'mathhook-node';
+
+const x = Expression.symbol('x');
+const expr = x.pow(2);
+console.log(`Expression: ${expr.toString()}`);
+</code></pre>
+<p>Run with:</p>
+<pre><code class="language-bash">tsx test.ts
+</code></pre>
+<p>Or for JavaScript:</p>
+<pre><code class="language-javascript">const { Expression } = require('mathhook-node');
+
+const x = Expression.symbol('x');
+const expr = x.pow(2);
+console.log(`Expression: ${expr.toString()}`);
+</code></pre>
+<h2 id="building-from-source"><a class="header" href="#building-from-source">Building from Source</a></h2>
+<h3 id="prerequisites"><a class="header" href="#prerequisites">Prerequisites</a></h3>
+<ul>
+<li>Rust toolchain (rustup recommended)</li>
+<li>Git</li>
+<li>For Python bindings: Python 3.8+, maturin</li>
+<li>For Node.js bindings: Node.js 18+, npm</li>
+</ul>
+<h3 id="clone-the-repository"><a class="header" href="#clone-the-repository">Clone the Repository</a></h3>
+<pre><code class="language-bash">git clone https://github.com/ahmedmashhour/mathhook.git
+cd mathhook
+</code></pre>
+<h3 id="build-the-core"><a class="header" href="#build-the-core">Build the Core</a></h3>
+<pre><code class="language-bash">cargo build --release
+</code></pre>
+<h3 id="run-tests"><a class="header" href="#run-tests">Run Tests</a></h3>
+<pre><code class="language-bash">cargo test
+</code></pre>
+<h3 id="build-python-bindings"><a class="header" href="#build-python-bindings">Build Python Bindings</a></h3>
+<pre><code class="language-bash">cd crates/mathhook-python
+pip install maturin
+maturin develop --release
+</code></pre>
+<h3 id="build-nodejs-bindings"><a class="header" href="#build-nodejs-bindings">Build Node.js Bindings</a></h3>
+<pre><code class="language-bash">cd crates/mathhook-node
+npm install
+npm run build
+</code></pre>
+<h2 id="platform-specific-notes"><a class="header" href="#platform-specific-notes">Platform-Specific Notes</a></h2>
+<h3 id="windows"><a class="header" href="#windows">Windows</a></h3>
+<ul>
+<li>Ensure you have Visual Studio Build Tools installed</li>
+<li>Python bindings require Microsoft C++ Build Tools</li>
+</ul>
+<h3 id="macos"><a class="header" href="#macos">macOS</a></h3>
+<ul>
+<li>XCode Command Line Tools are required:
+<pre><code class="language-bash">xcode-select --install
+</code></pre>
+</li>
+</ul>
+<h3 id="linux"><a class="header" href="#linux">Linux</a></h3>
+<ul>
+<li>GCC or Clang is required</li>
+<li>For Python bindings: <code>python3-dev</code> package
+<pre><code class="language-bash"># Ubuntu/Debian
+sudo apt-get install python3-dev
+
+# Fedora/RHEL
+sudo dnf install python3-devel
+</code></pre>
+</li>
+</ul>
+<h2 id="optional-dependencies"><a class="header" href="#optional-dependencies">Optional Dependencies</a></h2>
+<h3 id="simd-support"><a class="header" href="#simd-support">SIMD Support</a></h3>
+<p>MathHook automatically detects and uses SIMD instructions (AVX2, SSE2) if available. No configuration needed.</p>
+<p>To explicitly enable/disable:</p>
+<pre><code class="language-toml">[dependencies]
+mathhook-core = { version = "0.1", features = ["simd"] }
+</code></pre>
+<h3 id="parallel-processing"><a class="header" href="#parallel-processing">Parallel Processing</a></h3>
+<p>For parallel bulk operations:</p>
+<pre><code class="language-toml">[dependencies]
+mathhook-core = { version = "0.1", features = ["parallel"] }
+</code></pre>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="rust-compilation-errors"><a class="header" href="#rust-compilation-errors">Rust: Compilation Errors</a></h3>
+<p>If you encounter LALRPOP-related errors:</p>
+<pre><code class="language-bash">cargo install lalrpop
+cargo clean
+cargo build
+</code></pre>
+<h3 id="python-import-errors"><a class="header" href="#python-import-errors">Python: Import Errors</a></h3>
+<p>If <code>import mathhook</code> fails:</p>
+<pre><code class="language-bash">pip install --force-reinstall mathhook
+</code></pre>
+<h3 id="nodejs-native-module-errors"><a class="header" href="#nodejs-native-module-errors">Node.js: Native Module Errors</a></h3>
+<p>If you see native module loading errors:</p>
+<pre><code class="language-bash">npm rebuild mathhook-node
+</code></pre>
+<h3 id="permission-errors"><a class="header" href="#permission-errors">Permission Errors</a></h3>
+<p>On Linux/macOS, you may need to use <code>pip install --user</code>:</p>
+<pre><code class="language-bash">pip install --user mathhook
+</code></pre>
+<h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
+<p>Now that MathHook is installed, continue to:</p>
+<ul>
+<li><a href="getting-started/./quick-start.html">Quick Start</a> - Your first 5 minutes with MathHook</li>
+<li><a href="getting-started/./basic-usage.html">Basic Usage</a> - Learn the fundamentals</li>
+<li><a href="getting-started/./common-patterns.html">Common Patterns</a> - Idioms and best practices</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h1>
+<p>This guide will get you up and running with MathHook in 5 minutes.</p>
+<h2 id="your-first-expression-rust"><a class="header" href="#your-first-expression-rust">Your First Expression (Rust)</a></h2>
+<pre><pre class="playground"><code class="language-rust">use mathhook_core::prelude::*;
+
+fn main() {
+    // Create a symbol
+    let x = symbol!(x);
+
+    // Build an expression: x^2 + 2x + 1
+    let expr = expr!((x ^ 2) + (2 * x) + 1);
+
+    // Simplify it
+    let simplified = expr.simplify();
+
+    println!("Original: {}", expr);
+    println!("Simplified: {}", simplified);
+}</code></pre></pre>
+<h2 id="your-first-expression-python"><a class="header" href="#your-first-expression-python">Your First Expression (Python)</a></h2>
+<pre><code class="language-python">from mathhook import Expression
+
+# Create a symbol
+x = Expression.symbol('x')
+
+# Build an expression: x^2 + 2x + 1
+expr = x.pow(2).add(x.multiply(2)).add(1)
+
+# Simplify it
+simplified = expr.simplify()
+
+print(f"Original: {expr}")
+print(f"Simplified: {simplified}")
+</code></pre>
+<h2 id="your-first-expression-nodejstypescript"><a class="header" href="#your-first-expression-nodejstypescript">Your First Expression (Node.js/TypeScript)</a></h2>
+<pre><code class="language-typescript">import { Expression } from 'mathhook-node';
+
+// Create a symbol
+const x = Expression.symbol('x');
+
+// Build an expression: x^2 + 2x + 1
+const expr = x.pow(2).add(x.multiply(2)).add(1);
+
+// Simplify it
+const simplified = expr.simplify();
+
+console.log(`Original: ${expr.toString()}`);
+console.log(`Simplified: ${simplified.toString()}`);
+</code></pre>
+<h2 id="common-operations"><a class="header" href="#common-operations">Common Operations</a></h2>
+<h3 id="parsing-latex"><a class="header" href="#parsing-latex">Parsing LaTeX</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::parser::{Parser, ParserConfig};
+
+let parser = Parser::new(ParserConfig::default());
+let expr = parser.parse(r"\frac{x^2 + 1}{2}").unwrap();
+
+println!("{}", expr);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="computing-derivatives"><a class="header" href="#computing-derivatives">Computing Derivatives</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let expr = expr!(x ^ 3);
+
+// First derivative: 3x^2
+let derivative = expr.derivative(&amp;x, 1);
+
+// Second derivative: 6x
+let second_derivative = expr.derivative(&amp;x, 2);
+
+println!("f(x) = {}", expr);
+println!("f'(x) = {}", derivative);
+println!("f''(x) = {}", second_derivative);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="solving-equations"><a class="header" href="#solving-equations">Solving Equations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+
+// Solve: x^2 = 4
+let mut solver = MathSolver::new();
+let equation = Expression::equation(expr!(x ^ 2), expr!(4));
+let solutions = solver.solve(&amp;equation, &amp;x);
+
+println!("Solutions: {:?}", solutions);
+// Output: [x = 2, x = -2]
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrix-operations-1"><a class="header" href="#matrix-operations-1">Matrix Operations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::Expression;
+
+let matrix = Expression::matrix(vec![
+    vec![Expression::integer(1), Expression::integer(2)],
+    vec![Expression::integer(3), Expression::integer(4)],
+]);
+
+let det = matrix.determinant();
+println!("Determinant: {}", det);
+// Output: -2
+<span class="boring">}</span></code></pre></pre>
+<h2 id="step-by-step-explanations"><a class="header" href="#step-by-step-explanations">Step-by-Step Explanations</a></h2>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+use mathhook_core::educational::*;
+
+let x = symbol!(x);
+let expr = expr!((x + 1) * (x - 1));
+
+// Get educational explanation
+let explanation = expr.explain_simplification();
+
+for step in explanation.steps() {
+    println!("{}: {}", step.title, step.description);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="whats-next"><a class="header" href="#whats-next">What's Next?</a></h2>
+<p>Now that you've seen the basics, dive deeper into:</p>
+<ul>
+<li><a href="getting-started/./basic-usage.html">Basic Usage</a> - Detailed guide to expression building and manipulation</li>
+<li><a href="getting-started/../core/expressions.html">Core Concepts</a> - Understanding the type system</li>
+<li><a href="getting-started/../operations/simplification.html">Mathematical Operations</a> - Learn all the operations MathHook supports</li>
+<li><a href="getting-started/./common-patterns.html">Common Patterns</a> - Idioms and best practices</li>
+</ul>
+<h2 id="common-patterns"><a class="header" href="#common-patterns">Common Patterns</a></h2>
+<h3 id="creating-expressions-programmatically"><a class="header" href="#creating-expressions-programmatically">Creating Expressions Programmatically</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::Expression;
+
+// For known values at compile time
+let expr = expr!((x ^ 2) + 3);
+
+// For runtime/dynamic expressions
+let mut terms = Vec::new();
+for i in 0..5 {
+    terms.push(Expression::mul(vec![
+        Expression::integer(i),
+        Expression::pow(symbol!(x), Expression::integer(i))
+    ]));
+}
+let polynomial = Expression::add(terms);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="substitution"><a class="header" href="#substitution">Substitution</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let expr = expr!((x ^ 2) + (2 * x) + 1);
+
+// Substitute x = 3
+let result = expr.substitute(&amp;x, &amp;Expression::integer(3));
+println!("Result: {}", result);
+// Output: 16
+<span class="boring">}</span></code></pre></pre>
+<h3 id="formatting-output"><a class="header" href="#formatting-output">Formatting Output</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let expr = expr!(x ^ 2);
+
+// Standard notation
+println!("Standard: {}", expr);
+
+// LaTeX notation
+println!("LaTeX: {}", expr.to_latex());
+
+// Wolfram notation
+println!("Wolfram: {}", expr.to_wolfram());
+<span class="boring">}</span></code></pre></pre>
+<h2 id="tips"><a class="header" href="#tips">Tips</a></h2>
+<ol>
+<li><strong>Use macros</strong> (<code>symbol!</code>, <code>expr!</code>) for cleaner code</li>
+<li><strong>Explicit grouping</strong> with parentheses in <code>expr!</code> macro avoids precedence issues</li>
+<li><strong>Check errors</strong> when parsing - use <code>.unwrap()</code> only in examples</li>
+<li><strong>Simplify often</strong> - many operations work better on simplified expressions</li>
+<li><strong>Profile first</strong> - don't optimize prematurely</li>
+</ol>
+<h2 id="common-mistakes"><a class="header" href="#common-mistakes">Common Mistakes</a></h2>
+<h3 id="runtime-variables-in-macros"><a class="header" href="#runtime-variables-in-macros">Runtime Variables in Macros</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// DON'T do this - 'i' is seen as a symbol name, not the value
+for i in 0..10 {
+    let expr = expr!(i);  // Creates Symbol("i"), not integer i!
+}
+
+// DO this instead
+for i in 0..10 {
+    let expr = Expression::integer(i);
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="precedence-without-parentheses"><a class="header" href="#precedence-without-parentheses">Precedence Without Parentheses</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Unclear precedence
+let expr = expr!(2*x + 3);
+
+// Better - explicit grouping
+let expr = expr!((2*x) + 3);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="floating-point-comparison"><a class="header" href="#floating-point-comparison">Floating Point Comparison</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// DON'T use == for floats
+if expr.evaluate() == 3.14159 { }  // BAD
+
+// DO use epsilon comparison or exact rationals
+if (expr.evaluate() - 3.14159).abs() &lt; 1e-10 { }  // GOOD
+<span class="boring">}</span></code></pre></pre>
+<h2 id="performance-tips"><a class="header" href="#performance-tips">Performance Tips</a></h2>
+<p>For performance-critical code:</p>
+<ol>
+<li>Reuse expressions when possible (they're immutable and cheap to clone)</li>
+<li>Use SIMD for bulk operations (automatic for arrays &gt; 100 elements)</li>
+<li>Enable parallel processing for large collections</li>
+<li>Cache frequently computed results</li>
+</ol>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::core::performance::config::{
+    PerformanceConfig,
+    BindingContext,
+    set_global_config
+};
+
+// Configure for optimal performance
+let config = PerformanceConfig::for_binding(BindingContext::Native);
+set_global_config(config);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="next-steps-1"><a class="header" href="#next-steps-1">Next Steps</a></h2>
+<ul>
+<li><a href="getting-started/./basic-usage.html">Basic Usage</a> - Comprehensive usage guide</li>
+<li><a href="getting-started/../core/expressions.html">Core Concepts</a> - Deep dive into the type system</li>
+<li><a href="getting-started/../api/core.html">API Reference</a> - Complete API documentation</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h1>
+<p>This chapter provides a comprehensive guide to using MathHook in your projects.</p>
+<h2 id="expression-creation"><a class="header" href="#expression-creation">Expression Creation</a></h2>
+<h3 id="using-macros"><a class="header" href="#using-macros">Using Macros</a></h3>
+<p>The recommended way to create expressions is using the <code>expr!</code> and <code>symbol!</code> macros:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let y = symbol!(y);
+
+// Simple arithmetic
+let expr1 = expr!(x + y);
+let expr2 = expr!(2 * x);
+let expr3 = expr!(x ^ 2);
+
+// Complex expressions with explicit grouping
+let expr4 = expr!((x + 1) * (x - 1));
+let expr5 = expr!((2*x) + (3*y) - 5);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="using-constructors"><a class="header" href="#using-constructors">Using Constructors</a></h3>
+<p>For programmatic construction:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::Expression;
+
+// Numbers
+let int = Expression::integer(42);
+let float = Expression::float(3.14);
+let rational = Expression::rational(3, 4);  // 3/4
+
+// Operations
+let sum = Expression::add(vec![
+    Expression::integer(1),
+    Expression::integer(2),
+]);
+
+let product = Expression::mul(vec![
+    Expression::integer(2),
+    Expression::symbol(symbol!(x)),
+]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="simplification"><a class="header" href="#simplification">Simplification</a></h2>
+<p>Simplification transforms expressions to their canonical form:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+
+// Combine like terms
+let expr = expr!(x + x);
+let simplified = expr.simplify();
+// Result: 2*x
+
+// Apply identities
+let expr = expr!(x * 1);
+let simplified = expr.simplify();
+// Result: x
+
+// Evaluate constants
+let expr = expr!(2 + 3);
+let simplified = expr.simplify();
+// Result: 5
+<span class="boring">}</span></code></pre></pre>
+<h2 id="pattern-matching"><a class="header" href="#pattern-matching">Pattern Matching</a></h2>
+<p>Work with expression structure:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::Expression;
+
+match expr {
+    Expression::Add(terms) =&gt; {
+        println!("Addition with {} terms", terms.len());
+    }
+    Expression::Mul(factors) =&gt; {
+        println!("Multiplication with {} factors", factors.len());
+    }
+    Expression::Pow(base, exp) =&gt; {
+        println!("Power: base={}, exp={}", base, exp);
+    }
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="working-with-symbols"><a class="header" href="#working-with-symbols">Working with Symbols</a></h2>
+<p>Symbols represent variables in expressions:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+let y = symbol!(y);
+
+// Symbols with same name are equal
+assert_eq!(symbol!(x), symbol!(x));
+
+// Different names are not equal
+assert_ne!(symbol!(x), symbol!(y));
+<span class="boring">}</span></code></pre></pre>
+<h2 id="number-types"><a class="header" href="#number-types">Number Types</a></h2>
+<p>MathHook supports multiple number representations:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Integers (exact, arbitrary precision)
+let int = Expression::integer(12345678901234567890);
+
+// Rationals (exact fractions)
+let frac = Expression::rational(22, 7);  // 22/7 ≈ π
+
+// Floats (approximate)
+let float = Expression::float(3.14159265359);
+
+// Complex numbers
+let complex = Expression::complex(
+    Expression::integer(3),
+    Expression::integer(4)
+);  // 3 + 4i
+<span class="boring">}</span></code></pre></pre>
+<h2 id="constants"><a class="header" href="#constants">Constants</a></h2>
+<p>Mathematical constants are built-in:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let pi = Expression::pi();
+let e = Expression::e();
+let i = Expression::i();              // imaginary unit
+let phi = Expression::golden_ratio();
+let gamma = Expression::euler_gamma();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="function-expressions"><a class="header" href="#function-expressions">Function Expressions</a></h2>
+<p>Create function calls:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Elementary functions
+let sin_x = expr!(sin(x));
+let cos_x = expr!(cos(x));
+let log_x = expr!(log(x));
+
+// Using constructors
+let tan_x = Expression::function("tan", vec![expr!(x)]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="next-steps-2"><a class="header" href="#next-steps-2">Next Steps</a></h2>
+<ul>
+<li><a href="getting-started/./common-patterns.html">Common Patterns</a> - Idioms and best practices</li>
+<li><a href="getting-started/../core/expressions.html">Core Concepts</a> - Deep dive into the type system</li>
+<li><a href="getting-started/../operations/simplification.html">Mathematical Operations</a> - Learn all operations</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="common-patterns-1"><a class="header" href="#common-patterns-1">Common Patterns</a></h1>
+<p>This chapter covers common patterns and best practices when using MathHook.</p>
+<h2 id="macro-usage-guidelines"><a class="header" href="#macro-usage-guidelines">Macro Usage Guidelines</a></h2>
+<h3 id="when-to-use-macros"><a class="header" href="#when-to-use-macros">When to Use Macros</a></h3>
+<p><strong>ALWAYS use macros for:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Symbol creation
+let x = symbol!(x);  // NOT Symbol::new("x")
+
+// Simple expressions
+let expr = expr!(x + y);
+let expr = expr!(2 * x);
+let expr = expr!(x ^ 2);
+
+// Function calls
+let expr = expr!(sin(x));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="when-to-use-explicit-api"><a class="header" href="#when-to-use-explicit-api">When to Use Explicit API</a></h3>
+<p><strong>Use explicit API for:</strong></p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Runtime/loop variables
+for i in 0..10 {
+    let term = Expression::integer(i);  // NOT expr!(i)
+}
+
+// Programmatic construction
+let mut terms = Vec::new();
+for i in 0..n {
+    terms.push(Expression::mul(vec![
+        Expression::integer(coefficients[i]),
+        Expression::pow(symbol!(x), Expression::integer(i))
+    ]));
+}
+let polynomial = Expression::add(terms);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="building-polynomials"><a class="header" href="#building-polynomials">Building Polynomials</a></h2>
+<h3 id="fixed-degree"><a class="header" href="#fixed-degree">Fixed Degree</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+
+// ax^2 + bx + c
+let a = Expression::integer(1);
+let b = Expression::integer(2);
+let c = Expression::integer(1);
+
+let quadratic = Expression::add(vec![
+    Expression::mul(vec![a, Expression::pow(expr!(x), Expression::integer(2))]),
+    Expression::mul(vec![b, expr!(x)]),
+    c,
+]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="dynamic-degree"><a class="header" href="#dynamic-degree">Dynamic Degree</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>fn build_polynomial(coefficients: &amp;[i64], x: &amp;Symbol) -&gt; Expression {
+    let mut terms = Vec::new();
+    for (i, &amp;coeff) in coefficients.iter().enumerate() {
+        terms.push(Expression::mul(vec![
+            Expression::integer(coeff),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(i as i64))
+        ]));
+    }
+    Expression::add(terms)
+}
+
+let x = symbol!(x);
+let poly = build_polynomial(&amp;[1, -5, 6], &amp;x);  // x^2 - 5x + 6
+<span class="boring">}</span></code></pre></pre>
+<h2 id="substitution-patterns"><a class="header" href="#substitution-patterns">Substitution Patterns</a></h2>
+<h3 id="single-substitution"><a class="header" href="#single-substitution">Single Substitution</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+let expr = expr!((x ^ 2) + (2 * x) + 1);
+
+// Substitute x = 3
+let result = expr.substitute(&amp;x, &amp;Expression::integer(3));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="multiple-substitutions"><a class="header" href="#multiple-substitutions">Multiple Substitutions</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::collections::HashMap;
+
+let x = symbol!(x);
+let y = symbol!(y);
+let expr = expr!((x * y) + x + y);
+
+// Substitute both x and y
+let result = expr
+    .substitute(&amp;x, &amp;Expression::integer(2))
+    .substitute(&amp;y, &amp;Expression::integer(3));
+<span class="boring">}</span></code></pre></pre>
+<h2 id="working-with-functions"><a class="header" href="#working-with-functions">Working with Functions</a></h2>
+<h3 id="creating-function-expressions"><a class="header" href="#creating-function-expressions">Creating Function Expressions</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Using expr! macro
+let f = expr!(sin(x));
+let g = expr!(cos(x));
+
+// Using constructors
+let h = Expression::function("tan", vec![expr!(x)]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="composing-functions"><a class="header" href="#composing-functions">Composing Functions</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// sin(cos(x))
+let inner = expr!(cos(x));
+let composed = Expression::function("sin", vec![inner]);
+
+// Or using nested expr!
+let composed = expr!(sin(cos(x)));
+<span class="boring">}</span></code></pre></pre>
+<h2 id="matrix-patterns"><a class="header" href="#matrix-patterns">Matrix Patterns</a></h2>
+<h3 id="creating-matrices"><a class="header" href="#creating-matrices">Creating Matrices</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// From vectors
+let matrix = Expression::matrix(vec![
+    vec![Expression::integer(1), Expression::integer(2)],
+    vec![Expression::integer(3), Expression::integer(4)],
+]);
+
+// Identity matrix
+let identity = Expression::identity_matrix(3);
+
+// Zero matrix
+let zero = Expression::zero_matrix(2, 3);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="matrix-operations-2"><a class="header" href="#matrix-operations-2">Matrix Operations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = Expression::matrix(/* ... */);
+let b = Expression::matrix(/* ... */);
+
+// Add matrices
+let sum = a.add_matrix(&amp;b);
+
+// Multiply matrices
+let product = a.multiply_matrix(&amp;b);
+
+// Transpose
+let transpose = a.transpose();
+
+// Determinant
+let det = a.determinant();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="error-handling"><a class="header" href="#error-handling">Error Handling</a></h2>
+<h3 id="parsing-errors"><a class="header" href="#parsing-errors">Parsing Errors</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::parser::{Parser, ParserConfig};
+
+let parser = Parser::new(ParserConfig::default());
+
+match parser.parse(input) {
+    Ok(expr) =&gt; {
+        println!("Parsed: {}", expr);
+    }
+    Err(e) =&gt; {
+        eprintln!("Parse error: {}", e);
+        // Handle error appropriately
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="solver-errors"><a class="header" href="#solver-errors">Solver Errors</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let mut solver = MathSolver::new();
+
+match solver.solve(&amp;equation, &amp;x) {
+    SolverResult::Single(solution) =&gt; {
+        println!("Solution: {}", solution);
+    }
+    SolverResult::Multiple(solutions) =&gt; {
+        println!("Multiple solutions: {:?}", solutions);
+    }
+    SolverResult::NoSolution =&gt; {
+        println!("No solution exists");
+    }
+    SolverResult::InfiniteSolutions =&gt; {
+        println!("Infinite solutions");
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="performance-patterns"><a class="header" href="#performance-patterns">Performance Patterns</a></h2>
+<h3 id="bulk-operations"><a class="header" href="#bulk-operations">Bulk Operations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::core::performance::config::parallel_bulk_simplify;
+
+// Simplify many expressions in parallel
+let expressions = vec![/* many expressions */];
+let simplified = parallel_bulk_simplify(&amp;expressions);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="caching-results"><a class="header" href="#caching-results">Caching Results</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::core::performance::config::{
+    cache_result,
+    get_cached_result,
+    compute_expr_hash,
+};
+
+let expr = expr!(x ^ 2);
+let hash = compute_expr_hash(&amp;expr);
+
+if let Some(cached) = get_cached_result(hash) {
+    // Use cached result
+    println!("Using cached result");
+} else {
+    // Compute and cache
+    let result = expr.simplify();
+    cache_result(hash, result.clone());
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="educational-patterns"><a class="header" href="#educational-patterns">Educational Patterns</a></h2>
+<h3 id="step-by-step-explanations-1"><a class="header" href="#step-by-step-explanations-1">Step-by-Step Explanations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::educational::*;
+
+let x = symbol!(x);
+let expr = expr!((x + 1) * (x - 1));
+
+// Get explanation for simplification
+let explanation = expr.explain_simplification();
+
+for step in explanation.steps() {
+    println!("Step: {}", step.title);
+    println!("Description: {}", step.description);
+    println!("Expression: {}", step.expression);
+    println!();
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="derivative-explanations"><a class="header" href="#derivative-explanations">Derivative Explanations</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::educational::*;
+
+let x = symbol!(x);
+let expr = expr!(sin(x ^ 2));
+
+// Get step-by-step derivative
+let explanation = expr.explain_derivative(&amp;x);
+
+for step in explanation.steps() {
+    println!("{}: {}", step.title, step.description);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="common-pitfalls"><a class="header" href="#common-pitfalls">Common Pitfalls</a></h2>
+<h3 id="avoid-runtime-variables-in-macros"><a class="header" href="#avoid-runtime-variables-in-macros">Avoid: Runtime Variables in Macros</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// WRONG - creates Symbol("i"), not integer value
+for i in 0..10 {
+    let expr = expr!(i);  // BAD!
+}
+
+// CORRECT
+for i in 0..10 {
+    let expr = Expression::integer(i);  // GOOD!
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="avoid-nested-macro-calls"><a class="header" href="#avoid-nested-macro-calls">Avoid: Nested Macro Calls</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// WRONG - nested expr!() doesn't work
+let expr = expr!(add: expr!(2 * x), expr!(3));  // BAD!
+
+// CORRECT - use intermediate variables or direct patterns
+let term1 = expr!(2 * x);
+let term2 = expr!(3);
+let expr = expr!(add: term1, term2);  // GOOD!
+
+// OR use direct pattern
+let expr = expr!(add: (2 * x), 3);  // GOOD!
+<span class="boring">}</span></code></pre></pre>
+<h3 id="avoid-float-equality"><a class="header" href="#avoid-float-equality">Avoid: Float Equality</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// WRONG - comparing floats with ==
+if expr.evaluate() == 3.14 { }  // BAD!
+
+// CORRECT - use epsilon comparison
+if (expr.evaluate() - 3.14).abs() &lt; 1e-10 { }  // GOOD!
+
+// OR use exact rationals
+let expr = Expression::rational(314, 100);  // Exact 3.14
+<span class="boring">}</span></code></pre></pre>
+<h2 id="next-steps-3"><a class="header" href="#next-steps-3">Next Steps</a></h2>
+<ul>
+<li><a href="getting-started/../core/expressions.html">Core Concepts</a> - Deep dive into the type system</li>
+<li><a href="getting-started/../operations/simplification.html">Mathematical Operations</a> - Learn all operations</li>
+<li><a href="getting-started/../performance/architecture.html">Performance</a> - Optimization techniques</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="expressions"><a class="header" href="#expressions">Expressions</a></h1>
+<p>The <code>Expression</code> type is the foundation of MathHook. This chapter explains expression structure, creation, and manipulation.</p>
+<h2 id="expression-structure"><a class="header" href="#expression-structure">Expression Structure</a></h2>
+<p>Expressions in MathHook are represented as an enum with variants for different mathematical constructs:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Expression {
+    // Numbers
+    Integer(i64),
+    Rational(Box&lt;RationalData&gt;),
+    Float(f64),
+    Complex(Box&lt;ComplexData&gt;),
+
+    // Variables
+    Symbol(Symbol),
+
+    // Operations
+    Add(Vec&lt;Expression&gt;),
+    Mul(Vec&lt;Expression&gt;),
+    Pow(Box&lt;Expression&gt;, Box&lt;Expression&gt;),
+
+    // Functions
+    Function(String, Vec&lt;Expression&gt;),
+
+    // Constants
+    Constant(ConstantType),
+
+    // Matrices
+    Matrix(Vec&lt;Vec&lt;Expression&gt;&gt;),
+
+    // Relations
+    Equation(Box&lt;Expression&gt;, Box&lt;Expression&gt;),
+
+    // Other variants...
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="creating-expressions"><a class="header" href="#creating-expressions">Creating Expressions</a></h2>
+<h3 id="using-macros-recommended"><a class="header" href="#using-macros-recommended">Using Macros (Recommended)</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let expr = expr!((x ^ 2) + (2 * x) + 1);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="using-constructors-1"><a class="header" href="#using-constructors-1">Using Constructors</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::Expression;
+
+let expr = Expression::add(vec![
+    Expression::pow(
+        Expression::symbol(symbol!(x)),
+        Expression::integer(2)
+    ),
+    Expression::mul(vec![
+        Expression::integer(2),
+        Expression::symbol(symbol!(x))
+    ]),
+    Expression::integer(1),
+]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="expression-properties"><a class="header" href="#expression-properties">Expression Properties</a></h2>
+<h3 id="immutability"><a class="header" href="#immutability">Immutability</a></h3>
+<p>Expressions are <strong>immutable</strong> after creation. All operations return new expressions:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let expr = expr!(x + 1);
+let doubled = expr.mul(&amp;Expression::integer(2));  // Returns new expression
+// `expr` is unchanged
+<span class="boring">}</span></code></pre></pre>
+<h3 id="memory-efficiency"><a class="header" href="#memory-efficiency">Memory Efficiency</a></h3>
+<p>Expressions are designed to be 32 bytes to fit in CPU cache lines for optimal performance.</p>
+<h3 id="thread-safety"><a class="header" href="#thread-safety">Thread Safety</a></h3>
+<p>Expressions are <code>Send + Sync</code>, making them safe to share across threads:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::sync::Arc;
+
+let expr = Arc::new(expr!(x ^ 2));
+let expr_clone = Arc::clone(&amp;expr);
+// Use in multiple threads safely
+<span class="boring">}</span></code></pre></pre>
+<h2 id="pattern-matching-1"><a class="header" href="#pattern-matching-1">Pattern Matching</a></h2>
+<p>Work with expression structure using Rust's pattern matching:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>match expr {
+    Expression::Add(terms) =&gt; {
+        println!("Sum with {} terms", terms.len());
+    }
+    Expression::Mul(factors) =&gt; {
+        println!("Product with {} factors", factors.len());
+    }
+    Expression::Pow(base, exp) =&gt; {
+        println!("Power: {} ^ {}", base, exp);
+    }
+    Expression::Function(name, args) =&gt; {
+        println!("Function {} with {} args", name, args.len());
+    }
+    _ =&gt; {}
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="canonical-forms"><a class="header" href="#canonical-forms">Canonical Forms</a></h2>
+<p>Expressions automatically maintain canonical forms:</p>
+<ul>
+<li><strong>Commutative operations sorted</strong>: \(y + x \rightarrow x + y\)</li>
+<li><strong>Associativity flattened</strong>: \((a + b) + c \rightarrow a + b + c\)</li>
+<li><strong>Identity elimination</strong>: \(x + 0 \rightarrow x\), \(x * 1 \rightarrow x\)</li>
+<li><strong>Rationals reduced</strong>: \(\frac{6}{4} \rightarrow \frac{3}{2}\)</li>
+</ul>
+<h2 id="common-operations-1"><a class="header" href="#common-operations-1">Common Operations</a></h2>
+<h3 id="simplification-1"><a class="header" href="#simplification-1">Simplification</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let expr = expr!(x + x);
+let simplified = expr.simplify();
+// Result: 2*x
+<span class="boring">}</span></code></pre></pre>
+<h3 id="evaluation"><a class="header" href="#evaluation">Evaluation</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+let expr = expr!(x ^ 2);
+let result = expr.substitute(&amp;x, &amp;Expression::integer(3));
+// Result: 9
+<span class="boring">}</span></code></pre></pre>
+<h3 id="formatting"><a class="header" href="#formatting">Formatting</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let expr = expr!(x ^ 2);
+
+println!("Standard: {}", expr);         // x^2
+println!("LaTeX: {}", expr.to_latex()); // x^{2}
+println!("Wolfram: {}", expr.to_wolfram()); // Power[x, 2]
+<span class="boring">}</span></code></pre></pre>
+<h2 id="next-steps-4"><a class="header" href="#next-steps-4">Next Steps</a></h2>
+<ul>
+<li><a href="core/./symbols-numbers.html">Symbols and Numbers</a></li>
+<li><a href="core/./functions.html">Functions</a></li>
+<li><a href="core/../operations/simplification.html">Mathematical Operations</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="symbols-and-numbers"><a class="header" href="#symbols-and-numbers">Symbols and Numbers</a></h1>
+<p>This chapter covers the two fundamental building blocks of expressions: symbols (variables) and numbers.</p>
+<h2 id="symbols"><a class="header" href="#symbols">Symbols</a></h2>
+<p>Symbols represent mathematical variables like \(x\), \(y\), \(\theta\), etc.</p>
+<h3 id="creating-symbols"><a class="header" href="#creating-symbols">Creating Symbols</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::prelude::*;
+
+let x = symbol!(x);
+let y = symbol!(y);
+let theta = symbol!(theta);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="symbol-equality"><a class="header" href="#symbol-equality">Symbol Equality</a></h3>
+<p>Symbols with the same name are considered equal:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>assert_eq!(symbol!(x), symbol!(x));
+assert_ne!(symbol!(x), symbol!(y));
+<span class="boring">}</span></code></pre></pre>
+<h3 id="string-interning"><a class="header" href="#string-interning">String Interning</a></h3>
+<p>MathHook uses string interning for symbols, making equality checks O(1) pointer comparisons.</p>
+<h2 id="numbers"><a class="header" href="#numbers">Numbers</a></h2>
+<p>MathHook supports multiple number types for different use cases.</p>
+<h3 id="integers"><a class="header" href="#integers">Integers</a></h3>
+<p>Arbitrary precision integers for exact computation:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let n = Expression::integer(123456789);
+let large = Expression::integer(9999999999999999999); // Arbitrary precision
+<span class="boring">}</span></code></pre></pre>
+<h3 id="rationals"><a class="header" href="#rationals">Rationals</a></h3>
+<p>Exact representation of fractions:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let frac = Expression::rational(22, 7);  // 22/7 ≈ π
+let half = Expression::rational(1, 2);   // 1/2
+
+// Always in reduced form
+let six_fourths = Expression::rational(6, 4);  // Automatically becomes 3/2
+<span class="boring">}</span></code></pre></pre>
+<h3 id="floats"><a class="header" href="#floats">Floats</a></h3>
+<p>Floating-point numbers for approximate computation:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let pi_approx = Expression::float(3.14159265359);
+let e_approx = Expression::float(2.71828182846);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Warning</strong>: Use floats only when approximation is acceptable. Prefer rationals for exact arithmetic.</p>
+<h3 id="complex-numbers"><a class="header" href="#complex-numbers">Complex Numbers</a></h3>
+<p>Complex numbers with real and imaginary parts:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// 3 + 4i
+let z = Expression::complex(
+    Expression::integer(3),
+    Expression::integer(4)
+);
+
+// Or using addition
+let z = Expression::add(vec![
+    Expression::integer(3),
+    Expression::mul(vec![Expression::integer(4), Expression::i()])
+]);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="number-operations"><a class="header" href="#number-operations">Number Operations</a></h2>
+<h3 id="arithmetic"><a class="header" href="#arithmetic">Arithmetic</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let a = Expression::integer(2);
+let b = Expression::integer(3);
+
+let sum = Expression::add(vec![a.clone(), b.clone()]);      // 5
+let product = Expression::mul(vec![a.clone(), b.clone()]);  // 6
+let power = Expression::pow(a.clone(), b.clone());          // 8
+<span class="boring">}</span></code></pre></pre>
+<h3 id="exact-vs-approximate"><a class="header" href="#exact-vs-approximate">Exact vs Approximate</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Exact: Use rationals
+let exact = Expression::rational(1, 3);
+let tripled = Expression::mul(vec![exact, Expression::integer(3)]);
+// Result: 1 (exact)
+
+// Approximate: Use floats
+let approx = Expression::float(0.333333);
+let tripled_approx = Expression::mul(vec![approx, Expression::float(3.0)]);
+// Result: 0.999999 (approximate)
+<span class="boring">}</span></code></pre></pre>
+<h2 id="type-conversions"><a class="header" href="#type-conversions">Type Conversions</a></h2>
+<h3 id="to-float"><a class="header" href="#to-float">To Float</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let rational = Expression::rational(1, 3);
+let as_float = rational.to_float();  // 0.333...
+<span class="boring">}</span></code></pre></pre>
+<h3 id="to-rational"><a class="header" href="#to-rational">To Rational</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let float = Expression::float(0.5);
+let as_rational = float.to_rational();  // 1/2 (if representable)
+<span class="boring">}</span></code></pre></pre>
+<h2 id="mathematical-constants"><a class="header" href="#mathematical-constants">Mathematical Constants</a></h2>
+<p>Pre-defined constants are available:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let pi = Expression::pi();           // π
+let e = Expression::e();             // e
+let i = Expression::i();             // i (imaginary unit)
+let phi = Expression::golden_ratio(); // φ = (1 + √5) / 2
+let gamma = Expression::euler_gamma(); // γ (Euler-Mascheroni constant)
+<span class="boring">}</span></code></pre></pre>
+<h2 id="next-steps-5"><a class="header" href="#next-steps-5">Next Steps</a></h2>
+<ul>
+<li><a href="core/./functions.html">Functions</a></li>
+<li><a href="core/./constants.html">Constants</a></li>
+<li><a href="core/../operations/simplification.html">Mathematical Operations</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder"><a class="header" href="#chapter-placeholder">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="core/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="core/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-1"><a class="header" href="#chapter-placeholder-1">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="core/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="core/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-2"><a class="header" href="#chapter-placeholder-2">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="core/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="core/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-3"><a class="header" href="#chapter-placeholder-3">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-4"><a class="header" href="#chapter-placeholder-4">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-5"><a class="header" href="#chapter-placeholder-5">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-6"><a class="header" href="#chapter-placeholder-6">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-7"><a class="header" href="#chapter-placeholder-7">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-8"><a class="header" href="#chapter-placeholder-8">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-9"><a class="header" href="#chapter-placeholder-9">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-10"><a class="header" href="#chapter-placeholder-10">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook">API Documentation</a></li>
+<li><a href="operations/../../CLAUDE.html">CLAUDE.md</a> for developer documentation</li>
+<li><a href="operations/../../USAGE.html">Usage Guide</a> for examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-11"><a class="header" href="#chapter-placeholder-11">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-12"><a class="header" href="#chapter-placeholder-12">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-13"><a class="header" href="#chapter-placeholder-13">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-14"><a class="header" href="#chapter-placeholder-14">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-15"><a class="header" href="#chapter-placeholder-15">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-16"><a class="header" href="#chapter-placeholder-16">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="advanced/../../USAGE.html">Usage Guide</a> for practical examples</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-17"><a class="header" href="#chapter-placeholder-17">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/parser/">Parser module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-18"><a class="header" href="#chapter-placeholder-18">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/parser/">Parser module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-19"><a class="header" href="#chapter-placeholder-19">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/parser/">Parser module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-20"><a class="header" href="#chapter-placeholder-20">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/parser/">Parser module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-21"><a class="header" href="#chapter-placeholder-21">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/educational/">Educational module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-22"><a class="header" href="#chapter-placeholder-22">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/educational/">Educational module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-23"><a class="header" href="#chapter-placeholder-23">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/educational/">Educational module documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-24"><a class="header" href="#chapter-placeholder-24">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/core/performance/">Performance module documentation</a></li>
+<li><a href="performance/../../CLAUDE.html#performance-optimization-guidelines">CLAUDE.md Performance section</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-25"><a class="header" href="#chapter-placeholder-25">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/core/performance/">Performance module documentation</a></li>
+<li><a href="performance/../../CLAUDE.html#performance-optimization-guidelines">CLAUDE.md Performance section</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-26"><a class="header" href="#chapter-placeholder-26">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/core/performance/">Performance module documentation</a></li>
+<li><a href="performance/../../CLAUDE.html#performance-optimization-guidelines">CLAUDE.md Performance section</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-27"><a class="header" href="#chapter-placeholder-27">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/core/performance/">Performance module documentation</a></li>
+<li><a href="performance/../../CLAUDE.html#performance-optimization-guidelines">CLAUDE.md Performance section</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="chapter-placeholder-28"><a class="header" href="#chapter-placeholder-28">Chapter Placeholder</a></h1>
+<p>This chapter is under development. Please check back soon for complete documentation.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li><a href="https://docs.rs/mathhook-core/latest/mathhook_core/core/performance/">Performance module documentation</a></li>
+<li><a href="performance/../../CLAUDE.html#performance-optimization-guidelines">CLAUDE.md Performance section</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="design-principles-1"><a class="header" href="#design-principles-1">Design Principles</a></h1>
+<p>MathHook is built on five core principles, listed in strict priority order.</p>
+<h2 id="1-mathematical-correctness-first"><a class="header" href="#1-mathematical-correctness-first">1. Mathematical Correctness First</a></h2>
+<p><strong>This is the absolute highest priority. All other principles are secondary.</strong></p>
+<p>Every mathematical operation in MathHook must be correct in ALL cases:</p>
+<ul>
+<li>Equation solving handles all valid cases correctly</li>
+<li>Simplification preserves mathematical equivalence</li>
+<li>Domain restrictions are respected (sqrt, log, division by zero)</li>
+<li>Symbolic operations maintain algebraic properties</li>
+</ul>
+<h3 id="zero-tolerance-for-regressions"><a class="header" href="#zero-tolerance-for-regressions">Zero Tolerance for Regressions</a></h3>
+<p>Any modification that breaks existing correct functionality is an unacceptable failure.</p>
+<h3 id="validation-against-references"><a class="header" href="#validation-against-references">Validation Against References</a></h3>
+<ul>
+<li><strong>SymPy</strong> (<code>~/Documents/work/math/sympy/</code>): Primary validation reference</li>
+<li><strong>Symbolica</strong> (<code>~/Documents/work/math/symbolica</code>): Secondary reference</li>
+</ul>
+<h2 id="2-performance"><a class="header" href="#2-performance">2. Performance</a></h2>
+<p>After correctness, performance is the next priority.</p>
+<h3 id="32-byte-expression-constraint"><a class="header" href="#32-byte-expression-constraint">32-Byte Expression Constraint</a></h3>
+<p>Expressions are exactly 32 bytes to fit two expressions per 64-byte cache line (standard on modern CPUs). This constraint:</p>
+<ul>
+<li>Enables efficient memory access patterns</li>
+<li>Improves CPU cache utilization</li>
+<li>Provides 10-100x speedup over Python-based systems</li>
+</ul>
+<h3 id="zero-copy-parsing"><a class="header" href="#zero-copy-parsing">Zero-Copy Parsing</a></h3>
+<p>Parse strings directly into AST without intermediate allocations.</p>
+<h3 id="simd-operations"><a class="header" href="#simd-operations">SIMD Operations</a></h3>
+<p>Vectorized operations for bulk arithmetic provide 2-4x speedup:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// SIMD automatically used for arrays &gt; 100 elements
+let values = vec![1.0, 2.0, 3.0, /* ... many values */];
+let sum = simd_bulk_add_numeric(&amp;values);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="thread-safety-1"><a class="header" href="#thread-safety-1">Thread Safety</a></h3>
+<p>Immutable expressions enable parallel processing without locks:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let expressions = vec![/* many expressions */];
+let simplified = parallel_bulk_simplify(&amp;expressions);
+<span class="boring">}</span></code></pre></pre>
+<h2 id="3-ergonomic-api"><a class="header" href="#3-ergonomic-api">3. Ergonomic API</a></h2>
+<p>MathHook provides natural, intuitive APIs.</p>
+<h3 id="macros-for-clarity"><a class="header" href="#macros-for-clarity">Macros for Clarity</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Clean and readable
+let expr = expr!((x ^ 2) + (2 * x) + 1);
+
+// vs verbose API
+let expr = Expression::add(vec![
+    Expression::pow(Expression::symbol(symbol!(x)), Expression::integer(2)),
+    Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(x))]),
+    Expression::integer(1),
+]);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="operator-overloading"><a class="header" href="#operator-overloading">Operator Overloading</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+let y = symbol!(y);
+
+// Natural arithmetic
+let sum = x + y;
+let product = x * y;
+<span class="boring">}</span></code></pre></pre>
+<h2 id="4-educational-value"><a class="header" href="#4-educational-value">4. Educational Value</a></h2>
+<p>MathHook provides step-by-step explanations for all operations.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let explanation = expr.explain_simplification();
+
+for step in explanation.steps() {
+    println!("{}: {}", step.title, step.description);
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This makes MathHook ideal for:</p>
+<ul>
+<li>Educational software</li>
+<li>Learning platforms</li>
+<li>Interactive mathematics tools</li>
+<li>Automated tutoring systems</li>
+</ul>
+<h2 id="5-multi-language-support"><a class="header" href="#5-multi-language-support">5. Multi-Language Support</a></h2>
+<p>MathHook provides first-class bindings for multiple languages:</p>
+<ul>
+<li><strong>Rust</strong> (native)</li>
+<li><strong>Python</strong> (via PyO3)</li>
+<li><strong>Node.js/TypeScript</strong> (via NAPI-RS)</li>
+<li><strong>WebAssembly</strong> (coming soon)</li>
+</ul>
+<p>All bindings maintain the same correctness and performance guarantees.</p>
+<h2 id="architectural-constraints"><a class="header" href="#architectural-constraints">Architectural Constraints</a></h2>
+<h3 id="type-system-constraints"><a class="header" href="#type-system-constraints">Type System Constraints</a></h3>
+<p>These are non-negotiable:</p>
+<ul>
+<li><strong>Expression</strong>: 32 bytes (cache-line optimization)</li>
+<li><strong>Number</strong>: 16 bytes (fits in Expression)</li>
+<li><strong>Symbol</strong>: String interning for O(1) equality</li>
+</ul>
+<h3 id="immutability-1"><a class="header" href="#immutability-1">Immutability</a></h3>
+<p>All expressions are immutable after creation. This enables:</p>
+<ul>
+<li>Thread-safe sharing</li>
+<li>Reliable caching</li>
+<li>Predictable behavior</li>
+</ul>
+<h3 id="canonical-forms-1"><a class="header" href="#canonical-forms-1">Canonical Forms</a></h3>
+<p>Expressions maintain canonical forms automatically:</p>
+<ul>
+<li>Commutative operations sorted</li>
+<li>Associativity flattened</li>
+<li>Identity elements eliminated</li>
+<li>Rationals reduced</li>
+</ul>
+<h2 id="next-steps-6"><a class="header" href="#next-steps-6">Next Steps</a></h2>
+<ul>
+<li><a href="architecture/./type-system.html">Type System</a></li>
+<li><a href="architecture/./function-intelligence.html">Function Intelligence System</a></li>
+<li><a href="architecture/./memory-layout.html">Memory Layout</a></li>
+<li><a href="architecture/./thread-safety.html">Thread Safety</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="architecture-details"><a class="header" href="#architecture-details">Architecture Details</a></h1>
+<p>For complete architectural documentation, see <a href="architecture/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>This chapter covers internal implementation details. Key topics:</p>
+<ul>
+<li>Type system design and constraints</li>
+<li>Function intelligence registry</li>
+<li>Memory layout optimization (32-byte expressions)</li>
+<li>Thread safety guarantees</li>
+</ul>
+<p>See <a href="architecture/../../CLAUDE.html">CLAUDE.md</a> for comprehensive architectural documentation.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="architecture-details-1"><a class="header" href="#architecture-details-1">Architecture Details</a></h1>
+<p>For complete architectural documentation, see <a href="architecture/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>This chapter covers internal implementation details. Key topics:</p>
+<ul>
+<li>Type system design and constraints</li>
+<li>Function intelligence registry</li>
+<li>Memory layout optimization (32-byte expressions)</li>
+<li>Thread safety guarantees</li>
+</ul>
+<p>See <a href="architecture/../../CLAUDE.html">CLAUDE.md</a> for comprehensive architectural documentation.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="architecture-details-2"><a class="header" href="#architecture-details-2">Architecture Details</a></h1>
+<p>For complete architectural documentation, see <a href="architecture/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>This chapter covers internal implementation details. Key topics:</p>
+<ul>
+<li>Type system design and constraints</li>
+<li>Function intelligence registry</li>
+<li>Memory layout optimization (32-byte expressions)</li>
+<li>Thread safety guarantees</li>
+</ul>
+<p>See <a href="architecture/../../CLAUDE.html">CLAUDE.md</a> for comprehensive architectural documentation.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="architecture-details-3"><a class="header" href="#architecture-details-3">Architecture Details</a></h1>
+<p>For complete architectural documentation, see <a href="architecture/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>This chapter covers internal implementation details. Key topics:</p>
+<ul>
+<li>Type system design and constraints</li>
+<li>Function intelligence registry</li>
+<li>Memory layout optimization (32-byte expressions)</li>
+<li>Thread safety guarantees</li>
+</ul>
+<p>See <a href="architecture/../../CLAUDE.html">CLAUDE.md</a> for comprehensive architectural documentation.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference"><a class="header" href="#api-reference">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-1"><a class="header" href="#api-reference-1">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-2"><a class="header" href="#api-reference-2">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-3"><a class="header" href="#api-reference-3">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-4"><a class="header" href="#api-reference-4">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="api-reference-5"><a class="header" href="#api-reference-5">API Reference</a></h1>
+<p>For complete API documentation, please visit:</p>
+<p><a href="https://docs.rs/mathhook-core">https://docs.rs/mathhook-core</a></p>
+<p>This mdBook documentation focuses on conceptual guides and tutorials. The full API reference
+is available on docs.rs with detailed documentation for every function, type, and module.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="language-bindings"><a class="header" href="#language-bindings">Language Bindings</a></h1>
+<p>Language-specific documentation is under development.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li>Python: <a href="bindings/../../crates/mathhook-python/README.html">mathhook-python README</a></li>
+<li>Node.js: <a href="bindings/../../crates/mathhook-node/README.html">mathhook-node README</a></li>
+<li><a href="https://pypi.org/project/mathhook/">PyPI</a> for Python package</li>
+<li><a href="https://www.npmjs.com/package/mathhook-node">npm</a> for Node.js package</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="language-bindings-1"><a class="header" href="#language-bindings-1">Language Bindings</a></h1>
+<p>Language-specific documentation is under development.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li>Python: <a href="bindings/../../crates/mathhook-python/README.html">mathhook-python README</a></li>
+<li>Node.js: <a href="bindings/../../crates/mathhook-node/README.html">mathhook-node README</a></li>
+<li><a href="https://pypi.org/project/mathhook/">PyPI</a> for Python package</li>
+<li><a href="https://www.npmjs.com/package/mathhook-node">npm</a> for Node.js package</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="language-bindings-2"><a class="header" href="#language-bindings-2">Language Bindings</a></h1>
+<p>Language-specific documentation is under development.</p>
+<p>For now, please refer to:</p>
+<ul>
+<li>Python: <a href="bindings/../../crates/mathhook-python/README.html">mathhook-python README</a></li>
+<li>Node.js: <a href="bindings/../../crates/mathhook-node/README.html">mathhook-node README</a></li>
+<li><a href="https://pypi.org/project/mathhook/">PyPI</a> for Python package</li>
+<li><a href="https://www.npmjs.com/package/mathhook-node">npm</a> for Node.js package</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="development-guide"><a class="header" href="#development-guide">Development Guide</a></h1>
+<p>For complete development documentation, please see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<h2 id="quick-start-1"><a class="header" href="#quick-start-1">Quick Start</a></h2>
+<h3 id="clone-the-repository-1"><a class="header" href="#clone-the-repository-1">Clone the Repository</a></h3>
+<pre><code class="language-bash">git clone https://github.com/ahmedmashhour/mathhook.git
+cd mathhook
+</code></pre>
+<h3 id="build-the-project"><a class="header" href="#build-the-project">Build the Project</a></h3>
+<pre><code class="language-bash">cargo build --release
+</code></pre>
+<h3 id="run-tests-1"><a class="header" href="#run-tests-1">Run Tests</a></h3>
+<pre><code class="language-bash">cargo test
+</code></pre>
+<h3 id="run-benchmarks"><a class="header" href="#run-benchmarks">Run Benchmarks</a></h3>
+<pre><code class="language-bash">cargo bench
+</code></pre>
+<h2 id="project-structure"><a class="header" href="#project-structure">Project Structure</a></h2>
+<pre><code>mathhook/
+├── crates/
+│   ├── mathhook-core/      # Core mathematical engine
+│   ├── mathhook/           # High-level API
+│   ├── mathhook-python/    # Python bindings
+│   ├── mathhook-node/      # Node.js bindings
+│   └── mathhook-benchmarks/# Benchmarks
+└── docs/                   # This documentation
+</code></pre>
+<p>For detailed architectural documentation, see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-guidelines"><a class="header" href="#contributing-guidelines">Contributing Guidelines</a></h1>
+<p>For complete contributing guidelines, please see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>Key points:</p>
+<ol>
+<li><strong>Mathematical Correctness First</strong> - Every operation must be correct</li>
+<li><strong>No Regressions</strong> - All tests must pass</li>
+<li><strong>Documentation Required</strong> - All public APIs need docs</li>
+<li><strong>Follow Style Guide</strong> - Run <code>cargo fmt</code> and <code>cargo clippy</code></li>
+<li><strong>Test Coverage</strong> - Add tests for new features</li>
+</ol>
+<p>See <a href="contributing/../../CLAUDE.html">CLAUDE.md</a> for comprehensive guidelines.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-guidelines-1"><a class="header" href="#contributing-guidelines-1">Contributing Guidelines</a></h1>
+<p>For complete contributing guidelines, please see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>Key points:</p>
+<ol>
+<li><strong>Mathematical Correctness First</strong> - Every operation must be correct</li>
+<li><strong>No Regressions</strong> - All tests must pass</li>
+<li><strong>Documentation Required</strong> - All public APIs need docs</li>
+<li><strong>Follow Style Guide</strong> - Run <code>cargo fmt</code> and <code>cargo clippy</code></li>
+<li><strong>Test Coverage</strong> - Add tests for new features</li>
+</ol>
+<p>See <a href="contributing/../../CLAUDE.html">CLAUDE.md</a> for comprehensive guidelines.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-guidelines-2"><a class="header" href="#contributing-guidelines-2">Contributing Guidelines</a></h1>
+<p>For complete contributing guidelines, please see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>Key points:</p>
+<ol>
+<li><strong>Mathematical Correctness First</strong> - Every operation must be correct</li>
+<li><strong>No Regressions</strong> - All tests must pass</li>
+<li><strong>Documentation Required</strong> - All public APIs need docs</li>
+<li><strong>Follow Style Guide</strong> - Run <code>cargo fmt</code> and <code>cargo clippy</code></li>
+<li><strong>Test Coverage</strong> - Add tests for new features</li>
+</ol>
+<p>See <a href="contributing/../../CLAUDE.html">CLAUDE.md</a> for comprehensive guidelines.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="contributing-guidelines-3"><a class="header" href="#contributing-guidelines-3">Contributing Guidelines</a></h1>
+<p>For complete contributing guidelines, please see <a href="contributing/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<p>Key points:</p>
+<ol>
+<li><strong>Mathematical Correctness First</strong> - Every operation must be correct</li>
+<li><strong>No Regressions</strong> - All tests must pass</li>
+<li><strong>Documentation Required</strong> - All public APIs need docs</li>
+<li><strong>Follow Style Guide</strong> - Run <code>cargo fmt</code> and <code>cargo clippy</code></li>
+<li><strong>Test Coverage</strong> - Add tests for new features</li>
+</ol>
+<p>See <a href="contributing/../../CLAUDE.html">CLAUDE.md</a> for comprehensive guidelines.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="mathematical-notation"><a class="header" href="#mathematical-notation">Mathematical Notation</a></h1>
+<p>This appendix documents the mathematical notation used throughout MathHook.</p>
+<h2 id="latex-support"><a class="header" href="#latex-support">LaTeX Support</a></h2>
+<p>MathHook can parse standard LaTeX mathematical notation:</p>
+<ul>
+<li><code>\frac{a}{b}</code> - Fractions</li>
+<li><code>\sqrt{x}</code> - Square root</li>
+<li><code>x^{2}</code> - Exponentiation</li>
+<li><code>\sin(x)</code>, <code>\cos(x)</code>, <code>\tan(x)</code> - Trigonometric functions</li>
+<li><code>\log(x)</code>, <code>\ln(x)</code> - Logarithms</li>
+<li><code>\sum</code>, <code>\prod</code>, <code>\int</code> - Summation, product, integral</li>
+<li>Greek letters: <code>\alpha</code>, <code>\beta</code>, <code>\gamma</code>, etc.</li>
+</ul>
+<h2 id="standard-notation"><a class="header" href="#standard-notation">Standard Notation</a></h2>
+<ul>
+<li><code>2*x</code> or <code>2x</code> - Multiplication (implicit multiplication supported)</li>
+<li><code>x^2</code> - Exponentiation</li>
+<li><code>x/y</code> - Division</li>
+<li><code>sin(x)</code> - Functions</li>
+<li><code>|x|</code> - Absolute value</li>
+</ul>
+<h2 id="wolfram-language"><a class="header" href="#wolfram-language">Wolfram Language</a></h2>
+<p>MathHook also supports Wolfram Language syntax:</p>
+<ul>
+<li><code>Power[x, 2]</code> - Exponentiation</li>
+<li><code>Sin[x]</code> - Functions</li>
+<li><code>D[expr, x]</code> - Derivatives</li>
+<li><code>Integrate[expr, x]</code> - Integration</li>
+</ul>
+<h2 id="operator-precedence"><a class="header" href="#operator-precedence">Operator Precedence</a></h2>
+<ol>
+<li>Function application: <code>sin(x)</code>, <code>log(y)</code></li>
+<li>Exponentiation: <code>^</code> (right-associative)</li>
+<li>Multiplication/Division: <code>*</code>, <code>/</code> (left-associative)</li>
+<li>Addition/Subtraction: <code>+</code>, <code>-</code> (left-associative)</li>
+</ol>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="error-messages"><a class="header" href="#error-messages">Error Messages</a></h1>
+<p>Common error messages and their solutions.</p>
+<h2 id="parse-errors"><a class="header" href="#parse-errors">Parse Errors</a></h2>
+<h3 id="unexpected-token"><a class="header" href="#unexpected-token">"Unexpected token"</a></h3>
+<p><strong>Cause</strong>: Invalid syntax in input expression.</p>
+<p><strong>Solution</strong>: Check for typos, missing parentheses, or unsupported syntax.</p>
+<h3 id="implicit-multiplication-ambiguity"><a class="header" href="#implicit-multiplication-ambiguity">"Implicit multiplication ambiguity"</a></h3>
+<p><strong>Cause</strong>: Parser cannot determine multiplication intent.</p>
+<p><strong>Solution</strong>: Add explicit <code>*</code> operator or use parentheses.</p>
+<h2 id="domain-errors"><a class="header" href="#domain-errors">Domain Errors</a></h2>
+<h3 id="sqrt-of-negative-number"><a class="header" href="#sqrt-of-negative-number">"sqrt of negative number"</a></h3>
+<p><strong>Cause</strong>: Attempting to compute square root of negative number in real domain.</p>
+<p><strong>Solution</strong>: Use complex domain or ensure argument is non-negative.</p>
+<h3 id="division-by-zero"><a class="header" href="#division-by-zero">"Division by zero"</a></h3>
+<p><strong>Cause</strong>: Expression evaluates to division by zero.</p>
+<p><strong>Solution</strong>: Check for zero denominators before evaluation.</p>
+<h3 id="log-of-non-positive-number"><a class="header" href="#log-of-non-positive-number">"log of non-positive number"</a></h3>
+<p><strong>Cause</strong>: Logarithm of zero or negative number in real domain.</p>
+<p><strong>Solution</strong>: Ensure argument is positive or use complex domain.</p>
+<h2 id="solver-errors-1"><a class="header" href="#solver-errors-1">Solver Errors</a></h2>
+<h3 id="no-solution-exists"><a class="header" href="#no-solution-exists">"No solution exists"</a></h3>
+<p><strong>Cause</strong>: Equation has no solution in the given domain.</p>
+<p><strong>Solution</strong>: Check equation for contradictions or domain restrictions.</p>
+<h3 id="cannot-solve---equation-too-complex"><a class="header" href="#cannot-solve---equation-too-complex">"Cannot solve - equation too complex"</a></h3>
+<p><strong>Cause</strong>: Solver cannot handle this equation type yet.</p>
+<p><strong>Solution</strong>: Try simplifying equation or use numerical methods.</p>
+<h2 id="for-more-help"><a class="header" href="#for-more-help">For More Help</a></h2>
+<ul>
+<li><a href="https://github.com/ahmedmashhour/mathhook/issues">GitHub Issues</a></li>
+<li><a href="https://docs.rs/mathhook-core">API Documentation</a></li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="frequently-asked-questions"><a class="header" href="#frequently-asked-questions">Frequently Asked Questions</a></h1>
+<h2 id="general"><a class="header" href="#general">General</a></h2>
+<h3 id="what-is-mathhook-1"><a class="header" href="#what-is-mathhook-1">What is MathHook?</a></h3>
+<p>MathHook is a high-performance educational computer algebra system (CAS) written in Rust.</p>
+<h3 id="how-does-it-compare-to-sympy"><a class="header" href="#how-does-it-compare-to-sympy">How does it compare to SymPy?</a></h3>
+<p>MathHook is 10-100x faster than SymPy for common operations while maintaining mathematical correctness.</p>
+<h3 id="what-languages-are-supported"><a class="header" href="#what-languages-are-supported">What languages are supported?</a></h3>
+<p>Rust (native), Python, Node.js/TypeScript, and WebAssembly (coming soon).</p>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<h3 id="how-do-i-create-expressions"><a class="header" href="#how-do-i-create-expressions">How do I create expressions?</a></h3>
+<p>Use the <code>expr!</code> and <code>symbol!</code> macros:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x = symbol!(x);
+let expr = expr!((x ^ 2) + 1);
+<span class="boring">}</span></code></pre></pre>
+<h3 id="why-use-rationals-instead-of-floats"><a class="header" href="#why-use-rationals-instead-of-floats">Why use rationals instead of floats?</a></h3>
+<p>Rationals provide exact arithmetic without precision loss. Use floats only when approximation is acceptable.</p>
+<h3 id="how-do-i-parse-latex"><a class="header" href="#how-do-i-parse-latex">How do I parse LaTeX?</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use mathhook_core::parser::{Parser, ParserConfig};
+
+let parser = Parser::new(ParserConfig::default());
+let expr = parser.parse(r"\frac{x^2}{2}").unwrap();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="performance"><a class="header" href="#performance">Performance</a></h2>
+<h3 id="how-fast-is-mathhook"><a class="header" href="#how-fast-is-mathhook">How fast is MathHook?</a></h3>
+<p>10-100x faster than SymPy, competitive with other native CAS systems.</p>
+<h3 id="does-it-support-parallel-processing"><a class="header" href="#does-it-support-parallel-processing">Does it support parallel processing?</a></h3>
+<p>Yes, expressions are immutable and thread-safe. Use <code>parallel_bulk_simplify</code> for bulk operations.</p>
+<h3 id="what-is-simd"><a class="header" href="#what-is-simd">What is SIMD?</a></h3>
+<p>SIMD (Single Instruction Multiple Data) vectorizes arithmetic for 2-4x speedup on large arrays.</p>
+<h2 id="development"><a class="header" href="#development">Development</a></h2>
+<h3 id="how-do-i-contribute"><a class="header" href="#how-do-i-contribute">How do I contribute?</a></h3>
+<p>See <a href="appendix/../contributing/development.html">Contributing Guide</a> and <a href="appendix/../../CLAUDE.html">CLAUDE.md</a>.</p>
+<h3 id="what-are-the-design-principles"><a class="header" href="#what-are-the-design-principles">What are the design principles?</a></h3>
+<ol>
+<li>Mathematical correctness first</li>
+<li>Performance</li>
+<li>Ergonomic API</li>
+<li>Educational value</li>
+<li>Multi-language support</li>
+</ol>
+<p>See <a href="appendix/../architecture/principles.html">Design Principles</a> for details.</p>
+<h2 id="troubleshooting-1"><a class="header" href="#troubleshooting-1">Troubleshooting</a></h2>
+<h3 id="parse-errors-1"><a class="header" href="#parse-errors-1">Parse errors?</a></h3>
+<p>Check syntax, use explicit <code>*</code> for multiplication, ensure balanced parentheses.</p>
+<h3 id="domain-errors-1"><a class="header" href="#domain-errors-1">Domain errors?</a></h3>
+<p>Check for sqrt of negatives, log of non-positives, or division by zero.</p>
+<h3 id="import-errors"><a class="header" href="#import-errors">Import errors?</a></h3>
+<p>Reinstall package: <code>pip install --force-reinstall mathhook</code></p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="glossary"><a class="header" href="#glossary">Glossary</a></h1>
+<h2 id="a"><a class="header" href="#a">A</a></h2>
+<p><strong>AST (Abstract Syntax Tree)</strong>: Tree representation of mathematical expressions.</p>
+<p><strong>Assumption</strong>: Constraint on symbol values (e.g., positive, real, integer).</p>
+<h2 id="c"><a class="header" href="#c">C</a></h2>
+<p><strong>CAS (Computer Algebra System)</strong>: Software for symbolic mathematics.</p>
+<p><strong>Canonical Form</strong>: Standard representation of expressions for reliable equality.</p>
+<p><strong>Cache Line</strong>: 64-byte memory chunk that CPUs load at once.</p>
+<h2 id="d"><a class="header" href="#d">D</a></h2>
+<p><strong>Domain</strong>: Set of valid input values for a function.</p>
+<p><strong>Derivative</strong>: Rate of change of a function.</p>
+<h2 id="e"><a class="header" href="#e">E</a></h2>
+<p><strong>Expression</strong>: Mathematical formula represented as a tree structure.</p>
+<p><strong>Ergonomic API</strong>: User-friendly, intuitive programming interface.</p>
+<h2 id="i"><a class="header" href="#i">I</a></h2>
+<p><strong>Immutable</strong>: Cannot be changed after creation.</p>
+<p><strong>Implicit Multiplication</strong>: <code>2x</code> interpreted as <code>2 * x</code>.</p>
+<h2 id="l"><a class="header" href="#l">L</a></h2>
+<p><strong>LALRPOP</strong>: Parser generator tool used by MathHook.</p>
+<p><strong>LaTeX</strong>: Typesetting system for mathematical notation.</p>
+<h2 id="r"><a class="header" href="#r">R</a></h2>
+<p><strong>Rational</strong>: Exact fraction representation (numerator/denominator).</p>
+<h2 id="s"><a class="header" href="#s">S</a></h2>
+<p><strong>SIMD</strong>: Single Instruction Multiple Data - parallel computation technique.</p>
+<p><strong>Simplification</strong>: Transforming expressions to canonical form.</p>
+<p><strong>Symbol</strong>: Mathematical variable (e.g., x, y, θ).</p>
+<p><strong>String Interning</strong>: Storing one copy of each unique string for fast comparison.</p>
+<h2 id="t"><a class="header" href="#t">T</a></h2>
+<p><strong>Thread Safety</strong>: Safe to use from multiple threads simultaneously.</p>
+<h2 id="z"><a class="header" href="#z">Z</a></h2>
+<p><strong>Zero-Copy</strong>: Processing without making intermediate copies of data.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<p>All notable changes to MathHook will be documented in this file.</p>
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>.</p>
+<h2 id="unreleased"><a class="header" href="#unreleased">[Unreleased]</a></h2>
+<h3 id="added"><a class="header" href="#added">Added</a></h3>
+<ul>
+<li>Initial mdBook documentation</li>
+<li>Comprehensive usage guides</li>
+<li>Architecture documentation</li>
+</ul>
+<h2 id="010---2024-xx-xx"><a class="header" href="#010---2024-xx-xx">[0.1.0] - 2024-XX-XX</a></h2>
+<h3 id="added-1"><a class="header" href="#added-1">Added</a></h3>
+<ul>
+<li>Initial release</li>
+<li>Core expression system</li>
+<li>LaTeX and Wolfram Language parsers</li>
+<li>Symbolic differentiation</li>
+<li>Equation solving (linear, quadratic, polynomial)</li>
+<li>Matrix operations</li>
+<li>Python bindings (PyO3)</li>
+<li>Node.js bindings (NAPI-RS)</li>
+<li>Step-by-step educational explanations</li>
+<li>SIMD optimizations</li>
+<li>Parallel processing support</li>
+</ul>
+<h3 id="known-issues"><a class="header" href="#known-issues">Known Issues</a></h3>
+<ul>
+<li>Integration still under development</li>
+<li>Some special functions not yet implemented</li>
+<li>WebAssembly bindings in progress</li>
+</ul>
+<h2 id="contributing"><a class="header" href="#contributing">Contributing</a></h2>
+<p>See <a href="appendix/../contributing/development.html">Contributing Guide</a> for how to suggest changes to this changelog.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            MathJax.Hub.Register.StartupHook('End', function() {
+                window.setTimeout(window.print, 100);
+            });
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>

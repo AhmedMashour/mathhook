@@ -6,7 +6,7 @@
 //! infrastructure and Expression::function support.
 
 mod basic;
-// mod by_parts;
+mod by_parts;
 // mod definite;
 mod function_integrals;
 // mod rational;
@@ -14,7 +14,7 @@ mod function_integrals;
 // mod trigonometric;
 
 pub use basic::BasicIntegrals;
-// pub use by_parts::IntegrationByParts;
+pub use by_parts::IntegrationByParts;
 // pub use definite::DefiniteIntegrals;
 pub use function_integrals::FunctionIntegrals;
 // pub use rational::RationalIntegrals;
@@ -119,8 +119,8 @@ impl IntegrationMethods {
     /// let result = IntegrationMethods::by_parts(&expr, x);
     /// ```
     pub fn by_parts(expr: &Expression, variable: Symbol) -> Expression {
-        // TODO: Implement integration by parts
-        Expression::integral(expr.clone(), variable)
+        IntegrationByParts::integrate(expr, variable.clone())
+            .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
     }
 
     /// Attempt integration by substitution (placeholder implementation)

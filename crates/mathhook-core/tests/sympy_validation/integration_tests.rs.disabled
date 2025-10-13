@@ -1,0 +1,347 @@
+//! SymPy validation tests for integration operations
+//!
+//! Tests validate MathHook integration against SymPy reference implementation
+//! located at ~/Documents/work/math/sympy/
+//!
+//! Each test documents the equivalent SymPy command for verification.
+//!
+//! Note: Some tests are marked as #[ignore] if integration is not yet fully implemented
+
+use mathhook_core::prelude::*;
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_constant() {
+    // SymPy: integrate(5, x) = 5*x
+    let x = symbol!(x);
+    let expr = expr!(5);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(5 * x);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_variable() {
+    // SymPy: integrate(x, x) = x**2/2
+    let x = symbol!(x);
+    let expr = Expression::symbol(x.clone());
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x ^ 2) / 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_power_rule() {
+    // SymPy: integrate(x**2, x) = x**3/3
+    let x = symbol!(x);
+    let expr = expr!(x ^ 2);
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x ^ 3) / 3);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_cubic() {
+    // SymPy: integrate(x**3, x) = x**4/4
+    let x = symbol!(x);
+    let expr = expr!(x ^ 3);
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x ^ 4) / 4);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_sum_rule() {
+    // SymPy: integrate(x + 1, x) = x**2/2 + x
+    let x = symbol!(x);
+    let expr = expr!(x + 1);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(add: ((x ^ 2) / 2), x);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_polynomial() {
+    // SymPy: integrate(x**2 + 2*x + 1, x) = x**3/3 + x**2 + x
+    let x = symbol!(x);
+    let expr = expr!(add: (x ^ 2), (2 * x), 1);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(add: ((x ^ 3) / 3), (x ^ 2), x);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_constant_multiple() {
+    // SymPy: integrate(5*x, x) = 5*x**2/2
+    let x = symbol!(x);
+    let expr = expr!(5 * x);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(5 * ((x ^ 2) / 2));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_sin() {
+    // SymPy: integrate(sin(x), x) = -cos(x)
+    let x = symbol!(x);
+    let expr = function!(sin, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = Expression::mul(vec![
+        Expression::integer(-1),
+        function!(cos, Expression::symbol(x)),
+    ]);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_cos() {
+    // SymPy: integrate(cos(x), x) = sin(x)
+    let x = symbol!(x);
+    let expr = function!(cos, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = function!(sin, Expression::symbol(x));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_exp() {
+    // SymPy: integrate(exp(x), x) = exp(x)
+    let x = symbol!(x);
+    let expr = function!(exp, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = function!(exp, Expression::symbol(x));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_one_over_x() {
+    // SymPy: integrate(1/x, x) = log(x)
+    let x = symbol!(x);
+    let expr = expr!(1 / x);
+    let result = expr.integrate(x.clone());
+    let expected = function!(log, Expression::symbol(x));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_sqrt() {
+    // SymPy: integrate(sqrt(x), x) = (2/3)*x**(3/2)
+    let x = symbol!(x);
+    let expr = function!(sqrt, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = expr!((2/3) * (x ^ (3/2)));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_negative_power() {
+    // SymPy: integrate(x**(-2), x) = -x**(-1) = -1/x
+    let x = symbol!(x);
+    let expr = expr!(x ^ (-2));
+    let result = expr.integrate(x.clone());
+    let expected = Expression::mul(vec![
+        Expression::integer(-1),
+        expr!(x ^ (-1)),
+    ]);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_rational_power() {
+    // SymPy: integrate(x**(1/3), x) = (3/4)*x**(4/3)
+    let x = symbol!(x);
+    let expr = Expression::pow(
+        Expression::symbol(x.clone()),
+        Expression::rational(1, 3),
+    );
+    let result = expr.integrate(x.clone());
+    let expected = expr!((3/4) * (x ^ (4/3)));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_definite_simple() {
+    // SymPy: integrate(x, (x, 0, 1)) = 1/2
+    let x = symbol!(x);
+    let expr = Expression::symbol(x.clone());
+    let result = expr.integrate_definite(x, expr!(0), expr!(1));
+    let expected = Expression::rational(1, 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_definite_quadratic() {
+    // SymPy: integrate(x**2, (x, 0, 1)) = 1/3
+    let x = symbol!(x);
+    let expr = expr!(x ^ 2);
+    let result = expr.integrate_definite(x, expr!(0), expr!(1));
+    let expected = Expression::rational(1, 3);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_tan() {
+    // SymPy: integrate(tan(x), x) = -log(cos(x))
+    let x = symbol!(x);
+    let expr = function!(tan, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = Expression::mul(vec![
+        Expression::integer(-1),
+        function!(log, function!(cos, Expression::symbol(x))),
+    ]);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_sec_squared() {
+    // SymPy: integrate(sec(x)**2, x) = tan(x)
+    let x = symbol!(x);
+    let expr = expr!((sec(x)) ^ 2);
+    let result = expr.integrate(x.clone());
+    let expected = function!(tan, Expression::symbol(x));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_by_parts_simple() {
+    // SymPy: integrate(x*exp(x), x) = (x-1)*exp(x)
+    let x = symbol!(x);
+    let expr = expr!(x * (exp(x)));
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x - 1) * (exp(x)));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_trigonometric_product() {
+    // SymPy: integrate(sin(x)*cos(x), x) = sin(x)**2/2
+    let x = symbol!(x);
+    let expr = Expression::mul(vec![
+        function!(sin, Expression::symbol(x.clone())),
+        function!(cos, Expression::symbol(x.clone())),
+    ]);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(((sin(x)) ^ 2) / 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_zero() {
+    // SymPy: integrate(0, x) = 0
+    let x = symbol!(x);
+    let expr = expr!(0);
+    let result = expr.integrate(x);
+    assert_eq!(result, expr!(0));
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_multiple_variables() {
+    // SymPy: integrate(x*y, x) = x**2*y/2
+    let x = symbol!(x);
+    let y = symbol!(y);
+    let expr = expr!(x * y);
+    let result = expr.integrate(x.clone());
+    let expected = expr!(((x ^ 2) * y) / 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_exp_multiple() {
+    // SymPy: integrate(exp(2*x), x) = exp(2*x)/2
+    let x = symbol!(x);
+    let expr = function!(exp, expr!(2 * x));
+    let result = expr.integrate(x);
+    let expected = expr!((exp(2 * x)) / 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_sin_multiple() {
+    // SymPy: integrate(sin(2*x), x) = -cos(2*x)/2
+    let x = symbol!(x);
+    let expr = function!(sin, expr!(2 * x));
+    let result = expr.integrate(x);
+    let expected = expr!((-1 * (cos(2 * x))) / 2);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_rational_function() {
+    // SymPy: integrate(1/(x+1), x) = log(x+1)
+    let x = symbol!(x);
+    let expr = expr!(1 / (x + 1));
+    let result = expr.integrate(x);
+    let expected = function!(log, expr!(x + 1));
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_polynomial_high_degree() {
+    // SymPy: integrate(x**5, x) = x**6/6
+    let x = symbol!(x);
+    let expr = expr!(x ^ 5);
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x ^ 6) / 6);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_absolute_value() {
+    // SymPy: This is complex and depends on the domain
+    // For positive x: integrate(abs(x), x) = x**2/2
+    let x = symbol!(x);
+    let expr = function!(abs, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+
+    // Result structure should contain conditional or piecewise logic
+    let result_str = format!("{:?}", result);
+    assert!(result_str.contains("x") || result_str.contains("Piecewise"));
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_log() {
+    // SymPy: integrate(log(x), x) = x*log(x) - x
+    let x = symbol!(x);
+    let expr = function!(log, Expression::symbol(x.clone()));
+    let result = expr.integrate(x.clone());
+    let expected = expr!((x * (log(x))) - x);
+    assert_eq!(result, expected);
+}
+
+#[test]
+#[ignore] // TODO: Implement symbolic integration
+fn test_integrate_arctan() {
+    // SymPy: integrate(1/(1+x**2), x) = atan(x)
+    let x = symbol!(x);
+    let expr = expr!(1 / (1 + (x ^ 2)));
+    let result = expr.integrate(x.clone());
+    let expected = function!(atan, Expression::symbol(x));
+    assert_eq!(result, expected);
+}
