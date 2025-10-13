@@ -31,10 +31,10 @@ pub fn get_global_config() -> PerformanceConfig {
 ///
 /// This is typically called once by binding crates during initialization:
 ///
-/// ```rust
+/// ```ignore
 /// // In mathhook-python/src/lib.rs
-/// use mathhook_core::core::global_config::set_global_config;
-/// use mathhook_core::core::performance_strategy::{PerformanceConfig, BindingContext};
+/// use mathhook_core::core::performance::config::set_global_config;
+/// use mathhook_core::core::performance::strategy::{PerformanceConfig, BindingContext};
 ///
 /// #[pymodule]
 /// fn mathhook_python(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -53,10 +53,10 @@ pub fn set_global_config(config: PerformanceConfig) {
 ///
 /// Convenience method for binding crates:
 ///
-/// ```rust
+/// ```ignore
 /// // In mathhook-node/src/lib.rs
-/// use mathhook_core::core::global_config::set_binding_config;
-/// use mathhook_core::core::performance_strategy::BindingContext;
+/// use mathhook_core::core::performance::config::set_binding_config;
+/// use mathhook_core::core::performance::strategy::BindingContext;
 ///
 /// fn init_mathhook_node() {
 ///     set_binding_config(BindingContext::NodeJs);
@@ -71,8 +71,8 @@ pub fn set_binding_config(context: BindingContext) {
 ///
 /// Useful for runtime tuning:
 ///
-/// ```rust
-/// use mathhook_core::core::global_config::update_global_config;
+/// ```
+/// use mathhook_core::core::performance::config::update_global_config;
 ///
 /// // Disable parallelism at runtime
 /// update_global_config(|config| {

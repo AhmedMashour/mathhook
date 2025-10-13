@@ -40,13 +40,18 @@
 ///
 /// For mixed operations, operator precedence isn't perfect. Use explicit grouping:
 /// ```rust
-/// // These work as expected:
-/// expr!(2 * x)        // ✅ 2*x
-/// expr!(x + y)        // ✅ x+y
-/// expr!((2*x) + 3)    // ✅ (2*x)+3 with explicit grouping
+/// use mathhook_core::{expr, symbol};
 ///
-/// // This might not work as expected:
-/// expr!(2*x + 3)      // ⚠️  Precedence unclear - use (2*x) + 3
+/// // These work as expected:
+/// let _ = expr!(2 * x);        // Works: 2*x
+/// let _ = expr!(x + y);        // Works: x+y
+/// let _ = expr!((2*x) + 3);    // Works: (2*x)+3 with explicit grouping
+/// ```
+///
+/// This might not work as expected:
+/// ```compile_fail
+/// // Precedence unclear - use (2*x) + 3 instead
+/// let _ = expr!(2*x + 3);
 /// ```
 #[macro_export]
 macro_rules! expr {

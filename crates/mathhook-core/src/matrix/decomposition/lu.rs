@@ -21,11 +21,10 @@ impl Matrix {
     ///
     /// ```
     /// use mathhook_core::matrix::Matrix;
-    /// use mathhook_core::Expression;
     ///
     /// let matrix = Matrix::from_arrays([
-    ///     [Expression::integer(2), Expression::integer(1)],
-    ///     [Expression::integer(4), Expression::integer(3)]
+    ///     [2, 1],
+    ///     [4, 3]
     /// ]);
     ///
     /// let lu = matrix.lu_decomposition().unwrap();

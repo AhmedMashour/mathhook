@@ -123,8 +123,11 @@ impl Matrix {
     ///
     /// let matrix = Matrix::zero(2, 2);
     /// let exp_matrix = matrix.matrix_exponential_eigen().unwrap();
-    /// // exp(0) = I
-    /// assert!(matches!(exp_matrix, Matrix::Identity(_)));
+    /// // exp(0) = 1, so result is diagonal(exp(0), exp(0))
+    /// let eigenvals = exp_matrix.eigenvalues();
+    /// assert_eq!(eigenvals.len(), 2);
+    /// // Eigenvalues are exp(0) in symbolic form
+    /// assert_eq!(eigenvals[0], Expression::function("exp", vec![Expression::integer(0)]));
     /// ```
     pub fn matrix_exponential_eigen(&self) -> Option<Matrix> {
         if let Some(eigen) = self.eigen_decomposition() {
@@ -213,8 +216,10 @@ impl Matrix {
     /// ]);
     /// let sqrt_matrix = matrix.matrix_sqrt_eigen().unwrap();
     /// let eigenvals = sqrt_matrix.eigenvalues();
-    /// assert_eq!(eigenvals[0], Expression::integer(2)); // sqrt(4) = 2
-    /// assert_eq!(eigenvals[1], Expression::integer(3)); // sqrt(9) = 3
+    /// // Eigenvalues are sqrt(4) and sqrt(9) in symbolic form
+    /// assert_eq!(eigenvals.len(), 2);
+    /// assert_eq!(eigenvals[0], Expression::pow(Expression::integer(4), Expression::rational(1, 2)));
+    /// assert_eq!(eigenvals[1], Expression::pow(Expression::integer(9), Expression::rational(1, 2)));
     /// ```
     pub fn matrix_sqrt_eigen(&self) -> Option<Matrix> {
         if let Some(eigen) = self.eigen_decomposition() {

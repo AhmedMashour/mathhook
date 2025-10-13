@@ -14,6 +14,7 @@
 //!
 //! ```
 //! use mathhook_core::prelude::*;
+//! use mathhook_core::pattern::Substitutable;
 //!
 //! let x = symbol!(x);
 //! let expr = expr!(x + 1);
@@ -26,5 +27,5 @@
 pub mod matching;
 pub mod substitution;
 
-pub use matching::{Pattern, PatternMatches};
+pub use matching::{Matchable, Pattern, PatternMatches};
 pub use substitution::Substitutable;

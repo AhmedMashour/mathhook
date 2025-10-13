@@ -148,10 +148,10 @@ pub trait Matchable {
     /// // Pattern: a*x + b
     /// let pattern = Pattern::Add(vec![
     ///     Pattern::Mul(vec![
-    ///         Pattern::Wildcard("a".to_string()),
+    ///         Pattern::wildcard("a"),
     ///         Pattern::Exact(Expression::symbol(x.clone()))
     ///     ]),
-    ///     Pattern::Wildcard("b".to_string())
+    ///     Pattern::wildcard("b")
     /// ]);
     ///
     /// let matches = expr.matches(&pattern);
@@ -198,14 +198,14 @@ pub trait Matchable {
     ///     Pattern::Pow(
     ///         Box::new(Pattern::Function {
     ///             name: "sin".to_string(),
-    ///             args: vec![Pattern::Wildcard("a".to_string())]
+    ///             args: vec![Pattern::wildcard("a")]
     ///         }),
     ///         Box::new(Pattern::Exact(Expression::integer(2)))
     ///     ),
     ///     Pattern::Pow(
     ///         Box::new(Pattern::Function {
     ///             name: "cos".to_string(),
-    ///             args: vec![Pattern::Wildcard("a".to_string())]
+    ///             args: vec![Pattern::wildcard("a")]
     ///         }),
     ///         Box::new(Pattern::Exact(Expression::integer(2)))
     ///     )
@@ -699,8 +699,11 @@ mod tests {
     #[test]
     fn test_wildcard_consistency() {
         let x = symbol!(x);
-        // x + x (same variable twice)
-        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(x.clone())]);
+        // x + x (same variable twice) - use raw Add to avoid simplification
+        let expr = Expression::Add(Box::new(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(x.clone()),
+        ]));
 
         // Pattern: a + a (same wildcard twice - should match when both are same)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
@@ -741,8 +744,11 @@ mod tests {
     #[test]
     fn test_replacement_in_addition() {
         let x = symbol!(x);
-        // x + 1
-        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
+        // x + 1 - use raw Add to avoid canonical ordering
+        let expr = Expression::Add(Box::new(vec![
+            Expression::symbol(x.clone()),
+            Expression::integer(1),
+        ]));
 
         // Pattern: a + b -> b + a (swap)
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
@@ -751,8 +757,11 @@ mod tests {
 
         let result = expr.replace(&pattern, &replacement);
 
-        // Should be 1 + x
-        let expected = Expression::add(vec![Expression::integer(1), Expression::symbol(x.clone())]);
+        // Should be 1 + x - use raw Add to match replacement structure
+        let expected = Expression::Add(Box::new(vec![
+            Expression::integer(1),
+            Expression::symbol(x.clone()),
+        ]));
 
         assert_eq!(result, expected);
     }

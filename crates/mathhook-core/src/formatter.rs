@@ -173,7 +173,7 @@ impl Expression {
     /// let x_expr = expr!(x);
     /// let latex = x_expr.format_as(MathLanguage::LaTeX).unwrap();
     /// let simple = x_expr.format_as(MathLanguage::Simple).unwrap();
-    /// let wolfram = expr.format_as(MathLanguage::Wolfram).unwrap();
+    /// let wolfram = x_expr.format_as(MathLanguage::Wolfram).unwrap();
     /// ```
     pub fn format_as(&self, language: MathLanguage) -> Result<String, FormattingError> {
         match language {

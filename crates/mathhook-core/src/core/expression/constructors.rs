@@ -14,10 +14,10 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::expr;
+    /// use mathhook_core::{Expression, Number};
     ///
-    /// let expr = expr!(42);
-    /// let expr = expr!(3.14);
+    /// let expr = Expression::number(42);
+    /// let expr = Expression::number(3.14);
     /// ```
     pub fn number<T: Into<Number>>(value: T) -> Self {
         Self::Number(value.into())
@@ -108,7 +108,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, expr};
     ///
     /// // Constant folding
     /// let expression = Expression::add(vec![
@@ -145,7 +145,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, expr};
     ///
     /// // Constant folding
     /// let expression = Expression::mul(vec![
@@ -185,7 +185,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, expr};
     ///
     /// // Power identities
     /// let x = expr!(x);
@@ -215,7 +215,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, expr};
     ///
     /// let expression = Expression::function("sin", vec![expr!(x)]);
     /// ```
@@ -231,7 +231,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression, MathConstant};
+    /// use mathhook_core::{Expression, core::MathConstant};
     ///
     /// let expr = Expression::constant(MathConstant::Pi);
     /// ```
@@ -377,7 +377,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, expr};
     ///
     /// let expr = Expression::equation(
     ///     expr!(x),
@@ -397,12 +397,11 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::derivative(
-    ///     Expression::pow(expr!(x), expr!(2)),
-    ///     expr!(x),
+    ///     Expression::pow(expr!(x), Expression::integer(2)),
+    ///     symbol!(x),
     ///     1,
     /// );
     /// ```
@@ -419,8 +418,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::integral(
     ///     expr!(x),
@@ -440,14 +438,13 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::definite_integral(
     ///     expr!(x),
     ///     symbol!(x),
-    ///     expr!(0),
-    ///     expr!(1),
+    ///     Expression::integer(0),
+    ///     Expression::integer(1),
     /// );
     /// ```
     pub fn definite_integral(
@@ -468,13 +465,12 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::limit(
     ///     expr!(x),
     ///     symbol!(x),
-    ///     expr!(0),
+    ///     Expression::integer(0),
     /// );
     /// ```
     pub fn limit(expression: Expression, variable: Symbol, point: Expression) -> Self {
@@ -491,14 +487,13 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::sum(
     ///     expr!(i),
     ///     symbol!(i),
-    ///     expr!(1),
-    ///     expr!(10),
+    ///     Expression::integer(1),
+    ///     Expression::integer(10),
     /// );
     /// ```
     pub fn sum(
@@ -520,14 +515,13 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
-    /// use mathhook_core::{symbol, expr};
+    /// use mathhook_core::{Expression, symbol, expr};
     ///
     /// let expr = Expression::product(
     ///     expr!(i),
     ///     symbol!(i),
-    ///     expr!(1),
-    ///     expr!(10),
+    ///     Expression::integer(1),
+    ///     Expression::integer(10),
     /// );
     /// ```
     pub fn product(
@@ -594,10 +588,10 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let piecewise = Expression::piecewise(
-    ///     vec![(Expression::symbol("x"), Expression::integer(1))],
+    ///     vec![(Expression::symbol(symbol!(x)), Expression::integer(1))],
     ///     Some(Expression::integer(0)),
     /// );
     /// ```
@@ -610,11 +604,11 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::{Expression};
+    /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::core::expression::RelationType;
     ///
     /// let relation = Expression::relation(
-    ///     Expression::symbol("x"),
+    ///     Expression::symbol(symbol!(x)),
     ///     Expression::integer(5),
     ///     RelationType::Greater,
     /// );
@@ -651,7 +645,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, MatrixOperations};
     ///
     /// let identity = Expression::identity_matrix(3);
     /// assert!(identity.is_identity_matrix());
@@ -666,12 +660,12 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, symbol};
     ///
-    /// let matrix = Expression::symbol("A");
+    /// let matrix = Expression::symbol(symbol!(A));
     /// let det_call = Expression::method_call(matrix, "det", vec![]);
     /// let trace_call = Expression::method_call(
-    ///     Expression::symbol("B"),
+    ///     Expression::symbol(symbol!(B)),
     ///     "trace",
     ///     vec![]
     /// );
@@ -694,7 +688,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Expression;
+    /// use mathhook_core::{Expression, MatrixOperations};
     ///
     /// let zero = Expression::zero_matrix(2, 3);
     /// assert!(zero.is_zero_matrix());

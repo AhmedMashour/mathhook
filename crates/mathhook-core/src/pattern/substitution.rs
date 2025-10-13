@@ -4,6 +4,7 @@
 
 use crate::core::{Expression, MathConstant, Number, Symbol};
 use crate::pattern::matching::Pattern;
+use crate::simplify::Simplify;
 use std::collections::HashMap;
 
 /// Trait for types that support substitution operations
@@ -86,7 +87,7 @@ impl Substitutable for Expression {
         }
 
         // Otherwise, recursively substitute in subexpressions
-        match self {
+        let result = match self {
             // Atomic types - no substitution needed
             Expression::Number(_) | Expression::Constant(_) => self.clone(),
 
@@ -263,7 +264,10 @@ impl Substitutable for Expression {
                     args: new_args,
                 }))
             }
-        }
+        };
+
+        // Auto-simplify to match SymPy behavior
+        result.simplify()
     }
 
     fn subs_multiple(&self, substitutions: &[(Expression, Expression)]) -> Expression {
@@ -492,6 +496,7 @@ impl Substitutable for Expression {
                 }))
             }
         }
+        .simplify() // Auto-simplify to match SymPy behavior
     }
 }
 
@@ -517,13 +522,8 @@ mod tests {
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(5));
 
-        // Substitution doesn't simplify - returns Add([5, 1])
-        let expected = Expression::add(vec![Expression::integer(5), Expression::integer(1)]);
-
-        assert_eq!(result, expected);
-
-        // To get 6, simplify
-        assert_eq!(result.simplify(), Expression::integer(6));
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(6));
     }
 
     #[test]
@@ -533,13 +533,8 @@ mod tests {
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(3));
 
-        // Substitution doesn't simplify
-        let expected = Expression::mul(vec![Expression::integer(2), Expression::integer(3)]);
-
-        assert_eq!(result, expected);
-
-        // To get 6, simplify
-        assert_eq!(result.simplify(), Expression::integer(6));
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(6));
     }
 
     #[test]
@@ -549,13 +544,8 @@ mod tests {
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(3));
 
-        // Substitution doesn't simplify - returns 3^2, not 9
-        let expected = Expression::pow(Expression::integer(3), Expression::integer(2));
-
-        assert_eq!(result, expected);
-
-        // To get 9, you need to simplify
-        assert_eq!(result.simplify(), Expression::integer(9));
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(9));
     }
 
     #[test]
@@ -565,9 +555,8 @@ mod tests {
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(0));
 
-        let expected = Expression::function("sin".to_string(), vec![Expression::integer(0)]);
-
-        assert_eq!(result, expected);
+        // With auto-simplification, sin(0) correctly evaluates to 0
+        assert_eq!(result, Expression::integer(0));
     }
 
     #[test]
@@ -584,16 +573,9 @@ mod tests {
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(2));
 
-        // (2 + 1) * (2 - 1)
-        let expected = Expression::mul(vec![
-            Expression::add(vec![Expression::integer(2), Expression::integer(1)]),
-            Expression::add(vec![
-                Expression::integer(2),
-                Expression::mul(vec![Expression::integer(-1), Expression::integer(1)]),
-            ]),
-        ]);
-
-        assert_eq!(result, expected);
+        // (2 + 1) * (2 - 1) = 3 * 1 = 3
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(3));
     }
 
     #[test]
@@ -618,13 +600,8 @@ mod tests {
             (Expression::symbol(y.clone()), Expression::integer(2)),
         ]);
 
-        // Substitution doesn't simplify
-        let expected = Expression::add(vec![Expression::integer(1), Expression::integer(2)]);
-
-        assert_eq!(result, expected);
-
-        // To get 3, simplify
-        assert_eq!(result.simplify(), Expression::integer(3));
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(3));
     }
 
     #[test]
@@ -647,18 +624,9 @@ mod tests {
             (Expression::symbol(y.clone()), Expression::integer(4)),
         ]);
 
-        // 3^2 + 2*3*4 + 4^2
-        let expected = Expression::add(vec![
-            Expression::pow(Expression::integer(3), Expression::integer(2)),
-            Expression::mul(vec![
-                Expression::integer(2),
-                Expression::integer(3),
-                Expression::integer(4),
-            ]),
-            Expression::pow(Expression::integer(4), Expression::integer(2)),
-        ]);
-
-        assert_eq!(result, expected);
+        // 3^2 + 2*3*4 + 4^2 = 9 + 24 + 16 = 49
+        // With auto-simplification, substitution now returns simplified result
+        assert_eq!(result, Expression::integer(49));
     }
 
     #[test]

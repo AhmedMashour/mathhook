@@ -48,19 +48,18 @@ impl Default for SolverConfig {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::{MathSolver, Expression};
-/// use mathhook_core::symbol;
-/// use mathhook_core::{symbol, expr};
+/// use mathhook_core::{MathSolver, Expression, symbol, expr};
 /// use mathhook_core::simplify::Simplify;
 ///
 /// let mut solver = MathSolver::new();
+/// let x = symbol!(x);
 /// let equation = Expression::equation(
-///     expr!(add: (2*x), 3),
+///     expr!((2*x) + 3),
 ///     expr!(7),
 /// );
 ///
-/// let result = solver.solve(&equation, &symbol!(x));
-/// // Result: x = 2
+/// let result = solver.solve(&equation, &x);
+/// // Result: SolverResult::Single for x = 2
 /// ```
 pub struct MathSolver {
     config: SolverConfig,

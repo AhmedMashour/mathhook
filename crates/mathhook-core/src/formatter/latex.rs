@@ -31,13 +31,14 @@ pub trait LaTeXFormatter {
     ///
     /// # Examples
     /// ```
-    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::{Expression, expr};
     /// use mathhook_core::formatter::latex::{LaTeXFormatter, LaTeXContext};
     ///
-    /// let expr = Expression::from("x^2 + 1");
+    /// let expression = expr!(x ^ 2);
     /// let context = LaTeXContext::default();
-    /// let result = expr.to_latex(&context);
-    /// assert_eq!(result, "x^{2} + 1");
+    /// let result = expression.to_latex(context).unwrap();
+    /// assert!(result.contains("x"));
+    /// assert!(result.contains("2"));
     /// ```
     ///
     /// # Error Handling

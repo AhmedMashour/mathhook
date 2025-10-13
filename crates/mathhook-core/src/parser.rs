@@ -35,13 +35,14 @@ impl Parser {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::parser::integrated_parser::Parser;
+    /// use mathhook_core::parser::Parser;
+    /// use mathhook_core::parser::config::ParserConfig;
     ///
-    /// let parser = Parser::new();
+    /// let parser = Parser::new(ParserConfig::default());
     ///
     /// // These will work with implicit multiplication:
     /// let expr = parser.parse("2x").unwrap();           // -> 2 * x
-    /// let expr = parser.parse("xy").unwrap();           // -> x * y  
+    /// let expr = parser.parse("xy").unwrap();           // -> x * y
     /// let expr = parser.parse("2(x+1)").unwrap();       // -> 2 * (x + 1)
     ///
     /// // These work normally:

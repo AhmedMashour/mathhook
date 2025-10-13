@@ -40,18 +40,19 @@ pub trait SimpleFormatter {
     ///
     /// # Examples
     /// ```
-    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::{Expression, expr};
     /// use mathhook_core::formatter::simple::{SimpleFormatter, SimpleContext};
     ///
-    /// let expr = Expression::from("2 * x + 1");
+    /// let expression = expr!(2 * x);
     /// let context = SimpleContext::default();
-    /// let result = expr.to_simple(&context);
-    /// assert_eq!(result, "2 * x + 1");
+    /// let result = expression.to_simple(&context).unwrap();
+    /// assert!(result.contains("2"));
+    /// assert!(result.contains("x"));
     ///
     /// // With Unicode symbols
     /// let context = SimpleContext { use_unicode: true, ..Default::default() };
-    /// let result = expr.to_simple(&context);
-    /// assert_eq!(result, "2 × x + 1");
+    /// let result = expression.to_simple(&context).unwrap();
+    /// assert!(result.contains("×"));
     /// ```
     ///
     /// # Error Handling

@@ -20,11 +20,10 @@ impl Matrix {
     ///
     /// ```
     /// use mathhook_core::matrix::Matrix;
-    /// use mathhook_core::Expression;
     ///
     /// let matrix = Matrix::from_arrays([
-    ///     [Expression::integer(1), Expression::integer(1)],
-    ///     [Expression::integer(0), Expression::integer(1)]
+    ///     [1, 1],
+    ///     [0, 1]
     /// ]);
     ///
     /// let qr = matrix.qr_decomposition().unwrap();
@@ -116,20 +115,9 @@ impl Matrix {
         })
     }
 
-    /// Compute dot product of two vectors
+    /// Compute dot product of two vectors (internal helper for QR decomposition)
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mathhook_core::matrix::Matrix;
-    /// use mathhook_core::Expression;
-    ///
-    /// let matrix = Matrix::identity(2);
-    /// let v1 = vec![Expression::integer(1), Expression::integer(2)];
-    /// let v2 = vec![Expression::integer(3), Expression::integer(4)];
-    /// let dot = matrix.vector_dot(&v1, &v2);
-    /// assert_eq!(dot, Expression::integer(11)); // 1*3 + 2*4 = 11
-    /// ```
+    /// This is a private helper method. Result: v1 · v2 = sum(v1[i] * v2[i])
     fn vector_dot(&self, v1: &[Expression], v2: &[Expression]) -> Expression {
         if v1.len() != v2.len() {
             return Expression::integer(0);
@@ -144,19 +132,9 @@ impl Matrix {
         Expression::add(products).simplify()
     }
 
-    /// Compute norm of a vector
+    /// Compute norm of a vector (internal helper for QR decomposition)
     ///
-    /// # Examples
-    ///
-    /// ```
-    /// use mathhook_core::matrix::Matrix;
-    /// use mathhook_core::Expression;
-    ///
-    /// let matrix = Matrix::identity(2);
-    /// let v = vec![Expression::integer(3), Expression::integer(4)];
-    /// let norm = matrix.vector_norm(&v);
-    /// assert_eq!(norm, Expression::integer(5)); // sqrt(3² + 4²) = 5
-    /// ```
+    /// This is a private helper method. Result: ||v|| = sqrt(sum(v[i]²))
     fn vector_norm(&self, v: &[Expression]) -> Expression {
         let sum_of_squares: Vec<Expression> = v
             .iter()

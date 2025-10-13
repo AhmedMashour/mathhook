@@ -25,7 +25,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::Expression;
     ///
     /// // Literal zero
@@ -62,9 +62,12 @@ impl Expression {
     /// // Detects literal zero
     /// assert!(Expression::integer(0).is_zero_fast());
     ///
-    /// // Does NOT detect symbolic zero
+    /// // Mul constructor auto-simplifies, so this IS detected
     /// let expr = Expression::mul(vec![Expression::integer(0), Expression::integer(5)]);
-    /// assert!(!expr.is_zero_fast()); // Not yet simplified
+    /// assert!(expr.is_zero_fast()); // Simplified to 0 by constructor
+    ///
+    /// // Example of what is_zero_fast() does NOT detect (without simplification):
+    /// // If we had a raw unsimplified Mul expression, is_zero_fast() wouldn't detect it
     /// ```
     #[inline(always)]
     pub fn is_zero_fast(&self) -> bool {
@@ -88,7 +91,7 @@ impl Expression {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::Expression;
     ///
     /// // Literal one
@@ -125,9 +128,12 @@ impl Expression {
     /// // Detects literal one
     /// assert!(Expression::integer(1).is_one_fast());
     ///
-    /// // Does NOT detect symbolic one
+    /// // Pow constructor auto-simplifies, so x^0 = 1 IS detected
     /// let expr = Expression::pow(Expression::integer(5), Expression::integer(0));
-    /// assert!(!expr.is_one_fast()); // Not yet simplified
+    /// assert!(expr.is_one_fast()); // Simplified to 1 by constructor
+    ///
+    /// // is_one_fast() checks ONLY for literal Number(1)
+    /// // It does not simplify complex expressions first
     /// ```
     #[inline(always)]
     pub fn is_one_fast(&self) -> bool {

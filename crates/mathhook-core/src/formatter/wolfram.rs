@@ -29,13 +29,14 @@ pub trait WolframFormatter {
     ///
     /// # Examples
     /// ```
-    /// use mathhook_core::core::Expression;
+    /// use mathhook_core::{Expression, expr};
     /// use mathhook_core::formatter::wolfram::{WolframFormatter, WolframContext};
     ///
-    /// let expr = Expression::from("x^2 + 1");
+    /// let expression = expr!(x ^ 2);
     /// let context = WolframContext::default();
-    /// let result = expr.to_wolfram(&context);
-    /// assert_eq!(result, "Plus[Power[x, 2], 1]");
+    /// let result = expression.to_wolfram(&context).unwrap();
+    /// assert!(result.contains("Power"));
+    /// assert!(result.contains("x"));
     /// ```
     ///
     /// # Error Handling

@@ -48,7 +48,7 @@ thread_local! {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::cache::get_cached_function_name;
+/// use mathhook_core::parser::cache::get_cached_function_name;
 ///
 /// let name1 = get_cached_function_name("bessel", "j_indexed");
 /// let name2 = get_cached_function_name("bessel", "j_indexed");
@@ -76,7 +76,7 @@ pub fn get_cached_function_name(base: &str, suffix: &str) -> String {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::cache::build_expr_list;
+/// use mathhook_core::parser::cache::build_expr_list;
 /// use mathhook_core::Expression;
 ///
 /// let exprs = vec![Expression::integer(1), Expression::integer(2)];
@@ -105,7 +105,7 @@ pub fn build_expr_list(exprs: impl IntoIterator<Item = Expression>) -> Vec<Expre
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::cache::get_cached_expression;
+/// use mathhook_core::parser::cache::get_cached_expression;
 ///
 /// let zero = get_cached_expression("0");
 /// let pi = get_cached_expression("pi");
@@ -127,7 +127,7 @@ pub fn get_cached_expression(key: &'static str) -> Option<Expression> {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::cache::build_cached_function;
+/// use mathhook_core::parser::cache::build_cached_function;
 /// use mathhook_core::Expression;
 ///
 /// let args = vec![Expression::integer(1), Expression::symbol("x")];
@@ -164,7 +164,7 @@ pub struct CacheStats {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::cache::get_cache_stats;
+/// use mathhook_core::parser::cache::get_cache_stats;
 ///
 /// let stats = get_cache_stats();
 /// println!("Function name cache size: {}", stats.function_name_cache_size);

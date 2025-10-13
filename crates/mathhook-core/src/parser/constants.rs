@@ -348,7 +348,7 @@ pub static STANDARD_FUNCTION_MAP: Lazy<HashMap<&'static str, &'static str>> = La
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::constants::resolve_wolfram_function;
+/// use mathhook_core::parser::constants::resolve_wolfram_function;
 ///
 /// assert_eq!(resolve_wolfram_function("Sin"), Some("sin"));
 /// assert_eq!(resolve_wolfram_function("UnknownFunction"), None);
@@ -396,7 +396,7 @@ pub fn pascal_to_snake_case(name: &str) -> String {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::parser::lalrpop::constants::resolve_special_function;
+/// use mathhook_core::parser::constants::resolve_special_function;
 ///
 /// assert_eq!(resolve_special_function("J"), Some("bessel_j"));
 /// assert_eq!(resolve_special_function("P"), Some("legendre_p"));

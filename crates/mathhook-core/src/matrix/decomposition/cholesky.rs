@@ -22,8 +22,8 @@ impl Matrix {
     /// use mathhook_core::Expression;
     ///
     /// let matrix = Matrix::from_arrays([
-    ///     [Expression::integer(4), Expression::integer(2)],
-    ///     [Expression::integer(2), Expression::integer(3)]
+    ///     [4, 2],
+    ///     [2, 3]
     /// ]);
     ///
     /// if let Some(chol) = matrix.cholesky_decomposition() {

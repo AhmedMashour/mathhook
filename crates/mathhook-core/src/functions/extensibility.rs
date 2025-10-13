@@ -72,6 +72,8 @@ impl ExtensionRegistry {
     /// ## Example
     /// ```rust
     /// use mathhook_core::functions::extensibility::{ExtensionRegistry, FunctionFamilyExtension};
+    /// use mathhook_core::functions::properties::FunctionProperties;
+    /// use std::collections::HashMap;
     ///
     /// struct MyCustomFunctions;
     ///
@@ -87,7 +89,7 @@ impl ExtensionRegistry {
     /// }
     ///
     /// let mut registry = ExtensionRegistry::new();
-    /// registry.register_extension(Box::new(MyCustomFunctions));
+    /// registry.register_extension(Box::new(MyCustomFunctions)).unwrap();
     /// ```
     pub fn register_extension(
         &mut self,

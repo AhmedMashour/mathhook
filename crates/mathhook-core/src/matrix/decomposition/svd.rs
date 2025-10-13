@@ -21,11 +21,10 @@ impl Matrix {
     ///
     /// ```
     /// use mathhook_core::matrix::Matrix;
-    /// use mathhook_core::Expression;
     ///
     /// let matrix = Matrix::from_arrays([
-    ///     [Expression::integer(1), Expression::integer(2)],
-    ///     [Expression::integer(3), Expression::integer(4)]
+    ///     [1, 2],
+    ///     [3, 4]
     /// ]);
     ///
     /// let svd = matrix.svd_decomposition().unwrap();
