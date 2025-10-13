@@ -1,8 +1,6 @@
 #[test]
 fn test_solver_memory_efficiency() {
-    // Verify solver modules don't break Magic Bullets
-
-    // Magic Bullet #2: Expression size must remain 32 bytes
+    // Expression size must remain 32 bytes
     assert!(
         std::mem::size_of::<Expression>() <= 32,
         "Expression size must remain ≤32 bytes, got {}",

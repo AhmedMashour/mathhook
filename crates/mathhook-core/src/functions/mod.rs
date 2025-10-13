@@ -8,7 +8,7 @@
 //!
 //! - **Single Function Representation**: All functions use `Expression::Function`
 //! - **Intelligence Registry**: O(1) property lookup for mathematical properties
-//! - **Performance Optimized**: Magic Bullet compliant with SIMD support
+//! - **Performance Optimized**: Compliant with SIMD support
 //! - **Educational Integration**: Step-by-step explanations for all operations
 //!
 
