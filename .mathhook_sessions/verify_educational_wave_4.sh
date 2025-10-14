@@ -148,7 +148,7 @@ CATEGORY 6: FUNCTION COUNT
 Target: 20+ functions with education
 ========================================"
 
-FUNCTION_COUNT=$(grep -ro "fn.*_explanation\|fn.*_steps" crates/mathhook-core/src/functions/educational* crates/mathhook-core/src/functions/education.rs 2>/dev/null | wc -l)
+FUNCTION_COUNT=$(grep -c "step_generators.insert" crates/mathhook-core/src/functions/education.rs 2>/dev/null || echo "0")
 
 if [ "$FUNCTION_COUNT" -ge 20 ]; then
     echo -e "${GREEN}✓ $FUNCTION_COUNT educational functions found${NC}"

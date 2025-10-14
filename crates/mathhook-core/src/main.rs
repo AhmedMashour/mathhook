@@ -1,13 +1,16 @@
+use mathhook_core::algebra::equation_analyzer::SmartEquationSolver;
 use mathhook_core::formatter::MathLanguage;
 use mathhook_core::parser::config::ParserConfig;
 use mathhook_core::parser::Parser;
+use mathhook_core::{parse, symbol};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{read_to_string, write};
 
 fn main() {
     println!("\n=== Comprehensive Parser & Formatter Testing ===\n");
-    test_explicit_cases();
+    // test_explicit_cases();
+    test_equation_solver();
 }
 
 #[derive(Debug, Deserialize)]
@@ -287,6 +290,22 @@ fn test_single_case(parser: &Parser, case: &TestCase) -> TestResult {
     }
 }
 
+fn test_equation_solver() {
+    let x = symbol!(x);
+    let equation = parse!("x ^ 2 + 2 * x - 3");
+    if let Ok(equation) = equation {
+        let (result, explanation) = equation.solve_equation(&x);
+
+        for (i, step) in explanation.steps.iter().enumerate() {
+            println!("Step {}: {} - {}", i + 1, step.title, step.description);
+        }
+        println!(
+            "Result: {:?}, Solution count: {:?}",
+            result,
+            result.solution_count()
+        );
+    }
+}
 #[derive(Default)]
 struct TestStats {
     parse_success: usize,

@@ -53,7 +53,7 @@ fn analyze_all_parsing_cases() {
                     .or_insert(0) += 1;
 
                 println!(
-                    "❌ FAILED: {} [{}] [{}]",
+                    "FAILED: {} [{}] [{}]",
                     case.id, case.language, case.category
                 );
                 println!("   Input: {}", case.input);

@@ -32,7 +32,7 @@ impl ImplicitMultiplicationProcessor {
         Self::process_with_comprehensive_tokens(input)
     }
 
-    /// ⚡ Ultra-fast O(n) early exit check - even faster than before
+    /// Ultra-fast O(n) early exit check
     fn needs_processing_ultra_fast_check(input: &str) -> bool {
         let bytes = input.as_bytes();
         let len = bytes.len();

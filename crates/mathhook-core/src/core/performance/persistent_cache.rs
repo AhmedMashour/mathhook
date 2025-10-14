@@ -155,12 +155,12 @@ impl PersistentCache {
                         }
                     }
                     Err(e) => {
-                        eprintln!("⚠️ Failed to parse persistent cache: {}", e);
+                        eprintln!("WARNING: Failed to parse persistent cache: {}", e);
                     }
                 }
             }
             Err(e) => {
-                eprintln!("⚠️ Failed to read persistent cache file: {}", e);
+                eprintln!("WARNING: Failed to read persistent cache file: {}", e);
             }
         }
     }
@@ -170,7 +170,7 @@ impl PersistentCache {
         // Ensure cache directory exists
         if let Some(parent) = self.cache_file_path.parent() {
             if let Err(e) = fs::create_dir_all(parent) {
-                eprintln!("⚠️ Failed to create cache directory: {}", e);
+                eprintln!("WARNING: Failed to create cache directory: {}", e);
                 return;
             }
         }
@@ -190,7 +190,7 @@ impl PersistentCache {
             match serde_json::to_string_pretty(&persistent_entries) {
                 Ok(content) => {
                     if let Err(e) = fs::write(&self.cache_file_path, content) {
-                        eprintln!("⚠️ Failed to write persistent cache: {}", e);
+                        eprintln!("WARNING: Failed to write persistent cache: {}", e);
                     } else {
                         println!(
                             "Saved {} entries to persistent cache",
@@ -199,7 +199,7 @@ impl PersistentCache {
                     }
                 }
                 Err(e) => {
-                    eprintln!("⚠️ Failed to serialize persistent cache: {}", e);
+                    eprintln!("WARNING: Failed to serialize persistent cache: {}", e);
                 }
             }
         }
