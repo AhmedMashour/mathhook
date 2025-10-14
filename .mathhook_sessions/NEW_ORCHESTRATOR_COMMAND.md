@@ -101,11 +101,12 @@ Success Criteria: [Quality bars]
 The goal is: Implement advanced integration techniques for 0.2 release
 
 Structure:
-- Wave 1: Design and Architecture
-- Wave 2: Trigonometric Substitution Implementation
-- Wave 3: Partial Fractions Implementation
-- Wave 4: Improper Integrals Implementation
-- Wave 5: Testing and QA
+- Wave 1: Analyze and read the code for existing related or useful for the implementation
+- Wave 2: Design and Architecture
+- Wave 3: Trigonometric Substitution Implementation
+- Wave 4: Partial Fractions Implementation
+- Wave 5: Improper Integrals Implementation
+- Wave 6: Testing and QA
 
 Target:
 - Add 3 new integration techniques
