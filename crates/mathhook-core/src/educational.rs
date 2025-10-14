@@ -6,9 +6,11 @@
 pub mod enhanced_steps;
 pub mod message_registry;
 pub mod step_by_step;
+pub mod traits;
 
 // Re-export educational types
 pub use enhanced_steps::{
     DifficultyLevel, EducationalResult, EnhancedStep, EnhancedStepExplanation,
 };
 pub use step_by_step::{Step, StepByStep, StepByStepExplanation};
+pub use traits::{EducationalExt, EducationalOperation, OperationContext};

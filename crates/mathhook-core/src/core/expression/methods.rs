@@ -1,7 +1,10 @@
 //! Expression utility methods
 
 use super::Expression;
-use crate::core::Number;
+use crate::algebra::equation_analyzer::SmartEquationSolver;
+use crate::algebra::solvers::SolverResult;
+use crate::core::{Number, Symbol};
+use crate::educational::step_by_step::StepByStepExplanation;
 
 /// Helper function for computing GCD of integers
 fn gcd_integers(a: i64, b: i64) -> i64 {
@@ -108,5 +111,77 @@ impl Expression {
     pub fn cofactors(&self, other: &Expression) -> (Expression, Expression, Expression) {
         let gcd = self.gcd(other);
         (gcd.clone(), self.clone(), other.clone())
+    }
+
+    /// Solve an equation with respect to a variable using smart solver dispatch
+    ///
+    /// This method uses the SmartEquationSolver to automatically analyze the equation
+    /// type and route it to the appropriate specialized solver. It provides both the
+    /// solution and a complete step-by-step educational explanation.
+    ///
+    /// The solver automatically detects:
+    /// - Linear equations (degree 1)
+    /// - Quadratic equations (degree 2)
+    /// - Higher-degree polynomial equations (degree 3-4)
+    /// - System of equations (multiple variables)
+    /// - Transcendental equations (with trig/exp/log functions)
+    ///
+    /// # Arguments
+    ///
+    /// * `variable` - The variable to solve for
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// - The solver result (solutions or error)
+    /// - A complete step-by-step explanation of the solving process
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let x = symbol!(x);
+    /// let equation = Expression::add(vec![
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+    ///     Expression::integer(-6),
+    /// ]);
+    ///
+    /// let (result, explanation) = equation.solve_equation(&x);
+    /// ```
+    pub fn solve_equation(&self, variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
+        let mut solver = SmartEquationSolver::new();
+        solver.solve_with_equation(self, variable)
+    }
+
+    /// Solve equation without generating educational explanation (fast path)
+    ///
+    /// This is equivalent to `solve_equation` but discards the explanation for
+    /// better performance when educational content is not needed.
+    ///
+    /// # Arguments
+    ///
+    /// * `variable` - The variable to solve for
+    ///
+    /// # Returns
+    ///
+    /// The solver result (solutions or error)
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let x = symbol!(x);
+    /// let equation = Expression::add(vec![
+    ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+    ///     Expression::integer(-6),
+    /// ]);
+    ///
+    /// let result = equation.solve_equation_fast(&x);
+    /// ```
+    pub fn solve_equation_fast(&self, variable: &Symbol) -> SolverResult {
+        let (result, _explanation) = self.solve_equation(variable);
+        result
     }
 }

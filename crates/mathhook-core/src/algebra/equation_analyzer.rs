@@ -141,44 +141,112 @@ impl SmartEquationSolver {
         }
     }
 
-    pub fn solve(&mut self) -> (SolverResult, StepByStepExplanation) {
-        let equation = Expression::integer(0); // Placeholder
+    /// Solve equation with educational explanation, including equation analysis
+    ///
+    /// This is the primary entry point for solving equations with full educational
+    /// integration. It automatically:
+    /// 1. Analyzes the equation type
+    /// 2. Explains the equation structure
+    /// 3. Selects the appropriate solver
+    /// 4. Provides step-by-step solution with explanations
+    ///
+    /// # Arguments
+    ///
+    /// * `equation` - The equation expression to solve
+    /// * `variable` - The variable to solve for
+    ///
+    /// # Returns
+    ///
+    /// A tuple containing:
+    /// - The solver result (solutions or error)
+    /// - Complete step-by-step explanation starting with equation analysis
+    pub fn solve_with_equation(
+        &mut self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> (SolverResult, StepByStepExplanation) {
+        let mut all_steps = Vec::new();
 
+        let degree = EquationAnalyzer::find_highest_degree(equation, variable);
+        let eq_type = EquationAnalyzer::analyze(equation, variable);
+
+        let analysis_description = match eq_type {
+            EquationType::Constant => {
+                format!("Detected constant equation (no variables)")
+            }
+            EquationType::Linear => {
+                format!("Detected linear equation (highest degree: {})", degree)
+            }
+            EquationType::Quadratic => {
+                format!("Detected quadratic equation (highest degree: {})", degree)
+            }
+            EquationType::Cubic => {
+                format!("Detected cubic equation (highest degree: {})", degree)
+            }
+            EquationType::Quartic => {
+                format!("Detected quartic equation (highest degree: {})", degree)
+            }
+            EquationType::System => {
+                format!("Detected system of equations (multiple variables)")
+            }
+            EquationType::Transcendental => {
+                format!("Detected transcendental equation (contains trig/exp/log functions)")
+            }
+            EquationType::Unknown => {
+                format!("Unknown equation type")
+            }
+        };
+
+        all_steps.push(Step::new("Equation Analysis", analysis_description));
+
+        let solver_description = match eq_type {
+            EquationType::Linear => "Using linear equation solver (isolation method)",
+            EquationType::Quadratic => "Using quadratic equation solver (quadratic formula)",
+            EquationType::Cubic | EquationType::Quartic => "Using polynomial solver",
+            EquationType::System => "Using system equation solver",
+            _ => "No specialized solver available for this equation type",
+        };
+
+        all_steps.push(Step::new("Solver Selection", solver_description));
+
+        let (result, mut solver_steps) = match eq_type {
+            EquationType::Linear => self
+                .linear_solver
+                .solve_with_explanation(equation, variable),
+            EquationType::Quadratic => self
+                .quadratic_solver
+                .solve_with_explanation(equation, variable),
+            EquationType::Cubic | EquationType::Quartic => self
+                .polynomial_solver
+                .solve_with_explanation(equation, variable),
+            EquationType::System => {
+                self.linear_solver
+                    .solve_with_explanation(equation, variable)
+            }
+            _ => {
+                all_steps.push(Step::new(
+                    "Status",
+                    "This equation type is not yet fully implemented",
+                ));
+                (SolverResult::NoSolution, StepByStepExplanation::new(vec![]))
+            }
+        };
+
+        all_steps.extend(solver_steps.steps);
+
+        (result, StepByStepExplanation::new(all_steps))
+    }
+
+    /// Legacy solve method (deprecated, use solve_with_equation instead)
+    pub fn solve(&mut self) -> (SolverResult, StepByStepExplanation) {
+        let equation = Expression::integer(0);
         let variables = self.extract_variables(&equation);
         if variables.is_empty() {
             return (SolverResult::NoSolution, StepByStepExplanation::new(vec![]));
         }
 
         let primary_var = &variables[0];
-
-        // 3. Analyze equation type
-        let eq_type = EquationAnalyzer::analyze(&equation, primary_var);
-
-        // 4. Route to appropriate solver with step-by-step
-        match eq_type {
-            EquationType::Linear => self
-                .linear_solver
-                .solve_with_explanation(&equation, primary_var),
-            EquationType::Quadratic => self
-                .quadratic_solver
-                .solve_with_explanation(&equation, primary_var),
-            EquationType::Cubic | EquationType::Quartic => self
-                .polynomial_solver
-                .solve_with_explanation(&equation, primary_var),
-            EquationType::System => {
-                // For systems, we'd need multiple equations
-                // For now, treat as single equation
-                self.linear_solver
-                    .solve_with_explanation(&equation, primary_var)
-            }
-            _ => {
-                let steps = vec![
-                    Step::new("Analysis", format!("Detected equation type: {:?}", eq_type)),
-                    Step::new("Status", "This equation type is not yet implemented"),
-                ];
-                (SolverResult::NoSolution, StepByStepExplanation::new(steps))
-            }
-        }
+        self.solve_with_equation(&equation, primary_var)
     }
 
     /// Extract variables from equation

@@ -2,9 +2,10 @@
 //! Includes step-by-step explanations for educational value
 
 use crate::algebra::solvers::{EquationSolver, SolverResult};
-
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
+use crate::educational::traits::{EducationalOperation, OperationContext};
+use crate::formatter::latex::LaTeXFormatter;
 use crate::simplify::Simplify;
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -56,18 +57,124 @@ impl EquationSolver for QuadraticSolver {
         equation: &Expression,
         variable: &Symbol,
     ) -> (SolverResult, StepByStepExplanation) {
-        let result = self.solve(equation, variable);
+        let mut steps = Vec::new();
 
-        // Create step-by-step explanation
-        let steps = vec![
-            Step::new("Given Equation", format!("Solve: {} = 0", equation)),
-            Step::new(
-                "Standard Form",
-                "Identify coefficients a, b, c in ax² + bx + c = 0",
+        let simplified_equation = equation.simplify();
+        let equation_latex = simplified_equation
+            .to_latex(None)
+            .unwrap_or_else(|_| "equation".to_string());
+
+        steps.push(Step::new(
+            "Given Equation",
+            format!("Solve: {} = 0", equation_latex),
+        ));
+
+        let (a, b, c) = self.extract_quadratic_coefficients(&simplified_equation, variable);
+        let a_simplified = a.simplify();
+        let b_simplified = b.simplify();
+        let c_simplified = c.simplify();
+
+        let a_latex = a_simplified
+            .to_latex(None)
+            .unwrap_or_else(|_| "a".to_string());
+        let b_latex = b_simplified
+            .to_latex(None)
+            .unwrap_or_else(|_| "b".to_string());
+        let c_latex = c_simplified
+            .to_latex(None)
+            .unwrap_or_else(|_| "c".to_string());
+
+        steps.push(Step::new(
+            "Extract Coefficients",
+            format!(
+                "Identified coefficients: a = {}, b = {}, c = {}",
+                a_latex, b_latex, c_latex
             ),
-            Step::new("Quadratic Formula", "Apply: x = (-b ± √(b² - 4ac)) / 2a"),
-            Step::new("Solution", format!("Result: {:?}", result)),
-        ];
+        ));
+
+        if a_simplified.is_zero() {
+            steps.push(Step::new(
+                "Special Case",
+                "Coefficient a = 0, this is actually a linear equation",
+            ));
+
+            if b_simplified.is_zero() {
+                steps.push(Step::new(
+                    "Degenerate Case",
+                    if c_simplified.is_zero() {
+                        "0 = 0 is always true (infinite solutions)"
+                    } else {
+                        "Non-zero constant = 0 has no solution"
+                    },
+                ));
+            } else {
+                steps.push(Step::new(
+                    "Linear Solution",
+                    format!("Solving linear equation: {}x + {} = 0", b_latex, c_latex),
+                ));
+            }
+
+            let result = self.solve(equation, variable);
+            return (result, StepByStepExplanation::new(steps));
+        }
+
+        steps.push(Step::new(
+            "Quadratic Formula",
+            "Applying quadratic formula: x = (-b ± √(b² - 4ac)) / (2a)",
+        ));
+
+        let discriminant = match (&a_simplified, &b_simplified, &c_simplified) {
+            (
+                Expression::Number(Number::Integer(a_val)),
+                Expression::Number(Number::Integer(b_val)),
+                Expression::Number(Number::Integer(c_val)),
+            ) => b_val * b_val - 4 * a_val * c_val,
+            _ => 0,
+        };
+
+        steps.push(Step::new(
+            "Compute Discriminant",
+            format!("Discriminant Δ = b² - 4ac = {}", discriminant),
+        ));
+
+        if discriminant > 0 {
+            steps.push(Step::new(
+                "Discriminant Analysis",
+                "Δ > 0: Equation has two distinct real solutions",
+            ));
+        } else if discriminant == 0 {
+            steps.push(Step::new(
+                "Discriminant Analysis",
+                "Δ = 0: Equation has one repeated real solution",
+            ));
+        } else {
+            steps.push(Step::new(
+                "Discriminant Analysis",
+                "Δ < 0: Equation has two complex conjugate solutions",
+            ));
+        }
+
+        let result = self.solve_quadratic_formula(&a_simplified, &b_simplified, &c_simplified);
+
+        match &result {
+            SolverResult::Single(sol) => {
+                let sol_latex = sol.to_latex(None).unwrap_or_else(|_| "solution".to_string());
+                steps.push(Step::new("Solution", format!("x = {}", sol_latex)));
+            }
+            SolverResult::Multiple(sols) => {
+                let sols_latex: Vec<String> = sols
+                    .iter()
+                    .map(|s| s.to_latex(None).unwrap_or_else(|_| "solution".to_string()))
+                    .collect();
+                steps.push(Step::new(
+                    "Solutions",
+                    format!("x₁ = {}, x₂ = {}", sols_latex[0], sols_latex[1]),
+                ));
+            }
+            _ => {
+                steps.push(Step::new("Result", format!("{:?}", result)));
+            }
+        }
 
         (result, StepByStepExplanation::new(steps))
     }

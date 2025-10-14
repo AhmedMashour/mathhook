@@ -1,14 +1,11 @@
-//! Pattern matching engine
+//! Core pattern matching implementation
 //!
-//! Implements the matching algorithms including commutative matching,
-//! wildcard binding, and pattern replacement logic.
+//! Provides the Matchable trait and recursive matching algorithms.
 
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
+use super::{PatternMatches, match_commutative, apply_replacement};
 use std::collections::HashMap;
-
-/// Result of pattern matching containing variable bindings
-pub type PatternMatches = HashMap<String, Expression>;
 
 /// Trait for types that support pattern matching
 pub trait Matchable {
@@ -162,7 +159,7 @@ impl Matchable for Expression {
 ///
 /// Attempts to match an expression against a pattern, accumulating
 /// wildcard bindings in the provided HashMap.
-fn match_recursive(
+pub(super) fn match_recursive(
     expr: &Expression,
     pattern: &Pattern,
     bindings: &mut PatternMatches,
@@ -233,176 +230,6 @@ fn match_recursive(
                 true
             } else {
                 false
-            }
-        }
-    }
-}
-
-/// Match commutative operations (Add, Mul)
-///
-/// Tries to match expression terms/factors against pattern terms/factors
-/// considering all possible orderings. This is essential for algebraic
-/// pattern matching since addition and multiplication are commutative.
-fn match_commutative(
-    expr_items: &[Expression],
-    pattern_items: &[Pattern],
-    bindings: &mut PatternMatches,
-) -> bool {
-    if pattern_items.is_empty() {
-        return expr_items.is_empty();
-    }
-
-    if pattern_items.len() == 1 {
-        if expr_items.len() == 1 {
-            return match_recursive(&expr_items[0], &pattern_items[0], bindings);
-        } else {
-            return false;
-        }
-    }
-
-    if expr_items.len() == pattern_items.len() {
-        let backup_bindings = bindings.clone();
-        let mut ordered_match = true;
-
-        for (expr_item, pattern_item) in expr_items.iter().zip(pattern_items.iter()) {
-            if !match_recursive(expr_item, pattern_item, bindings) {
-                ordered_match = false;
-                break;
-            }
-        }
-
-        if ordered_match {
-            return true;
-        }
-
-        *bindings = backup_bindings;
-    }
-
-    if pattern_items.len() <= 6 {
-        try_permutation_match(expr_items, pattern_items, bindings)
-    } else {
-        try_greedy_match(expr_items, pattern_items, bindings)
-    }
-}
-
-/// Try all permutations of pattern items to find a match
-fn try_permutation_match(
-    expr_items: &[Expression],
-    pattern_items: &[Pattern],
-    bindings: &mut PatternMatches,
-) -> bool {
-    if expr_items.len() != pattern_items.len() {
-        return false;
-    }
-
-    let indices: Vec<usize> = (0..pattern_items.len()).collect();
-    try_permutations(&indices, 0, expr_items, pattern_items, bindings)
-}
-
-/// Recursive permutation generator and matcher
-fn try_permutations(
-    indices: &[usize],
-    start: usize,
-    expr_items: &[Expression],
-    pattern_items: &[Pattern],
-    bindings: &mut PatternMatches,
-) -> bool {
-    if start == indices.len() {
-        let backup_bindings = bindings.clone();
-        for (expr_idx, &pattern_idx) in indices.iter().enumerate() {
-            if !match_recursive(&expr_items[expr_idx], &pattern_items[pattern_idx], bindings) {
-                *bindings = backup_bindings;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    for i in start..indices.len() {
-        let mut perm = indices.to_vec();
-        perm.swap(start, i);
-        if try_permutations(&perm, start + 1, expr_items, pattern_items, bindings) {
-            return true;
-        }
-    }
-
-    false
-}
-
-/// Greedy heuristic matching for large commutative patterns
-fn try_greedy_match(
-    expr_items: &[Expression],
-    pattern_items: &[Pattern],
-    bindings: &mut PatternMatches,
-) -> bool {
-    if expr_items.len() != pattern_items.len() {
-        return false;
-    }
-
-    let mut used_expr: Vec<bool> = vec![false; expr_items.len()];
-    let backup_bindings = bindings.clone();
-
-    for pattern_item in pattern_items {
-        let mut matched = false;
-        for (expr_idx, expr_item) in expr_items.iter().enumerate() {
-            if !used_expr[expr_idx] {
-                let mut temp_bindings = bindings.clone();
-                if match_recursive(expr_item, pattern_item, &mut temp_bindings) {
-                    *bindings = temp_bindings;
-                    used_expr[expr_idx] = true;
-                    matched = true;
-                    break;
-                }
-            }
-        }
-
-        if !matched {
-            *bindings = backup_bindings;
-            return false;
-        }
-    }
-
-    true
-}
-
-/// Apply a replacement pattern with bindings from a match
-fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Expression {
-    match replacement {
-        Pattern::Wildcard { name, .. } => {
-            bindings
-                .get(name)
-                .cloned()
-                .unwrap_or_else(|| panic!("Unbound wildcard in replacement: {}", name))
-        }
-
-        Pattern::Exact(expr) => expr.clone(),
-
-        Pattern::Add(terms) => {
-            let new_terms: Vec<Expression> =
-                terms.iter().map(|t| apply_replacement(t, bindings)).collect();
-            Expression::Add(Box::new(new_terms))
-        }
-
-        Pattern::Mul(factors) => {
-            let new_factors: Vec<Expression> = factors
-                .iter()
-                .map(|f| apply_replacement(f, bindings))
-                .collect();
-            Expression::Mul(Box::new(new_factors))
-        }
-
-        Pattern::Pow(base, exp) => {
-            let new_base = apply_replacement(base, bindings);
-            let new_exp = apply_replacement(exp, bindings);
-            Expression::Pow(Box::new(new_base), Box::new(new_exp))
-        }
-
-        Pattern::Function { name, args } => {
-            let new_args: Vec<Expression> =
-                args.iter().map(|a| apply_replacement(a, bindings)).collect();
-            Expression::Function {
-                name: name.clone(),
-                args: Box::new(new_args),
             }
         }
     }
@@ -548,110 +375,6 @@ mod tests {
     }
 
     #[test]
-    fn test_simple_replacement() {
-        let x = symbol!(x);
-        let expr = Expression::symbol(x.clone());
-
-        let pattern = Pattern::wildcard("x");
-        let replacement = Pattern::Exact(Expression::integer(5));
-
-        let result = expr.replace(&pattern, &replacement);
-        assert_eq!(result, Expression::integer(5));
-    }
-
-    #[test]
-    fn test_replacement_in_addition() {
-        let x = symbol!(x);
-        let expr = Expression::Add(Box::new(vec![
-            Expression::symbol(x.clone()),
-            Expression::integer(1),
-        ]));
-
-        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
-
-        let replacement = Pattern::Add(vec![Pattern::wildcard("b"), Pattern::wildcard("a")]);
-
-        let result = expr.replace(&pattern, &replacement);
-
-        let expected = Expression::Add(Box::new(vec![
-            Expression::integer(1),
-            Expression::symbol(x.clone()),
-        ]));
-
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn test_trig_identity_replacement() {
-        let x = symbol!(x);
-        let expr = Expression::add(vec![
-            Expression::pow(
-                Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]),
-                Expression::integer(2),
-            ),
-            Expression::pow(
-                Expression::function("cos".to_string(), vec![Expression::symbol(x.clone())]),
-                Expression::integer(2),
-            ),
-        ]);
-
-        let pattern = Pattern::Add(vec![
-            Pattern::Pow(
-                Box::new(Pattern::Function {
-                    name: "sin".to_string(),
-                    args: vec![Pattern::wildcard("a")],
-                }),
-                Box::new(Pattern::Exact(Expression::integer(2))),
-            ),
-            Pattern::Pow(
-                Box::new(Pattern::Function {
-                    name: "cos".to_string(),
-                    args: vec![Pattern::wildcard("a")],
-                }),
-                Box::new(Pattern::Exact(Expression::integer(2))),
-            ),
-        ]);
-
-        let replacement = Pattern::Exact(Expression::integer(1));
-
-        let result = expr.replace(&pattern, &replacement);
-        assert_eq!(result, Expression::integer(1));
-    }
-
-    #[test]
-    fn test_commutative_addition_matching() {
-        let x = symbol!(x);
-        let y = symbol!(y);
-        let expr = Expression::add(vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())]);
-
-        let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
-
-        let matches = expr.matches(&pattern);
-        assert!(matches.is_some());
-
-        if let Some(bindings) = matches {
-            let a_val = bindings.get("a").unwrap();
-            let b_val = bindings.get("b").unwrap();
-
-            assert!(
-                (a_val == &Expression::symbol(y.clone()) && b_val == &Expression::symbol(x.clone()))
-                    || (a_val == &Expression::symbol(x.clone()) && b_val == &Expression::symbol(y.clone()))
-            );
-        }
-    }
-
-    #[test]
-    fn test_commutative_multiplication_matching() {
-        let x = symbol!(x);
-        let expr = Expression::mul(vec![Expression::symbol(x.clone()), Expression::integer(3)]);
-
-        let pattern = Pattern::Mul(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
-
-        let matches = expr.matches(&pattern);
-        assert!(matches.is_some());
-    }
-
-    #[test]
     fn test_wildcard_with_exclude() {
         let x = symbol!(x);
         let y = symbol!(y);
@@ -678,27 +401,5 @@ mod tests {
 
         let x = symbol!(x);
         assert!(Expression::symbol(x.clone()).matches(&pattern).is_none());
-    }
-
-    #[test]
-    fn test_three_term_commutative_match() {
-        let x = symbol!(x);
-        let y = symbol!(y);
-        let z = symbol!(z);
-
-        let expr = Expression::add(vec![
-            Expression::symbol(z.clone()),
-            Expression::symbol(y.clone()),
-            Expression::symbol(x.clone()),
-        ]);
-
-        let pattern = Pattern::Add(vec![
-            Pattern::wildcard("a"),
-            Pattern::wildcard("b"),
-            Pattern::wildcard("c"),
-        ]);
-
-        let matches = expr.matches(&pattern);
-        assert!(matches.is_some());
     }
 }

@@ -62,7 +62,7 @@
 
 **Implication for Wave 1B (Integration Architecture)**:
 - Educational steps should generate Expression objects
-- Formatting handled by existing `formatter::latex::format_expression()`
+- Formatting handled by existing `formatter::latex::format_expression()` which is represtend with just `expr.format()`
 - Remove/refactor `educational/enhanced_steps/formatting.rs` if it duplicates formatter logic
 - Educational system provides mathematical content; formatter provides presentation
 
@@ -70,7 +70,7 @@
 ```rust
 // ✅ CORRECT - Use global formatter
 let step_expression = Expression::mul(vec![...]);
-let latex_output = formatter::latex::format_expression(&step_expression);
+let latex_output = step_expression.format();
 let step = Step::new("Apply Rule", latex_output);
 
 // ❌ INCORRECT - Don't create educational-specific formatters
