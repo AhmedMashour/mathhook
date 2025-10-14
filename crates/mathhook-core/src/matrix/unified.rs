@@ -7,8 +7,8 @@ use crate::matrix::types::*;
 use serde::{Deserialize, Serialize};
 
 mod construction;
-mod operations;
 mod decomposition;
+mod operations;
 
 pub use operations::CoreMatrixOps;
 

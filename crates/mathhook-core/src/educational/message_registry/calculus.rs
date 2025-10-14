@@ -13,12 +13,16 @@ pub fn initialize_calculus_messages(registry: &mut HashMap<MessageKey, MessageTe
 /// Initialize derivative educational messages
 fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemplate>) {
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativePowerRule, 0),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativePowerRule,
+            0,
+        ),
         MessageTemplate::new(
             "Power Rule",
             "Apply power rule: d/dx(x^n) = n*x^(n-1)\nFor {expression}, we have n = {exponent}",
-            &["expression", "exponent"]
-        )
+            &["expression", "exponent"],
+        ),
     );
 
     registry.insert(
@@ -58,21 +62,29 @@ fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemp
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeChainRule, 2),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeChainRule,
+            2,
+        ),
         MessageTemplate::new(
             "Chain Rule Step 2: Differentiate Outer",
             "Differentiate outer function with respect to inner:\nf'(u) = {outer_derivative}",
-            &["outer_derivative"]
-        )
+            &["outer_derivative"],
+        ),
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeChainRule, 3),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeChainRule,
+            3,
+        ),
         MessageTemplate::new(
             "Chain Rule Step 3: Differentiate Inner",
             "Differentiate inner function:\ng'(x) = {inner_derivative}",
-            &["inner_derivative"]
-        )
+            &["inner_derivative"],
+        ),
     );
 
     registry.insert(
@@ -94,21 +106,29 @@ fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemp
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeProductRule, 1),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeProductRule,
+            1,
+        ),
         MessageTemplate::new(
             "Product Rule Step 1: Identify Factors",
             "Identify the two factors in {expression}\nu = {first_function}\nv = {second_function}",
-            &["expression", "first_function", "second_function"]
-        )
+            &["expression", "first_function", "second_function"],
+        ),
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeProductRule, 2),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeProductRule,
+            2,
+        ),
         MessageTemplate::new(
             "Product Rule Step 2: Differentiate Each",
             "Find derivatives of each factor:\nu' = {first_derivative}\nv' = {second_derivative}",
-            &["first_derivative", "second_derivative"]
-        )
+            &["first_derivative", "second_derivative"],
+        ),
     );
 
     registry.insert(
@@ -139,12 +159,16 @@ fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemp
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeQuotientRule, 2),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeQuotientRule,
+            2,
+        ),
         MessageTemplate::new(
             "Quotient Rule Step 2: Differentiate",
             "Find derivatives:\nu' = {numerator_derivative}\nv' = {denominator_derivative}",
-            &["numerator_derivative", "denominator_derivative"]
-        )
+            &["numerator_derivative", "denominator_derivative"],
+        ),
     );
 
     registry.insert(
@@ -157,12 +181,16 @@ fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemp
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::DerivativeConstant, 0),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeConstant,
+            0,
+        ),
         MessageTemplate::new(
             "Derivative of Constant",
             "The derivative of a constant is zero.\nd/dx({constant}) = 0",
-            &["constant"]
-        )
+            &["constant"],
+        ),
     );
 
     registry.insert(
@@ -233,8 +261,8 @@ fn initialize_derivative_messages(registry: &mut HashMap<MessageKey, MessageTemp
         MessageTemplate::new(
             "Differentiation Strategy",
             "To find d/d{variable}({expression}):\n{strategy_description}",
-            &["variable", "expression", "strategy_description"]
-        )
+            &["variable", "expression", "strategy_description"],
+        ),
     );
 }
 
@@ -374,8 +402,8 @@ fn initialize_limit_messages(registry: &mut HashMap<MessageKey, MessageTemplate>
         MessageTemplate::new(
             "Direct Substitution Result",
             "Direct substitution gives:\nlim({variable} -> {point}) {expression} = {result}",
-            &["variable", "point", "expression", "result"]
-        )
+            &["variable", "point", "expression", "result"],
+        ),
     );
 
     registry.insert(
@@ -388,12 +416,16 @@ fn initialize_limit_messages(registry: &mut HashMap<MessageKey, MessageTemplate>
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::Calculus, MessageType::LimitIndeterminate, 1),
+        MessageKey::new(
+            MessageCategory::Calculus,
+            MessageType::LimitIndeterminate,
+            1,
+        ),
         MessageTemplate::new(
             "Resolve Indeterminate Form",
             "To resolve {indeterminate_form} form:\n{resolution_strategy}",
-            &["indeterminate_form", "resolution_strategy"]
-        )
+            &["indeterminate_form", "resolution_strategy"],
+        ),
     );
 
     registry.insert(

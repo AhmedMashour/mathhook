@@ -50,7 +50,10 @@ impl Number {
                     Ok(Number::Integer(result))
                 } else {
                     let base_bigint = BigInt::from(*base);
-                    Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(base_bigint, exp_u32))))
+                    Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(
+                        base_bigint,
+                        exp_u32,
+                    ))))
                 }
             }
 
@@ -60,7 +63,10 @@ impl Number {
                         operation: "exponent too large for BigInteger power".to_string(),
                     });
                 }
-                Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(base.as_ref().clone(), *exp as u32))))
+                Ok(Number::BigInteger(Box::new(num_traits::Pow::pow(
+                    base.as_ref().clone(),
+                    *exp as u32,
+                ))))
             }
 
             _ => {

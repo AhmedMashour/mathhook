@@ -4,10 +4,10 @@
 //! and polynomial families (Legendre, Hermite, Laguerre, Chebyshev, etc.).
 //! Following SymPy's approach but optimized for performance.
 
-use crate::core::Expression;
 use super::rules::{
-    AntiderivativeRule, RecurrenceRule, SpecialValue, ThreeTermRecurrence, EvaluationMethod
+    AntiderivativeRule, EvaluationMethod, RecurrenceRule, SpecialValue, ThreeTermRecurrence,
 };
+use crate::core::Expression;
 
 /// Special function properties (gamma, bessel, zeta, etc.)
 ///

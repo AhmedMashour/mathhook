@@ -242,10 +242,7 @@ mod equation_properties {
             Expression::integer(5),
             Expression::symbol(symbol!(x)),
             Expression::add(vec![Expression::integer(2), Expression::integer(3)]),
-            Expression::mul(vec![
-                Expression::integer(2),
-                Expression::symbol(symbol!(y)),
-            ]),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(y))]),
         ];
 
         for expr in expressions {

@@ -27,13 +27,20 @@ pub fn explain_chain_rule(
         ),
         expression: expr.clone(),
         rule_applied: "Identification".to_string(),
-        latex: Some(expr.to_latex(None).unwrap_or_else(|_| "f(g(x))".to_string())),
+        latex: Some(
+            expr.to_latex(None)
+                .unwrap_or_else(|_| "f(g(x))".to_string()),
+        ),
     });
 
-    if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativeChainRule, 0)
-        .with_substitution("outer_function", func_name)
-        .with_substitution("inner_function", &format_expr(arg))
-        .build()
+    if let Some(step) = MessageBuilder::new(
+        MessageCategory::Calculus,
+        MessageType::DerivativeChainRule,
+        0,
+    )
+    .with_substitution("outer_function", func_name)
+    .with_substitution("inner_function", &format_expr(arg))
+    .build()
     {
         steps.push(step);
     }
@@ -59,7 +66,11 @@ pub fn explain_chain_rule(
         ),
         expression: outer_derivative.clone(),
         rule_applied: "Outer Derivative".to_string(),
-        latex: Some(outer_derivative.to_latex(None).unwrap_or_else(|_| "f'(u)".to_string())),
+        latex: Some(
+            outer_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "f'(u)".to_string()),
+        ),
     });
 
     let inner_derivative = arg.derivative(variable.clone());
@@ -73,7 +84,11 @@ pub fn explain_chain_rule(
         ),
         expression: inner_derivative.clone(),
         rule_applied: "Inner Derivative".to_string(),
-        latex: Some(inner_derivative.to_latex(None).unwrap_or_else(|_| "g'(x)".to_string())),
+        latex: Some(
+            inner_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "g'(x)".to_string()),
+        ),
     });
 
     let result = Expression::mul(vec![outer_derivative, inner_derivative]).simplify();
@@ -82,7 +97,11 @@ pub fn explain_chain_rule(
         description: format!("Result: {}", format_expr(&result)),
         expression: result.clone(),
         rule_applied: "Chain Rule Application".to_string(),
-        latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+        latex: Some(
+            result
+                .to_latex(None)
+                .unwrap_or_else(|_| "result".to_string()),
+        ),
     });
 
     let step_count = steps.len();
@@ -116,10 +135,14 @@ pub fn explain_product_rule(
         latex: Some(expr.to_latex(None).unwrap_or_else(|_| "f*g".to_string())),
     });
 
-    if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativeProductRule, 0)
-        .with_substitution("first_function", &format_expr(first))
-        .with_substitution("second_function", &format_expr(second))
-        .build()
+    if let Some(step) = MessageBuilder::new(
+        MessageCategory::Calculus,
+        MessageType::DerivativeProductRule,
+        0,
+    )
+    .with_substitution("first_function", &format_expr(first))
+    .with_substitution("second_function", &format_expr(second))
+    .build()
     {
         steps.push(step);
     }
@@ -138,7 +161,11 @@ pub fn explain_product_rule(
         description: format!("f'(x) = {}", format_expr(&first_derivative)),
         expression: first_derivative.clone(),
         rule_applied: "First Derivative".to_string(),
-        latex: Some(first_derivative.to_latex(None).unwrap_or_else(|_| "f'".to_string())),
+        latex: Some(
+            first_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "f'".to_string()),
+        ),
     });
 
     let second_derivative = second.derivative(variable.clone());
@@ -147,20 +174,29 @@ pub fn explain_product_rule(
         description: format!("g'(x) = {}", format_expr(&second_derivative)),
         expression: second_derivative.clone(),
         rule_applied: "Second Derivative".to_string(),
-        latex: Some(second_derivative.to_latex(None).unwrap_or_else(|_| "g'".to_string())),
+        latex: Some(
+            second_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "g'".to_string()),
+        ),
     });
 
     let result = Expression::add(vec![
         Expression::mul(vec![first_derivative, second.clone()]),
         Expression::mul(vec![first.clone(), second_derivative]),
-    ]).simplify();
+    ])
+    .simplify();
 
     steps.push(Step {
         title: "Apply Product Rule Formula".to_string(),
         description: format!("f'*g + f*g' = {}", format_expr(&result)),
         expression: result.clone(),
         rule_applied: "Product Rule Application".to_string(),
-        latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+        latex: Some(
+            result
+                .to_latex(None)
+                .unwrap_or_else(|_| "result".to_string()),
+        ),
     });
 
     let step_count = steps.len();
@@ -198,14 +234,20 @@ pub fn explain_quotient_rule(
         latex: Some(format!(
             "\\frac{{{}}}{{{}}}",
             numerator.to_latex(None).unwrap_or_else(|_| "f".to_string()),
-            denominator.to_latex(None).unwrap_or_else(|_| "g".to_string())
+            denominator
+                .to_latex(None)
+                .unwrap_or_else(|_| "g".to_string())
         )),
     });
 
-    if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativeQuotientRule, 0)
-        .with_substitution("numerator", &format_expr(numerator))
-        .with_substitution("denominator", &format_expr(denominator))
-        .build()
+    if let Some(step) = MessageBuilder::new(
+        MessageCategory::Calculus,
+        MessageType::DerivativeQuotientRule,
+        0,
+    )
+    .with_substitution("numerator", &format_expr(numerator))
+    .with_substitution("denominator", &format_expr(denominator))
+    .build()
     {
         steps.push(step);
     }
@@ -224,7 +266,11 @@ pub fn explain_quotient_rule(
         description: format!("f'(x) = {}", format_expr(&numerator_derivative)),
         expression: numerator_derivative.clone(),
         rule_applied: "Numerator Derivative".to_string(),
-        latex: Some(numerator_derivative.to_latex(None).unwrap_or_else(|_| "f'".to_string())),
+        latex: Some(
+            numerator_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "f'".to_string()),
+        ),
     });
 
     let denominator_derivative = denominator.derivative(variable.clone());
@@ -233,7 +279,11 @@ pub fn explain_quotient_rule(
         description: format!("g'(x) = {}", format_expr(&denominator_derivative)),
         expression: denominator_derivative.clone(),
         rule_applied: "Denominator Derivative".to_string(),
-        latex: Some(denominator_derivative.to_latex(None).unwrap_or_else(|_| "g'".to_string())),
+        latex: Some(
+            denominator_derivative
+                .to_latex(None)
+                .unwrap_or_else(|_| "g'".to_string()),
+        ),
     });
 
     let result_numerator = Expression::add(vec![
@@ -251,7 +301,11 @@ pub fn explain_quotient_rule(
         description: format!("(f'*g - f*g') = {}", format_expr(&result_numerator)),
         expression: result_numerator.clone(),
         rule_applied: "Numerator Calculation".to_string(),
-        latex: Some(result_numerator.to_latex(None).unwrap_or_else(|_| "result_num".to_string())),
+        latex: Some(
+            result_numerator
+                .to_latex(None)
+                .unwrap_or_else(|_| "result_num".to_string()),
+        ),
     });
 
     let result = Expression::mul(vec![
@@ -265,7 +319,11 @@ pub fn explain_quotient_rule(
         description: format!("Result: {}", format_expr(&result)),
         expression: result.clone(),
         rule_applied: "Quotient Rule Application".to_string(),
-        latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+        latex: Some(
+            result
+                .to_latex(None)
+                .unwrap_or_else(|_| "result".to_string()),
+        ),
     });
 
     let step_count = steps.len();

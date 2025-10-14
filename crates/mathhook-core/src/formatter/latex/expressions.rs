@@ -1,6 +1,6 @@
 use super::{LaTeXContext, LaTeXFormatter, MAX_RECURSION_DEPTH, MAX_TERMS_PER_OPERATION};
 use crate::core::expression::smart_display::SmartDisplayFormatter;
-use crate::core::expression::{CalculusData, LimitDirection, RelationType, Matrix};
+use crate::core::expression::{CalculusData, LimitDirection, Matrix, RelationType};
 use crate::core::{Expression, MathConstant, Number};
 use crate::formatter::FormattingError;
 
@@ -33,16 +33,10 @@ pub(super) fn to_latex_with_depth_impl(
         ),
         Expression::Matrix(matrix) => format_matrix(matrix, context, depth)?,
         Expression::Relation(relation_data) => format_relation(relation_data, context, depth)?,
-        Expression::Piecewise(piecewise_data) => {
-            format_piecewise(piecewise_data, context, depth)?
-        }
+        Expression::Piecewise(piecewise_data) => format_piecewise(piecewise_data, context, depth)?,
         Expression::Set(elements) => format_set(elements, context, depth)?,
-        Expression::Interval(interval_data) => {
-            format_interval(interval_data, context, depth)?
-        }
-        Expression::Calculus(calculus_data) => {
-            format_calculus(calculus_data, context, depth)?
-        }
+        Expression::Interval(interval_data) => format_interval(interval_data, context, depth)?,
+        Expression::Calculus(calculus_data) => format_calculus(calculus_data, context, depth)?,
         Expression::MethodCall(method_data) => format!(
             "{}.{}({})",
             method_data.object.to_latex_with_depth(context, depth + 1)?,
@@ -107,8 +101,7 @@ fn format_addition(
             term_strs.push(term.to_latex_with_depth(context, depth + 1)?);
         } else {
             if SmartDisplayFormatter::is_negated_expression(term) {
-                if let Some(positive_part) =
-                    SmartDisplayFormatter::extract_negated_expression(term)
+                if let Some(positive_part) = SmartDisplayFormatter::extract_negated_expression(term)
                 {
                     term_strs.push(format!(
                         " - {}",
@@ -191,9 +184,7 @@ fn format_power(
     depth: usize,
 ) -> Result<String, FormattingError> {
     if let Expression::Number(Number::Rational(r)) = exp.as_ref() {
-        if r.numer() == &num_bigint::BigInt::from(1)
-            && r.denom() == &num_bigint::BigInt::from(2)
-        {
+        if r.numer() == &num_bigint::BigInt::from(1) && r.denom() == &num_bigint::BigInt::from(2) {
             return Ok(format!(
                 "\\sqrt{{{}}}",
                 base.to_latex_with_depth(context, depth + 1)?
@@ -229,17 +220,18 @@ fn format_power(
         exp_str
     };
 
-    Ok(if clean_exp_str.len() == 1
-        || (clean_exp_str.len() == 2 && clean_exp_str.starts_with('-'))
-    {
-        if clean_exp_str.starts_with('-') {
-            format!("{}^{{{}}}", base_str, clean_exp_str)
+    Ok(
+        if clean_exp_str.len() == 1 || (clean_exp_str.len() == 2 && clean_exp_str.starts_with('-'))
+        {
+            if clean_exp_str.starts_with('-') {
+                format!("{}^{{{}}}", base_str, clean_exp_str)
+            } else {
+                format!("{}^{}", base_str, clean_exp_str)
+            }
         } else {
-            format!("{}^{}", base_str, clean_exp_str)
-        }
-    } else {
-        format!("{}^{{{}}}", base_str, clean_exp_str)
-    })
+            format!("{}^{{{}}}", base_str, clean_exp_str)
+        },
+    )
 }
 
 /// Format matrix in LaTeX pmatrix environment

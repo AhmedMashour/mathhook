@@ -411,10 +411,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
 
                 let step = Step {
                     title: "Combine Like Terms".to_string(),
-                    description: format!(
-                        "Identify and combine like terms\nResult: {}",
-                        result
-                    ),
+                    description: format!("Identify and combine like terms\nResult: {}", result),
                     expression: result.clone(),
                     rule_applied: "Combine Like Terms".to_string(),
                     latex: None,
@@ -462,7 +459,10 @@ fn simplify_step_identity_rules(expr: &Expression) -> Option<(Expression, Step)>
             }
         }
         Expression::Mul(factors) => {
-            if factors.iter().any(|f| matches!(f, Expression::Number(Number::Integer(0)))) {
+            if factors
+                .iter()
+                .any(|f| matches!(f, Expression::Number(Number::Integer(0))))
+            {
                 let result = Expression::integer(0);
                 let step = Step {
                     title: "Zero Property".to_string(),
@@ -514,48 +514,45 @@ fn simplify_step_power_rules(expr: &Expression) -> Option<(Expression, Step)> {
     use crate::core::Number;
 
     match expr {
-        Expression::Pow(base, exp) => {
-            match (exp.as_ref(), base.as_ref()) {
-                (Expression::Number(Number::Integer(0)), _) => {
-                    let result = Expression::integer(1);
-                    let step = Step {
-                        title: "Power Rule: x^0 = 1".to_string(),
-                        description: "Any expression to the power of 0 equals 1\nResult: 1"
-                            .to_string(),
-                        expression: result.clone(),
-                        rule_applied: "Power Rules".to_string(),
-                        latex: None,
-                    };
-                    return Some((result, step));
-                }
-                (Expression::Number(Number::Integer(1)), _) => {
-                    let result = base.as_ref().clone();
-                    let step = Step {
-                        title: "Power Rule: x^1 = x".to_string(),
-                        description: format!(
-                            "Any expression to the power of 1 equals itself\nResult: {}",
-                            result
-                        ),
-                        expression: result.clone(),
-                        rule_applied: "Power Rules".to_string(),
-                        latex: None,
-                    };
-                    return Some((result, step));
-                }
-                (_, Expression::Number(Number::Integer(1))) => {
-                    let result = Expression::integer(1);
-                    let step = Step {
-                        title: "Power Rule: 1^n = 1".to_string(),
-                        description: "1 to any power equals 1\nResult: 1".to_string(),
-                        expression: result.clone(),
-                        rule_applied: "Power Rules".to_string(),
-                        latex: None,
-                    };
-                    return Some((result, step));
-                }
-                _ => {}
+        Expression::Pow(base, exp) => match (exp.as_ref(), base.as_ref()) {
+            (Expression::Number(Number::Integer(0)), _) => {
+                let result = Expression::integer(1);
+                let step = Step {
+                    title: "Power Rule: x^0 = 1".to_string(),
+                    description: "Any expression to the power of 0 equals 1\nResult: 1".to_string(),
+                    expression: result.clone(),
+                    rule_applied: "Power Rules".to_string(),
+                    latex: None,
+                };
+                return Some((result, step));
             }
-        }
+            (Expression::Number(Number::Integer(1)), _) => {
+                let result = base.as_ref().clone();
+                let step = Step {
+                    title: "Power Rule: x^1 = x".to_string(),
+                    description: format!(
+                        "Any expression to the power of 1 equals itself\nResult: {}",
+                        result
+                    ),
+                    expression: result.clone(),
+                    rule_applied: "Power Rules".to_string(),
+                    latex: None,
+                };
+                return Some((result, step));
+            }
+            (_, Expression::Number(Number::Integer(1))) => {
+                let result = Expression::integer(1);
+                let step = Step {
+                    title: "Power Rule: 1^n = 1".to_string(),
+                    description: "1 to any power equals 1\nResult: 1".to_string(),
+                    expression: result.clone(),
+                    rule_applied: "Power Rules".to_string(),
+                    latex: None,
+                };
+                return Some((result, step));
+            }
+            _ => {}
+        },
         Expression::Mul(factors) => {
             for (i, factor) in factors.iter().enumerate() {
                 if let Expression::Pow(_base, _exp) = factor {
@@ -565,7 +562,10 @@ fn simplify_step_power_rules(expr: &Expression) -> Option<(Expression, Step)> {
                         let result = Expression::Mul(Box::new(new_factors));
                         let step = Step {
                             title: "Simplify Power in Product".to_string(),
-                            description: format!("Apply power rule in multiplication\nResult: {}", result),
+                            description: format!(
+                                "Apply power rule in multiplication\nResult: {}",
+                                result
+                            ),
                             expression: result.clone(),
                             rule_applied: "Power Rules".to_string(),
                             latex: None,
@@ -681,10 +681,7 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                 } else if let Expression::Add(terms) = &factors[0] {
                     steps.push(Step {
                         title: "Distribute Factor".to_string(),
-                        description: format!(
-                            "Distribute {} over {}",
-                            factors[1], factors[0]
-                        ),
+                        description: format!("Distribute {} over {}", factors[1], factors[0]),
                         expression: expr.clone(),
                         rule_applied: "Distributive Property".to_string(),
                         latex: None,
@@ -711,10 +708,7 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                 } else if let Expression::Add(terms) = &factors[1] {
                     steps.push(Step {
                         title: "Distribute Factor".to_string(),
-                        description: format!(
-                            "Distribute {} over {}",
-                            factors[0], factors[1]
-                        ),
+                        description: format!("Distribute {} over {}", factors[0], factors[1]),
                         expression: expr.clone(),
                         rule_applied: "Distributive Property".to_string(),
                         latex: None,
@@ -758,7 +752,10 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                         latex: None,
                     });
 
-                    let expanded = Expression::Mul(Box::new(vec![base.as_ref().clone(), base.as_ref().clone()]));
+                    let expanded = Expression::Mul(Box::new(vec![
+                        base.as_ref().clone(),
+                        base.as_ref().clone(),
+                    ]));
                     if let Some((result, expand_steps)) = expand_expression(&expanded) {
                         steps.extend(expand_steps);
                         return Some((result, steps));
@@ -828,7 +825,8 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                                 }
                             }
                             Expression::Mul(factors) => {
-                                if let Some(Expression::Number(Number::Integer(n))) = factors.first()
+                                if let Some(Expression::Number(Number::Integer(n))) =
+                                    factors.first()
                                 {
                                     let quotient = n / gcd;
                                     let mut new_factors = vec![Expression::integer(quotient)];
@@ -846,10 +844,8 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                         Expression::Add(Box::new(factored_terms))
                     };
 
-                    let result = Expression::Mul(Box::new(vec![
-                        Expression::integer(gcd),
-                        inner.clone(),
-                    ]));
+                    let result =
+                        Expression::Mul(Box::new(vec![Expression::integer(gcd), inner.clone()]));
 
                     steps.push(Step {
                         title: "Factor Out GCF".to_string(),

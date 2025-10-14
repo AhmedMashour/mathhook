@@ -15,10 +15,10 @@ impl JacobianOperations {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
-/// use mathhook_core::calculus::derivatives::Derivative;
-/// use mathhook_core::calculus::derivatives::PartialUtils;
-/// use mathhook_core::calculus::derivatives::MatrixUtils;
+    /// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::calculus::derivatives::Derivative;
+    /// use mathhook_core::calculus::derivatives::PartialUtils;
+    /// use mathhook_core::calculus::derivatives::MatrixUtils;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::JacobianOperations;

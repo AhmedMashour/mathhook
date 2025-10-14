@@ -219,10 +219,9 @@ impl SmartEquationSolver {
             EquationType::Cubic | EquationType::Quartic => self
                 .polynomial_solver
                 .solve_with_explanation(equation, variable),
-            EquationType::System => {
-                self.linear_solver
-                    .solve_with_explanation(equation, variable)
-            }
+            EquationType::System => self
+                .linear_solver
+                .solve_with_explanation(equation, variable),
             _ => {
                 all_steps.push(Step::new(
                     "Status",

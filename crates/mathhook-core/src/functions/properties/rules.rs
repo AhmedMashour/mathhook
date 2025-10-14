@@ -108,39 +108,35 @@ pub enum AntiderivativeRuleType {
     ///
     /// Used for integrals like ∫1/√(1-x²)dx = arcsin(x) + C
     /// where a trigonometric substitution simplifies the integral.
-    TrigSubstitution {
-        substitution_type: String,
-    },
+    TrigSubstitution { substitution_type: String },
 
     /// Partial fraction decomposition (for rational functions)
     ///
     /// Indicates that the integral requires partial fraction decomposition
     /// before integration can proceed.
-    PartialFractions {
-        decomposition: Vec<Expression>,
-    },
+    PartialFractions { decomposition: Vec<Expression> },
 }
 
 impl Clone for AntiderivativeRuleType {
     fn clone(&self) -> Self {
         match self {
-            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
-                AntiderivativeRuleType::Simple {
-                    antiderivative_fn: antiderivative_fn.clone(),
-                    coefficient: coefficient.clone(),
-                }
-            }
-            AntiderivativeRuleType::Custom { builder } => {
-                AntiderivativeRuleType::Custom {
-                    builder: Arc::clone(builder),
-                }
-            }
-            AntiderivativeRuleType::LinearSubstitution { coefficient, inner_rule } => {
-                AntiderivativeRuleType::LinearSubstitution {
-                    coefficient: coefficient.clone(),
-                    inner_rule: inner_rule.clone(),
-                }
-            }
+            AntiderivativeRuleType::Simple {
+                antiderivative_fn,
+                coefficient,
+            } => AntiderivativeRuleType::Simple {
+                antiderivative_fn: antiderivative_fn.clone(),
+                coefficient: coefficient.clone(),
+            },
+            AntiderivativeRuleType::Custom { builder } => AntiderivativeRuleType::Custom {
+                builder: Arc::clone(builder),
+            },
+            AntiderivativeRuleType::LinearSubstitution {
+                coefficient,
+                inner_rule,
+            } => AntiderivativeRuleType::LinearSubstitution {
+                coefficient: coefficient.clone(),
+                inner_rule: inner_rule.clone(),
+            },
             AntiderivativeRuleType::TrigSubstitution { substitution_type } => {
                 AntiderivativeRuleType::TrigSubstitution {
                     substitution_type: substitution_type.clone(),
@@ -158,33 +154,34 @@ impl Clone for AntiderivativeRuleType {
 impl std::fmt::Debug for AntiderivativeRuleType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
-                f.debug_struct("Simple")
-                    .field("antiderivative_fn", antiderivative_fn)
-                    .field("coefficient", coefficient)
-                    .finish()
-            }
-            AntiderivativeRuleType::Custom { .. } => {
-                f.debug_struct("Custom")
-                    .field("builder", &"<closure>")
-                    .finish()
-            }
-            AntiderivativeRuleType::LinearSubstitution { coefficient, inner_rule } => {
-                f.debug_struct("LinearSubstitution")
-                    .field("coefficient", coefficient)
-                    .field("inner_rule", inner_rule)
-                    .finish()
-            }
-            AntiderivativeRuleType::TrigSubstitution { substitution_type } => {
-                f.debug_struct("TrigSubstitution")
-                    .field("substitution_type", substitution_type)
-                    .finish()
-            }
-            AntiderivativeRuleType::PartialFractions { decomposition } => {
-                f.debug_struct("PartialFractions")
-                    .field("decomposition", decomposition)
-                    .finish()
-            }
+            AntiderivativeRuleType::Simple {
+                antiderivative_fn,
+                coefficient,
+            } => f
+                .debug_struct("Simple")
+                .field("antiderivative_fn", antiderivative_fn)
+                .field("coefficient", coefficient)
+                .finish(),
+            AntiderivativeRuleType::Custom { .. } => f
+                .debug_struct("Custom")
+                .field("builder", &"<closure>")
+                .finish(),
+            AntiderivativeRuleType::LinearSubstitution {
+                coefficient,
+                inner_rule,
+            } => f
+                .debug_struct("LinearSubstitution")
+                .field("coefficient", coefficient)
+                .field("inner_rule", inner_rule)
+                .finish(),
+            AntiderivativeRuleType::TrigSubstitution { substitution_type } => f
+                .debug_struct("TrigSubstitution")
+                .field("substitution_type", substitution_type)
+                .finish(),
+            AntiderivativeRuleType::PartialFractions { decomposition } => f
+                .debug_struct("PartialFractions")
+                .field("decomposition", decomposition)
+                .finish(),
         }
     }
 }

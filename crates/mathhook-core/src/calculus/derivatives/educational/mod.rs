@@ -11,7 +11,10 @@ use crate::core::{Expression, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 use crate::formatter::latex::LaTeXFormatter;
 
-pub use basic_rules::{explain_constant_derivative, explain_power_rule, explain_sum_derivative, explain_variable_derivative};
+pub use basic_rules::{
+    explain_constant_derivative, explain_power_rule, explain_sum_derivative,
+    explain_variable_derivative,
+};
 pub use composition_rules::{explain_chain_rule, explain_product_rule, explain_quotient_rule};
 
 /// Helper to format expressions for display
@@ -92,7 +95,11 @@ impl DerivativeWithSteps for Expression {
                     description: format!("Result: {}", format_expr(&current)),
                     expression: current.clone(),
                     rule_applied: "Intermediate".to_string(),
-                    latex: Some(current.to_latex(None).unwrap_or_else(|_| "f(x)".to_string())),
+                    latex: Some(
+                        current
+                            .to_latex(None)
+                            .unwrap_or_else(|_| "f(x)".to_string()),
+                    ),
                 });
             }
         }
@@ -109,10 +116,7 @@ impl DerivativeWithSteps for Expression {
 }
 
 /// Compute step-by-step derivative for a single differentiation
-fn compute_single_derivative_steps(
-    expr: &Expression,
-    variable: &Symbol,
-) -> StepByStepExplanation {
+fn compute_single_derivative_steps(expr: &Expression, variable: &Symbol) -> StepByStepExplanation {
     match expr {
         Expression::Number(_) | Expression::Constant(_) => {
             explain_constant_derivative(expr, variable)
@@ -149,10 +153,19 @@ fn compute_single_derivative_steps(
                 final_expression: result.clone(),
                 steps: vec![Step {
                     title: "Compute Derivative".to_string(),
-                    description: format!("d/d{}({}) = {}", variable.name(), format_expr(expr), format_expr(&result)),
+                    description: format!(
+                        "d/d{}({}) = {}",
+                        variable.name(),
+                        format_expr(expr),
+                        format_expr(&result)
+                    ),
                     expression: result.clone(),
                     rule_applied: "General Differentiation".to_string(),
-                    latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+                    latex: Some(
+                        result
+                            .to_latex(None)
+                            .unwrap_or_else(|_| "result".to_string()),
+                    ),
                 }],
                 total_steps: 1,
                 rules_used: vec!["General Differentiation".to_string()],
@@ -188,7 +201,11 @@ fn explain_general_power_derivative(
             ),
             expression: result.clone(),
             rule_applied: "General Power Rule".to_string(),
-            latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+            latex: Some(
+                result
+                    .to_latex(None)
+                    .unwrap_or_else(|_| "result".to_string()),
+            ),
         }],
         total_steps: 1,
         rules_used: vec!["General Power Rule".to_string()],
@@ -216,7 +233,11 @@ fn explain_general_product_rule(
             ),
             expression: result.clone(),
             rule_applied: "General Product Rule".to_string(),
-            latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+            latex: Some(
+                result
+                    .to_latex(None)
+                    .unwrap_or_else(|_| "result".to_string()),
+            ),
         }],
         total_steps: 1,
         rules_used: vec!["General Product Rule".to_string()],
@@ -245,7 +266,11 @@ fn explain_general_function_derivative(
             ),
             expression: result.clone(),
             rule_applied: "Function Derivative".to_string(),
-            latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+            latex: Some(
+                result
+                    .to_latex(None)
+                    .unwrap_or_else(|_| "result".to_string()),
+            ),
         }],
         total_steps: 1,
         rules_used: vec!["Function Derivative".to_string()],
@@ -330,7 +355,10 @@ mod tests {
         let x = symbol!(x);
         let expr = Expression::function(
             "sin",
-            vec![Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))],
+            vec![Expression::pow(
+                Expression::symbol(x.clone()),
+                Expression::integer(2),
+            )],
         );
         let explanation = expr.derivative_with_steps(&x, 1);
         assert!(explanation.steps.len() >= 5);

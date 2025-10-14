@@ -194,7 +194,10 @@ mod tests {
         assert!(registry.step_generators.capacity() >= 64);
 
         // Verify registry actually has functions registered
-        assert!(registry.registry_size() > 0, "Registry should have functions registered");
+        assert!(
+            registry.registry_size() > 0,
+            "Registry should have functions registered"
+        );
     }
 
     #[test]

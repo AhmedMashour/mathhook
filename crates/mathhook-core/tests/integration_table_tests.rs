@@ -159,7 +159,10 @@ fn test_tan_integral() {
             "ln",
             vec![Expression::function(
                 "abs",
-                vec![Expression::function("cos", vec![Expression::symbol(symbol!(x))])],
+                vec![Expression::function(
+                    "cos",
+                    vec![Expression::symbol(symbol!(x))],
+                )],
             )],
         ),
     ]);
@@ -313,7 +316,10 @@ fn test_tanh_integral() {
     // Result should be ln(cosh(x))
     let expected = Expression::function(
         "ln",
-        vec![Expression::function("cosh", vec![Expression::symbol(symbol!(x))])],
+        vec![Expression::function(
+            "cosh",
+            vec![Expression::symbol(symbol!(x))],
+        )],
     );
 
     assert_eq!(result, expected);
@@ -617,7 +623,10 @@ fn test_cot_integral() {
         "ln",
         vec![Expression::function(
             "abs",
-            vec![Expression::function("sin", vec![Expression::symbol(symbol!(x))])],
+            vec![Expression::function(
+                "sin",
+                vec![Expression::symbol(symbol!(x))],
+            )],
         )],
     );
 

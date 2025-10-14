@@ -106,10 +106,7 @@ fn test_solve_quadratic_one_solution() {
 fn test_solve_quadratic_formula() {
     // SymPy: solve(x**2 + 3*x + 2, x) = [-2, -1]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        expr!(add: (x ^ 2), (3 * x), 2),
-        expr!(0),
-    );
+    let equation = Expression::equation(expr!(add: (x ^ 2), (3 * x), 2), expr!(0));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
@@ -333,10 +330,7 @@ fn test_solve_linear_system_simple() {
 fn test_solve_quadratic_negative_discriminant() {
     // SymPy: solve(x**2 + x + 1, x) = [(-1 - sqrt(3)*i)/2, (-1 + sqrt(3)*i)/2]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        expr!(add: (x ^ 2), x, 1),
-        expr!(0),
-    );
+    let equation = Expression::equation(expr!(add: (x ^ 2), x, 1), expr!(0));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
@@ -375,10 +369,7 @@ fn test_solve_exponential_simple() {
 fn test_solve_absolute_value() {
     // SymPy: solve(abs(x) - 5, x) = [-5, 5]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        function!(abs, Expression::symbol(x.clone())),
-        expr!(5),
-    );
+    let equation = Expression::equation(function!(abs, Expression::symbol(x.clone())), expr!(5));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
@@ -398,10 +389,7 @@ fn test_solve_absolute_value() {
 fn test_solve_sqrt_equation() {
     // SymPy: solve(sqrt(x) - 2, x) = [4]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        function!(sqrt, Expression::symbol(x.clone())),
-        expr!(2),
-    );
+    let equation = Expression::equation(function!(sqrt, Expression::symbol(x.clone())), expr!(2));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
@@ -419,10 +407,7 @@ fn test_solve_sqrt_equation() {
 fn test_solve_factored_form() {
     // SymPy: solve((x-1)*(x-2), x) = [1, 2]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        expr!((x - 1) * (x - 2)),
-        expr!(0),
-    );
+    let equation = Expression::equation(expr!((x - 1) * (x - 2)), expr!(0));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
@@ -469,10 +454,7 @@ fn test_solve_cubic_all_real_roots() {
 fn test_solve_variable_on_both_sides() {
     // SymPy: solve(2*x + 3 - (x + 8), x) = [5]
     let x = symbol!(x);
-    let equation = Expression::equation(
-        expr!((2 * x) + 3),
-        expr!(x + 8),
-    );
+    let equation = Expression::equation(expr!((2 * x) + 3), expr!(x + 8));
     let mut solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 

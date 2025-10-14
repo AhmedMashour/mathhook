@@ -7,7 +7,7 @@
 //! - Infinite solutions (dependent systems)
 //! - Edge cases (zero rows, identity matrix, diagonal systems)
 
-use mathhook_core::algebra::solvers::{SystemEquationSolver, SolverResult, SystemSolver};
+use mathhook_core::algebra::solvers::{SolverResult, SystemEquationSolver, SystemSolver};
 use mathhook_core::{symbol, Expression};
 
 #[test]

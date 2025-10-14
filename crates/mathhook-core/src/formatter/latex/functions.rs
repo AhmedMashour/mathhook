@@ -51,10 +51,7 @@ pub(super) fn function_to_latex_with_depth_impl(
             "\\eta({})",
             args[0].to_latex_with_depth(context, depth + 1)?
         ),
-        "abs" => format!(
-            "|{}|",
-            args[0].to_latex_with_depth(context, depth + 1)?
-        ),
+        "abs" => format!("|{}|", args[0].to_latex_with_depth(context, depth + 1)?),
         "conjugate" => format!(
             "\\overline{{{}}}",
             args[0].to_latex_with_depth(context, depth + 1)?
@@ -91,9 +88,7 @@ pub(super) fn function_to_latex_with_depth_impl(
         "legendre_q_indexed" if args.len() >= 2 => {
             format_indexed_function("Q", args, context, depth)?
         }
-        "hermite_indexed" if args.len() >= 2 => {
-            format_indexed_function("H", args, context, depth)?
-        }
+        "hermite_indexed" if args.len() >= 2 => format_indexed_function("H", args, context, depth)?,
         "laguerre_indexed" if args.len() >= 2 => {
             format_indexed_function("L", args, context, depth)?
         }
@@ -162,7 +157,10 @@ fn format_factorial_function(
     depth: usize,
 ) -> Result<String, FormattingError> {
     if args.len() == 1 {
-        Ok(format!("{}!", args[0].to_latex_with_depth(context, depth + 1)?))
+        Ok(format!(
+            "{}!",
+            args[0].to_latex_with_depth(context, depth + 1)?
+        ))
     } else {
         let arg_strs: Vec<String> = args
             .iter()
@@ -179,13 +177,19 @@ fn format_double_factorial_function(
     depth: usize,
 ) -> Result<String, FormattingError> {
     if args.len() == 1 {
-        Ok(format!("{}!!", args[0].to_latex_with_depth(context, depth + 1)?))
+        Ok(format!(
+            "{}!!",
+            args[0].to_latex_with_depth(context, depth + 1)?
+        ))
     } else {
         let arg_strs: Vec<String> = args
             .iter()
             .map(|arg| arg.to_latex_with_depth(context, depth + 1))
             .collect::<Result<Vec<_>, _>>()?;
-        Ok(format!("\\text{{double_factorial}}({})", arg_strs.join(", ")))
+        Ok(format!(
+            "\\text{{double_factorial}}({})",
+            arg_strs.join(", ")
+        ))
     }
 }
 
@@ -288,12 +292,9 @@ fn format_generic_function(
     depth: usize,
 ) -> Result<String, FormattingError> {
     const KNOWN_LATEX_FUNCTIONS: &[&str] = &[
-        "sin", "cos", "tan", "cot", "sec", "csc",
-        "arcsin", "arccos", "arctan", "arccot", "arcsec", "arccsc",
-        "sinh", "cosh", "tanh", "coth", "sech", "csch",
-        "arcsinh", "arccosh", "arctanh", "arccoth", "arcsech", "arccsch",
-        "ln", "lg",
-        "erf", "erfc", "min", "max", "gcd", "lcm",
+        "sin", "cos", "tan", "cot", "sec", "csc", "arcsin", "arccos", "arctan", "arccot", "arcsec",
+        "arccsc", "sinh", "cosh", "tanh", "coth", "sech", "csch", "arcsinh", "arccosh", "arctanh",
+        "arccoth", "arcsech", "arccsch", "ln", "lg", "erf", "erfc", "min", "max", "gcd", "lcm",
         "det", "dim", "ker", "hom", "arg", "deg", "lim", "sup", "inf",
     ];
 

@@ -141,7 +141,7 @@ impl HyperbolicIntelligence {
                 ]),
 
                 domain_range: Box::new(DomainRangeData {
-                    domain: Domain::Real, // (-∞, ∞)
+                    domain: Domain::Real,    // (-∞, ∞)
                     range: Range::Unbounded, // [1, ∞)
                     singularities: vec![],
                 }),
@@ -169,9 +169,10 @@ impl HyperbolicIntelligence {
                 antiderivative_rule: Some(AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
-                            Expression::function("ln", vec![
-                                Expression::function("cosh", vec![Expression::symbol(var)])
-                            ])
+                            Expression::function(
+                                "ln",
+                                vec![Expression::function("cosh", vec![Expression::symbol(var)])],
+                            )
                         }),
                     },
                     result_template: "∫tanh(x)dx = ln(cosh(x)) + C".to_string(),

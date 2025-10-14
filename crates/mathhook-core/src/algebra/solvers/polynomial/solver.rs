@@ -43,8 +43,8 @@ impl PolynomialSolver {
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
                 let (power_term, constant_term) = match (&terms[0], &terms[1]) {
-                    (Expression::Number(Number::Integer(c)), p@Expression::Pow(..)) => (p, c),
-                    (p@Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
+                    (Expression::Number(Number::Integer(c)), p @ Expression::Pow(..)) => (p, c),
+                    (p @ Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
                     _ => {
                         return self.solve_cubic_rational_root_theorem(equation, variable);
                     }
@@ -69,7 +69,11 @@ impl PolynomialSolver {
     }
 
     /// Try to solve cubic using rational root theorem
-    pub fn solve_cubic_rational_root_theorem(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
+    pub fn solve_cubic_rational_root_theorem(
+        &self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> SolverResult {
         let potential_roots = vec![-3, -2, -1, 0, 1, 2, 3];
         let mut found_roots = Vec::new();
 
@@ -97,8 +101,8 @@ impl PolynomialSolver {
         if let Expression::Add(terms) = equation {
             if terms.len() == 2 {
                 let (power_term, constant_term) = match (&terms[0], &terms[1]) {
-                    (Expression::Number(Number::Integer(c)), p@Expression::Pow(..)) => (p, c),
-                    (p@Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
+                    (Expression::Number(Number::Integer(c)), p @ Expression::Pow(..)) => (p, c),
+                    (p @ Expression::Pow(..), Expression::Number(Number::Integer(c))) => (p, c),
                     _ => {
                         return self.solve_quartic_rational_root_theorem(equation, variable);
                     }
@@ -136,7 +140,11 @@ impl PolynomialSolver {
     }
 
     /// Try to solve quartic using rational root theorem
-    pub fn solve_quartic_rational_root_theorem(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
+    pub fn solve_quartic_rational_root_theorem(
+        &self,
+        equation: &Expression,
+        variable: &Symbol,
+    ) -> SolverResult {
         let potential_roots = vec![-3, -2, -1, 0, 1, 2, 3];
         let mut found_roots = Vec::new();
 
@@ -209,7 +217,11 @@ impl PolynomialSolver {
     }
 
     /// Extract constant term and leading coefficient from polynomial
-    pub fn extract_constant_and_leading(&self, poly: &Expression, _variable: &Symbol) -> (i64, i64) {
+    pub fn extract_constant_and_leading(
+        &self,
+        poly: &Expression,
+        _variable: &Symbol,
+    ) -> (i64, i64) {
         match poly {
             Expression::Add(terms) => {
                 let mut constant = 0i64;
@@ -273,7 +285,10 @@ impl EquationSolver for PolynomialSolver {
         &self,
         equation: &Expression,
         variable: &Symbol,
-    ) -> (SolverResult, crate::educational::step_by_step::StepByStepExplanation) {
+    ) -> (
+        SolverResult,
+        crate::educational::step_by_step::StepByStepExplanation,
+    ) {
         super::educational::solve_with_explanation(self, equation, variable)
     }
 

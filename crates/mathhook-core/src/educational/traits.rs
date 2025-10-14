@@ -44,11 +44,7 @@ impl OperationContext {
     /// assert_eq!(context.operation_type, "solving_quadratic");
     /// assert_eq!(context.difficulty_level, 5);
     /// ```
-    pub fn new<S: Into<String>>(
-        operation_type: S,
-        difficulty_level: u8,
-        domain: S,
-    ) -> Self {
+    pub fn new<S: Into<String>>(operation_type: S, difficulty_level: u8, domain: S) -> Self {
         Self {
             operation_type: operation_type.into(),
             difficulty_level: difficulty_level.min(10),

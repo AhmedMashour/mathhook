@@ -8,7 +8,7 @@
 //! - `operations`: ComplexOperations trait with arithmetic operations
 //! - `arithmetic`: Convenience methods for complex number manipulation
 
-mod operations;
 mod arithmetic;
+mod operations;
 
 pub use operations::ComplexOperations;

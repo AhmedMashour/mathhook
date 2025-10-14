@@ -60,10 +60,7 @@ pub fn explain_power_rule(
         Expression::pow(exponent_plus_one.clone(), Expression::integer(-1)),
     ]);
 
-    let step3 = Step::new(
-        "Simplify Result",
-        format!("Result: {} + C", result),
-    );
+    let step3 = Step::new("Simplify Result", format!("Result: {} + C", result));
     steps.push(step3);
 
     StepByStepExplanation {
@@ -93,10 +90,7 @@ pub fn explain_power_rule(
 /// let explanation = explain_constant_rule(&constant, &x);
 /// assert!(explanation.steps.len() >= 2);
 /// ```
-pub fn explain_constant_rule(
-    constant: &Expression,
-    variable: &Symbol,
-) -> StepByStepExplanation {
+pub fn explain_constant_rule(constant: &Expression, variable: &Symbol) -> StepByStepExplanation {
     let mut steps = Vec::new();
 
     let step1 = MessageBuilder::new(MessageCategory::Calculus, MessageType::IntegralConstant, 0)
@@ -106,14 +100,16 @@ pub fn explain_constant_rule(
         steps.push(s);
     }
 
-    let result = Expression::mul(vec![
-        constant.clone(),
-        Expression::symbol(variable.clone()),
-    ]);
+    let result = Expression::mul(vec![constant.clone(), Expression::symbol(variable.clone())]);
 
     let step2 = Step::new(
         "Apply Integration",
-        format!("integral({} dx) = {}*{} + C", constant, constant, variable.name()),
+        format!(
+            "integral({} dx) = {}*{} + C",
+            constant,
+            constant,
+            variable.name()
+        ),
     );
     steps.push(step2);
 
@@ -166,7 +162,10 @@ pub fn explain_sum_rule(terms: &[Expression], _variable: &Symbol) -> StepByStepE
 
     let step2 = Step::new(
         "Integrate Each Term",
-        format!("Evaluating each integral separately:\n{}", integrated_terms.join("\n")),
+        format!(
+            "Evaluating each integral separately:\n{}",
+            integrated_terms.join("\n")
+        ),
     );
     steps.push(step2);
 
@@ -218,7 +217,10 @@ pub fn explain_u_substitution(
 
     let step1 = Step::new(
         "Identify Substitution Candidate",
-        format!("Inner function: {} (whose derivative appears in integrand)", substitution),
+        format!(
+            "Inner function: {} (whose derivative appears in integrand)",
+            substitution
+        ),
     );
     steps.push(step1);
 
@@ -236,8 +238,13 @@ pub fn explain_u_substitution(
 
     let step3 = Step::new(
         "Find du",
-        format!("du/d{} = d/d{}({})\ndu = ... d{}",
-            variable.name(), variable.name(), substitution, variable.name()),
+        format!(
+            "du/d{} = d/d{}({})\ndu = ... d{}",
+            variable.name(),
+            variable.name(),
+            substitution,
+            variable.name()
+        ),
     );
     steps.push(step3);
 
@@ -309,10 +316,7 @@ pub fn explain_integration_by_parts(
     );
     steps.push(step1);
 
-    let step2 = Step::new(
-        "State Formula",
-        "integral(u dv) = uv - integral(v du)",
-    );
+    let step2 = Step::new("State Formula", "integral(u dv) = uv - integral(v du)");
     steps.push(step2);
 
     let step3 = MessageBuilder::new(MessageCategory::Calculus, MessageType::IntegralByParts, 0)
@@ -325,27 +329,24 @@ pub fn explain_integration_by_parts(
 
     let step4 = Step::new(
         "Find du and v",
-        format!("du = d/d{}({}) d{}\nv = integral({} d{})",
-            variable.name(), u_choice, variable.name(), dv_choice, variable.name()),
+        format!(
+            "du = d/d{}({}) d{}\nv = integral({} d{})",
+            variable.name(),
+            u_choice,
+            variable.name(),
+            dv_choice,
+            variable.name()
+        ),
     );
     steps.push(step4);
 
-    let step5 = Step::new(
-        "Apply Formula",
-        format!("{}*v - integral(v du)", u_choice),
-    );
+    let step5 = Step::new("Apply Formula", format!("{}*v - integral(v du)", u_choice));
     steps.push(step5);
 
-    let step6 = Step::new(
-        "Evaluate Remaining Integral",
-        "Compute integral(v du)",
-    );
+    let step6 = Step::new("Evaluate Remaining Integral", "Compute integral(v du)");
     steps.push(step6);
 
-    let step7 = Step::new(
-        "Complete Solution",
-        "Combine terms and add constant C",
-    );
+    let step7 = Step::new("Complete Solution", "Combine terms and add constant C");
     steps.push(step7);
 
     StepByStepExplanation {
@@ -389,7 +390,12 @@ pub fn explain_definite_integral(
 
     let step1 = Step::new(
         "Find Antiderivative",
-        format!("integral({} d{}) = F({})", integrand, variable.name(), variable.name()),
+        format!(
+            "integral({} d{}) = F({})",
+            integrand,
+            variable.name(),
+            variable.name()
+        ),
     );
     steps.push(step1);
 
@@ -420,8 +426,12 @@ pub fn explain_definite_integral(
     );
     steps.push(step5);
 
-    let definite_expr =
-        Expression::definite_integral(integrand.clone(), variable.clone(), lower_bound.clone(), upper_bound.clone());
+    let definite_expr = Expression::definite_integral(
+        integrand.clone(),
+        variable.clone(),
+        lower_bound.clone(),
+        upper_bound.clone(),
+    );
 
     StepByStepExplanation {
         initial_expression: integrand.clone(),
@@ -472,10 +482,8 @@ mod tests {
     #[test]
     fn test_explain_u_substitution_has_minimum_steps() {
         let x = symbol!(x);
-        let integrand = Expression::mul(vec![
-            Expression::integer(2),
-            Expression::symbol(x.clone()),
-        ]);
+        let integrand =
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
         let substitution = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let explanation = explain_u_substitution(&integrand, &substitution, &x);
         assert!(explanation.steps.len() >= 6);

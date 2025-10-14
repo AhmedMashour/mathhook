@@ -7,8 +7,8 @@
 //! - `patterns`: Pattern types, wildcards, and constraints
 //! - `engine`: Matching algorithms and replacement logic
 
-mod patterns;
 mod engine;
+mod patterns;
 
-pub use patterns::{Pattern, WildcardConstraints};
 pub use engine::{Matchable, PatternMatches};
+pub use patterns::{Pattern, WildcardConstraints};

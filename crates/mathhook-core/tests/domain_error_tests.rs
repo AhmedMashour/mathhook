@@ -80,11 +80,11 @@ fn test_sqrt_negative_real_domain() {
 #[test]
 fn test_sqrt_domain_restriction() {
     let test_cases = vec![
-        (-2, true),   // Should error
-        (-1, true),   // Should error
-        (0, false),   // Valid: sqrt(0) = 0
-        (1, false),   // Valid: sqrt(1) = 1
-        (4, false),   // Valid: sqrt(4) = 2
+        (-2, true), // Should error
+        (-1, true), // Should error
+        (0, false), // Valid: sqrt(0) = 0
+        (1, false), // Valid: sqrt(1) = 1
+        (4, false), // Valid: sqrt(4) = 2
     ];
 
     for (value, should_error) in test_cases {
@@ -114,11 +114,11 @@ fn test_log_zero_pole() {
 #[test]
 fn test_log_domain_restriction() {
     let test_cases = vec![
-        (-2, true),   // Negative: branch cut in real domain
-        (-1, true),   // Negative: branch cut in real domain
-        (0, true),    // Zero: pole
-        (1, false),   // Valid: log(1) = 0
-        (2, false),   // Valid: log(2) ≈ 0.693
+        (-2, true), // Negative: branch cut in real domain
+        (-1, true), // Negative: branch cut in real domain
+        (0, true),  // Zero: pole
+        (1, false), // Valid: log(1) = 0
+        (2, false), // Valid: log(2) ≈ 0.693
     ];
 
     for (value, should_error) in test_cases {
@@ -137,11 +137,11 @@ fn test_log_domain_restriction() {
 #[test]
 fn test_ln_domain_restriction() {
     let test_cases = vec![
-        (-2, true),   // Negative: branch cut in real domain
-        (-1, true),   // Negative: branch cut in real domain
-        (0, true),    // Zero: pole
-        (1, false),   // Valid: ln(1) = 0
-        (2, false),   // Valid: ln(2) ≈ 0.693
+        (-2, true), // Negative: branch cut in real domain
+        (-1, true), // Negative: branch cut in real domain
+        (0, true),  // Zero: pole
+        (1, false), // Valid: ln(1) = 0
+        (2, false), // Valid: ln(2) ≈ 0.693
     ];
 
     for (value, should_error) in test_cases {
@@ -190,7 +190,7 @@ fn test_division_by_zero() {
     // 1/0 = 1 * 0^(-1)
     let expr = Expression::mul(vec![
         Expression::integer(1),
-        Expression::pow(Expression::integer(0), Expression::integer(-1))
+        Expression::pow(Expression::integer(0), Expression::integer(-1)),
     ]);
 
     let result = expr.evaluate();
@@ -205,9 +205,10 @@ fn test_division_by_zero() {
 fn test_tan_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
-    let expr = Expression::function("tan".to_string(), vec![
-        Expression::Number(Number::float(PI / 2.0))
-    ]);
+    let expr = Expression::function(
+        "tan".to_string(),
+        vec![Expression::Number(Number::float(PI / 2.0))],
+    );
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "tan"));
@@ -219,18 +220,23 @@ fn test_tan_multiple_poles() {
     use std::f64::consts::PI;
 
     let pole_locations = vec![
-        PI / 2.0,         // π/2
-        -PI / 2.0,        // -π/2
-        3.0 * PI / 2.0,   // 3π/2
-        5.0 * PI / 2.0,   // 5π/2
+        PI / 2.0,       // π/2
+        -PI / 2.0,      // -π/2
+        3.0 * PI / 2.0, // 3π/2
+        5.0 * PI / 2.0, // 5π/2
     ];
 
     for pole in pole_locations {
-        let expr = Expression::function("tan".to_string(), vec![
-            Expression::Number(Number::float(pole))
-        ]);
+        let expr = Expression::function(
+            "tan".to_string(),
+            vec![Expression::Number(Number::float(pole))],
+        );
         let result = expr.evaluate();
-        assert!(matches!(result, Err(MathError::Pole { .. })), "Expected pole error at tan({})", pole);
+        assert!(
+            matches!(result, Err(MathError::Pole { .. })),
+            "Expected pole error at tan({})",
+            pole
+        );
     }
 }
 
@@ -238,20 +244,21 @@ fn test_tan_multiple_poles() {
 #[test]
 fn test_arcsin_domain_restriction() {
     let test_cases = vec![
-        (-2.0, true),   // Out of domain
-        (-1.5, true),   // Out of domain
-        (-1.0, false),  // Valid: arcsin(-1) = -π/2
-        (0.0, false),   // Valid: arcsin(0) = 0
-        (0.5, false),   // Valid: arcsin(0.5) = π/6
-        (1.0, false),   // Valid: arcsin(1) = π/2
-        (1.5, true),    // Out of domain
-        (2.0, true),    // Out of domain
+        (-2.0, true),  // Out of domain
+        (-1.5, true),  // Out of domain
+        (-1.0, false), // Valid: arcsin(-1) = -π/2
+        (0.0, false),  // Valid: arcsin(0) = 0
+        (0.5, false),  // Valid: arcsin(0.5) = π/6
+        (1.0, false),  // Valid: arcsin(1) = π/2
+        (1.5, true),   // Out of domain
+        (2.0, true),   // Out of domain
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function("arcsin".to_string(), vec![
-            Expression::Number(Number::float(value))
-        ]);
+        let expr = Expression::function(
+            "arcsin".to_string(),
+            vec![Expression::Number(Number::float(value))],
+        );
         let result = expr.evaluate();
 
         if should_error {
@@ -266,17 +273,18 @@ fn test_arcsin_domain_restriction() {
 #[test]
 fn test_arccos_domain_restriction() {
     let test_cases = vec![
-        (-2.0, true),   // Out of domain
-        (-1.0, false),  // Valid: arccos(-1) = π
-        (0.0, false),   // Valid: arccos(0) = π/2
-        (1.0, false),   // Valid: arccos(1) = 0
-        (2.0, true),    // Out of domain
+        (-2.0, true),  // Out of domain
+        (-1.0, false), // Valid: arccos(-1) = π
+        (0.0, false),  // Valid: arccos(0) = π/2
+        (1.0, false),  // Valid: arccos(1) = 0
+        (2.0, true),   // Out of domain
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function("arccos".to_string(), vec![
-            Expression::Number(Number::float(value))
-        ]);
+        let expr = Expression::function(
+            "arccos".to_string(),
+            vec![Expression::Number(Number::float(value))],
+        );
         let result = expr.evaluate();
 
         if should_error {
@@ -303,20 +311,19 @@ fn test_csc_pole_at_zero() {
 fn test_csc_multiple_poles() {
     use std::f64::consts::PI;
 
-    let pole_locations = vec![
-        0.0,
-        PI,
-        -PI,
-        2.0 * PI,
-        3.0 * PI,
-    ];
+    let pole_locations = vec![0.0, PI, -PI, 2.0 * PI, 3.0 * PI];
 
     for pole in pole_locations {
-        let expr = Expression::function("csc".to_string(), vec![
-            Expression::Number(Number::float(pole))
-        ]);
+        let expr = Expression::function(
+            "csc".to_string(),
+            vec![Expression::Number(Number::float(pole))],
+        );
         let result = expr.evaluate();
-        assert!(matches!(result, Err(MathError::Pole { .. })), "Expected pole error at csc({})", pole);
+        assert!(
+            matches!(result, Err(MathError::Pole { .. })),
+            "Expected pole error at csc({})",
+            pole
+        );
     }
 }
 
@@ -327,9 +334,10 @@ fn test_csc_multiple_poles() {
 fn test_sec_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
-    let expr = Expression::function("sec".to_string(), vec![
-        Expression::Number(Number::float(PI / 2.0))
-    ]);
+    let expr = Expression::function(
+        "sec".to_string(),
+        vec![Expression::Number(Number::float(PI / 2.0))],
+    );
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { .. })));
@@ -442,7 +450,10 @@ fn test_sqrt_symbolic_allowed() {
 
     // Evaluation should succeed for symbolic expressions (no numeric value to check)
     let result = expr.evaluate();
-    assert!(result.is_ok(), "Symbolic sqrt(x) should not error during evaluation");
+    assert!(
+        result.is_ok(),
+        "Symbolic sqrt(x) should not error during evaluation"
+    );
 }
 
 /// Test that symbolic log expressions don't trigger domain errors
@@ -459,7 +470,10 @@ fn test_log_symbolic_allowed() {
 
     // Evaluation should succeed for symbolic expressions
     let result = expr.evaluate();
-    assert!(result.is_ok(), "Symbolic log(x) should not error during evaluation");
+    assert!(
+        result.is_ok(),
+        "Symbolic log(x) should not error during evaluation"
+    );
 }
 
 /// Test that symbolic ln expressions don't trigger domain errors
@@ -476,7 +490,10 @@ fn test_ln_symbolic_allowed() {
 
     // Evaluation should succeed for symbolic expressions
     let result = expr.evaluate();
-    assert!(result.is_ok(), "Symbolic ln(x) should not error during evaluation");
+    assert!(
+        result.is_ok(),
+        "Symbolic ln(x) should not error during evaluation"
+    );
 }
 
 /// Test that negative rationals are caught by domain checking
@@ -485,8 +502,10 @@ fn test_sqrt_negative_rational() {
     let expr = Expression::sqrt(Expression::rational(-1, 2));
 
     let result = expr.evaluate();
-    assert!(matches!(result, Err(MathError::DomainError { .. })),
-        "sqrt of negative rational should error");
+    assert!(
+        matches!(result, Err(MathError::DomainError { .. })),
+        "sqrt of negative rational should error"
+    );
 }
 
 /// Test that negative floats are caught by domain checking
@@ -495,8 +514,10 @@ fn test_sqrt_negative_float() {
     let expr = Expression::sqrt(Expression::Number(Number::float(-2.5)));
 
     let result = expr.evaluate();
-    assert!(matches!(result, Err(MathError::DomainError { .. })),
-        "sqrt of negative float should error");
+    assert!(
+        matches!(result, Err(MathError::DomainError { .. })),
+        "sqrt of negative float should error"
+    );
 }
 
 /// Test that log catches negative rationals
@@ -505,8 +526,10 @@ fn test_log_negative_rational() {
     let expr = Expression::function("log", vec![Expression::rational(-3, 4)]);
 
     let result = expr.evaluate();
-    assert!(matches!(result, Err(MathError::BranchCut { .. })),
-        "log of negative rational should error with branch cut");
+    assert!(
+        matches!(result, Err(MathError::BranchCut { .. })),
+        "log of negative rational should error with branch cut"
+    );
 }
 
 /// Test that log catches negative floats
@@ -515,8 +538,10 @@ fn test_log_negative_float() {
     let expr = Expression::function("log", vec![Expression::Number(Number::float(-1.5))]);
 
     let result = expr.evaluate();
-    assert!(matches!(result, Err(MathError::BranchCut { .. })),
-        "log of negative float should error with branch cut");
+    assert!(
+        matches!(result, Err(MathError::BranchCut { .. })),
+        "log of negative float should error with branch cut"
+    );
 }
 
 /// Test future evaluation API structure

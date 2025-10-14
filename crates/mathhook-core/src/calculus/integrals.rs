@@ -35,7 +35,7 @@ pub trait Integration {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::integrals::IntegrationMethods;
+    /// use mathhook_core::calculus::integrals::IntegrationMethods;
     /// use mathhook_core::Expression;
     /// use mathhook_core::calculus::integrals::Integration;
     /// use mathhook_core::symbol;

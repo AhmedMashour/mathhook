@@ -157,10 +157,7 @@ fn test_log_power_rule() {
     let n = symbol!(n);
     let expr = Expression::add(vec![
         function!(log, expr!(x ^ n)),
-        Expression::mul(vec![
-            Expression::integer(-1),
-            expr!(n * (log(x))),
-        ]),
+        Expression::mul(vec![Expression::integer(-1), expr!(n * (log(x)))]),
     ]);
     // Note: expand_log not yet implemented, test structure only
     let result_str = format!("{:?}", expr);
@@ -284,10 +281,7 @@ fn test_double_angle_cos() {
             Expression::integer(-1),
             Expression::add(vec![
                 expr!((cos(x)) ^ 2),
-                Expression::mul(vec![
-                    Expression::integer(-1),
-                    expr!((sin(x)) ^ 2),
-                ]),
+                Expression::mul(vec![Expression::integer(-1), expr!((sin(x)) ^ 2)]),
             ]),
         ]),
     ]);

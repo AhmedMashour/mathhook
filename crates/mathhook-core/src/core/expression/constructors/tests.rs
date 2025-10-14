@@ -254,10 +254,7 @@ fn test_div_checked_valid() {
 
     assert!(result.is_ok(), "Valid division should succeed");
 
-    let result = Expression::div_checked(
-        Expression::symbol("x"),
-        Expression::symbol("y"),
-    );
+    let result = Expression::div_checked(Expression::symbol("x"), Expression::symbol("y"));
 
     assert!(
         result.is_ok(),
@@ -276,10 +273,7 @@ fn test_div_checked_zero_denominator() {
         "Division by zero should return DivisionByZero error"
     );
 
-    let result = Expression::div_checked(
-        Expression::symbol("x"),
-        Expression::integer(0),
-    );
+    let result = Expression::div_checked(Expression::symbol("x"), Expression::integer(0));
 
     assert!(
         matches!(result, Err(MathError::DivisionByZero)),
@@ -298,8 +292,7 @@ fn test_div_vs_div_checked() {
         "div() should succeed even with zero denominator (symbolic context)"
     );
 
-    let div_checked_result =
-        Expression::div_checked(x.clone(), Expression::integer(0));
+    let div_checked_result = Expression::div_checked(x.clone(), Expression::integer(0));
 
     assert!(
         div_checked_result.is_err(),

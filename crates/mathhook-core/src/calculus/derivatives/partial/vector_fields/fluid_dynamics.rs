@@ -13,8 +13,8 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
-/// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -33,7 +33,7 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
+    /// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -66,7 +66,7 @@ impl FluidDynamicsOperations {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
+    /// use mathhook_core::calculus::derivatives::FluidDynamicsOperations;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///

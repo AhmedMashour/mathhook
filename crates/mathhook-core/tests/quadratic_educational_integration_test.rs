@@ -116,7 +116,10 @@ fn test_quadratic_solver_repeated_root() {
 
             assert_eq!(value, 2, "Repeated root should be x = 2, got: {}", value);
         }
-        _ => panic!("Expected single solution for repeated root, got: {:?}", result),
+        _ => panic!(
+            "Expected single solution for repeated root, got: {:?}",
+            result
+        ),
     }
 }
 
@@ -135,9 +138,7 @@ fn test_quadratic_solver_complex_roots() {
     assert!(
         explanation.steps.iter().any(|step| {
             let desc = step.description.to_lowercase();
-            desc.contains("δ < 0")
-                || desc.contains("complex")
-                || desc.contains("negative")
+            desc.contains("δ < 0") || desc.contains("complex") || desc.contains("negative")
         }),
         "Missing negative discriminant analysis (complex roots)"
     );
@@ -242,10 +243,7 @@ fn test_smart_solver_integration_with_analysis() {
 
     let has_solver_selection = explanation.steps.iter().any(|step| {
         step.title.to_lowercase().contains("solver")
-            || step
-                .description
-                .to_lowercase()
-                .contains("using quadratic")
+            || step.description.to_lowercase().contains("using quadratic")
             || step
                 .description
                 .to_lowercase()

@@ -219,7 +219,11 @@ impl ImplicitMultiplicationProcessor {
             // These should be kept together as single tokens
             let full_identifier = if *i < chars.len() && chars[*i] == '_' {
                 // Check if base is a known special function
-                if ["J", "Y", "I", "K", "P", "Q", "H", "L", "T", "C", "S", "F", "B", "E"].contains(&base_identifier.as_str()) {
+                if [
+                    "J", "Y", "I", "K", "P", "Q", "H", "L", "T", "C", "S", "F", "B", "E",
+                ]
+                .contains(&base_identifier.as_str())
+                {
                     let _underscore_pos = *i;
                     *i += 1; // Consume underscore
 

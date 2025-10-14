@@ -129,20 +129,14 @@ fn test_quadratic_solver_with_valid_coefficients() {
 fn test_expression_div_usage() {
     let x = symbol!(x);
 
-    let expr = Expression::div(
-        Expression::integer(2),
-        Expression::symbol(x.clone()),
-    );
+    let expr = Expression::div(Expression::integer(2), Expression::symbol(x.clone()));
 
     assert!(matches!(expr, Expression::Mul(_)));
 }
 
 #[test]
 fn test_expression_div_checked_usage() {
-    let result = Expression::div_checked(
-        Expression::integer(10),
-        Expression::integer(5),
-    );
+    let result = Expression::div_checked(Expression::integer(10), Expression::integer(5));
 
     assert!(result.is_ok());
     let expr_result = result.unwrap();
@@ -158,10 +152,7 @@ fn test_multiple_divisions_no_zero() {
     let expr1 = Expression::div_checked(x.clone(), y.clone());
     assert!(expr1.is_ok());
 
-    let expr2 = Expression::div_checked(
-        Expression::integer(10),
-        Expression::integer(2),
-    );
+    let expr2 = Expression::div_checked(Expression::integer(10), Expression::integer(2));
     assert!(expr2.is_ok());
 
     let expr3 = Expression::div_checked(x.clone(), y.clone());
@@ -172,15 +163,9 @@ fn test_multiple_divisions_no_zero() {
 fn test_division_in_complex_expression() {
     let x = expr!(x);
 
-    let numerator = Expression::add(vec![
-        x.clone(),
-        Expression::integer(1),
-    ]);
+    let numerator = Expression::add(vec![x.clone(), Expression::integer(1)]);
 
-    let denominator = Expression::add(vec![
-        x.clone(),
-        Expression::integer(2),
-    ]);
+    let denominator = Expression::add(vec![x.clone(), Expression::integer(2)]);
 
     let result_expr = Expression::div(numerator, denominator);
 
@@ -189,20 +174,14 @@ fn test_division_in_complex_expression() {
 
 #[test]
 fn test_zero_divided_by_nonzero() {
-    let result = Expression::div_checked(
-        Expression::integer(0),
-        Expression::integer(5),
-    );
+    let result = Expression::div_checked(Expression::integer(0), Expression::integer(5));
 
     assert!(result.is_ok());
 }
 
 #[test]
 fn test_div_checked_error_message() {
-    let result = Expression::div_checked(
-        Expression::integer(1),
-        Expression::integer(0),
-    );
+    let result = Expression::div_checked(Expression::integer(1), Expression::integer(0));
 
     match result {
         Err(MathError::DivisionByZero) => {

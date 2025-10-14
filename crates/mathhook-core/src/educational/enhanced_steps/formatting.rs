@@ -29,18 +29,14 @@ impl FormatContext {
     pub fn format_expression(&self, expr: &Expression) -> Result<String, FormattingError> {
         match self.target_format {
             MathLanguage::LaTeX => expr.to_latex(None),
-            MathLanguage::Wolfram => {
-                Ok(expr.to_string())
-            }
+            MathLanguage::Wolfram => Ok(expr.to_string()),
             MathLanguage::Simple | MathLanguage::Human => Ok(expr.to_string()),
             MathLanguage::Json => {
                 serde_json::to_string(expr).map_err(|e| FormattingError::SerializationError {
                     message: e.to_string(),
                 })
             }
-            MathLanguage::Markdown => {
-                Ok(expr.to_string())
-            }
+            MathLanguage::Markdown => Ok(expr.to_string()),
         }
     }
 

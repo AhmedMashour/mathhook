@@ -176,11 +176,16 @@ impl CircularTrigIntelligence {
                         builder: Arc::new(|var: Symbol| {
                             Expression::mul(vec![
                                 Expression::integer(-1),
-                                Expression::function("ln", vec![
-                                    Expression::function("abs", vec![
-                                        Expression::function("cos", vec![Expression::symbol(var)])
-                                    ])
-                                ]),
+                                Expression::function(
+                                    "ln",
+                                    vec![Expression::function(
+                                        "abs",
+                                        vec![Expression::function(
+                                            "cos",
+                                            vec![Expression::symbol(var)],
+                                        )],
+                                    )],
+                                ),
                             ])
                         }),
                     },
@@ -230,23 +235,26 @@ impl CircularTrigIntelligence {
                 antiderivative_rule: Some(AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
-                            Expression::function("ln", vec![
-                                Expression::function("abs", vec![
-                                    Expression::function("sin", vec![Expression::symbol(var)])
-                                ])
-                            ])
+                            Expression::function(
+                                "ln",
+                                vec![Expression::function(
+                                    "abs",
+                                    vec![Expression::function(
+                                        "sin",
+                                        vec![Expression::symbol(var)],
+                                    )],
+                                )],
+                            )
                         }),
                     },
                     result_template: "∫cot(x)dx = ln|sin(x)| + C".to_string(),
                     constant_handling: ConstantOfIntegration::AddConstant,
                 }),
-                special_values: vec![
-                    SpecialValue {
-                        input: "π/4".to_string(),
-                        output: Expression::integer(1),
-                        latex_explanation: "\\cot(\\frac{\\pi}{4}) = 1".to_string(),
-                    },
-                ],
+                special_values: vec![SpecialValue {
+                    input: "π/4".to_string(),
+                    output: Expression::integer(1),
+                    latex_explanation: "\\cot(\\frac{\\pi}{4}) = 1".to_string(),
+                }],
                 identities: Box::new(vec![MathIdentity {
                     name: "Cotangent Identity".to_string(),
                     lhs: Expression::function("cot", vec![Expression::symbol("x")]),
@@ -279,14 +287,19 @@ impl CircularTrigIntelligence {
                 antiderivative_rule: Some(AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
-                            Expression::function("ln", vec![
-                                Expression::function("abs", vec![
-                                    Expression::add(vec![
-                                        Expression::function("sec", vec![Expression::symbol(var.clone())]),
+                            Expression::function(
+                                "ln",
+                                vec![Expression::function(
+                                    "abs",
+                                    vec![Expression::add(vec![
+                                        Expression::function(
+                                            "sec",
+                                            vec![Expression::symbol(var.clone())],
+                                        ),
                                         Expression::function("tan", vec![Expression::symbol(var)]),
-                                    ])
-                                ])
-                            ])
+                                    ])],
+                                )],
+                            )
                         }),
                     },
                     result_template: "∫sec(x)dx = ln|sec(x)+tan(x)| + C".to_string(),
@@ -319,14 +332,22 @@ impl CircularTrigIntelligence {
                         builder: Arc::new(|var: Symbol| {
                             Expression::mul(vec![
                                 Expression::integer(-1),
-                                Expression::function("ln", vec![
-                                    Expression::function("abs", vec![
-                                        Expression::add(vec![
-                                            Expression::function("csc", vec![Expression::symbol(var.clone())]),
-                                            Expression::function("cot", vec![Expression::symbol(var)]),
-                                        ])
-                                    ])
-                                ]),
+                                Expression::function(
+                                    "ln",
+                                    vec![Expression::function(
+                                        "abs",
+                                        vec![Expression::add(vec![
+                                            Expression::function(
+                                                "csc",
+                                                vec![Expression::symbol(var.clone())],
+                                            ),
+                                            Expression::function(
+                                                "cot",
+                                                vec![Expression::symbol(var)],
+                                            ),
+                                        ])],
+                                    )],
+                                ),
                             ])
                         }),
                     },

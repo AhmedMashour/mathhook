@@ -125,10 +125,7 @@ mod algebraic_identities {
     #[test]
     fn test_multiplicative_identity_law() {
         /// Mathematical law: a * 1 = 1 * a = a (multiplicative identity)
-        let test_expressions = vec![
-            Expression::integer(42),
-            Expression::symbol(symbol!(x)),
-        ];
+        let test_expressions = vec![Expression::integer(42), Expression::symbol(symbol!(x))];
 
         let one = Expression::integer(1);
 
@@ -161,10 +158,7 @@ mod algebraic_identities {
         let test_expressions = vec![
             Expression::integer(42),
             Expression::symbol(symbol!(x)),
-            Expression::add(vec![
-                Expression::integer(2),
-                Expression::symbol(symbol!(y)),
-            ]),
+            Expression::add(vec![Expression::integer(2), Expression::symbol(symbol!(y))]),
         ];
 
         let zero = Expression::integer(0);

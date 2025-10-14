@@ -1,7 +1,7 @@
 //! Conservative field analysis and potential function computation
 
-use super::operations::VectorFieldOperations;
 use super::super::utils::PartialUtils;
+use super::operations::VectorFieldOperations;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;
@@ -15,8 +15,8 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::ConservativeFields;
-/// use mathhook_core::{Expression, symbol};
+    /// use mathhook_core::calculus::derivatives::ConservativeFields;
+    /// use mathhook_core::{Expression, symbol};
     ///
     /// let x = symbol!(x);
     /// let y = symbol!(y);
@@ -60,7 +60,7 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::ConservativeFields;
+    /// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -108,9 +108,9 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::PartialUtils;
-/// use mathhook_core::calculus::derivatives::VectorFieldOperations;
-/// use mathhook_core::calculus::derivatives::ConservativeFields;
+    /// use mathhook_core::calculus::derivatives::PartialUtils;
+    /// use mathhook_core::calculus::derivatives::VectorFieldOperations;
+    /// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -135,7 +135,7 @@ impl ConservativeFields {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::ConservativeFields;
+    /// use mathhook_core::calculus::derivatives::ConservativeFields;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///

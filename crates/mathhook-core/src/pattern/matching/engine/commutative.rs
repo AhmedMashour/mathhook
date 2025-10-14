@@ -3,10 +3,10 @@
 //! Handles pattern matching for commutative operations (Add, Mul) with
 //! permutation-based and greedy heuristic matching strategies.
 
+use super::core::match_recursive;
+use super::PatternMatches;
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
-use super::PatternMatches;
-use super::core::match_recursive;
 
 /// Match commutative operations (Add, Mul)
 ///
@@ -146,7 +146,10 @@ mod tests {
     fn test_commutative_addition_matching() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::add(vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())]);
+        let expr = Expression::add(vec![
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
 
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("b")]);
 
@@ -158,8 +161,10 @@ mod tests {
             let b_val = bindings.get("b").unwrap();
 
             assert!(
-                (a_val == &Expression::symbol(y.clone()) && b_val == &Expression::symbol(x.clone()))
-                    || (a_val == &Expression::symbol(x.clone()) && b_val == &Expression::symbol(y.clone()))
+                (a_val == &Expression::symbol(y.clone())
+                    && b_val == &Expression::symbol(x.clone()))
+                    || (a_val == &Expression::symbol(x.clone())
+                        && b_val == &Expression::symbol(y.clone()))
             );
         }
     }

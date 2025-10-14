@@ -11,14 +11,17 @@ use mathhook_core::{symbol, Expression};
 
 /// Helper to check if explanation contains specific content
 fn has_step_containing(explanation: &StepByStepExplanation, text: &str) -> bool {
-    explanation.steps.iter().any(|step| {
-        step.description.contains(text) || step.title.contains(text)
-    })
+    explanation
+        .steps
+        .iter()
+        .any(|step| step.description.contains(text) || step.title.contains(text))
 }
 
 /// Helper to check if explanation contains any of the given texts
 fn has_step_containing_any(explanation: &StepByStepExplanation, texts: &[&str]) -> bool {
-    texts.iter().any(|text| has_step_containing(explanation, text))
+    texts
+        .iter()
+        .any(|text| has_step_containing(explanation, text))
 }
 
 #[test]
@@ -26,7 +29,10 @@ fn test_polynomial_rational_root_theorem_shown() {
     let x = symbol!(x);
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
-        Expression::mul(vec![Expression::integer(-6), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
+        Expression::mul(vec![
+            Expression::integer(-6),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+        ]),
         Expression::mul(vec![Expression::integer(11), Expression::symbol(x.clone())]),
         Expression::integer(-6),
     ]);
@@ -35,9 +41,9 @@ fn test_polynomial_rational_root_theorem_shown() {
     let (_, explanation) = solver.solve_with_explanation(&equation, &x);
 
     assert!(
-        has_step_containing(&explanation, "Rational Root Theorem") ||
-        has_step_containing(&explanation, "rational roots") ||
-        has_step_containing(&explanation, "candidates"),
+        has_step_containing(&explanation, "Rational Root Theorem")
+            || has_step_containing(&explanation, "rational roots")
+            || has_step_containing(&explanation, "candidates"),
         "Should mention Rational Root Theorem or rational root candidates"
     );
 
@@ -64,9 +70,9 @@ fn test_polynomial_root_finding_steps() {
     );
 
     assert!(
-        has_step_containing(&explanation, "Introduction") ||
-        has_step_containing(&explanation, "cubic") ||
-        has_step_containing(&explanation, "degree"),
+        has_step_containing(&explanation, "Introduction")
+            || has_step_containing(&explanation, "cubic")
+            || has_step_containing(&explanation, "degree"),
         "Should introduce the polynomial type"
     );
 }
@@ -76,7 +82,10 @@ fn test_polynomial_factorization_explained() {
     let x = symbol!(x);
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
-        Expression::mul(vec![Expression::integer(-6), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
+        Expression::mul(vec![
+            Expression::integer(-6),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+        ]),
         Expression::mul(vec![Expression::integer(11), Expression::symbol(x.clone())]),
         Expression::integer(-6),
     ]);
@@ -85,10 +94,10 @@ fn test_polynomial_factorization_explained() {
     let (_, explanation) = solver.solve_with_explanation(&equation, &x);
 
     assert!(
-        has_step_containing(&explanation, "factor") ||
-        has_step_containing(&explanation, "Factor") ||
-        has_step_containing(&explanation, "synthetic division") ||
-        has_step_containing(&explanation, "Synthetic Division"),
+        has_step_containing(&explanation, "factor")
+            || has_step_containing(&explanation, "Factor")
+            || has_step_containing(&explanation, "synthetic division")
+            || has_step_containing(&explanation, "Synthetic Division"),
         "Should explain factorization or synthetic division"
     );
 }
@@ -105,9 +114,9 @@ fn test_polynomial_solutions_listed() {
     let (_, explanation) = solver.solve_with_explanation(&equation, &x);
 
     assert!(
-        has_step_containing(&explanation, "x = ") ||
-        has_step_containing(&explanation, "Solution") ||
-        has_step_containing(&explanation, "solution"),
+        has_step_containing(&explanation, "x = ")
+            || has_step_containing(&explanation, "Solution")
+            || has_step_containing(&explanation, "solution"),
         "Should list solutions explicitly"
     );
 
@@ -138,22 +147,21 @@ fn test_system_substitution_steps_shown() {
     let (_, explanation) = solver.solve_system_with_explanation(&[eq1, eq2], &[x, y]);
 
     assert!(
-        has_step_containing(&explanation, "Substitution") ||
-        has_step_containing(&explanation, "substitution") ||
-        has_step_containing(&explanation, "Isolate") ||
-        has_step_containing(&explanation, "isolate"),
+        has_step_containing(&explanation, "Substitution")
+            || has_step_containing(&explanation, "substitution")
+            || has_step_containing(&explanation, "Isolate")
+            || has_step_containing(&explanation, "isolate"),
         "Should mention substitution method or isolation"
     );
 
     assert!(
-        has_step_containing(&explanation, "Substitute") ||
-        has_step_containing(&explanation, "substitute"),
+        has_step_containing(&explanation, "Substitute")
+            || has_step_containing(&explanation, "substitute"),
         "Should describe substitution step"
     );
 
     assert!(
-        has_step_containing(&explanation, "Back") ||
-        has_step_containing(&explanation, "back"),
+        has_step_containing(&explanation, "Back") || has_step_containing(&explanation, "back"),
         "Should mention back-substitution"
     );
 }
@@ -179,24 +187,24 @@ fn test_system_elimination_steps_shown() {
     let (_, explanation) = solver.solve_system_with_explanation(&[eq1, eq2], &[x, y]);
 
     assert!(
-        has_step_containing(&explanation, "Elimination") ||
-        has_step_containing(&explanation, "elimination") ||
-        has_step_containing(&explanation, "eliminate"),
+        has_step_containing(&explanation, "Elimination")
+            || has_step_containing(&explanation, "elimination")
+            || has_step_containing(&explanation, "eliminate"),
         "Should mention elimination method"
     );
 
     assert!(
-        has_step_containing(&explanation, "Multiply") ||
-        has_step_containing(&explanation, "multiply") ||
-        has_step_containing(&explanation, "multiplier"),
+        has_step_containing(&explanation, "Multiply")
+            || has_step_containing(&explanation, "multiply")
+            || has_step_containing(&explanation, "multiplier"),
         "Should describe multiplying equations"
     );
 
     assert!(
-        has_step_containing(&explanation, "Add") ||
-        has_step_containing(&explanation, "Subtract") ||
-        has_step_containing(&explanation, "add") ||
-        has_step_containing(&explanation, "subtract"),
+        has_step_containing(&explanation, "Add")
+            || has_step_containing(&explanation, "Subtract")
+            || has_step_containing(&explanation, "add")
+            || has_step_containing(&explanation, "subtract"),
         "Should describe adding or subtracting equations"
     );
 }
@@ -222,11 +230,11 @@ fn test_system_solution_verified() {
     let (_, explanation) = solver.solve_system_with_explanation(&[eq1, eq2], &[x, y]);
 
     assert!(
-        has_step_containing(&explanation, "Verify") ||
-        has_step_containing(&explanation, "verify") ||
-        has_step_containing(&explanation, "Check") ||
-        has_step_containing(&explanation, "check") ||
-        has_step_containing(&explanation, "satisfied"),
+        has_step_containing(&explanation, "Verify")
+            || has_step_containing(&explanation, "verify")
+            || has_step_containing(&explanation, "Check")
+            || has_step_containing(&explanation, "check")
+            || has_step_containing(&explanation, "satisfied"),
         "Should verify the solution"
     );
 }
@@ -257,8 +265,7 @@ fn test_system_complete_flow() {
     );
 
     assert!(
-        has_step_containing(&explanation, "system") ||
-        has_step_containing(&explanation, "System"),
+        has_step_containing(&explanation, "system") || has_step_containing(&explanation, "System"),
         "Should introduce the system"
     );
 
@@ -280,10 +287,10 @@ fn test_polynomial_verification_step() {
     let (_, explanation) = solver.solve_with_explanation(&equation, &x);
 
     assert!(
-        has_step_containing(&explanation, "Verif") ||
-        has_step_containing(&explanation, "verif") ||
-        has_step_containing(&explanation, "Check") ||
-        has_step_containing(&explanation, "check"),
+        has_step_containing(&explanation, "Verif")
+            || has_step_containing(&explanation, "verif")
+            || has_step_containing(&explanation, "Check")
+            || has_step_containing(&explanation, "check"),
         "Should include verification step"
     );
 }
@@ -293,7 +300,10 @@ fn test_polynomial_strategy_explained() {
     let x = symbol!(x);
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(4)),
-        Expression::mul(vec![Expression::integer(-5), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
+        Expression::mul(vec![
+            Expression::integer(-5),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+        ]),
         Expression::integer(4),
     ]);
 
@@ -301,17 +311,17 @@ fn test_polynomial_strategy_explained() {
     let (_, explanation) = solver.solve_with_explanation(&equation, &x);
 
     assert!(
-        has_step_containing(&explanation, "Strategy") ||
-        has_step_containing(&explanation, "strategy") ||
-        has_step_containing(&explanation, "method") ||
-        has_step_containing(&explanation, "Method"),
+        has_step_containing(&explanation, "Strategy")
+            || has_step_containing(&explanation, "strategy")
+            || has_step_containing(&explanation, "method")
+            || has_step_containing(&explanation, "Method"),
         "Should explain the solution strategy"
     );
 
     assert!(
-        has_step_containing(&explanation, "quartic") ||
-        has_step_containing(&explanation, "degree 4") ||
-        has_step_containing(&explanation, "fourth"),
+        has_step_containing(&explanation, "quartic")
+            || has_step_containing(&explanation, "degree 4")
+            || has_step_containing(&explanation, "fourth"),
         "Should identify quartic equation"
     );
 }

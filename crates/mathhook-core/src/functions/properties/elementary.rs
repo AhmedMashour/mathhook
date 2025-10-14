@@ -4,11 +4,11 @@
 //! trigonometric, exponential, logarithmic, and hyperbolic functions.
 //! Performance-optimized with hot path data first for cache-friendly access patterns.
 
-use crate::core::Expression;
 use super::rules::{
-    DerivativeRule, AntiderivativeRule, SpecialValue, MathIdentity,
-    DomainRangeData, NumericalEvaluator
+    AntiderivativeRule, DerivativeRule, DomainRangeData, MathIdentity, NumericalEvaluator,
+    SpecialValue,
 };
+use crate::core::Expression;
 use std::collections::HashMap;
 
 /// Elementary function properties (sin, cos, exp, log)

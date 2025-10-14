@@ -23,22 +23,22 @@ impl HermiteIntelligence {
         let mut intelligence = Self {
             properties: HashMap::with_capacity(4),
         };
-        
+
         intelligence.initialize_hermite_polynomials();
-        
+
         intelligence
     }
-    
+
     /// Get all Hermite polynomial properties
     pub fn get_properties(&self) -> HashMap<String, FunctionProperties> {
         self.properties.clone()
     }
-    
+
     /// Check if function is a Hermite polynomial
     pub fn has_function(&self, name: &str) -> bool {
         self.properties.contains_key(name)
     }
-    
+
     /// Initialize Hermite polynomials with ABSOLUTE MATHEMATICAL ACCURACY
     fn initialize_hermite_polynomials(&mut self) {
         // Hermite Polynomials H_n(x) - MATHEMATICALLY VERIFIED

@@ -55,7 +55,10 @@ impl LogarithmicIntelligence {
                             Expression::add(vec![
                                 Expression::mul(vec![
                                     Expression::symbol(var.clone()),
-                                    Expression::function("ln", vec![Expression::symbol(var.clone())]),
+                                    Expression::function(
+                                        "ln",
+                                        vec![Expression::symbol(var.clone())],
+                                    ),
                                 ]),
                                 Expression::mul(vec![
                                     Expression::integer(-1),
@@ -139,7 +142,10 @@ impl LogarithmicIntelligence {
                                 Expression::add(vec![
                                     Expression::mul(vec![
                                         Expression::symbol(var.clone()),
-                                        Expression::function("ln", vec![Expression::symbol(var.clone())]),
+                                        Expression::function(
+                                            "ln",
+                                            vec![Expression::symbol(var.clone())],
+                                        ),
                                     ]),
                                     Expression::mul(vec![
                                         Expression::integer(-1),

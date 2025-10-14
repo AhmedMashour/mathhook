@@ -91,8 +91,14 @@ fn test_quartic_x_fourth_minus_16() {
         SolverResult::Partial(roots) => {
             assert_eq!(roots.len(), 2, "Should find 2 real roots");
 
-            assert!(roots.contains(&Expression::integer(2)), "Should include root 2");
-            assert!(roots.contains(&Expression::integer(-2)), "Should include root -2");
+            assert!(
+                roots.contains(&Expression::integer(2)),
+                "Should include root 2"
+            );
+            assert!(
+                roots.contains(&Expression::integer(-2)),
+                "Should include root -2"
+            );
 
             for root in &roots {
                 assert!(
@@ -125,7 +131,10 @@ fn test_no_fake_roots_in_output() {
                     Expression::Function { name, args } if name == "complex" => {
                         if args.len() == 2 {
                             let is_zero_one = match (&args[0], &args[1]) {
-                                (Expression::Number(crate::core::Number::Integer(0)), Expression::Number(crate::core::Number::Integer(1))) => true,
+                                (
+                                    Expression::Number(crate::core::Number::Integer(0)),
+                                    Expression::Number(crate::core::Number::Integer(1)),
+                                ) => true,
                                 _ => false,
                             };
                             assert!(
@@ -156,7 +165,10 @@ fn test_partial_result_documented() {
     let x = symbol!(x);
     let equation = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
-        Expression::mul(vec![Expression::integer(2), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
+        Expression::mul(vec![
+            Expression::integer(2),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+        ]),
         Expression::integer(1),
     ]);
 

@@ -13,7 +13,7 @@ impl ProductRule {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression, ProductRule};
     /// use mathhook_core::symbol;
     /// use mathhook_core::calculus::derivatives::Derivative;

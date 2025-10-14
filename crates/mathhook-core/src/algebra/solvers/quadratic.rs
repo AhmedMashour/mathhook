@@ -158,7 +158,9 @@ impl EquationSolver for QuadraticSolver {
 
         match &result {
             SolverResult::Single(sol) => {
-                let sol_latex = sol.to_latex(None).unwrap_or_else(|_| "solution".to_string());
+                let sol_latex = sol
+                    .to_latex(None)
+                    .unwrap_or_else(|_| "solution".to_string());
                 steps.push(Step::new("Solution", format!("x = {}", sol_latex)));
             }
             SolverResult::Multiple(sols) => {
@@ -350,11 +352,7 @@ impl QuadraticSolver {
                 // Symbolic case: use quadratic formula symbolically
                 // Discriminant: b² - 4ac
                 let b_squared = Expression::pow(b.clone(), Expression::integer(2));
-                let four_a_c = Expression::mul(vec![
-                    Expression::integer(4),
-                    a.clone(),
-                    c.clone(),
-                ]);
+                let four_a_c = Expression::mul(vec![Expression::integer(4), a.clone(), c.clone()]);
                 let discriminant = Expression::add(vec![
                     b_squared,
                     Expression::mul(vec![Expression::integer(-1), four_a_c]),
@@ -367,7 +365,8 @@ impl QuadraticSolver {
                 let two_a = Expression::mul(vec![Expression::integer(2), a.clone()]);
 
                 // Square root of discriminant
-                let sqrt_discriminant = Expression::function("sqrt", vec![discriminant_simplified.clone()]);
+                let sqrt_discriminant =
+                    Expression::function("sqrt", vec![discriminant_simplified.clone()]);
 
                 // Solutions: (-b ± √discriminant) / (2a)
                 let neg_b = Expression::mul(vec![Expression::integer(-1), b.clone()]);

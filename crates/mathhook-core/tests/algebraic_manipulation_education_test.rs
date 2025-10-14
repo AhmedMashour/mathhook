@@ -5,15 +5,24 @@ use mathhook_core::educational::step_by_step::StepByStep;
 use mathhook_core::{symbol, Expression};
 
 /// Helper function to check if any step contains a specific substring
-fn has_step_containing(explanation: &mathhook_core::educational::step_by_step::StepByStepExplanation, text: &str) -> bool {
+fn has_step_containing(
+    explanation: &mathhook_core::educational::step_by_step::StepByStepExplanation,
+    text: &str,
+) -> bool {
     explanation.steps.iter().any(|step| {
         step.title.to_lowercase().contains(&text.to_lowercase())
-            || step.description.to_lowercase().contains(&text.to_lowercase())
+            || step
+                .description
+                .to_lowercase()
+                .contains(&text.to_lowercase())
     })
 }
 
 /// Helper function to check if any step title matches exactly
-fn has_step_with_title(explanation: &mathhook_core::educational::step_by_step::StepByStepExplanation, title: &str) -> bool {
+fn has_step_with_title(
+    explanation: &mathhook_core::educational::step_by_step::StepByStepExplanation,
+    title: &str,
+) -> bool {
     explanation.steps.iter().any(|step| step.title == title)
 }
 
@@ -21,8 +30,14 @@ fn has_step_with_title(explanation: &mathhook_core::educational::step_by_step::S
 fn test_simplify_combine_like_terms() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(2), Expression::Symbol(x.clone())])),
-        Expression::Mul(Box::new(vec![Expression::integer(3), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(2),
+            Expression::Symbol(x.clone()),
+        ])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(3),
+            Expression::Symbol(x.clone()),
+        ])),
         Expression::integer(5),
         Expression::integer(-2),
         Expression::Symbol(x.clone()),
@@ -30,9 +45,13 @@ fn test_simplify_combine_like_terms() {
 
     let explanation = expr.explain_simplification();
 
-    assert!(!explanation.steps.is_empty(), "Explanation should have steps");
     assert!(
-        has_step_containing(&explanation, "like terms") || has_step_containing(&explanation, "combine"),
+        !explanation.steps.is_empty(),
+        "Explanation should have steps"
+    );
+    assert!(
+        has_step_containing(&explanation, "like terms")
+            || has_step_containing(&explanation, "combine"),
         "Should mention combining like terms"
     );
 
@@ -48,7 +67,10 @@ fn test_simplify_combine_like_terms() {
 #[test]
 fn test_simplify_power_rules() {
     let x = symbol!(x);
-    let expr = Expression::Pow(Box::new(Expression::Symbol(x.clone())), Box::new(Expression::integer(1)));
+    let expr = Expression::Pow(
+        Box::new(Expression::Symbol(x.clone())),
+        Box::new(Expression::integer(1)),
+    );
 
     let explanation = expr.explain_simplification();
 
@@ -70,7 +92,8 @@ fn test_simplify_coefficient_multiplication() {
     let explanation = expr.explain_simplification();
 
     assert!(
-        has_step_containing(&explanation, "coefficients") || has_step_containing(&explanation, "multiply"),
+        has_step_containing(&explanation, "coefficients")
+            || has_step_containing(&explanation, "multiply"),
         "Should mention coefficient multiplication"
     );
 }
@@ -127,8 +150,14 @@ fn test_simplify_zero_property() {
 fn test_expand_binomial_foil() {
     let x = symbol!(x);
     let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(2)])),
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(3)])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(2),
+        ])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(3),
+        ])),
     ]));
 
     let explanation = expr.explain_expansion();
@@ -144,13 +173,17 @@ fn test_expand_distributive_property() {
     let x = symbol!(x);
     let expr = Expression::Mul(Box::new(vec![
         Expression::integer(2),
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(3)])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(3),
+        ])),
     ]));
 
     let explanation = expr.explain_expansion();
 
     assert!(
-        has_step_containing(&explanation, "distribute") || has_step_containing(&explanation, "distributive"),
+        has_step_containing(&explanation, "distribute")
+            || has_step_containing(&explanation, "distributive"),
         "Should mention distributive property"
     );
 }
@@ -159,14 +192,18 @@ fn test_expand_distributive_property() {
 fn test_expand_binomial_square() {
     let x = symbol!(x);
     let expr = Expression::Pow(
-        Box::new(Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(1)]))),
+        Box::new(Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(1),
+        ]))),
         Box::new(Expression::integer(2)),
     );
 
     let explanation = expr.explain_expansion();
 
     assert!(
-        has_step_containing(&explanation, "square") || has_step_containing(&explanation, "binomial"),
+        has_step_containing(&explanation, "square")
+            || has_step_containing(&explanation, "binomial"),
         "Should mention binomial square or expansion pattern"
     );
 }
@@ -175,35 +212,45 @@ fn test_expand_binomial_square() {
 fn test_expand_combine_like_terms_after() {
     let x = symbol!(x);
     let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(1)])),
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(1)])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(1),
+        ])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(1),
+        ])),
     ]));
 
     let explanation = expr.explain_expansion();
 
-    assert!(
-        !explanation.steps.is_empty(),
-        "Should have expansion steps"
-    );
+    assert!(!explanation.steps.is_empty(), "Should have expansion steps");
 }
 
 #[test]
 fn test_factor_gcf_extraction() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(6), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(6),
+            Expression::Symbol(x.clone()),
+        ])),
         Expression::integer(9),
     ]));
 
     let explanation = expr.explain_factorization();
 
     assert!(
-        has_step_containing(&explanation, "gcf") || has_step_containing(&explanation, "common factor"),
+        has_step_containing(&explanation, "gcf")
+            || has_step_containing(&explanation, "common factor"),
         "Should mention GCF or common factor"
     );
 
     assert!(
-        explanation.steps.iter().any(|step| step.description.contains("3")),
+        explanation
+            .steps
+            .iter()
+            .any(|step| step.description.contains("3")),
         "Should identify 3 as the GCF"
     );
 }
@@ -212,8 +259,14 @@ fn test_factor_gcf_extraction() {
 fn test_factor_gcf_with_multiple_terms() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(12), Expression::Symbol(x.clone())])),
-        Expression::Mul(Box::new(vec![Expression::integer(18), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(12),
+            Expression::Symbol(x.clone()),
+        ])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(18),
+            Expression::Symbol(x.clone()),
+        ])),
     ]));
 
     let explanation = expr.explain_factorization();
@@ -224,7 +277,10 @@ fn test_factor_gcf_with_multiple_terms() {
     );
 
     assert!(
-        explanation.steps.iter().any(|step| step.description.contains("6")),
+        explanation
+            .steps
+            .iter()
+            .any(|step| step.description.contains("6")),
         "Should identify 6 as the GCF"
     );
 }
@@ -233,7 +289,10 @@ fn test_factor_gcf_with_multiple_terms() {
 fn test_factor_verification_step() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(2), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(2),
+            Expression::Symbol(x.clone()),
+        ])),
         Expression::integer(4),
     ]));
 
@@ -249,8 +308,14 @@ fn test_factor_verification_step() {
 fn test_simplification_produces_multiple_steps() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(2), Expression::Symbol(x.clone())])),
-        Expression::Mul(Box::new(vec![Expression::integer(3), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(2),
+            Expression::Symbol(x.clone()),
+        ])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(3),
+            Expression::Symbol(x.clone()),
+        ])),
         Expression::integer(0),
         Expression::integer(5),
     ]));
@@ -267,8 +332,14 @@ fn test_simplification_produces_multiple_steps() {
 fn test_expansion_produces_multiple_steps() {
     let x = symbol!(x);
     let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(2)])),
-        Expression::Add(Box::new(vec![Expression::Symbol(x.clone()), Expression::integer(3)])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(2),
+        ])),
+        Expression::Add(Box::new(vec![
+            Expression::Symbol(x.clone()),
+            Expression::integer(3),
+        ])),
     ]));
 
     let explanation = expr.explain_expansion();
@@ -283,7 +354,10 @@ fn test_expansion_produces_multiple_steps() {
 fn test_factorization_produces_multiple_steps() {
     let x = symbol!(x);
     let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![Expression::integer(6), Expression::Symbol(x.clone())])),
+        Expression::Mul(Box::new(vec![
+            Expression::integer(6),
+            Expression::Symbol(x.clone()),
+        ])),
         Expression::integer(9),
     ]));
 

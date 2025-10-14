@@ -37,8 +37,8 @@ fn initialize_simplification_messages(registry: &mut HashMap<MessageKey, Message
         MessageTemplate::new(
             "Identity Element",
             "Apply identity property: {property_description}\nSimplify {expression} to {result}",
-            &["property_description", "expression", "result"]
-        )
+            &["property_description", "expression", "result"],
+        ),
     );
 
     registry.insert(
@@ -46,8 +46,8 @@ fn initialize_simplification_messages(registry: &mut HashMap<MessageKey, Message
         MessageTemplate::new(
             "Additive Identity",
             "Additive identity: {expression} + 0 = {expression}\nThe term + 0 can be removed",
-            &["expression"]
-        )
+            &["expression"],
+        ),
     );
 
     registry.insert(
@@ -64,8 +64,8 @@ fn initialize_simplification_messages(registry: &mut HashMap<MessageKey, Message
         MessageTemplate::new(
             "Zero Property of Multiplication",
             "Zero property: {expression} * 0 = 0\nAny expression multiplied by zero equals zero",
-            &["expression"]
-        )
+            &["expression"],
+        ),
     );
 
     registry.insert(
@@ -73,8 +73,8 @@ fn initialize_simplification_messages(registry: &mut HashMap<MessageKey, Message
         MessageTemplate::new(
             "Collect Variable Terms",
             "Collect all terms containing {variable} on one side:\n{before} becomes {after}",
-            &["variable", "before", "after"]
-        )
+            &["variable", "before", "after"],
+        ),
     );
 
     registry.insert(
@@ -82,8 +82,8 @@ fn initialize_simplification_messages(registry: &mut HashMap<MessageKey, Message
         MessageTemplate::new(
             "Simplification Strategy",
             "Strategy to simplify {expression}:\n{strategy_steps}",
-            &["expression", "strategy_steps"]
-        )
+            &["expression", "strategy_steps"],
+        ),
     );
 }
 
@@ -139,8 +139,8 @@ fn initialize_expansion_messages(registry: &mut HashMap<MessageKey, MessageTempl
         MessageTemplate::new(
             "Perfect Square Expansion",
             "Perfect square: ({a} + {b})^2 = {a}^2 + 2*{a}*{b} + {b}^2\nApply to get: {result}",
-            &["a", "b", "result"]
-        )
+            &["a", "b", "result"],
+        ),
     );
 
     registry.insert(
@@ -148,8 +148,8 @@ fn initialize_expansion_messages(registry: &mut HashMap<MessageKey, MessageTempl
         MessageTemplate::new(
             "Difference of Squares Pattern",
             "Recognize pattern: ({a} + {b})({a} - {b}) = {a}^2 - {b}^2\nResult: {result}",
-            &["a", "b", "result"]
-        )
+            &["a", "b", "result"],
+        ),
     );
 }
 
@@ -160,8 +160,8 @@ fn initialize_factorization_messages(registry: &mut HashMap<MessageKey, MessageT
         MessageTemplate::new(
             "Common Factor",
             "Factor out greatest common factor (GCF) from {expression}\nGCF = {gcf}",
-            &["expression", "gcf"]
-        )
+            &["expression", "gcf"],
+        ),
     );
 
     registry.insert(
@@ -169,8 +169,8 @@ fn initialize_factorization_messages(registry: &mut HashMap<MessageKey, MessageT
         MessageTemplate::new(
             "Extract Common Factor",
             "Extract {gcf} from each term:\n{expression} = {gcf}*({factored_expression})",
-            &["gcf", "expression", "factored_expression"]
-        )
+            &["gcf", "expression", "factored_expression"],
+        ),
     );
 
     registry.insert(
@@ -178,8 +178,8 @@ fn initialize_factorization_messages(registry: &mut HashMap<MessageKey, MessageT
         MessageTemplate::new(
             "Factoring by Grouping",
             "Factor by grouping for {expression}\nGroup terms: ({group1}) + ({group2})",
-            &["expression", "group1", "group2"]
-        )
+            &["expression", "group1", "group2"],
+        ),
     );
 
     registry.insert(
@@ -214,8 +214,8 @@ fn initialize_factorization_messages(registry: &mut HashMap<MessageKey, MessageT
         MessageTemplate::new(
             "Difference of Squares Factoring",
             "Recognize difference of squares: {a}^2 - {b}^2\nFactor as: ({a} + {b})({a} - {b})",
-            &["a", "b"]
-        )
+            &["a", "b"],
+        ),
     );
 }
 
@@ -261,12 +261,16 @@ fn initialize_rational_messages(registry: &mut HashMap<MessageKey, MessageTempla
 /// Initialize polynomial equation messages
 fn initialize_polynomial_messages(registry: &mut HashMap<MessageKey, MessageTemplate>) {
     registry.insert(
-        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Introduction, 0),
+        MessageKey::new(
+            MessageCategory::PolynomialEquation,
+            MessageType::Introduction,
+            0,
+        ),
         MessageTemplate::new(
             "Polynomial Equation",
             "Solve polynomial equation: {equation} = 0\nDegree: {degree} ({degree_name})",
-            &["equation", "degree", "degree_name"]
-        )
+            &["equation", "degree", "degree_name"],
+        ),
     );
 
     registry.insert(
@@ -328,8 +332,8 @@ fn initialize_polynomial_messages(registry: &mut HashMap<MessageKey, MessageTemp
         MessageTemplate::new(
             "Polynomial Solutions",
             "Solutions to {equation} = 0:\n{solutions}\nTotal: {count} roots found",
-            &["equation", "solutions", "count"]
-        )
+            &["equation", "solutions", "count"],
+        ),
     );
 
     registry.insert(

@@ -6,9 +6,9 @@
 
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
-use crate::simplify::Simplify;
 use crate::educational::enhanced_steps::{EnhancedStepBuilder, EnhancedStepExplanation};
 use crate::formatter::latex::LaTeXFormatter;
+use crate::simplify::Simplify;
 
 /// Direction for limit computation
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -292,7 +292,8 @@ pub struct LimitEducation;
 impl LimitEducation {
     /// Helper to safely format expression to LaTeX
     fn format_latex(expr: &Expression) -> String {
-        expr.to_latex(None).unwrap_or_else(|_| format!("{:?}", expr))
+        expr.to_latex(None)
+            .unwrap_or_else(|_| format!("{:?}", expr))
     }
 
     /// Generate educational explanation for direct substitution limit
@@ -350,13 +351,13 @@ impl LimitEducation {
                     &format!(
                         "After substituting {} = {} into {}:\nResult: {}",
                         var_name, point_latex, expr_latex, substituted_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "evaluation", "compute")
                 .with_input("substituted_expression", &substituted_latex)
                 .with_output("intermediate_result", &result_latex)
                 .with_message_key("calculus", "limit_direct", 1)
-                .build()
+                .build(),
         );
 
         steps.push(
@@ -412,14 +413,14 @@ impl LimitEducation {
                     &format!(
                         "To find lim({} -> {}) {}, substitute {} = {}:",
                         var_name, point_latex, expr_latex, var_name, point_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "substitution", "direct_attempt")
                 .with_input("expression", &expr_latex)
                 .with_input("variable", var_name)
                 .with_input("point", &point_latex)
                 .with_message_key("calculus", "limit_indeterminate", 0)
-                .build()
+                .build(),
         );
 
         if let Expression::Mul(factors) = expr {
@@ -429,8 +430,10 @@ impl LimitEducation {
                         let num_latex = Self::format_latex(&factors[0]);
                         let den_latex = Self::format_latex(denom);
 
-                        let num_at_point = LimitMethods::substitute_and_evaluate(&factors[0], variable, point);
-                        let den_at_point = LimitMethods::substitute_and_evaluate(denom, variable, point);
+                        let num_at_point =
+                            LimitMethods::substitute_and_evaluate(&factors[0], variable, point);
+                        let den_at_point =
+                            LimitMethods::substitute_and_evaluate(denom, variable, point);
 
                         let num_result_latex = Self::format_latex(&num_at_point);
                         let den_result_latex = Self::format_latex(&den_at_point);
@@ -485,16 +488,13 @@ impl LimitEducation {
             EnhancedStepBuilder::new("limit_indet_4")
                 .with_human_message(
                     "Resolution Strategy",
-                    &format!(
-                        "To resolve {} form:\n{}",
-                        form_type, resolution_strategy
-                    )
+                    &format!("To resolve {} form:\n{}", form_type, resolution_strategy),
                 )
                 .with_api_data("limit", "strategy", "resolution")
                 .with_input("indeterminate_form", form_type)
                 .with_output("strategy", resolution_strategy)
                 .with_message_key("calculus", "limit_indeterminate", 1)
-                .build()
+                .build(),
         );
 
         EnhancedStepExplanation::new(steps)
@@ -578,13 +578,13 @@ impl LimitEducation {
                     &format!(
                         "Find derivative of numerator with respect to {}:\nd/d{}[{}] = {}",
                         var_name, var_name, num_latex, num_deriv_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "differentiation", "numerator")
                 .with_input("original", &num_latex)
                 .with_output("derivative", &num_deriv_latex)
                 .with_message_key("calculus", "limit_lhopital", 1)
-                .build()
+                .build(),
         );
 
         let den_derivative = denominator.derivative(variable.clone());
@@ -597,13 +597,13 @@ impl LimitEducation {
                     &format!(
                         "Find derivative of denominator with respect to {}:\nd/d{}[{}] = {}",
                         var_name, var_name, den_latex, den_deriv_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "differentiation", "denominator")
                 .with_input("original", &den_latex)
                 .with_output("derivative", &den_deriv_latex)
                 .with_message_key("calculus", "limit_lhopital", 1)
-                .build()
+                .build(),
         );
 
         steps.push(
@@ -612,23 +612,28 @@ impl LimitEducation {
                     "Apply L'Hopital's Rule",
                     &format!(
                         "By L'Hopital's rule:\nlim({} -> {}) {}/{} = lim({} -> {}) {}/{}",
-                        var_name, point_latex, num_latex, den_latex,
-                        var_name, point_latex, num_deriv_latex, den_deriv_latex
-                    )
+                        var_name,
+                        point_latex,
+                        num_latex,
+                        den_latex,
+                        var_name,
+                        point_latex,
+                        num_deriv_latex,
+                        den_deriv_latex
+                    ),
                 )
                 .with_api_data("limit", "rule_application", "substitute_derivatives")
                 .with_input("original_limit", &format!("{}/{}", num_latex, den_latex))
-                .with_output("new_limit", &format!("{}/{}", num_deriv_latex, den_deriv_latex))
+                .with_output(
+                    "new_limit",
+                    &format!("{}/{}", num_deriv_latex, den_deriv_latex),
+                )
                 .with_message_key("calculus", "limit_lhopital", 1)
-                .build()
+                .build(),
         );
 
-        let new_limit_result = LimitMethods::rational_limit(
-            &num_derivative,
-            &den_derivative,
-            variable,
-            point
-        );
+        let new_limit_result =
+            LimitMethods::rational_limit(&num_derivative, &den_derivative, variable, point);
         let result_latex = Self::format_latex(&new_limit_result);
 
         steps.push(
@@ -638,12 +643,12 @@ impl LimitEducation {
                     &format!(
                         "Now evaluate lim({} -> {}) {}/{}:\nResult: {}",
                         var_name, point_latex, num_deriv_latex, den_deriv_latex, result_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "final_evaluation", "result")
                 .with_output("final_result", &result_latex)
                 .with_message_key("calculus", "limit_lhopital", 1)
-                .build()
+                .build(),
         );
 
         EnhancedStepExplanation::new(steps)
@@ -707,10 +712,15 @@ impl LimitEducation {
                         .build()
                 );
 
-                let term_limits: Vec<String> = terms.iter()
+                let term_limits: Vec<String> = terms
+                    .iter()
                     .map(|term| {
                         let limit_result = term.limit(variable, point);
-                        format!("lim {} = {}", Self::format_latex(term), Self::format_latex(&limit_result))
+                        format!(
+                            "lim {} = {}",
+                            Self::format_latex(term),
+                            Self::format_latex(&limit_result)
+                        )
                     })
                     .collect();
 
@@ -718,16 +728,13 @@ impl LimitEducation {
                     EnhancedStepBuilder::new("limit_laws_3")
                         .with_human_message(
                             "Evaluate Individual Terms",
-                            &format!(
-                                "Evaluate limit of each term:\n{}",
-                                term_limits.join("\n")
-                            )
+                            &format!("Evaluate limit of each term:\n{}", term_limits.join("\n")),
                         )
                         .with_api_data("limit", "term_evaluation", "individual")
                         .with_message_key("calculus", "limit_laws", 1)
-                        .build()
+                        .build(),
                 );
-            },
+            }
             Expression::Mul(factors) => {
                 let has_constant = factors.iter().any(|f| matches!(f, Expression::Number(_)));
 
@@ -771,17 +778,17 @@ impl LimitEducation {
                         .with_message_key("calculus", "limit_laws", 1)
                         .build()
                 );
-            },
+            }
             _ => {
                 steps.push(
                     EnhancedStepBuilder::new("limit_laws_2")
                         .with_human_message(
                             "Direct Evaluation",
-                            "For simple expressions, directly substitute the limit point."
+                            "For simple expressions, directly substitute the limit point.",
                         )
                         .with_api_data("limit", "direct", "simple")
                         .with_message_key("calculus", "limit_laws", 0)
-                        .build()
+                        .build(),
                 );
             }
         }
@@ -796,12 +803,12 @@ impl LimitEducation {
                     &format!(
                         "Combining the individual limits:\nlim({} -> {}) {} = {}",
                         var_name, point_latex, expr_latex, result_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "combination", "final")
                 .with_output("final_result", &result_latex)
                 .with_message_key("calculus", "limit_laws", 1)
-                .build()
+                .build(),
         );
 
         EnhancedStepExplanation::new(steps)
@@ -908,11 +915,11 @@ impl LimitEducation {
                         &format!(
                             "As {} -> infinity, evaluate the behavior of the expression.",
                             var_name
-                        )
+                        ),
                     )
                     .with_api_data("limit", "evaluation", "determine")
                     .with_message_key("calculus", "limit_infinity", 1)
-                    .build()
+                    .build(),
             );
         }
 
@@ -926,12 +933,12 @@ impl LimitEducation {
                     &format!(
                         "Therefore:\nlim({} -> infinity) {} = {}",
                         var_name, expr_latex, result_latex
-                    )
+                    ),
                 )
                 .with_api_data("limit", "result", "infinity")
                 .with_output("final_result", &result_latex)
                 .with_message_key("calculus", "limit_infinity", 1)
-                .build()
+                .build(),
         );
 
         EnhancedStepExplanation::new(steps)

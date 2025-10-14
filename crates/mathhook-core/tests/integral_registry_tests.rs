@@ -110,12 +110,12 @@ fn test_registry_has_all_18_functions_with_antiderivatives() {
     // Comprehensive test: all 18 functions from design doc have integral rules
 
     let functions = vec![
-        "sin", "cos", "tan", "sec", "csc", "cot",     // Trigonometric (6)
-        "exp", "ln", "log",                            // Exponential/Log (3)
-        "arcsin", "arccos", "arctan",                  // Inverse trig (3)
-        "sinh", "cosh", "tanh",                        // Hyperbolic (3)
-        "sqrt",                                        // Power functions (1)
-        // Note: 2 additional composite function patterns not included here
+        "sin", "cos", "tan", "sec", "csc", "cot", // Trigonometric (6)
+        "exp", "ln", "log", // Exponential/Log (3)
+        "arcsin", "arccos", "arctan", // Inverse trig (3)
+        "sinh", "cosh", "tanh", // Hyperbolic (3)
+        "sqrt", // Power functions (1)
+                // Note: 2 additional composite function patterns not included here
     ];
 
     // Will be enabled after Phase 2 implementation
@@ -172,7 +172,10 @@ fn test_integrate_tan_produces_neg_ln_abs_cos() {
             "ln",
             vec![Expression::function(
                 "abs",
-                vec![Expression::function("cos", vec![Expression::symbol(symbol!(x))])],
+                vec![Expression::function(
+                    "cos",
+                    vec![Expression::symbol(symbol!(x))],
+                )],
             )],
         ),
     ]);
@@ -236,7 +239,10 @@ fn test_integrate_cot_produces_ln_abs_sin() {
         "ln",
         vec![Expression::function(
             "abs",
-            vec![Expression::function("sin", vec![Expression::symbol(symbol!(x))])],
+            vec![Expression::function(
+                "sin",
+                vec![Expression::symbol(symbol!(x))],
+            )],
         )],
     );
 
@@ -357,10 +363,7 @@ fn test_integrate_arccos_produces_x_arccos_minus_sqrt() {
                     Expression::integer(1),
                     Expression::mul(vec![
                         Expression::integer(-1),
-                        Expression::pow(
-                            Expression::symbol(x),
-                            Expression::integer(2),
-                        ),
+                        Expression::pow(Expression::symbol(x), Expression::integer(2)),
                     ]),
                 ])],
             ),
@@ -437,7 +440,10 @@ fn test_integrate_tanh_produces_ln_cosh() {
 
     let expected = Expression::function(
         "ln",
-        vec![Expression::function("cosh", vec![Expression::symbol(symbol!(x))])],
+        vec![Expression::function(
+            "cosh",
+            vec![Expression::symbol(symbol!(x))],
+        )],
     );
 
     assert_eq!(integral, expected);
@@ -562,10 +568,7 @@ fn test_integrate_sin_2x_with_linear_substitution() {
     // ∫ sin(2x) dx = -(1/2)cos(2x) + C
     // This tests LinearSubstitution rule type
     let x = symbol!(x);
-    let inner = Expression::mul(vec![
-        Expression::integer(2),
-        Expression::symbol(x.clone()),
-    ]);
+    let inner = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let expr = Expression::function("sin", vec![inner]);
     let integral = expr.integrate(x.clone());
 
@@ -578,10 +581,7 @@ fn test_integrate_sin_2x_with_linear_substitution() {
 fn test_integrate_cos_3x_with_linear_substitution() {
     // ∫ cos(3x) dx = (1/3)sin(3x) + C
     let x = symbol!(x);
-    let inner = Expression::mul(vec![
-        Expression::integer(3),
-        Expression::symbol(x.clone()),
-    ]);
+    let inner = Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]);
     let expr = Expression::function("cos", vec![inner]);
     let integral = expr.integrate(x.clone());
 
@@ -682,7 +682,10 @@ fn test_count_active_tests() {
     println!("Total tests: {}", total_tests);
     println!("Active tests (now): {}", active_tests);
     println!("Ignored tests (awaiting implementation): {}", ignored_tests);
-    println!("Coverage: {:.1}%", (active_tests as f64 / total_tests as f64) * 100.0);
+    println!(
+        "Coverage: {:.1}%",
+        (active_tests as f64 / total_tests as f64) * 100.0
+    );
 
     assert!(active_tests > 0, "At least some tests should be active");
 }

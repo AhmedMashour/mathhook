@@ -12,9 +12,9 @@ impl PartialUtils {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
-/// use mathhook_core::calculus::derivatives::PartialUtils;
-/// use mathhook_core::calculus::derivatives::MatrixUtils;
+    /// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::calculus::derivatives::PartialUtils;
+    /// use mathhook_core::calculus::derivatives::MatrixUtils;
     /// use mathhook_core::{Expression};
     /// use mathhook_core::symbol;
     ///
@@ -40,7 +40,7 @@ impl PartialUtils {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::PartialUtils;
+    /// use mathhook_core::calculus::derivatives::PartialUtils;
     /// use mathhook_core::Expression;
     ///
     /// let zero = Expression::integer(0);
@@ -59,7 +59,7 @@ impl PartialUtils {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::calculus::derivatives::PartialUtils;
+    /// use mathhook_core::calculus::derivatives::PartialUtils;
     /// let result = PartialUtils::validate_dimensions("gradient", 3, 3);
     /// assert!(result.is_ok());
     /// ```

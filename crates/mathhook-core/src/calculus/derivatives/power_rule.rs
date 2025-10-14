@@ -13,8 +13,8 @@ impl PowerRule {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
-/// use mathhook_core::calculus::derivatives::Derivative;
+    /// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::calculus::derivatives::Derivative;
     /// use mathhook_core::{Expression, PowerRule};
     /// use mathhook_core::symbol;
     ///

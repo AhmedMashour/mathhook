@@ -162,7 +162,8 @@ mod tests {
         let x = symbol!(x);
         let constraints = WildcardConstraints::with_exclude(vec![Expression::symbol(x.clone())]);
 
-        let expr_with_x = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
+        let expr_with_x =
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
         assert!(!constraints.is_satisfied_by(&expr_with_x));
     }
 
@@ -234,7 +235,10 @@ mod tests {
     fn test_contains_subexpression_in_add() {
         let x = symbol!(x);
         let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
-        assert!(contains_subexpression(&expr, &Expression::symbol(x.clone())));
+        assert!(contains_subexpression(
+            &expr,
+            &Expression::symbol(x.clone())
+        ));
         assert!(contains_subexpression(&expr, &Expression::integer(1)));
     }
 
@@ -242,14 +246,20 @@ mod tests {
     fn test_contains_subexpression_in_mul() {
         let x = symbol!(x);
         let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
-        assert!(contains_subexpression(&expr, &Expression::symbol(x.clone())));
+        assert!(contains_subexpression(
+            &expr,
+            &Expression::symbol(x.clone())
+        ));
     }
 
     #[test]
     fn test_contains_subexpression_in_pow() {
         let x = symbol!(x);
         let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-        assert!(contains_subexpression(&expr, &Expression::symbol(x.clone())));
+        assert!(contains_subexpression(
+            &expr,
+            &Expression::symbol(x.clone())
+        ));
         assert!(contains_subexpression(&expr, &Expression::integer(2)));
     }
 
@@ -257,7 +267,10 @@ mod tests {
     fn test_contains_subexpression_in_function() {
         let x = symbol!(x);
         let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
-        assert!(contains_subexpression(&expr, &Expression::symbol(x.clone())));
+        assert!(contains_subexpression(
+            &expr,
+            &Expression::symbol(x.clone())
+        ));
     }
 
     #[test]

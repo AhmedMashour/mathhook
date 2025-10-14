@@ -4,10 +4,10 @@
 //! extraction of real and imaginary parts, polar form conversions, and
 //! simplification operations.
 
-use crate::core::Expression;
-use crate::simplify::Simplify;
-use crate::expr;
 use super::operations::ComplexOperations;
+use crate::core::Expression;
+use crate::expr;
+use crate::simplify::Simplify;
 
 impl Expression {
     /// Extract the real part of a complex number
@@ -380,10 +380,7 @@ mod tests {
 
         let z = Expression::complex(expr!(0), expr!(4));
         let result = Expression::simplify_complex(&z);
-        assert_eq!(
-            result,
-            Expression::mul(vec![expr!(4), Expression::i()])
-        );
+        assert_eq!(result, Expression::mul(vec![expr!(4), Expression::i()]));
     }
 
     #[test]

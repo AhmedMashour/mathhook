@@ -25,9 +25,13 @@ pub fn explain_constant_derivative(expr: &Expression, variable: &Symbol) -> Step
         latex: Some(expr.to_latex(None).unwrap_or_else(|_| "c".to_string())),
     });
 
-    if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativeConstant, 0)
-        .with_substitution("constant", &format_expr(expr))
-        .build()
+    if let Some(step) = MessageBuilder::new(
+        MessageCategory::Calculus,
+        MessageType::DerivativeConstant,
+        0,
+    )
+    .with_substitution("constant", &format_expr(expr))
+    .build()
     {
         steps.push(step);
     }
@@ -65,9 +69,13 @@ pub fn explain_variable_derivative(sym: &Symbol, variable: &Symbol) -> StepBySte
             latex: Some(variable.name().to_string()),
         });
 
-        if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativeVariable, 0)
-            .with_substitution("variable", variable.name())
-            .build()
+        if let Some(step) = MessageBuilder::new(
+            MessageCategory::Calculus,
+            MessageType::DerivativeVariable,
+            0,
+        )
+        .with_substitution("variable", variable.name())
+        .build()
         {
             steps.push(step);
         }
@@ -137,7 +145,9 @@ pub fn explain_sum_derivative(terms: &[Expression], variable: &Symbol) -> StepBy
 
     steps.push(Step {
         title: "Apply Sum Rule".to_string(),
-        description: "d/dx[f + g + h + ...] = f' + g' + h' + ...\nDifferentiate each term separately".to_string(),
+        description:
+            "d/dx[f + g + h + ...] = f' + g' + h' + ...\nDifferentiate each term separately"
+                .to_string(),
         expression: expr.clone(),
         rule_applied: "Sum Rule".to_string(),
         latex: Some(expr.to_latex(None).unwrap_or_else(|_| "sum".to_string())),
@@ -158,7 +168,11 @@ pub fn explain_sum_derivative(terms: &[Expression], variable: &Symbol) -> StepBy
             ),
             expression: term_derivative.clone(),
             rule_applied: format!("Term {} Derivative", i + 1),
-            latex: Some(term_derivative.to_latex(None).unwrap_or_else(|_| "term".to_string())),
+            latex: Some(
+                term_derivative
+                    .to_latex(None)
+                    .unwrap_or_else(|_| "term".to_string()),
+            ),
         });
     }
 
@@ -168,7 +182,11 @@ pub fn explain_sum_derivative(terms: &[Expression], variable: &Symbol) -> StepBy
         description: format!("Add all derivatives: {}", format_expr(&result)),
         expression: result.clone(),
         rule_applied: "Combination".to_string(),
-        latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+        latex: Some(
+            result
+                .to_latex(None)
+                .unwrap_or_else(|_| "result".to_string()),
+        ),
     });
 
     let step_count = steps.len();
@@ -182,7 +200,11 @@ pub fn explain_sum_derivative(terms: &[Expression], variable: &Symbol) -> StepBy
 }
 
 /// Explain power rule (4+ steps)
-pub fn explain_power_rule(base: &Expression, exp: &Expression, variable: &Symbol) -> StepByStepExplanation {
+pub fn explain_power_rule(
+    base: &Expression,
+    exp: &Expression,
+    variable: &Symbol,
+) -> StepByStepExplanation {
     let mut steps = Vec::new();
     let expr = Expression::pow(base.clone(), exp.clone());
 
@@ -204,10 +226,14 @@ pub fn explain_power_rule(base: &Expression, exp: &Expression, variable: &Symbol
         format!("n = {}", format_expr(exp))
     };
 
-    if let Some(step) = MessageBuilder::new(MessageCategory::Calculus, MessageType::DerivativePowerRule, 0)
-        .with_substitution("expression", &format_expr(&expr))
-        .with_substitution("exponent", &exp_str)
-        .build()
+    if let Some(step) = MessageBuilder::new(
+        MessageCategory::Calculus,
+        MessageType::DerivativePowerRule,
+        0,
+    )
+    .with_substitution("expression", &format_expr(&expr))
+    .with_substitution("exponent", &exp_str)
+    .build()
     {
         steps.push(step);
     }
@@ -224,7 +250,8 @@ pub fn explain_power_rule(base: &Expression, exp: &Expression, variable: &Symbol
     let result = Expression::mul(vec![
         exp.clone(),
         Expression::pow(base.clone(), n_minus_1.clone()),
-    ]).simplify();
+    ])
+    .simplify();
 
     steps.push(Step {
         title: "Simplify".to_string(),
@@ -236,7 +263,11 @@ pub fn explain_power_rule(base: &Expression, exp: &Expression, variable: &Symbol
         ),
         expression: result.clone(),
         rule_applied: "Simplification".to_string(),
-        latex: Some(result.to_latex(None).unwrap_or_else(|_| "result".to_string())),
+        latex: Some(
+            result
+                .to_latex(None)
+                .unwrap_or_else(|_| "result".to_string()),
+        ),
     });
 
     let step_count = steps.len();

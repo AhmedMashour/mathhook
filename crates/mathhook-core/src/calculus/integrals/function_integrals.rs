@@ -81,7 +81,7 @@ impl FunctionIntegrals {
 
         Expression::integral(
             Expression::function(name, vec![Expression::symbol(variable.clone())]),
-            variable
+            variable,
         )
     }
 
@@ -112,11 +112,14 @@ impl FunctionIntegrals {
         variable: Symbol,
     ) -> Expression {
         match &rule.rule_type {
-            AntiderivativeRuleType::Simple { antiderivative_fn, coefficient } => {
+            AntiderivativeRuleType::Simple {
+                antiderivative_fn,
+                coefficient,
+            } => {
                 // ∫f(x)dx = c * F(x)
                 Expression::mul(vec![
                     coefficient.clone(),
-                    Expression::function(antiderivative_fn, vec![Expression::symbol(variable)])
+                    Expression::function(antiderivative_fn, vec![Expression::symbol(variable)]),
                 ])
             }
 
@@ -129,7 +132,7 @@ impl FunctionIntegrals {
                 // Future implementation
                 Expression::integral(
                     Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
-                    variable
+                    variable,
                 )
             }
 
@@ -137,7 +140,7 @@ impl FunctionIntegrals {
                 // Future implementation
                 Expression::integral(
                     Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
-                    variable
+                    variable,
                 )
             }
 
@@ -145,7 +148,7 @@ impl FunctionIntegrals {
                 // Future implementation
                 Expression::integral(
                     Expression::function(function_name, vec![Expression::symbol(variable.clone())]),
-                    variable
+                    variable,
                 )
             }
         }
@@ -191,9 +194,15 @@ impl FunctionIntegrals {
             if let Some(_rule) = props.get_antiderivative_rule() {
                 if let Expression::Mul(factors) = inner {
                     if factors.len() == 2 {
-                        if let (Expression::Number(_), Expression::Symbol(sym)) = (&factors[0], &factors[1]) {
+                        if let (Expression::Number(_), Expression::Symbol(sym)) =
+                            (&factors[0], &factors[1])
+                        {
                             if *sym == variable {
-                                return Self::integrate_linear_substitution(name, &factors[0], variable);
+                                return Self::integrate_linear_substitution(
+                                    name,
+                                    &factors[0],
+                                    variable,
+                                );
                             }
                         }
                     }

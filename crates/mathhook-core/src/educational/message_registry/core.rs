@@ -350,8 +350,8 @@ impl MessageHashSystem {
 
     /// Validate message registry integrity
     pub fn validate_registry() -> bool {
-        MESSAGE_REGISTRY.values().all(|template| {
-            !template.title.is_empty() && !template.content.is_empty()
-        })
+        MESSAGE_REGISTRY
+            .values()
+            .all(|template| !template.title.is_empty() && !template.content.is_empty())
     }
 }

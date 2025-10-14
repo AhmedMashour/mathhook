@@ -10,11 +10,8 @@ fn test_zero_detection_basic() {
 
 #[test]
 fn test_zero_detection_arithmetic() {
-    let expr = Expression::add(vec![
-        Expression::integer(5),
-        Expression::integer(-5)
-    ]);
-    
+    let expr = Expression::add(vec![Expression::integer(5), Expression::integer(-5)]);
+
     let result = expr.simplify();
     assert_eq!(result, Expression::integer(0));
 }
@@ -22,12 +19,9 @@ fn test_zero_detection_arithmetic() {
 #[test]
 fn test_zero_detection_multiplication() {
     let x = symbol!(x);
-    
-    let expr = Expression::mul(vec![
-        Expression::integer(0),
-        Expression::symbol(x.clone())
-    ]);
-    
+
+    let expr = Expression::mul(vec![Expression::integer(0), Expression::symbol(x.clone())]);
+
     let result = expr.simplify();
     assert_eq!(result, Expression::integer(0));
 }

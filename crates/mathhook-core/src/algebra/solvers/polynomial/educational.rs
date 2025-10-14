@@ -13,9 +13,8 @@ pub fn solve_with_explanation(
     use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
     use crate::formatter::latex::LaTeXFormatter;
 
-    let to_latex = |expr: &Expression| -> String {
-        expr.to_latex(None).unwrap_or_else(|_| expr.to_string())
-    };
+    let to_latex =
+        |expr: &Expression| -> String { expr.to_latex(None).unwrap_or_else(|_| expr.to_string()) };
 
     let degree = solver.find_polynomial_degree(equation, variable);
     let mut steps = Vec::new();
@@ -27,12 +26,16 @@ pub fn solve_with_explanation(
     };
 
     steps.push(
-        MessageBuilder::new(MessageCategory::PolynomialEquation, MessageType::Introduction, 0)
-            .with_substitution("equation", &to_latex(equation))
-            .with_substitution("degree", &degree.to_string())
-            .with_substitution("degree_name", degree_name)
-            .build()
-            .unwrap(),
+        MessageBuilder::new(
+            MessageCategory::PolynomialEquation,
+            MessageType::Introduction,
+            0,
+        )
+        .with_substitution("equation", &to_latex(equation))
+        .with_substitution("degree", &degree.to_string())
+        .with_substitution("degree_name", degree_name)
+        .build()
+        .unwrap(),
     );
 
     let strategy = match degree {
@@ -42,11 +45,15 @@ pub fn solve_with_explanation(
     };
 
     steps.push(
-        MessageBuilder::new(MessageCategory::PolynomialEquation, MessageType::Strategy, 0)
-            .with_substitution("degree", &degree.to_string())
-            .with_substitution("strategy_description", strategy)
-            .build()
-            .unwrap(),
+        MessageBuilder::new(
+            MessageCategory::PolynomialEquation,
+            MessageType::Strategy,
+            0,
+        )
+        .with_substitution("degree", &degree.to_string())
+        .with_substitution("strategy_description", strategy)
+        .build()
+        .unwrap(),
     );
 
     let (constant_term, leading_coef) = solver.extract_constant_and_leading(equation, variable);
@@ -59,7 +66,11 @@ pub fn solve_with_explanation(
         for p in &constant_factors {
             for q in &leading_factors {
                 if *q != 0 {
-                    let positive = if *p % *q == 0 { *p / *q } else { continue; };
+                    let positive = if *p % *q == 0 {
+                        *p / *q
+                    } else {
+                        continue;
+                    };
                     let negative = -positive;
                     if !candidates.contains(&positive) {
                         candidates.push(positive);
@@ -171,12 +182,11 @@ pub fn solve_with_explanation(
     let result = solver.solve(equation, variable);
 
     let solutions_str = match &result {
-        SolverResult::Multiple(sols) | SolverResult::Partial(sols) => {
-            sols.iter()
-                .map(|s| format!("{} = {}", variable.name(), to_latex(s)))
-                .collect::<Vec<_>>()
-                .join("\n")
-        }
+        SolverResult::Multiple(sols) | SolverResult::Partial(sols) => sols
+            .iter()
+            .map(|s| format!("{} = {}", variable.name(), to_latex(s)))
+            .collect::<Vec<_>>()
+            .join("\n"),
         SolverResult::Single(sol) => format!("{} = {}", variable.name(), to_latex(sol)),
         _ => "No solutions found".to_string(),
     };

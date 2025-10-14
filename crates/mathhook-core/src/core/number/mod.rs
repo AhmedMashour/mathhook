@@ -9,8 +9,8 @@
 //! automatically promote to BigInt or Rational types when needed. Float operations
 //! check for infinity and NaN to prevent silent error propagation.
 
-mod types;
-mod integer_ops;
 mod arithmetic;
+mod integer_ops;
+mod types;
 
 pub use types::Number;

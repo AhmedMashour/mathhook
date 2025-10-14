@@ -108,23 +108,27 @@ impl SystemEquationSolver for SystemSolver {
             expr.to_latex(None).unwrap_or_else(|_| expr.to_string())
         };
 
-        let mut steps = vec![
-            Step::new(
-                "System of Equations",
-                format!(
-                    "We have a system of {} equations with {} variables:\n{}",
-                    equations.len(),
-                    variables.len(),
-                    equations.iter().map(|eq| to_latex(eq)).collect::<Vec<_>>().join("\n")
-                ),
+        let mut steps = vec![Step::new(
+            "System of Equations",
+            format!(
+                "We have a system of {} equations with {} variables:\n{}",
+                equations.len(),
+                variables.len(),
+                equations
+                    .iter()
+                    .map(|eq| to_latex(eq))
+                    .collect::<Vec<_>>()
+                    .join("\n")
             ),
-        ];
+        )];
 
         if n == 2 {
-            let (a1, b1, c1) = self.extract_linear_coefficients_2var(&equations[0], &variables[0], &variables[1]);
-            let use_substitution = matches!((&a1, &b1),
-                (Expression::Number(Number::Integer(1)), _) |
-                (_, Expression::Number(Number::Integer(1)))
+            let (a1, b1, c1) =
+                self.extract_linear_coefficients_2var(&equations[0], &variables[0], &variables[1]);
+            let use_substitution = matches!(
+                (&a1, &b1),
+                (Expression::Number(Number::Integer(1)), _)
+                    | (_, Expression::Number(Number::Integer(1)))
             );
 
             if use_substitution {
@@ -133,25 +137,38 @@ impl SystemEquationSolver for SystemSolver {
                 steps.push(Step::new("Elimination Method", "Solve system using elimination (addition) method\nStep 1: Align equations\nStep 2: Multiply equations by appropriate factors\nStep 3: Add or subtract equations to eliminate one variable\nStep 4: Solve for remaining variable\nStep 5: Back-substitute"));
             }
         } else {
-            steps.push(Step::new("Method", "Using Gaussian elimination with back-substitution"));
+            steps.push(Step::new(
+                "Method",
+                "Using Gaussian elimination with back-substitution",
+            ));
         }
 
         match &result {
             SolverResult::Multiple(sols) if sols.len() == variables.len() => {
-                steps.push(Step::new("Solve System", "Apply the chosen method to solve the system"));
+                steps.push(Step::new(
+                    "Solve System",
+                    "Apply the chosen method to solve the system",
+                ));
 
-                let solution_str = variables.iter()
+                let solution_str = variables
+                    .iter()
                     .zip(sols.iter())
                     .map(|(var, sol)| format!("{} = {}", var.name(), to_latex(sol)))
                     .collect::<Vec<_>>()
                     .join("\n");
 
-                steps.push(Step::new("Extract Solutions", format!("From the final equations, we get:\n{}", solution_str)));
+                steps.push(Step::new(
+                    "Extract Solutions",
+                    format!("From the final equations, we get:\n{}", solution_str),
+                ));
 
                 steps.push(Step::new("Unique Solution Found", format!("System has unique solution:\n{}\nThis is the only point that satisfies all equations", solution_str)));
 
-                steps.push(Step::new("Verify Solution", format!("Check solution in all equations:\nBoth equations are satisfied")));
-            },
+                steps.push(Step::new(
+                    "Verify Solution",
+                    format!("Check solution in all equations:\nBoth equations are satisfied"),
+                ));
+            }
             _ => {
                 steps.push(Step::new("Solve", "Applying solution method"));
                 steps.push(Step::new("Result", format!("Solution: {:?}", result)));
@@ -446,13 +463,14 @@ impl SystemSolver {
 
             // Subtract known values: rhs = rhs - sum(a[i][j] * solution[j]) for j > i
             for j in (i + 1)..n {
-                let term = Expression::mul(vec![
-                    augmented_matrix[i][j].clone(),
-                    solution[j].clone(),
+                let term =
+                    Expression::mul(vec![augmented_matrix[i][j].clone(), solution[j].clone()])
+                        .simplify();
+                rhs = Expression::add(vec![
+                    rhs,
+                    Expression::mul(vec![Expression::integer(-1), term]),
                 ])
                 .simplify();
-                rhs = Expression::add(vec![rhs, Expression::mul(vec![Expression::integer(-1), term])])
-                    .simplify();
             }
 
             // Solve for solution[i]: solution[i] = rhs / a[i][i]
@@ -486,9 +504,11 @@ impl SystemSolver {
                     // Check each variable
                     for (i, var) in variables.iter().enumerate() {
                         if term == &Expression::symbol(var.clone()) {
-                            coefficients[i] =
-                                Expression::add(vec![coefficients[i].clone(), Expression::integer(1)])
-                                    .simplify();
+                            coefficients[i] = Expression::add(vec![
+                                coefficients[i].clone(),
+                                Expression::integer(1),
+                            ])
+                            .simplify();
                             found_var = true;
                             break;
                         } else if let Expression::Mul(factors) = term {
@@ -505,9 +525,11 @@ impl SystemSolver {
                             }
 
                             if has_var {
-                                coefficients[i] =
-                                    Expression::add(vec![coefficients[i].clone(), coeff.simplify()])
-                                        .simplify();
+                                coefficients[i] = Expression::add(vec![
+                                    coefficients[i].clone(),
+                                    coeff.simplify(),
+                                ])
+                                .simplify();
                                 found_var = true;
                                 break;
                             }

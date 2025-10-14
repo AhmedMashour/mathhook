@@ -53,17 +53,24 @@ impl InverseTrigIntelligence {
                             Expression::add(vec![
                                 Expression::mul(vec![
                                     Expression::symbol(var.clone()),
-                                    Expression::function("arcsin", vec![Expression::symbol(var.clone())]),
+                                    Expression::function(
+                                        "arcsin",
+                                        vec![Expression::symbol(var.clone())],
+                                    ),
                                 ]),
-                                Expression::function("sqrt", vec![
-                                    Expression::add(vec![
+                                Expression::function(
+                                    "sqrt",
+                                    vec![Expression::add(vec![
                                         Expression::integer(1),
                                         Expression::mul(vec![
                                             Expression::integer(-1),
-                                            Expression::pow(Expression::symbol(var), Expression::integer(2)),
+                                            Expression::pow(
+                                                Expression::symbol(var),
+                                                Expression::integer(2),
+                                            ),
                                         ]),
-                                    ])
-                                ]),
+                                    ])],
+                                ),
                             ])
                         }),
                     },
@@ -75,14 +82,8 @@ impl InverseTrigIntelligence {
                 domain_range: Box::new(DomainRangeData {
                     domain: Domain::Interval(Expression::integer(-1), Expression::integer(1)),
                     range: Range::Bounded(
-                        Expression::mul(vec![
-                            Expression::rational(-1, 2),
-                            Expression::pi(),
-                        ]),
-                        Expression::mul(vec![
-                            Expression::rational(1, 2),
-                            Expression::pi(),
-                        ]),
+                        Expression::mul(vec![Expression::rational(-1, 2), Expression::pi()]),
+                        Expression::mul(vec![Expression::rational(1, 2), Expression::pi()]),
                     ),
                     singularities: vec![],
                 }),
@@ -106,19 +107,26 @@ impl InverseTrigIntelligence {
                             Expression::add(vec![
                                 Expression::mul(vec![
                                     Expression::symbol(var.clone()),
-                                    Expression::function("arccos", vec![Expression::symbol(var.clone())]),
+                                    Expression::function(
+                                        "arccos",
+                                        vec![Expression::symbol(var.clone())],
+                                    ),
                                 ]),
                                 Expression::mul(vec![
                                     Expression::integer(-1),
-                                    Expression::function("sqrt", vec![
-                                        Expression::add(vec![
+                                    Expression::function(
+                                        "sqrt",
+                                        vec![Expression::add(vec![
                                             Expression::integer(1),
                                             Expression::mul(vec![
                                                 Expression::integer(-1),
-                                                Expression::pow(Expression::symbol(var), Expression::integer(2)),
+                                                Expression::pow(
+                                                    Expression::symbol(var),
+                                                    Expression::integer(2),
+                                                ),
                                             ]),
-                                        ])
-                                    ]),
+                                        ])],
+                                    ),
                                 ]),
                             ])
                         }),
@@ -153,16 +161,23 @@ impl InverseTrigIntelligence {
                             Expression::add(vec![
                                 Expression::mul(vec![
                                     Expression::symbol(var.clone()),
-                                    Expression::function("arctan", vec![Expression::symbol(var.clone())]),
+                                    Expression::function(
+                                        "arctan",
+                                        vec![Expression::symbol(var.clone())],
+                                    ),
                                 ]),
                                 Expression::mul(vec![
                                     Expression::rational(-1, 2),
-                                    Expression::function("ln", vec![
-                                        Expression::add(vec![
+                                    Expression::function(
+                                        "ln",
+                                        vec![Expression::add(vec![
                                             Expression::integer(1),
-                                            Expression::pow(Expression::symbol(var), Expression::integer(2)),
-                                        ])
-                                    ]),
+                                            Expression::pow(
+                                                Expression::symbol(var),
+                                                Expression::integer(2),
+                                            ),
+                                        ])],
+                                    ),
                                 ]),
                             ])
                         }),
@@ -175,14 +190,8 @@ impl InverseTrigIntelligence {
                 domain_range: Box::new(DomainRangeData {
                     domain: Domain::Real,
                     range: Range::Bounded(
-                        Expression::mul(vec![
-                            Expression::rational(-1, 2),
-                            Expression::pi(),
-                        ]),
-                        Expression::mul(vec![
-                            Expression::rational(1, 2),
-                            Expression::pi(),
-                        ]),
+                        Expression::mul(vec![Expression::rational(-1, 2), Expression::pi()]),
+                        Expression::mul(vec![Expression::rational(1, 2), Expression::pi()]),
                     ),
                     singularities: vec![],
                 }),

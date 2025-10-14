@@ -14,7 +14,7 @@ impl ChainRule {
     /// # Examples
     ///
     /// ```rust
-/// use mathhook_core::simplify::Simplify;
+    /// use mathhook_core::simplify::Simplify;
     /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::calculus::derivatives::Derivative;
     ///

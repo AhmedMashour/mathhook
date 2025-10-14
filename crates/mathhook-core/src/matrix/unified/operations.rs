@@ -32,19 +32,13 @@ impl Matrix {
         match self {
             Matrix::Identity(_) => Expression::integer(1),
             Matrix::Zero(_) => Expression::integer(0),
-            Matrix::Scalar(data) => {
-                Expression::pow(
-                    data.scalar_value.clone(),
-                    Expression::integer(data.size as i64),
-                )
-                .simplify()
-            }
-            Matrix::Diagonal(data) => {
-                Expression::mul(data.diagonal_elements.clone()).simplify()
-            }
-            Matrix::Permutation(_data) => {
-                Expression::integer(1)
-            }
+            Matrix::Scalar(data) => Expression::pow(
+                data.scalar_value.clone(),
+                Expression::integer(data.size as i64),
+            )
+            .simplify(),
+            Matrix::Diagonal(data) => Expression::mul(data.diagonal_elements.clone()).simplify(),
+            Matrix::Permutation(_data) => Expression::integer(1),
             _ => {
                 let (rows, cols) = self.dimensions();
                 if rows != cols {
@@ -282,12 +276,8 @@ impl CoreMatrixOps for Matrix {
                     scalar_value: product_scalar,
                 })
             }
-            (Matrix::Scalar(s), other) => {
-                other.scalar_multiply(&s.scalar_value)
-            }
-            (this, Matrix::Scalar(s)) => {
-                this.scalar_multiply(&s.scalar_value)
-            }
+            (Matrix::Scalar(s), other) => other.scalar_multiply(&s.scalar_value),
+            (this, Matrix::Scalar(s)) => this.scalar_multiply(&s.scalar_value),
 
             _ => {
                 let (rows1, cols1) = self.dimensions();
@@ -375,9 +365,7 @@ impl CoreMatrixOps for Matrix {
                     diagonal_elements: inverse_elements,
                 })
             }
-            _ => {
-                self.gauss_jordan_inverse()
-            }
+            _ => self.gauss_jordan_inverse(),
         }
     }
 }

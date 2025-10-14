@@ -2,9 +2,9 @@
 //!
 //! Provides the Matchable trait and recursive matching algorithms.
 
+use super::{apply_replacement, match_commutative, PatternMatches};
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
-use super::{PatternMatches, match_commutative, apply_replacement};
 use std::collections::HashMap;
 
 /// Trait for types that support pattern matching
@@ -121,8 +121,10 @@ impl Matchable for Expression {
         } else {
             match self {
                 Expression::Add(terms) => {
-                    let new_terms: Vec<Expression> =
-                        terms.iter().map(|t| t.replace(pattern, replacement)).collect();
+                    let new_terms: Vec<Expression> = terms
+                        .iter()
+                        .map(|t| t.replace(pattern, replacement))
+                        .collect();
                     Expression::Add(Box::new(new_terms))
                 }
 
@@ -141,8 +143,10 @@ impl Matchable for Expression {
                 }
 
                 Expression::Function { name, args } => {
-                    let new_args: Vec<Expression> =
-                        args.iter().map(|a| a.replace(pattern, replacement)).collect();
+                    let new_args: Vec<Expression> = args
+                        .iter()
+                        .map(|a| a.replace(pattern, replacement))
+                        .collect();
                     Expression::Function {
                         name: name.clone(),
                         args: Box::new(new_args),
@@ -286,7 +290,8 @@ mod tests {
 
             assert!(
                 (a_val == &Expression::symbol(x.clone()) && b_val == &Expression::integer(1))
-                    || (a_val == &Expression::integer(1) && b_val == &Expression::symbol(x.clone()))
+                    || (a_val == &Expression::integer(1)
+                        && b_val == &Expression::symbol(x.clone()))
             );
         }
     }
@@ -367,7 +372,10 @@ mod tests {
     fn test_wildcard_inconsistency() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]);
+        let expr = Expression::add(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+        ]);
 
         let pattern = Pattern::Add(vec![Pattern::wildcard("a"), Pattern::wildcard("a")]);
 
@@ -385,7 +393,8 @@ mod tests {
 
         assert!(Expression::symbol(y.clone()).matches(&pattern).is_some());
 
-        let expr_with_x = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
+        let expr_with_x =
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
         assert!(expr_with_x.matches(&pattern).is_none());
     }
 

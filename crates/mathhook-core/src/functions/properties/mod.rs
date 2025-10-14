@@ -3,24 +3,23 @@
 //! Defines the mathematical properties and capabilities for all function types.
 //! Inspired by SymPy's comprehensive function system but optimized for performance.
 
-pub mod rules;
 pub mod elementary;
+pub mod rules;
 pub mod special;
 
 use crate::core::Expression;
 use crate::functions::evaluation::EvaluationResult;
 
 pub use rules::{
-    DerivativeRule, DerivativeRuleType, AntiderivativeRule, AntiderivativeRuleType,
-    ConstantOfIntegration, RecurrenceRule, ThreeTermRecurrence, MathIdentity,
-    SpecialValue, DomainRangeData, Domain, Range, NumericalEvaluator, EvaluationMethod
+    AntiderivativeRule, AntiderivativeRuleType, ConstantOfIntegration, DerivativeRule,
+    DerivativeRuleType, Domain, DomainRangeData, EvaluationMethod, MathIdentity,
+    NumericalEvaluator, Range, RecurrenceRule, SpecialValue, ThreeTermRecurrence,
 };
 
 pub use elementary::{ElementaryProperties, UserProperties, UserProperty};
 pub use special::{
-    SpecialProperties, PolynomialProperties, PolynomialFamily, OrthogonalityData,
-    RodriguesFormula, GeneratingFunction, GeneratingFunctionType,
-    DifferentialEquation, AsymptoticData
+    AsymptoticData, DifferentialEquation, GeneratingFunction, GeneratingFunctionType,
+    OrthogonalityData, PolynomialFamily, PolynomialProperties, RodriguesFormula, SpecialProperties,
 };
 
 /// Mathematical properties for all function types
@@ -169,14 +168,12 @@ impl FunctionProperties {
         args: &[Expression],
     ) -> Option<EvaluationResult> {
         match self {
-            FunctionProperties::Elementary(props) => {
-                match props.domain_range.domain {
-                    Domain::Integer | Domain::PositiveInteger => {
-                        self.apply_number_theory_algorithm(name, args)
-                    }
-                    _ => None,
+            FunctionProperties::Elementary(props) => match props.domain_range.domain {
+                Domain::Integer | Domain::PositiveInteger => {
+                    self.apply_number_theory_algorithm(name, args)
                 }
-            }
+                _ => None,
+            },
             _ => None,
         }
     }
@@ -276,13 +273,17 @@ mod tests {
     fn test_function_properties_size() {
         use std::mem::size_of;
 
-        assert!(size_of::<FunctionProperties>() <= 32,
+        assert!(
+            size_of::<FunctionProperties>() <= 32,
             "FunctionProperties size: {} bytes (expected <= 32)",
-            size_of::<FunctionProperties>());
+            size_of::<FunctionProperties>()
+        );
 
-        assert!(size_of::<ElementaryProperties>() <= 256,
+        assert!(
+            size_of::<ElementaryProperties>() <= 256,
             "ElementaryProperties size: {} bytes (expected <= 256)",
-            size_of::<ElementaryProperties>());
+            size_of::<ElementaryProperties>()
+        );
     }
 
     #[test]

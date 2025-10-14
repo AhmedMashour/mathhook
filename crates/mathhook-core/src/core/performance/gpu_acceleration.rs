@@ -213,7 +213,8 @@ impl GpuAccelerator {
     #[cfg(feature = "webgpu")]
     fn webgpu_bulk_add(&self, values: &[f64]) -> Result<f64, GpuError> {
         Err(GpuError::NotImplemented(
-            "WebGPU bulk operations require compute shader integration (planned for 0.2)".to_string(),
+            "WebGPU bulk operations require compute shader integration (planned for 0.2)"
+                .to_string(),
         ))
     }
 
@@ -225,7 +226,8 @@ impl GpuAccelerator {
         b: &[Vec<f64>],
     ) -> Result<Vec<Vec<f64>>, GpuError> {
         Err(GpuError::NotImplemented(
-            "WebGPU matrix operations require compute shader integration (planned for 0.2)".to_string(),
+            "WebGPU matrix operations require compute shader integration (planned for 0.2)"
+                .to_string(),
         ))
     }
 

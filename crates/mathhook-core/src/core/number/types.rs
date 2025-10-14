@@ -124,16 +124,22 @@ impl Number {
             Number::Integer(i) => Ok(*i as f64),
             Number::Float(f) => Ok(*f),
             Number::BigInteger(bi) => {
-                bi.to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
-                    operation: "BigInteger to float conversion".to_string(),
-                })
+                bi.to_string()
+                    .parse::<f64>()
+                    .map_err(|_| MathError::NumericOverflow {
+                        operation: "BigInteger to float conversion".to_string(),
+                    })
             }
             Number::Rational(r) => {
-                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
-                    operation: "Rational numerator to float conversion".to_string(),
+                let numer_float = r.numer().to_string().parse::<f64>().map_err(|_| {
+                    MathError::NumericOverflow {
+                        operation: "Rational numerator to float conversion".to_string(),
+                    }
                 })?;
-                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| MathError::NumericOverflow {
-                    operation: "Rational denominator to float conversion".to_string(),
+                let denom_float = r.denom().to_string().parse::<f64>().map_err(|_| {
+                    MathError::NumericOverflow {
+                        operation: "Rational denominator to float conversion".to_string(),
+                    }
                 })?;
                 Ok(numer_float / denom_float)
             }

@@ -71,12 +71,16 @@ fn initialize_elimination_messages(registry: &mut HashMap<MessageKey, MessageTem
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::SystemEquation, MessageType::SystemElimination, 1),
+        MessageKey::new(
+            MessageCategory::SystemEquation,
+            MessageType::SystemElimination,
+            1,
+        ),
         MessageTemplate::new(
             "Elimination Step 1: Align Equations",
             "Write system in standard form:\nEquation 1: {equation1}\nEquation 2: {equation2}",
-            &["equation1", "equation2"]
-        )
+            &["equation1", "equation2"],
+        ),
     );
 
     registry.insert(
@@ -98,12 +102,16 @@ fn initialize_elimination_messages(registry: &mut HashMap<MessageKey, MessageTem
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::SystemEquation, MessageType::SystemElimination, 4),
+        MessageKey::new(
+            MessageCategory::SystemEquation,
+            MessageType::SystemElimination,
+            4,
+        ),
         MessageTemplate::new(
             "Elimination Step 4: Solve for Remaining Variable",
             "Solve simplified equation for {variable}:\n{equation}\n{variable} = {solution}",
-            &["variable", "equation", "solution"]
-        )
+            &["variable", "equation", "solution"],
+        ),
     );
 
     registry.insert(
@@ -137,21 +145,29 @@ fn initialize_matrix_method_messages(registry: &mut HashMap<MessageKey, MessageT
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::SystemEquation, MessageType::SystemMatrix, 2),
+        MessageKey::new(
+            MessageCategory::SystemEquation,
+            MessageType::SystemMatrix,
+            2,
+        ),
         MessageTemplate::new(
             "Augmented Matrix",
             "Form augmented matrix [A|b]:\n{augmented_matrix}\nApply row operations to reduce",
-            &["augmented_matrix"]
-        )
+            &["augmented_matrix"],
+        ),
     );
 
     registry.insert(
-        MessageKey::new(MessageCategory::SystemEquation, MessageType::SystemMatrix, 3),
+        MessageKey::new(
+            MessageCategory::SystemEquation,
+            MessageType::SystemMatrix,
+            3,
+        ),
         MessageTemplate::new(
             "Row Reduction Step",
             "Row operation: {operation}\nBefore: {matrix_before}\nAfter: {matrix_after}",
-            &["operation", "matrix_before", "matrix_after"]
-        )
+            &["operation", "matrix_before", "matrix_after"],
+        ),
     );
 
     registry.insert(
@@ -165,7 +181,9 @@ fn initialize_matrix_method_messages(registry: &mut HashMap<MessageKey, MessageT
 }
 
 /// Initialize solution interpretation messages
-fn initialize_solution_interpretation_messages(registry: &mut HashMap<MessageKey, MessageTemplate>) {
+fn initialize_solution_interpretation_messages(
+    registry: &mut HashMap<MessageKey, MessageTemplate>,
+) {
     registry.insert(
         MessageKey::new(MessageCategory::SystemEquation, MessageType::Result, 0),
         MessageTemplate::new(

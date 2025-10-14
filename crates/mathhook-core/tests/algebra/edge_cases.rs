@@ -603,10 +603,7 @@ mod performance_edge_cases {
     fn test_expression_cloning_performance() {
         /// Test that expression cloning is efficient
         let complex_expr = Expression::add(vec![
-            Expression::mul(vec![
-                Expression::integer(2),
-                Expression::symbol(symbol!(x)),
-            ]),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(symbol!(x))]),
             Expression::pow(Expression::symbol(symbol!(y)), Expression::integer(3)),
             Expression::integer(42),
         ]);

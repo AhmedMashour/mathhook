@@ -6,7 +6,11 @@ use num_rational::BigRational;
 
 #[test]
 fn test_number_type_size_is_16_bytes() {
-    assert_eq!(std::mem::size_of::<Number>(), 16, "Number type must be exactly 16 bytes");
+    assert_eq!(
+        std::mem::size_of::<Number>(),
+        16,
+        "Number type must be exactly 16 bytes"
+    );
 }
 
 #[test]

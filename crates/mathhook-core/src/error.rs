@@ -45,14 +45,10 @@ pub enum MathError {
     },
 
     /// Numeric overflow during computation
-    NumericOverflow {
-        operation: String,
-    },
+    NumericOverflow { operation: String },
 
     /// Feature not yet implemented
-    NotImplemented {
-        feature: String,
-    },
+    NotImplemented { feature: String },
 
     /// Pole singularity - function approaches infinity
     ///
@@ -61,10 +57,7 @@ pub enum MathError {
     /// - tan(π/2)
     /// - log(0)
     /// - 1/0
-    Pole {
-        function: String,
-        at: Expression,
-    },
+    Pole { function: String, at: Expression },
 
     /// Branch cut issue for multi-valued functions
     ///
@@ -72,16 +65,17 @@ pub enum MathError {
     ///
     /// - log(-1) in real domain (requires complex domain)
     /// - sqrt(-1) in real domain (branch cut on negative real axis)
-    BranchCut {
-        function: String,
-        value: Expression,
-    },
+    BranchCut { function: String, value: Expression },
 }
 
 impl fmt::Display for MathError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            MathError::DomainError { operation, value, reason } => {
+            MathError::DomainError {
+                operation,
+                value,
+                reason,
+            } => {
                 write!(f, "Domain error in {}: {} ({})", operation, value, reason)
             }
             MathError::DivisionByZero => {

@@ -4,8 +4,8 @@
 //! represented as expressions with symbolic real and imaginary parts.
 
 use crate::core::Expression;
-use crate::simplify::Simplify;
 use crate::expr;
+use crate::simplify::Simplify;
 
 /// Trait for complex number operations
 ///
@@ -209,11 +209,8 @@ impl ComplexOperations for Expression {
                 let bc = Expression::mul(vec![a.imag.clone(), b.real.clone()]).simplify();
 
                 Expression::complex(
-                    Expression::add(vec![
-                        ac,
-                        Expression::mul(vec![expr!(-1), bd]).simplify(),
-                    ])
-                    .simplify(),
+                    Expression::add(vec![ac, Expression::mul(vec![expr!(-1), bd]).simplify()])
+                        .simplify(),
                     Expression::add(vec![ad, bc]).simplify(),
                 )
             }
@@ -260,10 +257,7 @@ impl ComplexOperations for Expression {
                         ])
                         .simplify(),
                     ),
-                    _ => Expression::mul(vec![
-                        numerator,
-                        Expression::pow(denominator, expr!(-1)),
-                    ]),
+                    _ => Expression::mul(vec![numerator, Expression::pow(denominator, expr!(-1))]),
                 }
             }
 
@@ -305,10 +299,7 @@ impl ComplexOperations for Expression {
                         ])
                         .simplify(),
                     ),
-                    _ => Expression::mul(vec![
-                        numerator,
-                        Expression::pow(denominator, expr!(-1)),
-                    ]),
+                    _ => Expression::mul(vec![numerator, Expression::pow(denominator, expr!(-1))]),
                 }
             }
 

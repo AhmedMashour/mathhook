@@ -18,7 +18,9 @@ fn has_step_containing(explanation: &StepByStepExplanation, text: &str) -> bool 
 
 /// Helper function to check if multiple terms appear in explanation
 fn has_steps_containing_all(explanation: &StepByStepExplanation, texts: &[&str]) -> bool {
-    texts.iter().all(|text| has_step_containing(explanation, text))
+    texts
+        .iter()
+        .all(|text| has_step_containing(explanation, text))
 }
 
 #[test]
@@ -89,7 +91,8 @@ fn test_variable_rule_identifies_variable() {
     );
 
     assert!(
-        has_step_containing(&explanation, "variable") || has_step_containing(&explanation, "itself"),
+        has_step_containing(&explanation, "variable")
+            || has_step_containing(&explanation, "itself"),
         "Must mention differentiating variable with respect to itself"
     );
 
@@ -150,7 +153,8 @@ fn test_chain_rule_identifies_composition() {
     );
 
     assert!(
-        has_step_containing(&explanation, "chain") || has_step_containing(&explanation, "composite"),
+        has_step_containing(&explanation, "chain")
+            || has_step_containing(&explanation, "composite"),
         "Must mention chain rule or composite function"
     );
 
@@ -160,7 +164,8 @@ fn test_chain_rule_identifies_composition() {
     );
 
     assert!(
-        has_step_containing(&explanation, "multiply") || has_step_containing(&explanation, "f'(g(x)) * g'(x)"),
+        has_step_containing(&explanation, "multiply")
+            || has_step_containing(&explanation, "f'(g(x)) * g'(x)"),
         "Must explain multiplying derivatives"
     );
 }
@@ -215,14 +220,16 @@ fn test_quotient_rule_formula_shown() {
     );
 
     assert!(
-        has_step_containing(&explanation, "quotient") || has_step_containing(&explanation, "numerator"),
+        has_step_containing(&explanation, "quotient")
+            || has_step_containing(&explanation, "numerator"),
         "Must mention quotient or numerator/denominator"
     );
 
     assert!(
         has_step_containing(&explanation, "f'*g - f*g'")
             || has_step_containing(&explanation, "f'g - fg'")
-            || (has_step_containing(&explanation, "numerator") && has_step_containing(&explanation, "denominator")),
+            || (has_step_containing(&explanation, "numerator")
+                && has_step_containing(&explanation, "denominator")),
         "Must show quotient rule formula or explain numerator/denominator"
     );
 }
@@ -260,10 +267,10 @@ fn test_product_rule_differentiates_both_factors() {
         "Product rule should differentiate both factors"
     );
 
-    let has_first_deriv = has_step_containing(&explanation, "first")
-        || has_step_containing(&explanation, "f'");
-    let has_second_deriv = has_step_containing(&explanation, "second")
-        || has_step_containing(&explanation, "g'");
+    let has_first_deriv =
+        has_step_containing(&explanation, "first") || has_step_containing(&explanation, "f'");
+    let has_second_deriv =
+        has_step_containing(&explanation, "second") || has_step_containing(&explanation, "g'");
 
     assert!(
         has_first_deriv && has_second_deriv,
@@ -356,8 +363,7 @@ fn test_constant_multiple_in_derivative() {
     );
 
     assert!(
-        explanation.final_expression
-            != Expression::integer(0),
+        explanation.final_expression != Expression::integer(0),
         "Derivative of 5x^2 should not be zero"
     );
 }
@@ -369,15 +375,9 @@ fn test_explanation_has_latex_output() {
 
     let explanation = expr.derivative_with_steps(&x, 1);
 
-    let has_latex = explanation
-        .steps
-        .iter()
-        .any(|step| step.latex.is_some());
+    let has_latex = explanation.steps.iter().any(|step| step.latex.is_some());
 
-    assert!(
-        has_latex,
-        "At least some steps should have LaTeX output"
-    );
+    assert!(has_latex, "At least some steps should have LaTeX output");
 }
 
 #[test]

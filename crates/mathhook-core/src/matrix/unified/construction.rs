@@ -124,9 +124,7 @@ impl Matrix {
     pub fn is_identity(&self) -> bool {
         match self {
             Matrix::Identity(_) => true,
-            Matrix::Scalar(data) => {
-                data.scalar_value == Expression::integer(1)
-            }
+            Matrix::Scalar(data) => data.scalar_value == Expression::integer(1),
             _ => false,
         }
     }

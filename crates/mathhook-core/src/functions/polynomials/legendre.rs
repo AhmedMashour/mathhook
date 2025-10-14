@@ -23,22 +23,22 @@ impl LegendreIntelligence {
         let mut intelligence = Self {
             properties: HashMap::with_capacity(4),
         };
-        
+
         intelligence.initialize_legendre_polynomials();
-        
+
         intelligence
     }
-    
+
     /// Get all Legendre polynomial properties
     pub fn get_properties(&self) -> HashMap<String, FunctionProperties> {
         self.properties.clone()
     }
-    
+
     /// Check if function is a Legendre polynomial
     pub fn has_function(&self, name: &str) -> bool {
         self.properties.contains_key(name)
     }
-    
+
     /// Initialize Legendre polynomials with ABSOLUTE MATHEMATICAL ACCURACY
     ///
     /// ## Mathematical Background
@@ -152,56 +152,67 @@ impl LegendreIntelligence {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_legendre_mathematical_accuracy() {
         let legendre = LegendreIntelligence::new();
-        
+
         // Test that Legendre polynomials are recognized
         assert!(legendre.has_function("legendre_p"));
-        
+
         // Test mathematical properties
         let properties = legendre.get_properties();
         if let Some(FunctionProperties::Polynomial(legendre_props)) = properties.get("legendre_p") {
             // Verify polynomial family
             assert_eq!(legendre_props.family, PolynomialFamily::Legendre);
-            
+
             // Verify initial conditions: P_0 = 1, P_1 = x
-            assert_eq!(legendre_props.recurrence.initial_conditions.0, Expression::integer(1));
-            assert_eq!(legendre_props.recurrence.initial_conditions.1, Expression::symbol("x"));
-            
+            assert_eq!(
+                legendre_props.recurrence.initial_conditions.0,
+                Expression::integer(1)
+            );
+            assert_eq!(
+                legendre_props.recurrence.initial_conditions.1,
+                Expression::symbol("x")
+            );
+
             // Verify orthogonality interval [-1, 1]
             if let Some(ref ortho) = legendre_props.orthogonality {
                 assert_eq!(ortho.interval.0, Expression::integer(-1));
                 assert_eq!(ortho.interval.1, Expression::integer(1));
                 assert_eq!(ortho.weight_function, Expression::integer(1));
             }
-            
+
             // Verify special values
             assert!(!legendre_props.special_values.is_empty());
-            
+
             // Verify P_n(1) = 1
-            let p_at_1 = legendre_props.special_values.iter()
+            let p_at_1 = legendre_props
+                .special_values
+                .iter()
                 .find(|sv| sv.input == "1")
                 .expect("P_n(1) special value should exist");
             assert_eq!(p_at_1.output, Expression::integer(1));
         }
     }
-    
+
     #[test]
     fn test_legendre_recurrence_accuracy() {
         let legendre = LegendreIntelligence::new();
         let properties = legendre.get_properties();
-        
+
         if let Some(FunctionProperties::Polynomial(legendre_props)) = properties.get("legendre_p") {
             // Verify recurrence relation structure
             // (n+1)P_{n+1}(x) = (2n+1)x P_n(x) - n P_{n-1}(x)
-            
+
             // Beta coefficient should be 0 (no constant term)
             assert_eq!(legendre_props.recurrence.beta_coeff, Expression::integer(0));
-            
+
             // Evaluation method should be recurrence (most accurate)
-            assert_eq!(legendre_props.evaluation_method, EvaluationMethod::Recurrence);
+            assert_eq!(
+                legendre_props.evaluation_method,
+                EvaluationMethod::Recurrence
+            );
         }
     }
 }

@@ -2,25 +2,25 @@
 //!
 //! Applies replacement patterns with wildcard bindings from matches.
 
+use super::PatternMatches;
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
-use super::PatternMatches;
 
 /// Apply a replacement pattern with bindings from a match
 pub(super) fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Expression {
     match replacement {
-        Pattern::Wildcard { name, .. } => {
-            bindings
-                .get(name)
-                .cloned()
-                .unwrap_or_else(|| panic!("Unbound wildcard in replacement: {}", name))
-        }
+        Pattern::Wildcard { name, .. } => bindings
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| panic!("Unbound wildcard in replacement: {}", name)),
 
         Pattern::Exact(expr) => expr.clone(),
 
         Pattern::Add(terms) => {
-            let new_terms: Vec<Expression> =
-                terms.iter().map(|t| apply_replacement(t, bindings)).collect();
+            let new_terms: Vec<Expression> = terms
+                .iter()
+                .map(|t| apply_replacement(t, bindings))
+                .collect();
             Expression::Add(Box::new(new_terms))
         }
 
@@ -39,8 +39,10 @@ pub(super) fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches
         }
 
         Pattern::Function { name, args } => {
-            let new_args: Vec<Expression> =
-                args.iter().map(|a| apply_replacement(a, bindings)).collect();
+            let new_args: Vec<Expression> = args
+                .iter()
+                .map(|a| apply_replacement(a, bindings))
+                .collect();
             Expression::Function {
                 name: name.clone(),
                 args: Box::new(new_args),
