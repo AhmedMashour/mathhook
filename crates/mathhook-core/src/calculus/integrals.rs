@@ -8,6 +8,7 @@
 mod basic;
 pub mod by_parts;
 // mod definite;
+pub mod educational;
 mod function_integrals;
 // mod rational;
 // mod substitution;
@@ -16,6 +17,10 @@ mod function_integrals;
 pub use basic::BasicIntegrals;
 pub use by_parts::IntegrationByParts;
 // pub use definite::DefiniteIntegrals;
+pub use educational::{
+    explain_constant_rule, explain_definite_integral, explain_integration_by_parts,
+    explain_power_rule, explain_sum_rule, explain_u_substitution,
+};
 pub use function_integrals::FunctionIntegrals;
 // pub use rational::RationalIntegrals;
 // pub use substitution::IntegrationBySubstitution;

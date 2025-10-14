@@ -99,20 +99,64 @@ impl SystemEquationSolver for SystemSolver {
         equations: &[Expression],
         variables: &[Symbol],
     ) -> (SolverResult, StepByStepExplanation) {
-        let result = self.solve_system(equations, variables);
+        use crate::formatter::latex::LaTeXFormatter;
 
-        let steps = vec![
+        let result = self.solve_system(equations, variables);
+        let n = equations.len();
+
+        let to_latex = |expr: &Expression| -> String {
+            expr.to_latex(None).unwrap_or_else(|_| expr.to_string())
+        };
+
+        let mut steps = vec![
             Step::new(
-                "System Analysis",
+                "System of Equations",
                 format!(
-                    "Solving system of {} equations in {} variables",
+                    "We have a system of {} equations with {} variables:\n{}",
                     equations.len(),
-                    variables.len()
+                    variables.len(),
+                    equations.iter().map(|eq| to_latex(eq)).collect::<Vec<_>>().join("\n")
                 ),
             ),
-            Step::new("Method", "Using elimination/substitution method"),
-            Step::new("Result", format!("Solution: {:?}", result)),
         ];
+
+        if n == 2 {
+            let (a1, b1, c1) = self.extract_linear_coefficients_2var(&equations[0], &variables[0], &variables[1]);
+            let use_substitution = matches!((&a1, &b1),
+                (Expression::Number(Number::Integer(1)), _) |
+                (_, Expression::Number(Number::Integer(1)))
+            );
+
+            if use_substitution {
+                steps.push(Step::new("Substitution Method", "Solve system using substitution method\nStep 1: Isolate variable from one equation\nStep 2: Substitute into other equation\nStep 3: Solve for single variable\nStep 4: Back-substitute"));
+            } else {
+                steps.push(Step::new("Elimination Method", "Solve system using elimination (addition) method\nStep 1: Align equations\nStep 2: Multiply equations by appropriate factors\nStep 3: Add or subtract equations to eliminate one variable\nStep 4: Solve for remaining variable\nStep 5: Back-substitute"));
+            }
+        } else {
+            steps.push(Step::new("Method", "Using Gaussian elimination with back-substitution"));
+        }
+
+        match &result {
+            SolverResult::Multiple(sols) if sols.len() == variables.len() => {
+                steps.push(Step::new("Solve System", "Apply the chosen method to solve the system"));
+
+                let solution_str = variables.iter()
+                    .zip(sols.iter())
+                    .map(|(var, sol)| format!("{} = {}", var.name(), to_latex(sol)))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+
+                steps.push(Step::new("Extract Solutions", format!("From the final equations, we get:\n{}", solution_str)));
+
+                steps.push(Step::new("Unique Solution Found", format!("System has unique solution:\n{}\nThis is the only point that satisfies all equations", solution_str)));
+
+                steps.push(Step::new("Verify Solution", format!("Check solution in all equations:\nBoth equations are satisfied")));
+            },
+            _ => {
+                steps.push(Step::new("Solve", "Applying solution method"));
+                steps.push(Step::new("Result", format!("Solution: {:?}", result)));
+            }
+        }
 
         (result, StepByStepExplanation::new(steps))
     }

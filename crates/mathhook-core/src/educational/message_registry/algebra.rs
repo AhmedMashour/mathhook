@@ -9,6 +9,7 @@ pub fn initialize_algebra_messages(registry: &mut HashMap<MessageKey, MessageTem
     initialize_expansion_messages(registry);
     initialize_factorization_messages(registry);
     initialize_rational_messages(registry);
+    initialize_polynomial_messages(registry);
 }
 
 /// Initialize simplification educational messages
@@ -253,6 +254,99 @@ fn initialize_rational_messages(registry: &mut HashMap<MessageKey, MessageTempla
             "Rational Expression Multiplication",
             "Multiply rational expressions: ({numerator1}/{denominator1}) * ({numerator2}/{denominator2})\nMultiply numerators and denominators:\n({numerator1}*{numerator2})/({denominator1}*{denominator2}) = {result}",
             &["numerator1", "denominator1", "numerator2", "denominator2", "result"]
+        )
+    );
+}
+
+/// Initialize polynomial equation messages
+fn initialize_polynomial_messages(registry: &mut HashMap<MessageKey, MessageTemplate>) {
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Introduction, 0),
+        MessageTemplate::new(
+            "Polynomial Equation",
+            "Solve polynomial equation: {equation} = 0\nDegree: {degree} ({degree_name})",
+            &["equation", "degree", "degree_name"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Strategy, 0),
+        MessageTemplate::new(
+            "Polynomial Solution Strategy",
+            "Strategy for degree {degree} polynomial:\n{strategy_description}\nWe will use the Rational Root Theorem and factorization",
+            &["degree", "strategy_description"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::PolynomialRationalRoot, 0),
+        MessageTemplate::new(
+            "Rational Root Theorem",
+            "Apply Rational Root Theorem:\nPossible rational roots are p/q where:\n- p divides constant term: {constant_term}\n- q divides leading coefficient: {leading_coeff}\nCandidates: {candidates}",
+            &["constant_term", "leading_coeff", "candidates"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::PolynomialRationalRoot, 1),
+        MessageTemplate::new(
+            "Test Rational Root Candidate",
+            "Test {variable} = {candidate}:\nSubstitute into {equation}:\nP({candidate}) = {evaluation} {result}",
+            &["variable", "candidate", "equation", "evaluation", "result"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::PolynomialSyntheticDivision, 0),
+        MessageTemplate::new(
+            "Synthetic Division",
+            "Factor out ({variable} - {root}) using synthetic division:\nDivide {polynomial} by ({variable} - {root})",
+            &["variable", "root", "polynomial"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::PolynomialSyntheticDivision, 1),
+        MessageTemplate::new(
+            "Synthetic Division Result",
+            "After dividing by ({variable} - {root}):\n{original_polynomial} = ({variable} - {root}) * ({quotient_polynomial})",
+            &["variable", "root", "original_polynomial", "quotient_polynomial"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::PolynomialFactorization, 0),
+        MessageTemplate::new(
+            "Complete Factorization",
+            "Complete factorization:\n{original_polynomial} = {factored_form}\nEach factor gives a root",
+            &["original_polynomial", "factored_form"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Result, 0),
+        MessageTemplate::new(
+            "Polynomial Solutions",
+            "Solutions to {equation} = 0:\n{solutions}\nTotal: {count} roots found",
+            &["equation", "solutions", "count"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Verification, 0),
+        MessageTemplate::new(
+            "Verify Polynomial Root",
+            "Verify {variable} = {root}:\nSubstitute into original equation:\n{verification_expression} = {result}",
+            &["variable", "root", "verification_expression", "result"]
+        )
+    );
+
+    registry.insert(
+        MessageKey::new(MessageCategory::PolynomialEquation, MessageType::Insight, 0),
+        MessageTemplate::new(
+            "Fundamental Theorem of Algebra",
+            "By the Fundamental Theorem of Algebra, a polynomial of degree {degree} has exactly {degree} roots (counting multiplicity) in the complex numbers.\nWe found {real_count} real roots",
+            &["degree", "real_count"]
         )
     );
 }

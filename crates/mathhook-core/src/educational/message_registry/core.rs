@@ -58,6 +58,9 @@ pub enum MessageType {
     SystemSubstitution,
     SystemElimination,
     SystemMatrix,
+    PolynomialRationalRoot,
+    PolynomialSyntheticDivision,
+    PolynomialFactorization,
 }
 
 /// Message key serving as unique identifier for each message

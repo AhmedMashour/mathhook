@@ -8,6 +8,7 @@ mod advanced_differentiation;
 mod basic;
 mod chain_rule;
 mod checker;
+pub mod educational;
 mod higher_order;
 mod partial;
 mod power_rule;
@@ -21,6 +22,7 @@ pub use advanced_differentiation::{
 pub use basic::BasicDerivatives;
 pub use chain_rule::{ChainRule, FunctionDerivatives};
 pub use checker::DifferentiabilityChecker;
+pub use educational::DerivativeWithSteps;
 pub use higher_order::HigherOrderDerivatives;
 pub use partial::{
     ConservativeFields, DirectionalDerivatives, FluidDynamicsOperations, GradientOperations,
