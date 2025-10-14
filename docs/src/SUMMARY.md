@@ -96,5 +96,5 @@
 - [Error Messages](./appendix/errors.md)
 - [FAQ](./appendix/faq.md)
 - [Glossary](./appendix/glossary.md)
-- [SymPy Migration Guide](./appendix/sympy-migration.md)
+<!-- - [SymPy Migration Guide](./appendix/sympy-migration.md) -->
 - [Changelog](./appendix/changelog.md)

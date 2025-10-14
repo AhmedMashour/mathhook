@@ -575,7 +575,7 @@ print(expr)  # Simplified
 
 ### SymPy Migration
 
-See [SymPy Migration Guide](../appendix/sympy-migration.md) for detailed comparison.
+<!-- See [SymPy Migration Guide](../appendix/sympy-migration.md) for detailed comparison. -->
 
 **Quick Reference**:
 
@@ -596,5 +596,5 @@ See [SymPy Migration Guide](../appendix/sympy-migration.md) for detailed compari
 ## Next Steps
 
 - [Node.js API Guide](./nodejs.md) - JavaScript/TypeScript bindings
-- [SymPy Migration Guide](../appendix/sympy-migration.md) - Port existing code
+<!-- - [SymPy Migration Guide](../appendix/sympy-migration.md) - Port existing code -->
 - [Performance Benchmarks](../performance/benchmarking.md) - Detailed comparisons

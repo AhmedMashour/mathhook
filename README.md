@@ -52,7 +52,7 @@ from mathhook import Expression, MathSolver
 
 # Create expressions
 x = Expression.symbol('x')
-expr = x.pow(2).add(x.multiply(2)).add(1)
+expr = x.pow(2).add(x.multiply(2)).add(1) 
 
 # Simplify
 simplified = expr.simplify()

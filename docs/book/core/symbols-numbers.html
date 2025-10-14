@@ -205,6 +205,38 @@ assert_ne!(symbol!(x), symbol!(y));
 <span class="boring">}</span></code></pre></pre>
 <h3 id="string-interning"><a class="header" href="#string-interning">String Interning</a></h3>
 <p>MathHook uses string interning for symbols, making equality checks O(1) pointer comparisons.</p>
+<h2 id="why-this-design"><a class="header" href="#why-this-design">Why This Design?</a></h2>
+<h3 id="why-string-interning-for-symbols"><a class="header" href="#why-string-interning-for-symbols">Why String Interning for Symbols?</a></h3>
+<p><strong>Design Decision</strong>: Symbol names are stored in a global intern table, with symbols holding only a reference.</p>
+<p><strong>Why?</strong></p>
+<ul>
+<li><strong>Fast equality</strong>: Comparing two symbols is a single pointer comparison (O(1))</li>
+<li><strong>Memory efficiency</strong>: Symbol name "x" stored once, shared by all <code>symbol!(x)</code> instances</li>
+<li><strong>Cache-friendly</strong>: Symbols are just pointers (8 bytes on 64-bit systems)</li>
+</ul>
+<p><strong>Without Interning</strong>: Every <code>symbol!(x)</code> would store its own copy of "x" and require string comparison (O(n))</p>
+<p><strong>Trade-off</strong>: Global mutable state for intern table</p>
+<ul>
+<li>Thread-safe using locks or lock-free data structures</li>
+<li>One-time cost on first use of each symbol name</li>
+<li>Benefit far outweighs cost (10-100x faster symbol comparison)</li>
+</ul>
+<p><strong>Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let x1 = symbol!(x);
+let x2 = symbol!(x);
+// Same pointer internally - O(1) comparison
+assert_eq!(x1, x2);
+<span class="boring">}</span></code></pre></pre>
+<p><strong>When This Matters</strong>:</p>
+<ul>
+<li>Pattern matching with many symbol comparisons</li>
+<li>Substitution operations</li>
+<li>Expression equality checking</li>
+<li>Hash table lookups</li>
+</ul>
+<hr />
 <h2 id="numbers"><a class="header" href="#numbers">Numbers</a></h2>
 <p>MathHook supports multiple number types for different use cases.</p>
 <h3 id="integers"><a class="header" href="#integers">Integers</a></h3>
@@ -232,6 +264,92 @@ let six_fourths = Expression::rational(6, 4);  // Automatically becomes 3/2
 let e_approx = Expression::float(2.71828182846);
 <span class="boring">}</span></code></pre></pre>
 <p><strong>Warning</strong>: Use floats only when approximation is acceptable. Prefer rationals for exact arithmetic.</p>
+<h2 id="why-rational-numbers-over-floats"><a class="header" href="#why-rational-numbers-over-floats">Why Rational Numbers Over Floats?</a></h2>
+<h3 id="design-decision-exact-rational-arithmetic"><a class="header" href="#design-decision-exact-rational-arithmetic">Design Decision: Exact Rational Arithmetic</a></h3>
+<p><strong>Why MathHook Uses Rationals for Symbolic Math</strong>:</p>
+<p><strong>The Problem with Floats</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Using floats (WRONG for symbolic math)
+let third = 0.33333333;
+let result = 3.0 * third;
+// Result: 0.99999999 (imprecise)
+
+// Using rationals (CORRECT for symbolic math)
+let third = Expression::rational(1, 3);
+let result = Expression::mul(vec![Expression::integer(3), third]);
+// Result: 1 (exact)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Why?</strong></p>
+<ul>
+<li><strong>Mathematical correctness</strong>: <code>1/3</code> is exactly <code>1/3</code>, not an approximation</li>
+<li><strong>Symbolic operations</strong>: Algebra requires exactness (cannot lose precision)</li>
+<li><strong>Accumulation prevention</strong>: No rounding error buildup</li>
+<li><strong>Comparison reliability</strong>: Exact equality testing</li>
+</ul>
+<p><strong>When We Use Floats</strong>:</p>
+<ul>
+<li>Only for numerical approximation (explicit <code>.evalf()</code>)</li>
+<li>Only when exact representation is impossible (e.g., transcendental results)</li>
+<li><strong>NEVER</strong> in symbolic operations</li>
+</ul>
+<p><strong>Real-World Example</strong>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Solving x^2 - 2 = 0 symbolically
+let x = symbol!(x);
+let eq = expr!((x ^ 2) - 2);
+let solutions = eq.solve(&amp;x);
+// Solutions: [-√2, √2] (exact symbolic form)
+// NOT: [-1.414213562, 1.414213562] (approximate floats)
+<span class="boring">}</span></code></pre></pre>
+<p><strong>Alternative Considered</strong>: Always use floats (like numerical libraries)</p>
+<ul>
+<li><strong>Pros</strong>: Simpler implementation, predictable memory usage</li>
+<li><strong>Cons</strong>: Catastrophic for symbolic algebra (precision loss, equality breaks)</li>
+<li><strong>Decision</strong>: Exact arithmetic is non-negotiable for CAS</li>
+</ul>
+<p><strong>Why This Matters</strong>:</p>
+<ul>
+<li>Computer algebra requires exactness by definition</li>
+<li>SymPy and Mathematica use same approach</li>
+<li>Prevents subtle bugs from rounding errors</li>
+<li>Enables reliable symbolic simplification</li>
+</ul>
+<p><strong>Performance Impact</strong>:</p>
+<ul>
+<li>Rational arithmetic is slower than float (2-10x)</li>
+<li>Acceptable trade-off for correctness</li>
+<li>Use <code>.evalf()</code> when you need speed and can tolerate approximation</li>
+</ul>
+<hr />
+<h3 id="why-16-byte-number-type"><a class="header" href="#why-16-byte-number-type">Why 16-Byte Number Type?</a></h3>
+<p><strong>Design Decision</strong>: The <code>Number</code> type is exactly 16 bytes.</p>
+<p><strong>Why?</strong></p>
+<ul>
+<li><strong>Cache efficiency</strong>: Two numbers fit in a 32-byte expression</li>
+<li><strong>Tagged union</strong>: Discriminant + data in 16 bytes</li>
+<li><strong>Balance</strong>: Small enough for cache, large enough for pointer + metadata</li>
+</ul>
+<p><strong>Structure</strong>:</p>
+<pre><code>[1 byte: type tag] [15 bytes: data]
+- Integer: pointer to BigInt (8 bytes) + padding
+- Rational: two pointers to BigInt numerator/denominator (need clever packing)
+- Float: f64 (8 bytes) + padding
+- Complex: pointer to ComplexData (8 bytes) + padding
+</code></pre>
+<p><strong>Trade-off</strong>: Arbitrary precision requires heap allocation</p>
+<ul>
+<li>Small integers (i64) could fit inline, but design consistency favors uniform handling</li>
+<li>Large integers/rationals use <code>BigInt</code> on heap (pointer stored in 16 bytes)</li>
+</ul>
+<p><strong>Alternative Considered</strong>: Variable-size numbers</p>
+<ul>
+<li><strong>Pros</strong>: i64 could be inline (faster)</li>
+<li><strong>Cons</strong>: Variable size breaks expression size constraint</li>
+<li><strong>Decision</strong>: Uniform 16-byte size maintains expression size guarantee</li>
+</ul>
+<hr />
 <h3 id="complex-numbers"><a class="header" href="#complex-numbers">Complex Numbers</a></h3>
 <p>Complex numbers with real and imaginary parts:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -338,6 +456,11 @@ let gamma = Expression::euler_gamma(); // γ (Euler-Mascheroni constant)
             window.playground_copyable = true;
         </script>
 
+        <script src="../ace.js"></script>
+        <script src="../mode-rust.js"></script>
+        <script src="../editor.js"></script>
+        <script src="../theme-dawn.js"></script>
+        <script src="../theme-tomorrow_night.js"></script>
 
         <script src="../elasticlunr.min.js"></script>
         <script src="../mark.min.js"></script>

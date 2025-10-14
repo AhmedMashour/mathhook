@@ -27,10 +27,10 @@ Choose your journey based on your background and goals. Each path is designed to
    - Understand when MathHook is 100x faster than SymPy
    - Learn which operations benefit most
 
-5. **[SymPy Migration Guide](../appendix/sympy-migration.md)** (30 minutes)
+<!-- 5. **[SymPy Migration Guide](../appendix/sympy-migration.md)** (30 minutes)
    - Port existing SymPy code to MathHook
    - API differences and workarounds
-   - Feature compatibility matrix
+   - Feature compatibility matrix -->
 
 ### What You'll Learn
 
