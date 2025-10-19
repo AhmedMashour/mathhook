@@ -3,6 +3,7 @@
 use super::addition::simplify_addition;
 use super::helpers::expression_order;
 use super::power::simplify_power;
+use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -313,8 +314,18 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                     .next()
                     .expect("BUG: result_factors has length 1 but iterator is empty"),
                 _ => {
-                    // Sort factors for canonical ordering
-                    result_factors.sort_by(expression_order);
+                    // Check commutativity BEFORE sorting
+                    // Only sort if all factors are commutative (safe to reorder)
+                    let commutativity = Commutativity::combine(
+                        result_factors.iter().map(|f| f.commutativity())
+                    );
+
+                    if commutativity.can_sort() {
+                        // Safe to sort - all factors commutative
+                        result_factors.sort_by(expression_order);
+                    }
+                    // Else: preserve order for noncommutative factors
+
                     Expression::Mul(Box::new(result_factors))
                 }
             }
@@ -325,6 +336,8 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::symbol::Symbol;
+    use crate::simplify::Simplify;
     use crate::Expression;
 
     #[test]
@@ -348,5 +361,195 @@ mod tests {
         let nested = Expression::mul(vec![Expression::integer(3), Expression::integer(4)]);
         let expr = simplify_multiplication(&[Expression::integer(2), nested]);
         assert_eq!(expr, Expression::integer(24));
+    }
+
+    #[test]
+    fn test_scalar_multiplication_sorts() {
+        let y = Symbol::scalar("y");
+        let x = Symbol::scalar("x");
+        let expr = Expression::mul(vec![
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::scalar("y")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_matrix_multiplication_preserves_order() {
+        let A = Symbol::matrix("A");
+        let B = Symbol::matrix("B");
+        let expr = Expression::mul(vec![
+            Expression::symbol(B.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::symbol(Symbol::matrix("B")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_mixed_scalar_matrix_preserves_order() {
+        let x = Symbol::scalar("x");
+        let A = Symbol::matrix("A");
+        let expr = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_operator_multiplication_preserves_order() {
+        let P = Symbol::operator("P");
+        let Q = Symbol::operator("Q");
+        let expr = Expression::mul(vec![
+            Expression::symbol(Q.clone()),
+            Expression::symbol(P.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::symbol(Symbol::operator("Q")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::operator("P")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_quaternion_multiplication_preserves_order() {
+        let i = Symbol::quaternion("i");
+        let j = Symbol::quaternion("j");
+        let expr = Expression::mul(vec![
+            Expression::symbol(j.clone()),
+            Expression::symbol(i.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::symbol(Symbol::quaternion("j")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::quaternion("i")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_three_scalar_factors_sort() {
+        let z = Symbol::scalar("z");
+        let x = Symbol::scalar("x");
+        let y = Symbol::scalar("y");
+        let expr = Expression::mul(vec![
+            Expression::symbol(z.clone()),
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::scalar("y")));
+                assert_eq!(factors[2], Expression::symbol(Symbol::scalar("z")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_three_matrix_factors_preserve_order() {
+        let C = Symbol::matrix("C");
+        let A = Symbol::matrix("A");
+        let B = Symbol::matrix("B");
+        let expr = Expression::mul(vec![
+            Expression::symbol(C.clone()),
+            Expression::symbol(A.clone()),
+            Expression::symbol(B.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::symbol(Symbol::matrix("C")));
+                assert_eq!(factors[1], Expression::symbol(Symbol::matrix("A")));
+                assert_eq!(factors[2], Expression::symbol(Symbol::matrix("B")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_numeric_coefficient_with_scalars_sorts() {
+        let y = Symbol::scalar("y");
+        let x = Symbol::scalar("x");
+        let expr = Expression::mul(vec![
+            Expression::integer(2),
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::integer(2));
+                assert_eq!(factors[1], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(factors[2], Expression::symbol(Symbol::scalar("y")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_numeric_coefficient_with_matrices_preserves_order() {
+        let B = Symbol::matrix("B");
+        let A = Symbol::matrix("A");
+        let expr = Expression::mul(vec![
+            Expression::integer(2),
+            Expression::symbol(B.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::integer(2));
+                assert_eq!(factors[1], Expression::symbol(Symbol::matrix("B")));
+                assert_eq!(factors[2], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
     }
 }

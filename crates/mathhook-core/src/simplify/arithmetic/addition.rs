@@ -3,6 +3,7 @@
 use super::helpers::{expression_order, extract_arithmetic_coefficient_and_base};
 use super::multiplication::simplify_multiplication;
 use super::power::simplify_power;
+use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
@@ -140,6 +141,7 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
             }
 
             // Collect like terms using an order-preserving approach
+            // For noncommutative terms, only combine if structurally identical
             let mut like_terms: Vec<(String, Expression, Vec<Expression>)> = Vec::new();
 
             for term in terms {
@@ -158,7 +160,14 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                             // Extract coefficient and base term
                             let (coeff, base) =
                                 extract_arithmetic_coefficient_and_base(&simplified_term);
-                            let base_key = format!("{:?}", base); // Simple key for like terms
+
+                            // For noncommutative terms, use exact structural matching
+                            // For commutative terms, can use canonical form
+                            let base_key = if base.commutativity().can_sort() {
+                                format!("{:?}", base) // Commutative - can normalize
+                            } else {
+                                format!("{:?}", base) // Noncommutative - must match exactly
+                            };
 
                             // Find existing entry or create new one
                             if let Some(entry) =
@@ -211,8 +220,18 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                     .next()
                     .expect("BUG: result_terms has length 1 but iterator is empty"),
                 _ => {
-                    // Sort terms for canonical ordering
-                    result_terms.sort_by(expression_order);
+                    // Check commutativity BEFORE sorting
+                    // Only sort if all terms are commutative (safe to reorder)
+                    let commutativity = Commutativity::combine(
+                        result_terms.iter().map(|t| t.commutativity())
+                    );
+
+                    if commutativity.can_sort() {
+                        // Safe to sort - all terms commutative
+                        result_terms.sort_by(expression_order);
+                    }
+                    // Else: preserve order for noncommutative terms
+
                     Expression::Add(Box::new(result_terms))
                 }
             }
@@ -223,6 +242,8 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::core::symbol::Symbol;
+    use crate::simplify::Simplify;
     use crate::{symbol, Expression};
 
     #[test]
@@ -242,5 +263,244 @@ mod tests {
             expr,
             Expression::add(vec![Expression::integer(2), Expression::symbol(x)])
         );
+    }
+
+    #[test]
+    fn test_scalar_terms_combine() {
+        let x = Symbol::scalar("x");
+        let y = Symbol::scalar("y");
+
+        // x*y + y*x should combine to 2*x*y (commutative)
+        let xy = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+        ]);
+        let yx = Expression::mul(vec![
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+        let expr = Expression::add(vec![xy.clone(), yx.clone()]);
+
+        let simplified = expr.simplify();
+
+        // After simplification, should be 2*x*y
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::integer(2));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_matrix_terms_not_combined() {
+        let A = Symbol::matrix("A");
+        let B = Symbol::matrix("B");
+
+        // A*B + B*A should NOT combine (noncommutative)
+        let ab = Expression::mul(vec![
+            Expression::symbol(A.clone()),
+            Expression::symbol(B.clone()),
+        ]);
+        let ba = Expression::mul(vec![
+            Expression::symbol(B.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let expr = Expression::add(vec![ab.clone(), ba.clone()]);
+
+        let simplified = expr.simplify();
+
+        // Should stay as A*B + B*A
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+            }
+            _ => panic!("Expected Add with 2 terms, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_identical_matrix_terms_combine() {
+        let A = Symbol::matrix("A");
+        let B = Symbol::matrix("B");
+
+        // A*B + A*B should combine to 2*A*B (same term)
+        let ab1 = Expression::mul(vec![
+            Expression::symbol(A.clone()),
+            Expression::symbol(B.clone()),
+        ]);
+        let ab2 = Expression::mul(vec![
+            Expression::symbol(A.clone()),
+            Expression::symbol(B.clone()),
+        ]);
+        let expr = Expression::add(vec![ab1, ab2]);
+
+        let simplified = expr.simplify();
+
+        // Should be 2*A*B
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 3);
+                assert_eq!(factors[0], Expression::integer(2));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_operator_terms_not_combined() {
+        let P = Symbol::operator("P");
+        let Q = Symbol::operator("Q");
+
+        // P*Q + Q*P should NOT combine (noncommutative)
+        let pq = Expression::mul(vec![
+            Expression::symbol(P.clone()),
+            Expression::symbol(Q.clone()),
+        ]);
+        let qp = Expression::mul(vec![
+            Expression::symbol(Q.clone()),
+            Expression::symbol(P.clone()),
+        ]);
+        let expr = Expression::add(vec![pq, qp]);
+
+        let simplified = expr.simplify();
+
+        // Should stay as P*Q + Q*P
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+            }
+            _ => panic!("Expected Add with 2 terms, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_quaternion_terms_not_combined() {
+        let i = Symbol::quaternion("i");
+        let j = Symbol::quaternion("j");
+
+        // i*j + j*i should NOT combine (noncommutative)
+        let ij = Expression::mul(vec![
+            Expression::symbol(i.clone()),
+            Expression::symbol(j.clone()),
+        ]);
+        let ji = Expression::mul(vec![
+            Expression::symbol(j.clone()),
+            Expression::symbol(i.clone()),
+        ]);
+        let expr = Expression::add(vec![ij, ji]);
+
+        let simplified = expr.simplify();
+
+        // Should stay as i*j + j*i
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+            }
+            _ => panic!("Expected Add with 2 terms, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_scalar_addition_sorts() {
+        let y = Symbol::scalar("y");
+        let x = Symbol::scalar("x");
+        let expr = Expression::add(vec![
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+                assert_eq!(terms[0], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(terms[1], Expression::symbol(Symbol::scalar("y")));
+            }
+            _ => panic!("Expected Add, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_matrix_addition_preserves_order() {
+        let B = Symbol::matrix("B");
+        let A = Symbol::matrix("A");
+        let expr = Expression::add(vec![
+            Expression::symbol(B.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+                assert_eq!(terms[0], Expression::symbol(Symbol::matrix("B")));
+                assert_eq!(terms[1], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Add, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_mixed_scalar_matrix_addition_preserves_order() {
+        let x = Symbol::scalar("x");
+        let A = Symbol::matrix("A");
+        let expr = Expression::add(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        match simplified {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2);
+                assert_eq!(terms[0], Expression::symbol(Symbol::scalar("x")));
+                assert_eq!(terms[1], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Add, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_three_scalar_like_terms_combine() {
+        let x = Symbol::scalar("x");
+        let expr = Expression::add(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(x.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        // Should be 3*x
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::integer(3));
+                assert_eq!(factors[1], Expression::symbol(Symbol::scalar("x")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
+    }
+
+    #[test]
+    fn test_three_matrix_like_terms_combine() {
+        let A = Symbol::matrix("A");
+        let expr = Expression::add(vec![
+            Expression::symbol(A.clone()),
+            Expression::symbol(A.clone()),
+            Expression::symbol(A.clone()),
+        ]);
+        let simplified = expr.simplify();
+
+        // Should be 3*A (identical terms can combine even if noncommutative)
+        match simplified {
+            Expression::Mul(factors) => {
+                assert_eq!(factors.len(), 2);
+                assert_eq!(factors[0], Expression::integer(3));
+                assert_eq!(factors[1], Expression::symbol(Symbol::matrix("A")));
+            }
+            _ => panic!("Expected Mul, got {:?}", simplified),
+        }
     }
 }
