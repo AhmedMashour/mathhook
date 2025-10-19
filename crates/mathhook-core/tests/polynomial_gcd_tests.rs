@@ -76,7 +76,11 @@ fn test_division_by_constant() {
     let x = symbol!(x);
 
     // (x^2 + 2x + 1) / 2
-    let dividend = expr!((x^2) + (2*x) + 1);
+    let dividend = Expression::add(vec![
+        expr!(x^2),
+        expr!(2*x),
+        Expression::integer(1),
+    ]);
     let divisor = Expression::integer(2);
     let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
@@ -200,8 +204,8 @@ fn test_gcd_common_factor_linear() {
 
     // gcd((x+1)(x+2), (x+1)(x+3)) = x + 1
     // SymPy: sympy.gcd((x+1)*(x+2), (x+1)*(x+3)) = x + 1
-    let a = expr!((x^2) + (3*x) + 2); // (x+1)(x+2) = x^2 + 3x + 2
-    let b = expr!((x^2) + (4*x) + 3); // (x+1)(x+3) = x^2 + 4x + 3
+    let a = Expression::add(vec![expr!(x^2), expr!(3*x), Expression::integer(2)]);
+    let b = Expression::add(vec![expr!(x^2), expr!(4*x), Expression::integer(3)]);
     let result = a.gcd(&b);
 
     println!("Test GCD common factor: gcd((x+1)(x+2), (x+1)(x+3))");
@@ -297,7 +301,12 @@ fn test_gcd_cubic_quadratic() {
     // x^2 - 1 = (x-1)(x+1)
     // GCD = (x-1)(x+1) = x^2 - 1
     // SymPy: sympy.gcd(x**3 + x**2 - x - 1, x**2 - 1) = x**2 - 1
-    let a = expr!((x^3) + (x^2) - x - 1);
+    let a = Expression::add(vec![
+        expr!(x^3),
+        expr!(x^2),
+        Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        Expression::integer(-1),
+    ]);
     let b = expr!((x^2) - 1);
     let result = a.gcd(&b);
 
@@ -366,7 +375,12 @@ fn test_division_verification_property() {
     let x = symbol!(x);
 
     // Verify: dividend = divisor * quotient + remainder
-    let dividend = expr!((x^3) + (2*(x^2)) - x + 5);
+    let dividend = Expression::add(vec![
+        expr!(x^3),
+        expr!(2*(x^2)),
+        Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
+        Expression::integer(5),
+    ]);
     let divisor = expr!((x^2) + 1);
     let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
@@ -406,7 +420,11 @@ fn test_division_coefficients_extraction() {
 
     // Test that coefficient extraction works correctly
     // This is an internal functionality test
-    let poly = expr!((3*(x^2)) + (5*x) + 7);
+    let poly = Expression::add(vec![
+        expr!(3*(x^2)),
+        expr!(5*x),
+        Expression::integer(7),
+    ]);
 
     let (quot, rem) = polynomial_div(&poly, &Expression::integer(1), &x);
 

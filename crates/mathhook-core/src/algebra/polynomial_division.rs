@@ -401,7 +401,11 @@ mod tests {
         let x = symbol!(x);
 
         // (x^2 + 2x + 1) / 2 = (x^2/2 + x + 1/2)
-        let dividend = expr!((x^2) + (2*x) + 1);
+        let dividend = Expression::add(vec![
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+            Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+            Expression::integer(1),
+        ]);
         let divisor = Expression::integer(2);
         let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
@@ -451,7 +455,14 @@ mod tests {
         let x = symbol!(x);
 
         // Test: 2x^2 + 3x + 1
-        let poly = expr!((2*(x^2)) + (3*x) + 1);
+        let poly = Expression::add(vec![
+            Expression::mul(vec![
+                Expression::integer(2),
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+            ]),
+            Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
+            Expression::integer(1),
+        ]);
         let coeffs = extract_coefficients(&poly, &x);
 
         println!("Coefficients: {:?}", coeffs);

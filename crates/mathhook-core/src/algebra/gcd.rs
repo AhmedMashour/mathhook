@@ -1,9 +1,10 @@
 //! Greatest Common Divisor operations for polynomials and expressions
 
-use crate::core::{Expression, Number};
+use crate::core::{Expression, Number, Symbol};
+use crate::simplify::Simplify;
 use num_bigint::BigInt;
 use num_integer::Integer;
-use num_traits::One; // For GCD on BigInt
+use num_traits::One;
 
 /// Trait for GCD operations on expressions
 pub trait PolynomialGcd {
@@ -159,7 +160,7 @@ impl Expression {
                     symbols.insert(s.clone());
                 }
                 Expression::Add(terms) | Expression::Mul(terms) => {
-                    for term in terms {
+                    for term in terms.iter() {
                         collect_symbols(term, symbols);
                     }
                 }
@@ -168,7 +169,7 @@ impl Expression {
                     collect_symbols(exp, symbols);
                 }
                 Expression::Function { args, .. } => {
-                    for arg in args {
+                    for arg in args.iter() {
                         collect_symbols(arg, symbols);
                     }
                 }
