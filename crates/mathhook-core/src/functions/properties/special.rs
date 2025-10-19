@@ -9,6 +9,19 @@ use super::rules::{
 };
 use crate::core::Expression;
 
+/// Symbolic polynomial expander for function intelligence
+///
+/// Provides symbolic expansion capability for orthogonal polynomials,
+/// enabling conversion from recurrence-based representation to explicit
+/// polynomial forms in the Expression system.
+#[derive(Debug, Clone, Copy)]
+pub enum SymbolicExpander {
+    /// Custom expansion function
+    ///
+    /// Takes polynomial degree n and returns explicit symbolic expression
+    Custom(fn(usize) -> Expression),
+}
+
 /// Special function properties (gamma, bessel, zeta, etc.)
 ///
 /// Comprehensive mathematical properties for advanced special functions
@@ -71,6 +84,13 @@ pub struct PolynomialProperties {
 
     /// Numerical evaluation method for intelligence-driven computation
     pub numerical_evaluator: Option<super::rules::NumericalEvaluator>,
+
+    /// Symbolic expansion method for intelligence-driven computation
+    ///
+    /// Converts polynomial from recurrence-based representation to explicit
+    /// symbolic expression. This enables algebraic manipulation and simplification
+    /// of polynomial expressions in the Expression system.
+    pub symbolic_expander: Option<SymbolicExpander>,
 
     /// Antiderivative rule (for polynomial integration)
     /// All polynomials are integrable, so this is always Some(...)

@@ -8,6 +8,7 @@ pub mod evaluation;
 pub mod hermite;
 pub mod laguerre;
 pub mod legendre;
+pub mod symbolic;
 
 use crate::functions::properties::FunctionProperties;
 use std::collections::HashMap;

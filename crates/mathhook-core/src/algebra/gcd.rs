@@ -90,8 +90,18 @@ impl PolynomialGcd for Expression {
 
 impl Expression {
     /// Polynomial GCD Euclidean algorithm
+    ///
+    /// Implements the Euclidean algorithm for polynomial GCD computation.
+    /// For univariate polynomials: gcd(a, b) = gcd(b, a mod b)
+    ///
+    /// # Algorithm
+    ///
+    /// Uses polynomial long division to compute remainders iteratively
+    /// until the remainder becomes zero. The last non-zero remainder is the GCD.
     #[inline(always)]
     fn polynomial_gcd_euclidean(&self, other: &Self) -> Self {
+        use crate::algebra::polynomial_division::polynomial_rem;
+
         // Fast path: identical expressions
         if self == other {
             return self.clone();
@@ -110,9 +120,91 @@ impl Expression {
             return self.clone();
         }
 
-        // No obvious common factors found.
-        // Full Euclidean algorithm with polynomial division will be implemented in future version.
-        Expression::integer(1)
+        // Identify polynomial variables
+        let vars = self.find_variables();
+        if vars.is_empty() {
+            return Expression::integer(1);
+        }
+
+        // For now, support univariate polynomials only
+        if vars.len() > 1 {
+            return Expression::integer(1);
+        }
+
+        let var = &vars[0];
+
+        // Euclidean algorithm: gcd(a, b) = gcd(b, a mod b)
+        let mut a = self.clone();
+        let mut b = other.clone();
+
+        while !b.is_zero() {
+            let remainder = polynomial_rem(&a, &b, var);
+            a = b;
+            b = remainder;
+        }
+
+        // Normalize: make leading coefficient positive
+        a.normalize_leading_coefficient(var)
+    }
+
+    /// Find all variables in expression
+    ///
+    /// Returns a vector of all unique Symbol nodes found in the expression tree
+    fn find_variables(&self) -> Vec<Symbol> {
+        use std::collections::HashSet;
+
+        fn collect_symbols(expr: &Expression, symbols: &mut HashSet<Symbol>) {
+            match expr {
+                Expression::Symbol(s) => {
+                    symbols.insert(s.clone());
+                }
+                Expression::Add(terms) | Expression::Mul(terms) => {
+                    for term in terms {
+                        collect_symbols(term, symbols);
+                    }
+                }
+                Expression::Pow(base, exp) => {
+                    collect_symbols(base, symbols);
+                    collect_symbols(exp, symbols);
+                }
+                Expression::Function { args, .. } => {
+                    for arg in args {
+                        collect_symbols(arg, symbols);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let mut symbols = HashSet::new();
+        collect_symbols(self, &mut symbols);
+        symbols.into_iter().collect()
+    }
+
+    /// Normalize polynomial to have leading coefficient 1
+    ///
+    /// Makes the polynomial monic by dividing by the leading coefficient
+    fn normalize_leading_coefficient(&self, var: &Symbol) -> Expression {
+        use crate::algebra::polynomial_advanced::AdvancedPolynomial;
+
+        let leading_coeff = self.polynomial_leading_coefficient(var);
+
+        if leading_coeff.is_zero() || leading_coeff == Expression::integer(1) {
+            return self.clone();
+        }
+
+        // Check if leading coefficient is negative, make it positive
+        if let Expression::Number(Number::Integer(n)) = &leading_coeff {
+            if *n < 0 {
+                return Expression::mul(vec![
+                    Expression::integer(-1),
+                    self.clone(),
+                ])
+                .simplify();
+            }
+        }
+
+        self.clone()
     }
 
     /// Find common factors between two expressions

@@ -10,6 +10,7 @@ pub mod factor;
 pub mod gcd;
 pub mod matrix_correctness_tests;
 pub mod polynomial_advanced;
+pub mod polynomial_division;
 pub mod rational;
 pub mod solvers;
 pub mod zero_detection;
@@ -24,6 +25,9 @@ pub use gcd::PolynomialGcd;
 pub use polynomial_advanced::AdvancedPolynomial;
 pub use rational::RationalSimplify;
 pub use zero_detection::ZeroDetection;
+
+// Re-export polynomial division functions
+pub use polynomial_division::{polynomial_div, polynomial_quo, polynomial_rem};
 
 // Re-export solver types
 pub use equation_analyzer::{EquationAnalyzer, EquationType, SmartEquationSolver};

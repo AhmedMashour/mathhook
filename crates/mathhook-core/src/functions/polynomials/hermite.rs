@@ -119,6 +119,11 @@ impl HermiteIntelligence {
                     super::evaluation::evaluate_hermite_numerical
                 )),
 
+                // Symbolic expansion method for intelligence-driven computation
+                symbolic_expander: Some(super::super::properties::special::SymbolicExpander::Custom(
+                    super::symbolic::expand_hermite_symbolic
+                )),
+
                 antiderivative_rule: AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {

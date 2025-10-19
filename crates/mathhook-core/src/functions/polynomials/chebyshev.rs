@@ -133,6 +133,11 @@ impl ChebyshevIntelligence {
                     super::evaluation::evaluate_chebyshev_first_numerical
                 )),
 
+                // Symbolic expansion method for intelligence-driven computation
+                symbolic_expander: Some(super::super::properties::special::SymbolicExpander::Custom(
+                    super::symbolic::expand_chebyshev_first_symbolic
+                )),
+
                 antiderivative_rule: AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
@@ -215,6 +220,11 @@ impl ChebyshevIntelligence {
                 // Numerical evaluator using recurrence relation
                 numerical_evaluator: Some(NumericalEvaluator::Custom(
                     super::evaluation::evaluate_chebyshev_second_numerical
+                )),
+
+                // Symbolic expansion method for intelligence-driven computation
+                symbolic_expander: Some(super::super::properties::special::SymbolicExpander::Custom(
+                    super::symbolic::expand_chebyshev_second_symbolic
                 )),
 
                 antiderivative_rule: AntiderivativeRule {
