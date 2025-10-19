@@ -731,28 +731,85 @@ When modifying `grammar.lalrpop`:
 
 ## Macro Usage Guidelines
 
+**PRIORITY SYSTEM**: Macros are **MANDATORY** for symbol creation and **STRONGLY RECOMMENDED** for expression creation. This section defines a strict 3-level priority hierarchy.
+
 ### Available Macros
 
 MathHook provides declarative macros for ergonomic expression creation:
 
-- **`symbol!(x)`** - Create symbols
-- **`function!(name, args...)`** - Create function expressions
+- **`symbol!(x)`** - Create single symbols (currently scalars only; will support matrix/operator/quaternion types)
+- **`symbols!("x y z")`** - Create multiple symbols at once (PLANNED - not yet implemented, coming in Wave 5)
 - **`expr!(...)`** - Create expressions with operator parsing
+- **`function!(name, args...)`** - Create function expressions
 
-### When to Use Macros vs Explicit API
+### Quick Reference: When to Use What
 
-**ALWAYS prefer macros for (Mandatory - Replace During Modification):**
+| Scenario | Use | Example |
+|----------|-----|---------|
+| **Creating single symbol** | `symbol!(x)` (Priority 1) | `let x = symbol!(x);` |
+| **Creating multiple symbols** | Multiple `symbol!()` calls (Priority 1) | `let x = symbol!(x); let y = symbol!(y);` |
+| **Creating multiple symbols (FUTURE)** | `symbols!("x y z")` when available | `let (x, y, z) = symbols!("x y z");` |
+| **Simple expression** | `expr!(x + y)` (Priority 2) | `let sum = expr!(x + y);` |
+| **Complex expression** | Explicit grouping or API (Priority 3) | `expr!((2*x) + (3*y))` |
+| **Loop/runtime data** | Explicit API (Priority 3) | `Expression::integer(i)` |
 
-1. **Symbol Creation**: `symbol!(x)` instead of `Symbol::new("x")`
-   ```rust
-   // ❌ Don't use:
-   Symbol::new("x")
-   
-   // ✅ Always use:
-   symbol!(x)
-   ```
+**Golden Rule**: NEVER use `Symbol::new()` directly. ALWAYS use `symbol!()` (or `symbols!()` when available).
 
-2. **Simple Expressions**: Single operations are clean and readable
+### Macro Priority Hierarchy (Highest to Lowest)
+
+#### **Priority 1: MANDATORY - Symbol Creation (NO EXCEPTIONS)**
+
+**Rule**: NEVER use `Symbol::new()` directly. ALWAYS use macros.
+
+**Single Symbol Creation**: Use `symbol!(x)`
+```rust
+// ❌ Don't use:
+Symbol::new("x")
+
+// ✅ Always use:
+symbol!(x)
+symbol!(theta)
+symbol!(alpha)
+```
+
+**Bulk Symbol Creation (CURRENT - Manual Approach)**:
+```rust
+// ✅ Current approach - individual symbol!() calls:
+let x = symbol!(x);
+let y = symbol!(y);
+let z = symbol!(z);
+
+// ❌ NEVER use Symbol::new():
+let x = Symbol::new("x");  // WRONG!
+```
+
+**Bulk Symbol Creation (FUTURE - After Wave 5)**:
+```rust
+// ✅ Will be available after symbols!() macro is implemented:
+let (x, y, z) = symbols!("x y z");  // Scalar symbols (default)
+let (A, B, C) = symbols!("A B C"; matrix);  // Matrix symbols (noncommutative)
+let (p, x, h) = symbols!("p x h"; operator);  // Operator symbols
+let (i, j, k) = symbols!("i j k"; quaternion);  // Quaternion symbols
+```
+
+**Type-Specific Symbol Creation (FUTURE - After Wave 1)**:
+```rust
+// ✅ Current - only scalars supported:
+let x = symbol!(x);  // Scalar (default)
+
+// ✅ Will be available after noncommutative algebra implementation:
+let A = symbol!(A; matrix);      // Matrix (noncommutative)
+let p = symbol!(p; operator);    // Operator (noncommutative)
+let q = symbol!(q; quaternion);  // Quaternion (noncommutative)
+```
+
+#### **Priority 2: STRONGLY RECOMMENDED - Expression Creation**
+
+**Rule**: Prefer macros for simple expressions. Use explicit API only when necessary.
+
+**When to Use `expr!()` Macro:**
+
+1. **Simple operations** (always use macros):
    ```rust
    // ✅ Good - clean and readable:
    expr!(x + y)
@@ -760,7 +817,7 @@ MathHook provides declarative macros for ergonomic expression creation:
    expr!(x ^ 2)
    expr!(sin(x))
    expr!((x + 1) * (x - 1))  // Use parens for grouping
-   
+
    // ❌ Don't use verbose API for simple cases:
    Expression::add(vec![
        Expression::symbol(Symbol::new("x")),
@@ -768,7 +825,7 @@ MathHook provides declarative macros for ergonomic expression creation:
    ])
    ```
 
-3. **Test Code and Documentation**: Makes examples immediately readable
+2. **Test code and documentation** (makes examples immediately readable):
    ```rust
    #[test]
    fn test_derivative() {
@@ -779,24 +836,26 @@ MathHook provides declarative macros for ergonomic expression creation:
    }
    ```
 
-4. **Multi-term Operations**: Use explicit macro helpers for many terms
+3. **Multi-term operations** (use explicit macro helpers):
    ```rust
    // For many terms, use explicit helpers:
    expr!(add: x, y, z, w)      // ✅ Clear
    expr!(mul: 2, x, y, z)      // ✅ Clear
    ```
 
-**Use Explicit API for:**
+#### **Priority 3: USE EXPLICIT API WHEN APPROPRIATE**
 
-1. **Complex Mixed Operations**: When precedence is unclear
+**When to Use Explicit API Instead of Macros:**
+
+1. **Complex mixed operations** (when precedence is unclear):
    ```rust
    // ⚠️  Unclear: expr!(2*x + y*z - 3)
-   // ✅ Clear with explicit API or explicit grouping:
+   // ✅ Clear with explicit grouping:
    expr!((2*x) + (y*z) - 3)  // Good with parens
    // OR use explicit API for very complex cases
    ```
 
-2. **Programmatic Construction**: Loops, conditionals, dynamic building
+2. **Programmatic construction** (loops, conditionals, dynamic building):
    ```rust
    // Building terms in a loop - explicit API is clearer:
    let mut terms = Vec::new();
@@ -807,6 +866,19 @@ MathHook provides declarative macros for ergonomic expression creation:
        ]));
    }
    Expression::add(terms)
+   ```
+
+3. **Runtime variables** (macros see tokens, not values):
+   ```rust
+   // ❌ WRONG - macro sees token "i", not the value:
+   for i in 0..10 {
+       let expr = expr!(i);  // Creates Symbol::new("i")!
+   }
+
+   // ✅ CORRECT - use explicit API:
+   for i in 0..10 {
+       let expr = Expression::integer(i);
+   }
    ```
 
 ### Macro Capabilities and Limitations
@@ -880,14 +952,33 @@ Until then, use parentheses for grouping and explicit helpers for complex cases.
 
 When touching existing code, actively migrate to macro usage:
 
-**Priority 1: Always migrate (No exceptions)**
+**Priority 1: Always Migrate (No Exceptions)**
+
+ALWAYS replace `Symbol::new()` with macros when modifying code:
+
 ```rust
-// Find and replace these ALWAYS:
+// ❌ Find and replace these ALWAYS:
 Symbol::new("x")          → symbol!(x)
 Symbol::new("theta")      → symbol!(theta)
+
+// ❌ Replace bulk creation (current approach):
+let x = Symbol::new("x");
+let y = Symbol::new("y");
+let z = Symbol::new("z");
+
+// ✅ With individual symbol!() calls (current):
+let x = symbol!(x);
+let y = symbol!(y);
+let z = symbol!(z);
+
+// ✅ FUTURE - Once symbols!() macro is implemented (Wave 5):
+// let (x, y, z) = symbols!("x y z");
 ```
 
-**Priority 2: Migrate when touching the code**
+**Priority 2: Migrate When Touching the Code**
+
+When modifying existing code, migrate simple expressions to macros:
+
 ```rust
 // Old verbose patterns:
 Expression::add(vec![
@@ -920,10 +1011,12 @@ expr!(sin(x))
 
 **Migration Guidelines:**
 
-1. **Don't migrate if macro makes it less clear** - readability always wins
-2. **Do migrate simple patterns** - they're clearer with macros
-3. **Use explicit grouping** - When in doubt, add parentheses: `expr!((2*x) + (3*y))`
-4. **Test after migration** - Run relevant tests to ensure behavior unchanged
+1. **Always migrate Priority 1** - No exceptions for Symbol::new() replacement
+2. **Migrate Priority 2 when touching code** - Simple expressions become clearer with macros
+3. **Don't migrate if it makes code less clear** - Readability always wins
+4. **Use explicit grouping** - When in doubt, add parentheses: `expr!((2*x) + (3*y))`
+5. **Keep runtime variables explicit** - Don't use macros for loop variables or runtime data
+6. **Test after migration** - Run relevant tests to ensure behavior unchanged
 
 **Example Migration:**
 
@@ -1011,9 +1104,21 @@ let b = symbol!(b);
 ### Examples of Good Macro Usage
 
 ```rust
-// ✅ Excellent - symbols are always cleaner with macros
+// ✅ Excellent - single symbols are always cleaner with macros
 let x = symbol!(x);
 let theta = symbol!(theta);
+
+// ✅ Excellent - current approach for multiple symbols
+let x = symbol!(x);
+let y = symbol!(y);
+let z = symbol!(z);
+
+// ✅ FUTURE - bulk symbol creation (after Wave 5 implementation):
+// let (x, y, z) = symbols!("x y z");  // All scalars (default)
+// let (r, theta, phi) = symbols!("r theta phi");  // Spherical coordinates
+// let (A, B, C) = symbols!("A B C"; matrix);  // Matrix symbols
+// let (p, x, h) = symbols!("p x h"; operator);  // Operator symbols
+// let (i, j, k) = symbols!("i j k"; quaternion);  // Quaternion symbols
 
 // ✅ Excellent - simple expressions are very readable with explicit grouping
 let quadratic = expr!((a*(x^2)) + (b*x) + c);
@@ -1068,6 +1173,24 @@ let programmatic = {
     Expression::add(terms)
 };
 ```
+
+### Summary: Macro Priority Enforcement
+
+**When reviewing or writing code, follow this checklist:**
+
+1. ✅ **Priority 1 (MANDATORY)**: All `Symbol::new()` replaced with `symbol!()` (use `symbols!()` once implemented)
+2. ✅ **Priority 2 (RECOMMENDED)**: Simple expressions use `expr!()` macro
+3. ✅ **Priority 3 (APPROPRIATE)**: Complex/programmatic cases use explicit API
+4. ✅ **No runtime variables in macros**: Loop variables and runtime data use explicit API
+5. ✅ **No nested macro calls**: Use intermediate variables or direct patterns
+
+**Red Flags (Reject During Code Review):**
+- ❌ Any `Symbol::new()` call found in code
+- ❌ Simple expressions like `x + y` using verbose `Expression::add(vec![...])`
+- ❌ Runtime variables passed to macros: `expr!(i)` in a loop
+- ❌ (FUTURE) Bulk symbol creation without `symbols!()` macro once it's implemented
+
+**This is non-negotiable**. The macro system is designed to prevent errors and improve readability. When you see violations, fix them immediately during any code modification.
 
 ---
 
