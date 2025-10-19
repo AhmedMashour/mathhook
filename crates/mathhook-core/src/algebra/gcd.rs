@@ -10,8 +10,92 @@ use num_traits::One;
 pub trait PolynomialGcd {
     fn gcd(&self, other: &Self) -> Self;
     fn lcm(&self, other: &Self) -> Self;
-    fn factor_gcd(&self) -> Self; // Renamed to avoid conflict with Factor trait
+    fn factor_gcd(&self) -> Self;
     fn cofactors(&self, other: &Self) -> (Expression, Expression, Expression);
+
+    /// Divides this polynomial by another, returning (quotient, remainder).
+    ///
+    /// Performs polynomial long division with respect to the specified variable.
+    /// Returns a tuple (quotient, remainder) satisfying the division identity:
+    /// `dividend = divisor * quotient + remainder` where `degree(remainder) < degree(divisor)`.
+    ///
+    /// # Arguments
+    ///
+    /// * `divisor` - The polynomial to divide by (must be non-zero)
+    /// * `var` - The variable to treat as the polynomial variable
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{symbol, expr, Expression, algebra::gcd::PolynomialGcd};
+    ///
+    /// let x = symbol!(x);
+    /// // Divide (x^2 + 3x + 2) by (x + 1)
+    /// // Expected: (x + 1)(x + 2) = x^2 + 3x + 2
+    /// let dividend = expr!(add: (x^2), (3*x), 2);
+    /// let divisor = expr!(x + 1);
+    /// let (quotient, remainder) = dividend.div_polynomial(&divisor, &x);
+    /// assert_eq!(remainder, Expression::integer(0));
+    /// ```
+    ///
+    /// # Returns
+    ///
+    /// Returns `(quotient, remainder)` tuple where both are expressions
+    fn div_polynomial(&self, divisor: &Expression, var: &Symbol) -> (Expression, Expression);
+
+    /// Returns the quotient of polynomial division.
+    ///
+    /// Computes only the quotient part of polynomial division, discarding the remainder.
+    /// Equivalent to `div_polynomial(divisor, var).0`.
+    ///
+    /// # Arguments
+    ///
+    /// * `divisor` - The polynomial to divide by
+    /// * `var` - The variable to treat as the polynomial variable
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{symbol, expr, algebra::gcd::PolynomialGcd};
+    ///
+    /// let x = symbol!(x);
+    /// let dividend = expr!((x^2) - 1);
+    /// let divisor = expr!(x - 1);
+    /// let quotient = dividend.quo_polynomial(&divisor, &x);
+    /// // quotient = x + 1
+    /// ```
+    ///
+    /// # Returns
+    ///
+    /// Returns the quotient expression
+    fn quo_polynomial(&self, divisor: &Expression, var: &Symbol) -> Expression;
+
+    /// Returns the remainder of polynomial division.
+    ///
+    /// Computes only the remainder part of polynomial division, discarding the quotient.
+    /// Equivalent to `div_polynomial(divisor, var).1`.
+    ///
+    /// # Arguments
+    ///
+    /// * `divisor` - The polynomial to divide by
+    /// * `var` - The variable to treat as the polynomial variable
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{symbol, expr, Expression, algebra::gcd::PolynomialGcd};
+    ///
+    /// let x = symbol!(x);
+    /// let dividend = expr!((x^2) + 1);
+    /// let divisor = expr!(x - 1);
+    /// let remainder = dividend.rem_polynomial(&divisor, &x);
+    /// assert_eq!(remainder, Expression::integer(2));
+    /// ```
+    ///
+    /// # Returns
+    ///
+    /// Returns the remainder expression
+    fn rem_polynomial(&self, divisor: &Expression, var: &Symbol) -> Expression;
 }
 
 impl PolynomialGcd for Expression {
@@ -86,6 +170,19 @@ impl PolynomialGcd for Expression {
         // For now, return simplified cofactors
         // Full implementation would need polynomial division
         (gcd_val, self.clone(), other.clone())
+    }
+
+    fn div_polynomial(&self, divisor: &Expression, var: &Symbol) -> (Expression, Expression) {
+        use crate::algebra::polynomial_division::polynomial_div;
+        polynomial_div(self, divisor, var)
+    }
+
+    fn quo_polynomial(&self, divisor: &Expression, var: &Symbol) -> Expression {
+        self.div_polynomial(divisor, var).0
+    }
+
+    fn rem_polynomial(&self, divisor: &Expression, var: &Symbol) -> Expression {
+        self.div_polynomial(divisor, var).1
     }
 }
 
