@@ -5,60 +5,17 @@
 //!
 //! # Algorithm
 //!
-//! This module implements the standard polynomial long division algorithm, which is
-//! analogous to long division of integers. Given polynomials f(x) and g(x) with
-//! g(x) ≠ 0, the algorithm computes quotient q(x) and remainder r(x) such that:
+//! Standard polynomial long division: f(x) = q(x)·g(x) + r(x) where degree(r) < degree(g).
 //!
-//! ```text
-//! f(x) = q(x) · g(x) + r(x)
-//! ```
-//!
-//! where `degree(r) < degree(g)` or `r = 0`.
-//!
-//! The algorithm proceeds by repeatedly:
-//! 1. Dividing the leading term of the current remainder by the leading term of the divisor
-//! 2. Multiplying the result by the divisor and subtracting from the remainder
-//! 3. Continuing until the remainder degree is less than the divisor degree
-//!
-//! # Examples
-//!
-//! Basic polynomial division:
+//! # Example
 //!
 //! ```rust
 //! use mathhook_core::{expr, symbol};
 //! use mathhook_core::algebra::polynomial_division::polynomial_div;
 //!
 //! let x = symbol!(x);
-//! // Divide (x^2 - 1) by (x - 1)
-//! // Expected: (x^2 - 1) = (x - 1)(x + 1) + 0
-//! let dividend = expr!((x^2) - 1);
-//! let divisor = expr!(x - 1);
-//! let (quotient, remainder) = polynomial_div(&dividend, &divisor, &x);
-//! // quotient = x + 1, remainder = 0
+//! let (quotient, remainder) = polynomial_div(&expr!((x^2) - 1), &expr!(x - 1), &x);
 //! ```
-//!
-//! Division with non-zero remainder:
-//!
-//! ```rust
-//! use mathhook_core::{expr, symbol};
-//! use mathhook_core::algebra::polynomial_division::polynomial_div;
-//!
-//! let x = symbol!(x);
-//! // Divide (x^2 + 1) by (x - 1)
-//! // Expected: (x^2 + 1) = (x - 1)(x + 1) + 2
-//! let dividend = expr!((x^2) + 1);
-//! let divisor = expr!(x - 1);
-//! let (quotient, remainder) = polynomial_div(&dividend, &divisor, &x);
-//! // quotient = x + 1, remainder = 2
-//! ```
-//!
-//! # Mathematical Correctness
-//!
-//! The implementation ensures:
-//! - Exact rational arithmetic (no floating point approximation)
-//! - Proper handling of edge cases (division by zero, zero dividend, identical polynomials)
-//! - Preservation of the division identity: `dividend = divisor * quotient + remainder`
-//! - Correct degree properties: `degree(remainder) < degree(divisor)` when remainder ≠ 0
 
 use crate::core::{Expression, Number, Symbol};
 use crate::simplify::Simplify;
@@ -431,7 +388,6 @@ mod tests {
         let divisor = expr!(x - 1);
         let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
-        println!("Quotient: {}, Remainder: {}", quot, rem);
         assert!(rem.is_zero(), "Expected zero remainder");
     }
 
@@ -445,7 +401,6 @@ mod tests {
         let divisor = expr!(x - 1);
         let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
-        println!("Quotient: {}, Remainder: {}", quot, rem);
         assert!(!rem.is_zero(), "Expected non-zero remainder");
     }
 
@@ -462,7 +417,6 @@ mod tests {
         let divisor = Expression::integer(2);
         let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
 
-        println!("Quotient: {}, Remainder: {}", quot, rem);
         assert!(rem.is_zero(), "Expected zero remainder");
     }
 
@@ -487,7 +441,6 @@ mod tests {
         let divisor = expr!(x - 1);
         let quot = polynomial_quo(&dividend, &divisor, &x);
 
-        println!("Quotient only: {}", quot);
         assert!(!quot.is_zero());
     }
 
@@ -499,7 +452,6 @@ mod tests {
         let divisor = expr!(x - 1);
         let rem = polynomial_rem(&dividend, &divisor, &x);
 
-        println!("Remainder only: {}", rem);
         assert!(!rem.is_zero());
     }
 
@@ -518,7 +470,6 @@ mod tests {
         ]);
         let coeffs = extract_coefficients(&poly, &x);
 
-        println!("Coefficients: {:?}", coeffs);
         assert!(!coeffs.is_empty());
     }
 }

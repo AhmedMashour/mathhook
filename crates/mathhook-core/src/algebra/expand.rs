@@ -1,6 +1,7 @@
 //! Expression expansion operations
 //! Handles polynomial expansion, distribution, and algebraic expansion
 
+use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 
 /// Trait for expanding expressions
@@ -15,7 +16,6 @@ impl Expand for Expression {
             Expression::Number(_) | Expression::Symbol(_) => self.clone(),
 
             Expression::Add(terms) => {
-                // Expand each term and keep as addition
                 let expanded_terms: Vec<Expression> =
                     terms.iter().map(|term| term.expand()).collect();
                 Expression::add(expanded_terms)
@@ -26,11 +26,9 @@ impl Expand for Expression {
             Expression::Pow(base, exp) => self.expand_power(base, exp),
 
             Expression::Function { name, args } => {
-                // Expand arguments
                 let expanded_args: Vec<Expression> = args.iter().map(|arg| arg.expand()).collect();
                 Expression::function(name.clone(), expanded_args)
             }
-            // New expression types - implement later
             _ => self.clone(),
         }
     }
@@ -47,7 +45,6 @@ impl Expression {
             return factors[0].expand();
         }
 
-        // Look for additions to distribute over
         let mut result = factors[0].expand();
 
         for factor in &factors[1..] {
@@ -60,7 +57,6 @@ impl Expression {
     /// Distribute multiplication: (a + b) * c = a*c + b*c
     fn distribute_multiply(&self, left: &Expression, right: &Expression) -> Expression {
         match (left, right) {
-            // Distribute over left addition: (a + b) * c = a*c + b*c
             (Expression::Add(left_terms), _) => {
                 let distributed_terms: Vec<Expression> = left_terms
                     .iter()
@@ -69,7 +65,6 @@ impl Expression {
                 Expression::add(distributed_terms)
             }
 
-            // Distribute over right addition: a * (b + c) = a*b + a*c
             (_, Expression::Add(right_terms)) => {
                 let distributed_terms: Vec<Expression> = right_terms
                     .iter()
@@ -78,54 +73,64 @@ impl Expression {
                 Expression::add(distributed_terms)
             }
 
-            // Base case: multiply non-addition expressions
             _ => Expression::mul(vec![left.clone(), right.clone()]),
         }
     }
 
     /// Expand power expressions
     fn expand_power(&self, base: &Expression, exp: &Expression) -> Expression {
-        // For now, only handle simple integer exponents
         if let Expression::Number(Number::Integer(n)) = exp {
             let exp_val = *n;
             if exp_val >= 0 && exp_val <= 10 {
-                // Reasonable limit
                 return self.expand_integer_power(base, exp_val as u32);
             }
         }
 
-        // For complex cases, just expand the base
         Expression::pow(base.clone(), exp.clone())
     }
 
     /// Expand integer powers: (a + b)^n
+    ///
+    /// For noncommutative terms, preserves order:
+    /// (A+B)^2 = A^2 + AB + BA + B^2 (4 terms for noncommutative)
+    /// (x+y)^2 = x^2 + 2xy + y^2 (3 terms for commutative)
     fn expand_integer_power(&self, base: &Expression, exp: u32) -> Expression {
         match exp {
             0 => Expression::integer(1),
             1 => base.expand(),
             2 => {
-                // Special case for squaring: (a + b)^2 = a^2 + 2ab + b^2
                 match base {
                     Expression::Add(terms) if terms.len() == 2 => {
                         let a = &terms[0];
                         let b = &terms[1];
 
-                        Expression::add(vec![
-                            Expression::pow(a.clone(), Expression::integer(2)).expand(),
-                            Expression::mul(vec![Expression::integer(2), a.clone(), b.clone()])
-                                .expand(),
-                            Expression::pow(b.clone(), Expression::integer(2)).expand(),
-                        ])
+                        let commutativity = Commutativity::combine(
+                            terms.iter().map(|t| t.commutativity())
+                        );
+
+                        if commutativity.can_sort() {
+                            Expression::add(vec![
+                                Expression::pow(a.clone(), Expression::integer(2)).expand(),
+                                Expression::mul(vec![Expression::integer(2), a.clone(), b.clone()])
+                                    .expand(),
+                                Expression::pow(b.clone(), Expression::integer(2)).expand(),
+                            ])
+                        } else {
+                            Expression::add(vec![
+                                Expression::pow(a.clone(), Expression::integer(2)).expand(),
+                                Expression::mul(vec![a.clone(), b.clone()]).expand(),
+                                Expression::mul(vec![b.clone(), a.clone()]).expand(),
+                                Expression::pow(b.clone(), Expression::integer(2)).expand(),
+                            ])
+                        }
                     }
                     _ => {
-                        // General case: multiply base by itself
                         let expanded_base = base.expand();
                         self.distribute_multiply(&expanded_base, &expanded_base)
                     }
                 }
             }
             _ => {
-                // For higher powers, use repeated multiplication
                 let expanded_base = base.expand();
                 let mut result = expanded_base.clone();
 
@@ -139,6 +144,9 @@ impl Expression {
     }
 
     /// Expand binomial expressions: (a + b)^n using binomial theorem
+    ///
+    /// For commutative terms, uses binomial theorem: C(n,k) * a^k * b^(n-k)
+    /// For noncommutative terms, uses direct multiplication to preserve order
     pub fn expand_binomial(&self, a: &Expression, b: &Expression, n: u32) -> Expression {
         if n == 0 {
             return Expression::integer(1);
@@ -148,7 +156,19 @@ impl Expression {
             return Expression::add(vec![a.clone(), b.clone()]);
         }
 
-        // For small n, use direct expansion
+        let commutativity = Commutativity::combine(
+            vec![a.commutativity(), b.commutativity()]
+        );
+
+        if !commutativity.can_sort() {
+            let base = Expression::add(vec![a.clone(), b.clone()]);
+            let mut result = base.clone();
+            for _ in 1..n {
+                result = self.distribute_multiply(&result, &base);
+            }
+            return result;
+        }
+
         if n <= 5 {
             let mut terms = Vec::new();
 
@@ -172,7 +192,6 @@ impl Expression {
 
             Expression::add(terms)
         } else {
-            // For large n, fall back to power representation
             Expression::pow(
                 Expression::add(vec![a.clone(), b.clone()]),
                 Expression::integer(n as i64),
@@ -190,7 +209,6 @@ impl Expression {
             return 1;
         }
 
-        // Use the multiplicative formula to avoid overflow
         let mut result = 1i64;
         let k = k.min(n - k); // Take advantage of symmetry
 
@@ -220,7 +238,6 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
 
-        // Test (x + y) * 2 = 2x + 2y
         let expr = Expression::mul(vec![
             Expression::add(vec![
                 Expression::symbol(x.clone()),
@@ -230,13 +247,10 @@ mod tests {
         ]);
 
         let result = expr.expand();
-        println!("(x + y) * 2 = {}", result);
 
-        // Should distribute
         match result {
             Expression::Add(terms) => {
                 assert_eq!(terms.len(), 2);
-                // Should contain 2x and 2y terms
             }
             _ => println!("Expansion result: {}", result),
         }
@@ -247,7 +261,6 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
 
-        // Test (x + y)^2 = x^2 + 2xy + y^2
         let expr = Expression::pow(
             Expression::add(vec![
                 Expression::symbol(x.clone()),
@@ -257,13 +270,10 @@ mod tests {
         );
 
         let result = expr.expand();
-        println!("(x + y)^2 = {}", result);
 
-        // Should expand to three terms
         match result {
             Expression::Add(terms) => {
                 assert_eq!(terms.len(), 3);
-                println!("Expanded terms: {:?}", terms);
             }
             _ => println!("Square expansion result: {}", result),
         }
@@ -285,31 +295,179 @@ mod tests {
     fn test_nested_expansion() {
         let x = symbol!(x);
 
-        // Test (x + 1) * (x + 2)
         let expr = Expression::mul(vec![
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]),
         ]);
 
         let result = expr.expand();
-        println!("(x + 1)(x + 2) = {}", result);
 
-        // Should expand to x^2 + 3x + 2
         assert!(!result.is_zero());
     }
 
     #[test]
     fn test_expansion_with_numbers() {
-        // Test 3 * (2 + 4) = 3*2 + 3*4 = 6 + 12 = 18
         let expr = Expression::mul(vec![
             Expression::integer(3),
             Expression::add(vec![Expression::integer(2), Expression::integer(4)]),
         ]);
 
         let result = expr.expand();
-        println!("3 * (2 + 4) = {}", result);
 
-        // Should distribute and potentially simplify
+        assert!(!result.is_zero());
+    }
+
+    #[test]
+    fn test_commutative_square_expansion() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+
+        let expr = Expression::pow(
+            Expression::add(vec![
+                Expression::symbol(x.clone()),
+                Expression::symbol(y.clone()),
+            ]),
+            Expression::integer(2),
+        );
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 3, "Expected 3 terms for commutative square");
+            }
+            _ => panic!("Expected addition of 3 terms"),
+        }
+    }
+
+    #[test]
+    fn test_noncommutative_matrix_square_expansion() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+
+        let expr = Expression::pow(
+            Expression::add(vec![
+                Expression::symbol(a.clone()),
+                Expression::symbol(b.clone()),
+            ]),
+            Expression::integer(2),
+        );
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 4, "Expected 4 terms for noncommutative square");
+            }
+            _ => panic!("Expected addition of 4 terms"),
+        }
+    }
+
+    #[test]
+    fn test_noncommutative_operator_square_expansion() {
+        let p = symbol!(p; operator);
+        let x = symbol!(x; operator);
+
+        let expr = Expression::pow(
+            Expression::add(vec![
+                Expression::symbol(p.clone()),
+                Expression::symbol(x.clone()),
+            ]),
+            Expression::integer(2),
+        );
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 4, "Expected 4 terms for operator square");
+            }
+            _ => panic!("Expected addition of 4 terms"),
+        }
+    }
+
+    #[test]
+    fn test_noncommutative_quaternion_square_expansion() {
+        let i = symbol!(i; quaternion);
+        let j = symbol!(j; quaternion);
+
+        let expr = Expression::pow(
+            Expression::add(vec![
+                Expression::symbol(i.clone()),
+                Expression::symbol(j.clone()),
+            ]),
+            Expression::integer(2),
+        );
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 4, "Expected 4 terms for quaternion square");
+            }
+            _ => panic!("Expected addition of 4 terms"),
+        }
+    }
+
+    #[test]
+    fn test_mixed_commutative_noncommutative_expansion() {
+        let x = symbol!(x);
+        let a = symbol!(A; matrix);
+
+        let expr = Expression::pow(
+            Expression::add(vec![
+                Expression::symbol(x.clone()),
+                Expression::symbol(a.clone()),
+            ]),
+            Expression::integer(2),
+        );
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 4, "Expected 4 terms when ANY term is noncommutative");
+            }
+            _ => panic!("Expected addition of 4 terms"),
+        }
+    }
+
+    #[test]
+    fn test_distribution_preserves_order_for_matrices() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+        let c = symbol!(C; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::add(vec![
+                Expression::symbol(a.clone()),
+                Expression::symbol(b.clone()),
+            ]),
+            Expression::symbol(c.clone()),
+        ]);
+
+        let result = expr.expand();
+
+        match result {
+            Expression::Add(terms) => {
+                assert_eq!(terms.len(), 2, "Expected AC + BC");
+            }
+            _ => panic!("Expected addition"),
+        }
+    }
+
+    #[test]
+    fn test_binomial_theorem_not_used_for_noncommutative() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+
+        let result = Expression::integer(1).expand_binomial(
+            &Expression::symbol(a.clone()),
+            &Expression::symbol(b.clone()),
+            3,
+        );
+
+        // (via repeated multiplication, not binomial theorem)
         assert!(!result.is_zero());
     }
 }

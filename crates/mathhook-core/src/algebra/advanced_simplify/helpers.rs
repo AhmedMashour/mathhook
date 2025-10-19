@@ -1,146 +1,14 @@
-//! Advanced simplification operations including special functions
-//! Handles factorial, trigonometric functions, logarithms, and complex simplifications
+//! Helper functions for advanced simplification
 
+use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
-use num_traits::{One, Signed, ToPrimitive, Zero};
-
-/// Trait for advanced simplification operations
-pub trait AdvancedSimplify {
-    fn advanced_simplify(&self) -> Self;
-    fn simplify_factorial(&self) -> Self;
-    fn simplify_logarithms(&self) -> Self;
-    fn simplify_trigonometric(&self) -> Self;
-    fn simplify_special_functions(&self) -> Self;
-}
-
-impl AdvancedSimplify for Expression {
-    /// Perform advanced simplification including special functions
-    fn advanced_simplify(&self) -> Self {
-        let mut result = self.clone();
-
-        // Apply various advanced simplification techniques
-        result = result.simplify_factorial();
-        result = result.simplify_logarithms();
-        result = result.simplify_trigonometric();
-        result = result.simplify_special_functions();
-
-        result
-    }
-
-    /// Simplify factorial expressions
-    fn simplify_factorial(&self) -> Self {
-        match self {
-            Expression::Function { name, args } if name == "factorial" => {
-                if args.len() == 1 {
-                    self.compute_factorial(&args[0])
-                } else {
-                    self.clone()
-                }
-            }
-
-            Expression::Add(terms) => {
-                let simplified_terms: Vec<Expression> =
-                    terms.iter().map(|term| term.simplify_factorial()).collect();
-                Expression::add(simplified_terms)
-            }
-
-            Expression::Mul(factors) => {
-                let simplified_factors: Vec<Expression> = factors
-                    .iter()
-                    .map(|factor| factor.simplify_factorial())
-                    .collect();
-                Expression::mul(simplified_factors)
-            }
-
-            Expression::Pow(base, exp) => {
-                Expression::pow(base.simplify_factorial(), exp.simplify_factorial())
-            }
-
-            Expression::Function { name, args } => {
-                let simplified_args: Vec<Expression> =
-                    args.iter().map(|arg| arg.simplify_factorial()).collect();
-                Expression::function(name.clone(), simplified_args)
-            }
-
-            _ => self.clone(),
-        }
-    }
-
-    /// Simplify logarithmic expressions
-    fn simplify_logarithms(&self) -> Self {
-        match self {
-            Expression::Function { name, args } if name == "log" => {
-                self.simplify_log_function(args)
-            }
-
-            Expression::Function { name, args } if name == "ln" => self.simplify_ln_function(args),
-
-            Expression::Add(terms) => {
-                let simplified_terms: Vec<Expression> = terms
-                    .iter()
-                    .map(|term| term.simplify_logarithms())
-                    .collect();
-                Expression::add(simplified_terms)
-            }
-
-            Expression::Mul(factors) => {
-                let simplified_factors: Vec<Expression> = factors
-                    .iter()
-                    .map(|factor| factor.simplify_logarithms())
-                    .collect();
-                Expression::mul(simplified_factors)
-            }
-
-            _ => self.clone(),
-        }
-    }
-
-    /// Simplify trigonometric expressions
-    fn simplify_trigonometric(&self) -> Self {
-        match self {
-            Expression::Function { name, args } if self.is_trig_function(name) => {
-                self.simplify_trig_function(name, args)
-            }
-
-            Expression::Add(terms) => {
-                let simplified_terms: Vec<Expression> = terms
-                    .iter()
-                    .map(|term| term.simplify_trigonometric())
-                    .collect();
-                Expression::add(simplified_terms)
-            }
-
-            Expression::Mul(factors) => {
-                let simplified_factors: Vec<Expression> = factors
-                    .iter()
-                    .map(|factor| factor.simplify_trigonometric())
-                    .collect();
-                Expression::mul(simplified_factors)
-            }
-
-            _ => self.clone(),
-        }
-    }
-
-    /// Simplify other special functions
-    fn simplify_special_functions(&self) -> Self {
-        match self {
-            Expression::Function { name, args } => match name.as_str() {
-                "sqrt" => self.simplify_sqrt(args),
-                "abs" => self.simplify_abs(args),
-                "exp" => self.simplify_exp(args),
-                "gamma" => self.simplify_gamma(args),
-                _ => self.clone(),
-            },
-            _ => self.clone(),
-        }
-    }
-}
+use num_traits::{One, Zero};
+use num_traits::ToPrimitive;
 
 impl Expression {
     /// Compute factorial for integer values
-    fn compute_factorial(&self, arg: &Expression) -> Expression {
+    pub(super) fn compute_factorial(&self, arg: &Expression) -> Expression {
         match arg {
             Expression::Number(Number::Integer(n)) => {
                 if let Some(val) = n.to_i64() {
@@ -175,7 +43,7 @@ impl Expression {
     }
 
     /// Compute factorial for small integers
-    fn factorial_i64(&self, n: u64) -> BigInt {
+    pub(super) fn factorial_i64(&self, n: u64) -> BigInt {
         if n <= 1 {
             BigInt::one()
         } else {
@@ -188,7 +56,7 @@ impl Expression {
     }
 
     /// Simplify logarithm functions
-    fn simplify_log_function(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_log_function(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) if *n == 1 => {
@@ -207,13 +75,23 @@ impl Expression {
                     Expression::function("log", vec![base.as_ref().clone()]),
                 ]),
 
-                // log(a*b) = log(a) + log(b)
+                // log(a*b) = log(a) + log(b) ONLY if commutative
                 Expression::Mul(factors) => {
-                    let log_terms: Vec<Expression> = factors
-                        .iter()
-                        .map(|f| Expression::function("log", vec![f.clone()]))
-                        .collect();
-                    Expression::add(log_terms)
+                    let commutativity = Commutativity::combine(
+                        factors.iter().map(|f| f.commutativity())
+                    );
+
+                    if commutativity.can_sort() {
+                        // Commutative: Can apply logarithm product rule
+                        let log_terms: Vec<Expression> = factors
+                            .iter()
+                            .map(|f| Expression::function("log", vec![f.clone()]))
+                            .collect();
+                        Expression::add(log_terms)
+                    } else {
+                        // Noncommutative: Cannot split log(AB) into log(A) + log(B)
+                        Expression::function("log", args.to_vec())
+                    }
                 }
 
                 _ => Expression::function("log", args.to_vec()),
@@ -238,7 +116,7 @@ impl Expression {
     }
 
     /// Simplify natural logarithm functions
-    fn simplify_ln_function(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_ln_function(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) if *n == 1 => {
@@ -268,7 +146,7 @@ impl Expression {
     }
 
     /// Check if a function name is trigonometric
-    fn is_trig_function(&self, name: &str) -> bool {
+    pub(super) fn is_trig_function(&self, name: &str) -> bool {
         matches!(
             name,
             "sin"
@@ -287,7 +165,7 @@ impl Expression {
     }
 
     /// Simplify trigonometric functions
-    fn simplify_trig_function(&self, name: &str, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_trig_function(&self, name: &str, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             let arg = &args[0];
 
@@ -324,7 +202,7 @@ impl Expression {
     }
 
     /// Simplify square root function
-    fn simplify_sqrt(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_sqrt(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) => {
@@ -359,7 +237,7 @@ impl Expression {
     }
 
     /// Simplify absolute value function
-    fn simplify_abs(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_abs(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) => Expression::integer(n.abs()),
@@ -372,7 +250,7 @@ impl Expression {
     }
 
     /// Simplify exponential function
-    fn simplify_exp(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_exp(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) if n.is_zero() => {
@@ -395,7 +273,7 @@ impl Expression {
     }
 
     /// Simplify gamma function
-    fn simplify_gamma(&self, args: &[Expression]) -> Expression {
+    pub(super) fn simplify_gamma(&self, args: &[Expression]) -> Expression {
         if args.len() == 1 {
             match &args[0] {
                 Expression::Number(Number::Integer(n)) => {
@@ -419,7 +297,7 @@ impl Expression {
     }
 
     /// Compute integer square root if it exists
-    fn integer_sqrt(&self, n: &BigInt) -> Option<BigInt> {
+    pub(super) fn integer_sqrt(&self, n: &BigInt) -> Option<BigInt> {
         if n < &BigInt::zero() {
             return None;
         }
@@ -446,131 +324,5 @@ impl Expression {
     /// Create natural logarithm expression
     pub fn ln(arg: Expression) -> Expression {
         Expression::function("ln", vec![arg])
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::symbol;
-
-    #[test]
-    fn test_factorial_computation() {
-        // Test 5! = 120
-        let expr = Expression::factorial(Expression::integer(5));
-        let result = expr.simplify_factorial();
-
-        assert_eq!(result, Expression::integer(120));
-
-        // Test 0! = 1
-        let expr = Expression::factorial(Expression::integer(0));
-        let result = expr.simplify_factorial();
-
-        assert_eq!(result, Expression::integer(1));
-
-        // Test 1! = 1
-        let expr = Expression::factorial(Expression::integer(1));
-        let result = expr.simplify_factorial();
-
-        assert_eq!(result, Expression::integer(1));
-    }
-
-    #[test]
-    fn test_logarithm_simplification() {
-        // Test ln(1) = 0
-        let expr = Expression::ln(Expression::integer(1));
-        let result = expr.simplify_logarithms();
-
-        assert_eq!(result, Expression::integer(0));
-
-        // Test ln(exp(x)) = x
-        let x = symbol!(x);
-        let expr = Expression::ln(Expression::function(
-            "exp",
-            vec![Expression::symbol(x.clone())],
-        ));
-        let result = expr.simplify_logarithms();
-
-        assert_eq!(result, Expression::symbol(x));
-    }
-
-    #[test]
-    fn test_trigonometric_simplification() {
-        // Test sin(0) = 0
-        let expr = Expression::function("sin", vec![Expression::integer(0)]);
-        let result = expr.simplify_trigonometric();
-
-        assert_eq!(result, Expression::integer(0));
-
-        // Test cos(0) = 1
-        let expr = Expression::function("cos", vec![Expression::integer(0)]);
-        let result = expr.simplify_trigonometric();
-
-        assert_eq!(result, Expression::integer(1));
-    }
-
-    #[test]
-    fn test_sqrt_simplification() {
-        // Test sqrt(4) = 2
-        let expr = Expression::sqrt(Expression::integer(4));
-        let result = expr.simplify_special_functions();
-
-        assert_eq!(result, Expression::integer(2));
-
-        // Test sqrt(0) = 0
-        let expr = Expression::sqrt(Expression::integer(0));
-        let result = expr.simplify_special_functions();
-
-        assert_eq!(result, Expression::integer(0));
-
-        // Test sqrt(1) = 1
-        let expr = Expression::sqrt(Expression::integer(1));
-        let result = expr.simplify_special_functions();
-
-        assert_eq!(result, Expression::integer(1));
-    }
-
-    #[test]
-    fn test_gamma_function() {
-        // Test Gamma(4) = 3! = 6
-        let expr = Expression::function("gamma", vec![Expression::integer(4)]);
-        let result = expr.simplify_special_functions();
-
-        assert_eq!(result, Expression::integer(6));
-
-        // Test Gamma(1) = 0! = 1
-        let expr = Expression::function("gamma", vec![Expression::integer(1)]);
-        let result = expr.simplify_special_functions();
-
-        assert_eq!(result, Expression::integer(1));
-    }
-
-    #[test]
-    fn test_advanced_zero_detection() {
-        // Test complex zero detection
-        let x = symbol!(x);
-        let expr = Expression::add(vec![
-            Expression::integer(4),
-            Expression::mul(vec![Expression::integer(4), Expression::symbol(x.clone())]),
-            Expression::mul(vec![
-                Expression::integer(-1),
-                Expression::mul(vec![
-                    Expression::integer(2),
-                    Expression::add(vec![
-                        Expression::integer(2),
-                        Expression::mul(vec![
-                            Expression::integer(2),
-                            Expression::symbol(x.clone()),
-                        ]),
-                    ]),
-                ]),
-            ]),
-        ]);
-
-        let result = expr.advanced_simplify();
-        // This is a complex case that might not simplify to zero immediately
-        // but should maintain the algebraic structure
-        println!("Complex expression result: {}", result);
-        assert!(!result.to_string().is_empty());
     }
 }

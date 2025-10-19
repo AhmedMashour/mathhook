@@ -1,6 +1,15 @@
 //! Rational expression operations and simplification
 //! Handles rational functions, fraction simplification, and rational arithmetic
+//!
+//! # Noncommutative Simplification
+//!
+//! For noncommutative expressions (matrices, operators):
+//! - (AB)/(AC) can simplify to B/C only if A is left-invertible and cancellable
+//! - (BA)/(CA) can simplify to B/C only if A is right-invertible and cancellable
+//! - In general, simplification with noncommutative terms is NOT always valid
+//! - This implementation currently preserves order and does NOT auto-simplify noncommutative rationals
 
+use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
