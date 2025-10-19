@@ -94,7 +94,7 @@ impl Substitutable for Expression {
             Expression::Mul(factors) => {
                 let new_factors: Vec<Expression> =
                     factors.iter().map(|f| f.subs(old, new)).collect();
-                Expression::Mul(Box::new(new_factors))
+                Expression::mul(new_factors)
             }
 
             Expression::Pow(base, exp) => {
@@ -363,5 +363,138 @@ mod tests {
         let result2 = result.subs(&Expression::symbol(y.clone()), &Expression::integer(5));
 
         assert_eq!(result2, Expression::integer(5));
+    }
+
+    #[test]
+    fn test_substitution_preserves_position_matrices() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+        let c = symbol!(C; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(b.clone()),
+            Expression::symbol(a.clone()),
+        ]);
+
+        let result = expr.subs(&Expression::symbol(a.clone()), &Expression::symbol(c.clone()));
+
+        let expected = Expression::mul(vec![
+            Expression::symbol(c.clone()),
+            Expression::symbol(b.clone()),
+            Expression::symbol(c.clone()),
+        ]);
+
+        assert_eq!(
+            result, expected,
+            "Substitution A->C in ABA must preserve positions to get CBC"
+        );
+    }
+
+    #[test]
+    fn test_substitution_preserves_position_operators() {
+        let p = symbol!(p; operator);
+        let x = symbol!(x; operator);
+        let h = symbol!(H; operator);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(p.clone()),
+            Expression::symbol(x.clone()),
+            Expression::symbol(p.clone()),
+        ]);
+
+        let result = expr.subs(&Expression::symbol(p.clone()), &Expression::symbol(h.clone()));
+
+        let expected = Expression::mul(vec![
+            Expression::symbol(h.clone()),
+            Expression::symbol(x.clone()),
+            Expression::symbol(h.clone()),
+        ]);
+
+        assert_eq!(
+            result, expected,
+            "Substitution p->H in pxp must preserve positions to get HxH"
+        );
+    }
+
+    #[test]
+    fn test_substitution_multiple_occurrences_different_positions() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+        let c = symbol!(C; matrix);
+        let d = symbol!(D; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(b.clone()),
+            Expression::symbol(c.clone()),
+            Expression::symbol(a.clone()),
+        ]).simplify();
+
+        let result = expr.subs(&Expression::symbol(a.clone()), &Expression::symbol(d.clone()));
+
+        let expected = Expression::mul(vec![
+            Expression::symbol(d.clone()),
+            Expression::symbol(b.clone()),
+            Expression::symbol(c.clone()),
+            Expression::symbol(d.clone()),
+        ]).simplify();
+
+        assert_eq!(
+            result, expected,
+            "Substitution A->D in ABCA must preserve all positions to get DBCD"
+        );
+    }
+
+    #[test]
+    fn test_substitution_quaternions_position_matters() {
+        let i = symbol!(i; quaternion);
+        let j = symbol!(j; quaternion);
+        let k = symbol!(k; quaternion);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(i.clone()),
+            Expression::symbol(j.clone()),
+            Expression::symbol(i.clone()),
+        ]);
+
+        let result = expr.subs(&Expression::symbol(i.clone()), &Expression::symbol(k.clone()));
+
+        let expected = Expression::mul(vec![
+            Expression::symbol(k.clone()),
+            Expression::symbol(j.clone()),
+            Expression::symbol(k.clone()),
+        ]);
+
+        assert_eq!(
+            result, expected,
+            "Substitution i->k in iji must preserve positions to get kjk"
+        );
+    }
+
+    #[test]
+    fn test_substitution_scalars_commutative_still_preserves_structure() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+        let z = symbol!(z);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]);
+
+        let result = expr.subs(&Expression::symbol(x.clone()), &Expression::symbol(z.clone()));
+
+        let expected = Expression::mul(vec![
+            Expression::symbol(z.clone()),
+            Expression::symbol(y.clone()),
+            Expression::symbol(z.clone()),
+        ]);
+
+        assert_eq!(
+            result, expected,
+            "Substitution x->z in xyx preserves structure even for commutative scalars"
+        );
     }
 }

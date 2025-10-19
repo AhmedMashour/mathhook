@@ -10,9 +10,9 @@ use crate::pattern::matching::patterns::Pattern;
 
 /// Match commutative operations (Add, Mul)
 ///
-/// Tries to match expression terms/factors against pattern terms/factors
-/// considering all possible orderings. This is essential for algebraic
-/// pattern matching since addition and multiplication are commutative.
+/// Tries to match expression terms/factors against pattern terms/factors.
+/// For commutative expressions (scalars), considers all possible orderings.
+/// For noncommutative expressions (matrices, operators), requires exact order.
 pub(super) fn match_commutative(
     expr_items: &[Expression],
     pattern_items: &[Pattern],
@@ -30,22 +30,30 @@ pub(super) fn match_commutative(
         }
     }
 
-    if expr_items.len() == pattern_items.len() {
-        let backup_bindings = bindings.clone();
-        let mut ordered_match = true;
+    if expr_items.len() != pattern_items.len() {
+        return false;
+    }
 
-        for (expr_item, pattern_item) in expr_items.iter().zip(pattern_items.iter()) {
-            if !match_recursive(expr_item, pattern_item, bindings) {
-                ordered_match = false;
-                break;
-            }
+    let is_commutative = check_commutativity(expr_items);
+
+    let backup_bindings = bindings.clone();
+    let mut ordered_match = true;
+
+    for (expr_item, pattern_item) in expr_items.iter().zip(pattern_items.iter()) {
+        if !match_recursive(expr_item, pattern_item, bindings) {
+            ordered_match = false;
+            break;
         }
+    }
 
-        if ordered_match {
-            return true;
-        }
+    if ordered_match {
+        return true;
+    }
 
-        *bindings = backup_bindings;
+    *bindings = backup_bindings;
+
+    if !is_commutative {
+        return false;
     }
 
     if pattern_items.len() <= 6 {
@@ -53,6 +61,18 @@ pub(super) fn match_commutative(
     } else {
         try_greedy_match(expr_items, pattern_items, bindings)
     }
+}
+
+/// Check if all expressions in the collection are commutative
+fn check_commutativity(items: &[Expression]) -> bool {
+    use crate::core::commutativity::Commutativity;
+
+    for item in items {
+        if item.commutativity() == Commutativity::Noncommutative {
+            return false;
+        }
+    }
+    true
 }
 
 /// Try all permutations of pattern items to find a match
@@ -200,5 +220,171 @@ mod tests {
 
         let matches = expr.matches(&pattern);
         assert!(matches.is_some());
+    }
+
+    #[test]
+    fn test_matrix_multiplication_no_match_reversed() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(b.clone()),
+            Expression::symbol(a.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(a.clone())),
+            Pattern::Exact(Expression::symbol(b.clone())),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(
+            matches.is_none(),
+            "AB pattern should NOT match BA expression for noncommutative matrices"
+        );
+    }
+
+    #[test]
+    fn test_matrix_multiplication_matches_same_order() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(b.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(a.clone())),
+            Pattern::Exact(Expression::symbol(b.clone())),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(
+            matches.is_some(),
+            "AB pattern should match AB expression for matrices"
+        );
+    }
+
+    #[test]
+    fn test_scalar_multiplication_matches_reversed() {
+        let x = symbol!(x);
+        let y = symbol!(y);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(y.clone()),
+            Expression::symbol(x.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(x.clone())),
+            Pattern::Exact(Expression::symbol(y.clone())),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(
+            matches.is_some(),
+            "xy pattern should match yx expression for commutative scalars"
+        );
+    }
+
+    #[test]
+    fn test_operator_multiplication_no_match_reversed() {
+        let p = symbol!(p; operator);
+        let x = symbol!(x; operator);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(p.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(p.clone())),
+            Pattern::Exact(Expression::symbol(x.clone())),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(
+            matches.is_none(),
+            "px pattern should NOT match xp expression for noncommutative operators"
+        );
+    }
+
+    #[test]
+    fn test_quaternion_multiplication_no_match_reversed() {
+        let i = symbol!(i; quaternion);
+        let j = symbol!(j; quaternion);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(j.clone()),
+            Expression::symbol(i.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(i.clone())),
+            Pattern::Exact(Expression::symbol(j.clone())),
+        ]);
+
+        let matches = expr.matches(&pattern);
+        assert!(
+            matches.is_none(),
+            "ij pattern should NOT match ji expression for noncommutative quaternions"
+        );
+    }
+
+    #[test]
+    fn test_matrix_wildcard_pattern_preserves_order() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(b.clone()),
+        ]).simplify();
+
+        let pattern = Pattern::Mul(vec![Pattern::wildcard("x"), Pattern::wildcard("y")]);
+
+        let matches = expr.matches(&pattern);
+        assert!(matches.is_some());
+
+        if let Some(bindings) = matches {
+            assert_eq!(bindings.get("x"), Some(&Expression::symbol(a.clone())));
+            assert_eq!(bindings.get("y"), Some(&Expression::symbol(b.clone())));
+        }
+    }
+
+    #[test]
+    fn test_mixed_commutative_noncommutative_respects_order() {
+        let a = symbol!(A; matrix);
+        let b = symbol!(B; matrix);
+        let c = symbol!(c);
+
+        let expr = Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(c.clone()),
+            Expression::symbol(b.clone()),
+        ]).simplify();
+
+        let pattern_wrong_order = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(a.clone())),
+            Pattern::Exact(Expression::symbol(b.clone())),
+            Pattern::Exact(Expression::symbol(c.clone())),
+        ]);
+
+        assert!(
+            expr.matches(&pattern_wrong_order).is_none(),
+            "AcB should NOT match ABc pattern when matrices are involved"
+        );
+
+        let pattern_correct_order = Pattern::Mul(vec![
+            Pattern::Exact(Expression::symbol(a.clone())),
+            Pattern::Exact(Expression::symbol(c.clone())),
+            Pattern::Exact(Expression::symbol(b.clone())),
+        ]);
+
+        assert!(
+            expr.matches(&pattern_correct_order).is_some(),
+            "AcB should match AcB pattern"
+        );
     }
 }
