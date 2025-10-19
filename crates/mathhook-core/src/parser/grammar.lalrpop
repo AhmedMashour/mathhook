@@ -114,6 +114,7 @@ match {
     "\\choose" => LATEX_CHOOSE,
     "\\mathcal" => LATEX_MATHCAL,
     "\\mathbb" => LATEX_MATHBB,
+    "\\mathbf" => LATEX_MATHBF,
     "\\det" => LATEX_DET,
     "\\max" => LATEX_MAX,
     "\\min" => LATEX_MIN,
@@ -997,8 +998,24 @@ NablaOperators: Expression = {
 // ===== VECTOR AND OPERATOR WRAPPERS =====
 
 VectorWrappers: Expression = {
+    // Type inference: \mathbf{A} creates matrix symbol (noncommutative)
+    LATEX_MATHBF LBRACE <name:IDENTIFIER> RBRACE => Expression::symbol(Symbol::matrix(name)),
+
+    // Type inference: \hat{p} creates operator symbol (noncommutative)
+    LATEX_HAT LBRACE <name:IDENTIFIER> RBRACE => Expression::symbol(Symbol::operator(name)),
+
+    // Type inference: \mathbb{H}{i} creates quaternion symbol (noncommutative)
+    // This allows explicit quaternion notation like \mathbb{H}{i}, \mathbb{H}{j}, \mathbb{H}{k}
+    LATEX_MATHBB LBRACE <type_hint:IDENTIFIER> RBRACE LBRACE <name:IDENTIFIER> RBRACE => {
+        if type_hint == "H" {
+            Expression::symbol(Symbol::quaternion(name))
+        } else {
+            Expression::function(&format!("mathbb_{}", type_hint), vec![Expression::symbol(Symbol::new(name))])
+        }
+    },
+
+    // Legacy function wrappers (for non-identifier arguments)
     LATEX_VEC LBRACE <arg:Expression> RBRACE => Expression::function("vector", vec![arg]),
-    LATEX_HAT LBRACE <arg:Expression> RBRACE => Expression::function("hat", vec![arg]),
     LATEX_BAR LBRACE <arg:Expression> RBRACE => Expression::function("bar", vec![arg]),
     LATEX_TILDE LBRACE <arg:Expression> RBRACE => Expression::function("tilde", vec![arg]),
     LATEX_DOT LBRACE <arg:Expression> RBRACE => Expression::function("dot", vec![arg]),
