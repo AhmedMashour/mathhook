@@ -737,8 +737,8 @@ When modifying `grammar.lalrpop`:
 
 MathHook provides declarative macros for ergonomic expression creation:
 
-- **`symbol!(x)`** - Create single symbols (currently scalars only; will support matrix/operator/quaternion types)
-- **`symbols!("x y z")`** - Create multiple symbols at once (PLANNED - not yet implemented, coming in Wave 5)
+- **`symbol!(x)`** - Create single symbols with optional type specification (Scalar/Matrix/Operator/Quaternion)
+- **`symbols!("x y z")`** - Create multiple symbols at once (PLANNED - not yet implemented, coming in Wave 9)
 - **`expr!(...)`** - Create expressions with operator parsing
 - **`function!(name, args...)`** - Create function expressions
 
@@ -746,30 +746,60 @@ MathHook provides declarative macros for ergonomic expression creation:
 
 | Scenario | Use | Example |
 |----------|-----|---------|
-| **Creating single symbol** | `symbol!(x)` (Priority 1) | `let x = symbol!(x);` |
+| **Creating scalar symbol** | `symbol!(x)` (Priority 1) | `let x = symbol!(x);` |
+| **Creating matrix symbol** | `symbol!(A; matrix)` (Priority 1) | `let A = symbol!(A; matrix);` |
+| **Creating operator symbol** | `symbol!(p; operator)` (Priority 1) | `let p = symbol!(p; operator);` |
+| **Creating quaternion symbol** | `symbol!(i; quaternion)` (Priority 1) | `let i = symbol!(i; quaternion);` |
 | **Creating multiple symbols** | Multiple `symbol!()` calls (Priority 1) | `let x = symbol!(x); let y = symbol!(y);` |
-| **Creating multiple symbols (FUTURE)** | `symbols!("x y z")` when available | `let (x, y, z) = symbols!("x y z");` |
+| **Creating multiple symbols (FUTURE)** | `symbols!("x y z")` when available (Wave 9) | `let (x, y, z) = symbols!("x y z");` |
 | **Simple expression** | `expr!(x + y)` (Priority 2) | `let sum = expr!(x + y);` |
 | **Complex expression** | Explicit grouping or API (Priority 3) | `expr!((2*x) + (3*y))` |
 | **Loop/runtime data** | Explicit API (Priority 3) | `Expression::integer(i)` |
 
-**Golden Rule**: NEVER use `Symbol::new()` directly. ALWAYS use `symbol!()` (or `symbols!()` when available).
+**Golden Rule**: NEVER use `Symbol::new()`, `Symbol::scalar()`, `Symbol::matrix()`, etc. directly in application code. ALWAYS use `symbol!()` macro (or `symbols!()` when available in Wave 9).
 
 ### Macro Priority Hierarchy (Highest to Lowest)
 
 #### **Priority 1: MANDATORY - Symbol Creation (NO EXCEPTIONS)**
 
-**Rule**: NEVER use `Symbol::new()` directly. ALWAYS use macros.
+**Rule**: NEVER use `Symbol::new()`, `Symbol::scalar()`, `Symbol::matrix()`, etc. directly. ALWAYS use macros.
 
-**Single Symbol Creation**: Use `symbol!(x)`
+**Single Symbol Creation**: Use `symbol!(x)` with optional type
 ```rust
-// ❌ Don't use:
-Symbol::new("x")
+// ❌ NEVER use direct constructors:
+Symbol::new("x")          // WRONG - deprecated
+Symbol::scalar("x")       // WRONG - use macro instead
+Symbol::matrix("A")       // WRONG - use macro instead
 
-// ✅ Always use:
-symbol!(x)
-symbol!(theta)
-symbol!(alpha)
+// ✅ ALWAYS use symbol! macro:
+symbol!(x)                // Scalar (default, commutative)
+symbol!(theta)            // Scalar
+symbol!(A; matrix)        // Matrix (noncommutative)
+symbol!(p; operator)      // Operator (noncommutative)
+symbol!(i; quaternion)    // Quaternion (noncommutative)
+```
+
+**Type-Specific Symbol Creation (CURRENT - Fully Supported)**:
+```rust
+// ✅ Scalar symbols (default, commutative)
+let x = symbol!(x);
+let y = symbol!(y);
+let theta = symbol!(theta);
+
+// ✅ Matrix symbols (noncommutative) - Wave 1 Complete
+let A = symbol!(A; matrix);
+let B = symbol!(B; matrix);
+let C = symbol!(C; matrix);
+
+// ✅ Operator symbols (noncommutative) - Wave 1 Complete
+let p = symbol!(p; operator);      // Momentum operator
+let x_op = symbol!(x; operator);   // Position operator
+let H = symbol!(H; operator);      // Hamiltonian
+
+// ✅ Quaternion symbols (noncommutative) - Wave 1 Complete
+let i = symbol!(i; quaternion);
+let j = symbol!(j; quaternion);
+let k = symbol!(k; quaternion);
 ```
 
 **Bulk Symbol Creation (CURRENT - Manual Approach)**:
@@ -779,28 +809,19 @@ let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
 
-// ❌ NEVER use Symbol::new():
-let x = Symbol::new("x");  // WRONG!
+// ✅ With types:
+let A = symbol!(A; matrix);
+let B = symbol!(B; matrix);
+let C = symbol!(C; matrix);
 ```
 
-**Bulk Symbol Creation (FUTURE - After Wave 5)**:
+**Bulk Symbol Creation (FUTURE - After Wave 9)**:
 ```rust
-// ✅ Will be available after symbols!() macro is implemented:
-let (x, y, z) = symbols!("x y z");  // Scalar symbols (default)
-let (A, B, C) = symbols!("A B C"; matrix);  // Matrix symbols (noncommutative)
-let (p, x, h) = symbols!("p x h"; operator);  // Operator symbols
-let (i, j, k) = symbols!("i j k"; quaternion);  // Quaternion symbols
-```
-
-**Type-Specific Symbol Creation (FUTURE - After Wave 1)**:
-```rust
-// ✅ Current - only scalars supported:
-let x = symbol!(x);  // Scalar (default)
-
-// ✅ Will be available after noncommutative algebra implementation:
-let A = symbol!(A; matrix);      // Matrix (noncommutative)
-let p = symbol!(p; operator);    // Operator (noncommutative)
-let q = symbol!(q; quaternion);  // Quaternion (noncommutative)
+// ✅ Will be available after symbols!() macro is implemented (Wave 9):
+let (x, y, z) = symbols!("x y z");              // All scalars (default)
+let (A, B, C) = symbols!("A B C"; matrix);      // All matrices (noncommutative)
+let (p, x, h) = symbols!("p x h"; operator);    // All operators (noncommutative)
+let (i, j, k) = symbols!("i j k"; quaternion);  // All quaternions (noncommutative)
 ```
 
 #### **Priority 2: STRONGLY RECOMMENDED - Expression Creation**
@@ -954,14 +975,17 @@ When touching existing code, actively migrate to macro usage:
 
 **Priority 1: Always Migrate (No Exceptions)**
 
-ALWAYS replace `Symbol::new()` with macros when modifying code:
+ALWAYS replace direct Symbol constructors with macros when modifying code:
 
 ```rust
 // ❌ Find and replace these ALWAYS:
 Symbol::new("x")          → symbol!(x)
-Symbol::new("theta")      → symbol!(theta)
+Symbol::scalar("x")       → symbol!(x)
+Symbol::matrix("A")       → symbol!(A; matrix)
+Symbol::operator("p")     → symbol!(p; operator)
+Symbol::quaternion("i")   → symbol!(i; quaternion)
 
-// ❌ Replace bulk creation (current approach):
+// ❌ Replace bulk creation (old approach):
 let x = Symbol::new("x");
 let y = Symbol::new("y");
 let z = Symbol::new("z");
@@ -971,8 +995,14 @@ let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
 
-// ✅ FUTURE - Once symbols!() macro is implemented (Wave 5):
+// ✅ With types (current - fully supported):
+let A = symbol!(A; matrix);
+let B = symbol!(B; matrix);
+let p = symbol!(p; operator);
+
+// ✅ FUTURE - Once symbols!() macro is implemented (Wave 9):
 // let (x, y, z) = symbols!("x y z");
+// let (A, B, C) = symbols!("A B C"; matrix);
 ```
 
 **Priority 2: Migrate When Touching the Code**
@@ -1104,21 +1134,36 @@ let b = symbol!(b);
 ### Examples of Good Macro Usage
 
 ```rust
-// ✅ Excellent - single symbols are always cleaner with macros
+// ✅ Excellent - scalar symbols (default, commutative)
 let x = symbol!(x);
 let theta = symbol!(theta);
+
+// ✅ Excellent - matrix symbols (noncommutative) - Wave 1 Complete
+let A = symbol!(A; matrix);
+let B = symbol!(B; matrix);
+let C = symbol!(C; matrix);
+
+// ✅ Excellent - operator symbols (noncommutative) - Wave 1 Complete
+let p = symbol!(p; operator);      // Momentum operator
+let x_op = symbol!(x; operator);   // Position operator
+let H = symbol!(H; operator);      // Hamiltonian
+
+// ✅ Excellent - quaternion symbols (noncommutative) - Wave 1 Complete
+let i = symbol!(i; quaternion);
+let j = symbol!(j; quaternion);
+let k = symbol!(k; quaternion);
 
 // ✅ Excellent - current approach for multiple symbols
 let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
 
-// ✅ FUTURE - bulk symbol creation (after Wave 5 implementation):
-// let (x, y, z) = symbols!("x y z");  // All scalars (default)
+// ✅ FUTURE - bulk symbol creation (after Wave 9 implementation):
+// let (x, y, z) = symbols!("x y z");              // All scalars (default)
 // let (r, theta, phi) = symbols!("r theta phi");  // Spherical coordinates
-// let (A, B, C) = symbols!("A B C"; matrix);  // Matrix symbols
-// let (p, x, h) = symbols!("p x h"; operator);  // Operator symbols
-// let (i, j, k) = symbols!("i j k"; quaternion);  // Quaternion symbols
+// let (A, B, C) = symbols!("A B C"; matrix);      // All matrix symbols
+// let (p, x, h) = symbols!("p x h"; operator);    // All operator symbols
+// let (i, j, k) = symbols!("i j k"; quaternion);  // All quaternion symbols
 
 // ✅ Excellent - simple expressions are very readable with explicit grouping
 let quadratic = expr!((a*(x^2)) + (b*x) + c);
@@ -1178,17 +1223,32 @@ let programmatic = {
 
 **When reviewing or writing code, follow this checklist:**
 
-1. ✅ **Priority 1 (MANDATORY)**: All `Symbol::new()` replaced with `symbol!()` (use `symbols!()` once implemented)
+1. ✅ **Priority 1 (MANDATORY)**: All direct Symbol constructors replaced with `symbol!()` macro
+   - Replace `Symbol::new()` → `symbol!(x)`
+   - Replace `Symbol::scalar()` → `symbol!(x)`
+   - Replace `Symbol::matrix()` → `symbol!(A; matrix)`
+   - Replace `Symbol::operator()` → `symbol!(p; operator)`
+   - Replace `Symbol::quaternion()` → `symbol!(i; quaternion)`
+
 2. ✅ **Priority 2 (RECOMMENDED)**: Simple expressions use `expr!()` macro
+
 3. ✅ **Priority 3 (APPROPRIATE)**: Complex/programmatic cases use explicit API
+
 4. ✅ **No runtime variables in macros**: Loop variables and runtime data use explicit API
+
 5. ✅ **No nested macro calls**: Use intermediate variables or direct patterns
 
 **Red Flags (Reject During Code Review):**
 - ❌ Any `Symbol::new()` call found in code
+- ❌ Any `Symbol::scalar()`, `Symbol::matrix()`, `Symbol::operator()`, or `Symbol::quaternion()` call in application code
 - ❌ Simple expressions like `x + y` using verbose `Expression::add(vec![...])`
 - ❌ Runtime variables passed to macros: `expr!(i)` in a loop
-- ❌ (FUTURE) Bulk symbol creation without `symbols!()` macro once it's implemented
+- ❌ (FUTURE) Bulk symbol creation without `symbols!()` macro once it's implemented (Wave 9)
+
+**Exception**: Direct Symbol constructors (`Symbol::scalar()`, etc.) are ONLY allowed in:
+- Macro implementations (`macros/expressions.rs`)
+- Test code that specifically tests Symbol constructors
+- Internal library code that has legitimate reasons (must be documented)
 
 **This is non-negotiable**. The macro system is designed to prevent errors and improve readability. When you see violations, fix them immediately during any code modification.
 
