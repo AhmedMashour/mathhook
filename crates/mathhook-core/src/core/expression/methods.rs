@@ -1,4 +1,8 @@
 //! Expression utility methods
+//!
+//! This module provides utility methods for expressions including GCD, LCM,
+//! equation solving, and commutativity analysis. Matrix-specific methods
+//! (transpose, inverse) are in the matrix_methods module.
 
 use super::Expression;
 use crate::algebra::equation_analyzer::SmartEquationSolver;
@@ -332,6 +336,7 @@ impl Expression {
             }
         }
     }
+
 }
 
 #[cfg(test)]

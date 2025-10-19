@@ -4,6 +4,7 @@ pub mod constructors;
 pub mod conversion;
 pub mod data_types;
 pub mod display;
+pub mod matrix_methods;
 pub mod methods;
 pub mod operations;
 pub mod operators;
