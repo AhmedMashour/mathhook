@@ -540,7 +540,7 @@ MathHook's core architecture assumes **commutativity everywhere**:
 ```rust
 pub enum Expression {
     Add(Vec<Expression>),  // Always commutative
-    Mul(Vec<Expression>, Commutativity),  // Can be commutative or not
+    Mul(Vec<Expression>),  // Can be commutative or not
     // ... existing variants
 }
 

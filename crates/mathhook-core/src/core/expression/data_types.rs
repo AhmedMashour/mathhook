@@ -97,3 +97,20 @@ pub struct MethodCallData {
     pub method_name: String,
     pub args: Vec<Expression>,
 }
+
+#[cfg(test)]
+mod expression_size_tests {
+    use super::*;
+    use std::mem::size_of;
+
+    #[test]
+    fn test_expression_size() {
+        let size = size_of::<Expression>();
+        assert_eq!(
+            size, 32,
+            "Expression size is {} bytes, MUST be exactly 32 bytes! \
+             Noncommutative algebra support must NOT increase Expression size.",
+            size
+        );
+    }
+}
