@@ -69,6 +69,9 @@ pub struct PolynomialProperties {
     /// Computational method for evaluation
     pub evaluation_method: EvaluationMethod,
 
+    /// Numerical evaluation method for intelligence-driven computation
+    pub numerical_evaluator: Option<super::rules::NumericalEvaluator>,
+
     /// Antiderivative rule (for polynomial integration)
     /// All polynomials are integrable, so this is always Some(...)
     pub antiderivative_rule: AntiderivativeRule,

@@ -4,6 +4,7 @@
 //! recurrence relations, orthogonality, and educational explanations.
 
 pub mod chebyshev;
+pub mod evaluation;
 pub mod hermite;
 pub mod laguerre;
 pub mod legendre;

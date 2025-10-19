@@ -5,6 +5,7 @@
 
 use crate::core::{Expression, Symbol};
 use crate::functions::properties::*;
+use crate::functions::properties::rules::NumericalEvaluator;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -131,7 +132,12 @@ impl LegendreIntelligence {
                 
                 // Evaluation method: Recurrence is most stable and efficient
                 evaluation_method: EvaluationMethod::Recurrence,
-                
+
+                // Numerical evaluator using recurrence relation
+                numerical_evaluator: Some(NumericalEvaluator::Custom(
+                    super::evaluation::evaluate_legendre_numerical
+                )),
+
                 antiderivative_rule: AntiderivativeRule {
                     rule_type: AntiderivativeRuleType::Custom {
                         builder: Arc::new(|var: Symbol| {
