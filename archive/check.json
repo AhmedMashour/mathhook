@@ -1,0 +1,9 @@
+[
+    "Core capabilities\n\nDocumentation\nBasic arithmetic: Support for operators such as +, -, *, /, ** (power)\nSimplification Trigonometry, Polynomials\nExpansion: of a polynomial\nFunctions: trigonometric, hyperbolic, exponential, roots, logarithms, absolute value, spherical harmonics, factorials and gamma functions, zeta functions, polynomials, special functions, ...\nSubstitution: example\nNumbers: arbitrary precision integers, rationals, and floats\nNoncommutative symbols\nPattern matching",
+    "Polynomials\n\nDocumentation\n\nBasic arithmetic: division, gcd, ...\nFactorization\nSquare-free decomposition\nGröbner bases\nPartial fraction decomposition\nResultants",
+    "Calculus\n\nIntegration Documentation\n\nLimits: limit(x*log(x), x, 0) -> 0\nDifferentiation\nIntegration: It uses extended Risch-Norman heuristic\nTaylor (Laurent) series",
+    "Solving equations\n\nDocumentation\n\nPolynomial equations\nAlgebraic equations\nDifferential equations\nDifference equations\nSystems of equations\nDiophantine equations: x2 − 4xy + 8y2 − 3x + 7y = 5, 2x + 3y = 5",
+    "Combinatorics\n\nDocumentation\n\nPermutations\nCombinations\nPartitions\nSubsets\nPermutation Groups: Polyhedral, Rubik, Symmetric, ...\nPrufer and Gray Codes",
+    "Discrete math\nBinomial coefficients\nSummations\nProducts\nNumber theory: generating prime numbers, primality testing, integer factorization, Diophantine equation solving...\nLogic expressions",
+    "Matrices\n\nDocumentation\n\nBasic arithmetic\nEigenvalues/eigenvectors\nDeterminants\nInversion\nSolving\nAbstract expressions"
+]

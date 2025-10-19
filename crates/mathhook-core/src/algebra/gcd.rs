@@ -40,7 +40,6 @@ impl PolynomialGcd for Expression {
     /// Least Common Multiple
     #[inline(always)]
     fn lcm(&self, other: &Self) -> Self {
-        // LCM(a,b) = |a*b| / GCD(a,b)
         let gcd_val = self.gcd(other);
 
         if gcd_val.is_zero() {
@@ -48,8 +47,7 @@ impl PolynomialGcd for Expression {
         }
 
         let product = Expression::mul(vec![self.clone(), other.clone()]);
-        // For now, return the product (full LCM implementation would need division)
-        product
+        Expression::div(product, gcd_val)
     }
 
     /// Factor out GCD from expression
