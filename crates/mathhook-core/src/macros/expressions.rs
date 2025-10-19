@@ -114,7 +114,7 @@ macro_rules! expr {
             "pi" => $crate::Expression::pi(),
             "e" => $crate::Expression::e(),
             "i" => $crate::Expression::i(),
-            _ => $crate::Expression::symbol($crate::Symbol::new(stringify!($id)))
+            _ => $crate::Expression::symbol($crate::Symbol::scalar(stringify!($id)))
         }
     }};
 
@@ -164,17 +164,75 @@ macro_rules! expr {
     };
 }
 
-/// Symbol creation macro (unchanged - this one is perfect)
+/// Symbol creation macro with optional type specification
+///
+/// Creates symbols with explicit type support for noncommutative algebra.
+///
+/// # Examples
+///
+/// ```rust
+/// use mathhook_core::symbol;
+///
+/// // Scalar symbols (default, commutative)
+/// let x = symbol!(x);
+/// let theta = symbol!(theta);
+///
+/// // Matrix symbols (noncommutative)
+/// let A = symbol!(A; matrix);
+/// let B = symbol!(B; matrix);
+///
+/// // Operator symbols (noncommutative)
+/// let p = symbol!(p; operator);
+/// let x_op = symbol!(x; operator);
+///
+/// // Quaternion symbols (noncommutative)
+/// let i = symbol!(i; quaternion);
+/// let j = symbol!(j; quaternion);
+/// ```
 #[macro_export]
 macro_rules! symbol {
+    // Scalar (default)
     ($id:ident) => {
-        $crate::Symbol::new(stringify!($id))
+        $crate::Symbol::scalar(stringify!($id))
     };
     ($name:literal) => {
-        $crate::Symbol::new($name)
+        $crate::Symbol::scalar($name)
     };
     ($name:expr) => {
-        $crate::Symbol::new($name)
+        $crate::Symbol::scalar($name)
+    };
+
+    // Matrix type
+    ($id:ident; matrix) => {
+        $crate::Symbol::matrix(stringify!($id))
+    };
+    ($name:literal; matrix) => {
+        $crate::Symbol::matrix($name)
+    };
+    ($name:expr; matrix) => {
+        $crate::Symbol::matrix($name)
+    };
+
+    // Operator type
+    ($id:ident; operator) => {
+        $crate::Symbol::operator(stringify!($id))
+    };
+    ($name:literal; operator) => {
+        $crate::Symbol::operator($name)
+    };
+    ($name:expr; operator) => {
+        $crate::Symbol::operator($name)
+    };
+
+    // Quaternion type
+    ($id:ident; quaternion) => {
+        $crate::Symbol::quaternion(stringify!($id))
+    };
+    ($name:literal; quaternion) => {
+        $crate::Symbol::quaternion($name)
+    };
+    ($name:expr; quaternion) => {
+        $crate::Symbol::quaternion($name)
     };
 }
 
@@ -204,8 +262,8 @@ mod tests {
 
     #[test]
     fn test_symbols() {
-        assert_eq!(expr!(x), Expression::symbol(Symbol::new("x")));
-        assert_eq!(expr!(theta), Expression::symbol(Symbol::new("theta")));
+        assert_eq!(expr!(x), Expression::symbol(Symbol::scalar("x")));
+        assert_eq!(expr!(theta), Expression::symbol(Symbol::scalar("theta")));
     }
 
     #[test]
@@ -221,8 +279,8 @@ mod tests {
         assert_eq!(
             result,
             Expression::add(vec![
-                Expression::symbol(Symbol::new("x")),
-                Expression::symbol(Symbol::new("y"))
+                Expression::symbol(Symbol::scalar("x")),
+                Expression::symbol(Symbol::scalar("y"))
             ])
         );
     }
@@ -233,8 +291,8 @@ mod tests {
         assert_eq!(
             result,
             Expression::mul(vec![
-                Expression::symbol(Symbol::new("x")),
-                Expression::symbol(Symbol::new("y"))
+                Expression::symbol(Symbol::scalar("x")),
+                Expression::symbol(Symbol::scalar("y"))
             ])
         );
     }
@@ -244,7 +302,7 @@ mod tests {
         let result = expr!(x ^ 2);
         assert_eq!(
             result,
-            Expression::pow(Expression::symbol(Symbol::new("x")), Expression::integer(2))
+            Expression::pow(Expression::symbol(Symbol::scalar("x")), Expression::integer(2))
         );
     }
 
@@ -254,9 +312,9 @@ mod tests {
         assert_eq!(
             result,
             Expression::mul(vec![
-                Expression::symbol(Symbol::new("x")),
+                Expression::symbol(Symbol::scalar("x")),
                 Expression::pow(
-                    Expression::symbol(Symbol::new("y")),
+                    Expression::symbol(Symbol::scalar("y")),
                     Expression::integer(-1)
                 )
             ])
@@ -270,7 +328,7 @@ mod tests {
             result,
             Expression::mul(vec![
                 Expression::integer(-1),
-                Expression::symbol(Symbol::new("x"))
+                Expression::symbol(Symbol::scalar("x"))
             ])
         );
     }
@@ -286,7 +344,7 @@ mod tests {
         let result = expr!(sin(x));
         assert_eq!(
             result,
-            Expression::function("sin", vec![Expression::symbol(Symbol::new("x"))])
+            Expression::function("sin", vec![Expression::symbol(Symbol::scalar("x"))])
         );
     }
 
@@ -298,8 +356,8 @@ mod tests {
             Expression::function(
                 "log",
                 vec![
-                    Expression::symbol(Symbol::new("x")),
-                    Expression::symbol(Symbol::new("y"))
+                    Expression::symbol(Symbol::scalar("x")),
+                    Expression::symbol(Symbol::scalar("y"))
                 ]
             )
         );
@@ -308,7 +366,7 @@ mod tests {
     #[test]
     fn test_parenthesized() {
         let result = expr!((x));
-        assert_eq!(result, Expression::symbol(Symbol::new("x")));
+        assert_eq!(result, Expression::symbol(Symbol::scalar("x")));
     }
 
     #[test]
@@ -323,9 +381,9 @@ mod tests {
         assert_eq!(
             result,
             Expression::add(vec![
-                Expression::symbol(Symbol::new("x")),
-                Expression::symbol(Symbol::new("y")),
-                Expression::symbol(Symbol::new("z"))
+                Expression::symbol(Symbol::scalar("x")),
+                Expression::symbol(Symbol::scalar("y")),
+                Expression::symbol(Symbol::scalar("z"))
             ])
         );
     }
@@ -337,9 +395,33 @@ mod tests {
             result,
             Expression::mul(vec![
                 Expression::integer(2),
-                Expression::symbol(Symbol::new("x")),
-                Expression::symbol(Symbol::new("y"))
+                Expression::symbol(Symbol::scalar("x")),
+                Expression::symbol(Symbol::scalar("y"))
             ])
         );
+    }
+
+    #[test]
+    fn test_symbol_macro_scalar_default() {
+        let x = symbol!(x);
+        assert_eq!(x, Symbol::scalar("x"));
+    }
+
+    #[test]
+    fn test_symbol_macro_matrix() {
+        let a = symbol!(A; matrix);
+        assert_eq!(a, Symbol::matrix("A"));
+    }
+
+    #[test]
+    fn test_symbol_macro_operator() {
+        let p = symbol!(p; operator);
+        assert_eq!(p, Symbol::operator("p"));
+    }
+
+    #[test]
+    fn test_symbol_macro_quaternion() {
+        let i = symbol!(i; quaternion);
+        assert_eq!(i, Symbol::quaternion("i"));
     }
 }

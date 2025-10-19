@@ -3,6 +3,8 @@
 //! Implements symbolic limit computation including one-sided limits,
 //! limits at infinity, and indeterminate form resolution with complete
 //! step-by-step educational explanations.
+//!
+//! Preserves order for noncommutative expressions (matrices, operators, quaternions).
 
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
@@ -95,6 +97,11 @@ pub struct LimitMethods;
 
 impl LimitMethods {
     /// Apply L'Hôpital's rule for indeterminate forms
+    ///
+    /// For indeterminate forms 0/0 or ∞/∞:
+    /// lim[x→a] f(x)/g(x) = lim[x→a] f'(x)/g'(x)
+    ///
+    /// Order is preserved for noncommutative expressions.
     pub fn lhopital_rule(
         numerator: &Expression,
         denominator: &Expression,
@@ -104,7 +111,8 @@ impl LimitMethods {
         let num_derivative = numerator.derivative(variable.clone());
         let den_derivative = denominator.derivative(variable.clone());
 
-        // Create the derivative ratio and recursively evaluate the limit
+        // Create the derivative ratio: f'(x) * (g'(x))^(-1)
+        // Order preserved: f'(x) comes before 1/g'(x)
         let derivative_ratio = Expression::mul(vec![
             num_derivative,
             Expression::pow(den_derivative, Expression::integer(-1)),

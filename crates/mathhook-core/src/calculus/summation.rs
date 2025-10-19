@@ -2,6 +2,9 @@
 //!
 //! Implements symbolic summation including finite sums, infinite series,
 //! products, and convergence analysis.
+//!
+//! Preserves order for noncommutative expressions (matrices, operators, quaternions).
+//! When summing or multiplying noncommutative terms, order is maintained.
 
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;

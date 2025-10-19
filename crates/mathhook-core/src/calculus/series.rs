@@ -2,6 +2,11 @@
 //!
 //! Implements Taylor series, Laurent series, Maclaurin series,
 //! and other infinite series expansions for symbolic computation.
+//!
+//! For noncommutative expressions (matrices, operators, quaternions):
+//! - (A+B)^n expansion preserves order: A^2 + AB + BA + B^2 (NOT A^2 + 2AB + B^2)
+//! - Taylor series terms maintain factor order
+//! - Power series coefficients respect noncommutativity
 
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
@@ -222,6 +227,13 @@ impl SeriesMethods {
     }
 
     /// Compute general Taylor series using derivatives
+    ///
+    /// Taylor series: f(x) = Σ [f^(n)(a) / n!] * (x-a)^n
+    ///
+    /// For noncommutative expressions, order is preserved:
+    /// - Derivative f^(n)(a) comes first
+    /// - Power (x-a)^n comes second
+    /// - Division by n! comes last
     pub fn general_taylor_series(
         expr: &Expression,
         variable: &Symbol,
@@ -246,6 +258,8 @@ impl SeriesMethods {
             let term = if n == 0 {
                 derivative_at_point
             } else {
+                // Order: f^(n)(a) * (x-a)^n * (1/n!)
+                // This preserves order for noncommutative derivatives
                 Expression::mul(vec![
                     derivative_at_point,
                     Expression::pow(x_minus_a, Expression::integer(n as i64)),
