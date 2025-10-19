@@ -7,7 +7,7 @@ mod symbols_macro_scalars {
 
     #[test]
     fn test_symbols_two_scalars() {
-        let syms = symbols!("x y");
+        let syms = symbols![x, y];
         assert_eq!(syms.len(), 2);
         assert_eq!(syms[0].name(), "x");
         assert_eq!(syms[1].name(), "y");
@@ -17,7 +17,7 @@ mod symbols_macro_scalars {
 
     #[test]
     fn test_symbols_three_scalars() {
-        let syms = symbols!("x y z");
+        let syms = symbols![x, y, z];
         assert_eq!(syms.len(), 3);
         assert_eq!(syms[0].name(), "x");
         assert_eq!(syms[1].name(), "y");
@@ -29,7 +29,7 @@ mod symbols_macro_scalars {
 
     #[test]
     fn test_symbols_five_scalars() {
-        let syms = symbols!("a b c d e");
+        let syms = symbols![a, b, c, d, e];
         assert_eq!(syms.len(), 5);
         assert_eq!(syms[0].name(), "a");
         assert_eq!(syms[1].name(), "b");
@@ -43,7 +43,7 @@ mod symbols_macro_scalars {
 
     #[test]
     fn test_symbols_scalars_are_commutative() {
-        let syms = symbols!("x y");
+        let syms = symbols![x, y];
         let ex = Expression::symbol(syms[0].clone());
         let ey = Expression::symbol(syms[1].clone());
 
@@ -55,7 +55,7 @@ mod symbols_macro_scalars {
 
     #[test]
     fn test_symbols_single_scalar() {
-        let syms = symbols!("x");
+        let syms = symbols![x];
         assert_eq!(syms.len(), 1);
         assert_eq!(syms[0].name(), "x");
         assert!(syms[0].symbol_type() == SymbolType::Scalar);
@@ -68,7 +68,7 @@ mod symbols_macro_matrices {
 
     #[test]
     fn test_symbols_two_matrices() {
-        let syms = symbols!("A B"; matrix);
+        let syms = symbols![A, B => matrix];
         assert_eq!(syms.len(), 2);
         assert_eq!(syms[0].name(), "A");
         assert_eq!(syms[1].name(), "B");
@@ -78,7 +78,7 @@ mod symbols_macro_matrices {
 
     #[test]
     fn test_symbols_three_matrices() {
-        let syms = symbols!("A B C"; matrix);
+        let syms = symbols![A, B, C => matrix];
         assert_eq!(syms.len(), 3);
         assert_eq!(syms[0].name(), "A");
         assert_eq!(syms[1].name(), "B");
@@ -90,7 +90,7 @@ mod symbols_macro_matrices {
 
     #[test]
     fn test_symbols_matrices_are_noncommutative() {
-        let syms = symbols!("A B"; matrix);
+        let syms = symbols![A, B => matrix];
         let eA = Expression::symbol(syms[0].clone());
         let eB = Expression::symbol(syms[1].clone());
 
@@ -102,7 +102,7 @@ mod symbols_macro_matrices {
 
     #[test]
     fn test_symbols_matrix_multiplication_order() {
-        let syms = symbols!("A B C"; matrix);
+        let syms = symbols![A, B, C => matrix];
         let eA = Expression::symbol(syms[0].clone());
         let eB = Expression::symbol(syms[1].clone());
         let eC = Expression::symbol(syms[2].clone());
@@ -118,7 +118,7 @@ mod symbols_macro_matrices {
 
     #[test]
     fn test_symbols_single_matrix() {
-        let syms = symbols!("A"; matrix);
+        let syms = symbols![A => matrix];
         assert_eq!(syms.len(), 1);
         assert_eq!(syms[0].name(), "A");
         assert!(syms[0].symbol_type() == SymbolType::Matrix);
@@ -131,7 +131,7 @@ mod symbols_macro_operators {
 
     #[test]
     fn test_symbols_two_operators() {
-        let syms = symbols!("p x"; operator);
+        let syms = symbols![p, x => operator];
         assert_eq!(syms.len(), 2);
         assert_eq!(syms[0].name(), "p");
         assert_eq!(syms[1].name(), "x");
@@ -141,7 +141,7 @@ mod symbols_macro_operators {
 
     #[test]
     fn test_symbols_three_operators() {
-        let syms = symbols!("p x H"; operator);
+        let syms = symbols![p, x, H => operator];
         assert_eq!(syms.len(), 3);
         assert_eq!(syms[0].name(), "p");
         assert_eq!(syms[1].name(), "x");
@@ -153,7 +153,7 @@ mod symbols_macro_operators {
 
     #[test]
     fn test_symbols_operators_are_noncommutative() {
-        let syms = symbols!("p x"; operator);
+        let syms = symbols![p, x => operator];
         let ep = Expression::symbol(syms[0].clone());
         let ex = Expression::symbol(syms[1].clone());
 
@@ -165,7 +165,7 @@ mod symbols_macro_operators {
 
     #[test]
     fn test_symbols_operator_commutator() {
-        let syms = symbols!("p x"; operator);
+        let syms = symbols![p, x => operator];
         let ep = Expression::symbol(syms[0].clone());
         let ex = Expression::symbol(syms[1].clone());
 
@@ -180,7 +180,7 @@ mod symbols_macro_operators {
 
     #[test]
     fn test_symbols_single_operator() {
-        let syms = symbols!("p"; operator);
+        let syms = symbols![p => operator];
         assert_eq!(syms.len(), 1);
         assert_eq!(syms[0].name(), "p");
         assert!(syms[0].symbol_type() == SymbolType::Operator);
@@ -193,7 +193,7 @@ mod symbols_macro_quaternions {
 
     #[test]
     fn test_symbols_three_quaternions() {
-        let syms = symbols!("i j k"; quaternion);
+        let syms = symbols![i, j, k => quaternion];
         assert_eq!(syms.len(), 3);
         assert_eq!(syms[0].name(), "i");
         assert_eq!(syms[1].name(), "j");
@@ -205,7 +205,7 @@ mod symbols_macro_quaternions {
 
     #[test]
     fn test_symbols_quaternions_are_noncommutative() {
-        let syms = symbols!("i j"; quaternion);
+        let syms = symbols![i, j => quaternion];
         assert_eq!(syms.len(), 2);
         let ei = Expression::symbol(syms[0].clone());
         let ej = Expression::symbol(syms[1].clone());
@@ -218,10 +218,145 @@ mod symbols_macro_quaternions {
 
     #[test]
     fn test_symbols_single_quaternion() {
-        let syms = symbols!("i"; quaternion);
+        let syms = symbols![i => quaternion];
         assert_eq!(syms.len(), 1);
         assert_eq!(syms[0].name(), "i");
         assert!(syms[0].symbol_type() == SymbolType::Quaternion);
+    }
+}
+
+#[cfg(test)]
+mod symbols_macro_new_syntax {
+    use super::*;
+
+    #[test]
+    fn test_symbols_trailing_comma_scalars() {
+        let syms = symbols![x, y, z,];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "x");
+        assert_eq!(syms[1].name(), "y");
+        assert_eq!(syms[2].name(), "z");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Scalar);
+        }
+    }
+
+    #[test]
+    fn test_symbols_trailing_comma_matrices() {
+        let syms = symbols![A, B, C, => matrix];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "A");
+        assert_eq!(syms[1].name(), "B");
+        assert_eq!(syms[2].name(), "C");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Matrix);
+        }
+    }
+
+    #[test]
+    fn test_symbols_trailing_comma_operators() {
+        let syms = symbols![p, x, H, => operator];
+        assert_eq!(syms.len(), 3);
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Operator);
+        }
+    }
+
+    #[test]
+    fn test_symbols_trailing_comma_quaternions() {
+        let syms = symbols![i, j, k, => quaternion];
+        assert_eq!(syms.len(), 3);
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Quaternion);
+        }
+    }
+
+    #[test]
+    fn test_symbols_explicit_scalar_type() {
+        let syms = symbols![x, y, z => scalar];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "x");
+        assert_eq!(syms[1].name(), "y");
+        assert_eq!(syms[2].name(), "z");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Scalar);
+        }
+    }
+
+    #[test]
+    fn test_symbols_single_with_explicit_scalar() {
+        let syms = symbols![x => scalar];
+        assert_eq!(syms.len(), 1);
+        assert_eq!(syms[0].name(), "x");
+        assert!(syms[0].symbol_type() == SymbolType::Scalar);
+    }
+
+    #[test]
+    fn test_symbols_long_list_scalars() {
+        let syms = symbols![a, b, c, d, e, f, g, h];
+        assert_eq!(syms.len(), 8);
+        assert_eq!(syms[0].name(), "a");
+        assert_eq!(syms[7].name(), "h");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Scalar);
+        }
+    }
+
+    #[test]
+    fn test_symbols_long_list_matrices() {
+        let syms = symbols![A, B, C, D, E => matrix];
+        assert_eq!(syms.len(), 5);
+        assert_eq!(syms[0].name(), "A");
+        assert_eq!(syms[4].name(), "E");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Matrix);
+        }
+    }
+
+    #[test]
+    fn test_symbols_identifier_names() {
+        let syms = symbols![x_1, y_2, z_3];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "x_1");
+        assert_eq!(syms[1].name(), "y_2");
+        assert_eq!(syms[2].name(), "z_3");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Scalar);
+        }
+    }
+
+    #[test]
+    fn test_symbols_mixed_case_identifiers() {
+        let syms = symbols![alpha, Beta, GAMMA => scalar];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "alpha");
+        assert_eq!(syms[1].name(), "Beta");
+        assert_eq!(syms[2].name(), "GAMMA");
+        for sym in &syms {
+            assert!(sym.symbol_type() == SymbolType::Scalar);
+        }
+    }
+
+    #[test]
+    fn test_symbols_physics_notation() {
+        let syms = symbols![psi, phi, theta => scalar];
+        assert_eq!(syms.len(), 3);
+        assert_eq!(syms[0].name(), "psi");
+        assert_eq!(syms[1].name(), "phi");
+        assert_eq!(syms[2].name(), "theta");
+    }
+
+    #[test]
+    fn test_symbols_quantum_operators() {
+        let ops = symbols![H, p_x, p_y, p_z => operator];
+        assert_eq!(ops.len(), 4);
+        assert_eq!(ops[0].name(), "H");
+        assert_eq!(ops[1].name(), "p_x");
+        assert_eq!(ops[2].name(), "p_y");
+        assert_eq!(ops[3].name(), "p_z");
+        for op in &ops {
+            assert!(op.symbol_type() == SymbolType::Operator);
+        }
     }
 }
 

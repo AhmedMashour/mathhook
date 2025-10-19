@@ -74,8 +74,17 @@ macro_rules! symbol {
 
 /// Bulk symbol creation with optional type specification
 ///
-/// Creates multiple symbols at once with the same type. Follows SymPy's `symbols()` API.
+/// Creates multiple symbols at once with the same type.
 /// Returns a Vec of symbols since declarative macros cannot return tuples of varying sizes.
+///
+/// # Syntax
+///
+/// ```text
+/// symbols![x, y, z]              // All scalars (default)
+/// symbols![A, B, C => matrix]    // All matrices
+/// symbols![p, x, H => operator]  // All operators
+/// symbols![i, j, k => quaternion] // All quaternions
+/// ```
 ///
 /// # Examples
 ///
@@ -83,48 +92,54 @@ macro_rules! symbol {
 /// use mathhook_core::symbols;
 ///
 /// // Scalar symbols (default, commutative)
-/// let syms = symbols!("x y z");
+/// let syms = symbols![x, y, z];
 /// assert_eq!(syms.len(), 3);
+/// assert_eq!(syms[0].name(), "x");
+///
+/// // Single symbol also works
+/// let single = symbols![x];
+/// assert_eq!(single.len(), 1);
+///
+/// // Trailing comma is allowed
+/// let with_comma = symbols![x, y, z,];
+/// assert_eq!(with_comma.len(), 3);
 ///
 /// // Matrix symbols (noncommutative)
-/// let mats = symbols!("A B C"; matrix);
+/// let mats = symbols![A, B, C => matrix];
 /// assert_eq!(mats.len(), 3);
 ///
 /// // Operator symbols (noncommutative)
-/// let ops = symbols!("p x h"; operator);
+/// let ops = symbols![p, x, H => operator];
 /// assert_eq!(ops.len(), 3);
 ///
 /// // Quaternion symbols (noncommutative)
-/// let quats = symbols!("i j k"; quaternion);
+/// let quats = symbols![i, j, k => quaternion];
 /// assert_eq!(quats.len(), 3);
 /// ```
 #[macro_export]
 macro_rules! symbols {
-    // Scalar symbols (default)
-    ($names:literal) => {{
-        $names.split_whitespace()
-            .map(|name| $crate::Symbol::scalar(name))
-            .collect::<Vec<_>>()
-    }};
+    // Pattern 1: No type specified - all scalars (default)
+    ($($name:ident),+ $(,)?) => {
+        vec![$($crate::Symbol::scalar(stringify!($name))),+]
+    };
 
-    // Matrix symbols
-    ($names:literal; matrix) => {{
-        $names.split_whitespace()
-            .map(|name| $crate::Symbol::matrix(name))
-            .collect::<Vec<_>>()
-    }};
+    // Pattern 2: Bulk type with arrow - all scalar
+    ($($name:ident),+ $(,)? => scalar) => {
+        vec![$($crate::Symbol::scalar(stringify!($name))),+]
+    };
 
-    // Operator symbols
-    ($names:literal; operator) => {{
-        $names.split_whitespace()
-            .map(|name| $crate::Symbol::operator(name))
-            .collect::<Vec<_>>()
-    }};
+    // Pattern 3: Bulk type with arrow - all matrix
+    ($($name:ident),+ $(,)? => matrix) => {
+        vec![$($crate::Symbol::matrix(stringify!($name))),+]
+    };
 
-    // Quaternion symbols
-    ($names:literal; quaternion) => {{
-        $names.split_whitespace()
-            .map(|name| $crate::Symbol::quaternion(name))
-            .collect::<Vec<_>>()
-    }};
+    // Pattern 4: Bulk type with arrow - all operator
+    ($($name:ident),+ $(,)? => operator) => {
+        vec![$($crate::Symbol::operator(stringify!($name))),+]
+    };
+
+    // Pattern 5: Bulk type with arrow - all quaternion
+    ($($name:ident),+ $(,)? => quaternion) => {
+        vec![$($crate::Symbol::quaternion(stringify!($name))),+]
+    };
 }

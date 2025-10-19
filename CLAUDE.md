@@ -738,7 +738,7 @@ When modifying `grammar.lalrpop`:
 MathHook provides declarative macros for ergonomic expression creation:
 
 - **`symbol!(x)`** - Create single symbols with optional type specification (Scalar/Matrix/Operator/Quaternion)
-- **`symbols!("x y z")`** - Create multiple symbols at once (PLANNED - not yet implemented, coming in Wave 9)
+- **`symbols![x, y, z]`** - Create multiple symbols at once (returns Vec<Symbol>)
 - **`expr!(...)`** - Create expressions with operator parsing
 - **`function!(name, args...)`** - Create function expressions
 
@@ -750,13 +750,13 @@ MathHook provides declarative macros for ergonomic expression creation:
 | **Creating matrix symbol** | `symbol!(A; matrix)` (Priority 1) | `let A = symbol!(A; matrix);` |
 | **Creating operator symbol** | `symbol!(p; operator)` (Priority 1) | `let p = symbol!(p; operator);` |
 | **Creating quaternion symbol** | `symbol!(i; quaternion)` (Priority 1) | `let i = symbol!(i; quaternion);` |
-| **Creating multiple symbols** | Multiple `symbol!()` calls (Priority 1) | `let x = symbol!(x); let y = symbol!(y);` |
-| **Creating multiple symbols (FUTURE)** | `symbols!("x y z")` when available (Wave 9) | `let (x, y, z) = symbols!("x y z");` |
+| **Creating multiple symbols** | `symbols![x, y, z]` (Priority 1) | `let syms = symbols![x, y, z];` |
+| **Creating multiple symbols (alt)** | Multiple `symbol!()` calls (Priority 1) | `let x = symbol!(x); let y = symbol!(y);` |
 | **Simple expression** | `expr!(x + y)` (Priority 2) | `let sum = expr!(x + y);` |
 | **Complex expression** | Explicit grouping or API (Priority 3) | `expr!((2*x) + (3*y))` |
 | **Loop/runtime data** | Explicit API (Priority 3) | `Expression::integer(i)` |
 
-**Golden Rule**: NEVER use `Symbol::new()`, `Symbol::scalar()`, `Symbol::matrix()`, etc. directly in application code. ALWAYS use `symbol!()` macro (or `symbols!()` when available in Wave 9).
+**Golden Rule**: NEVER use `Symbol::new()`, `Symbol::scalar()`, `Symbol::matrix()`, etc. directly in application code. ALWAYS use `symbol!()` macro (or `symbols![]`).
 
 ### Macro Priority Hierarchy (Highest to Lowest)
 
@@ -786,25 +786,48 @@ let x = symbol!(x);
 let y = symbol!(y);
 let theta = symbol!(theta);
 
-// ✅ Matrix symbols (noncommutative) - Wave 1 Complete
+// ✅ Matrix symbols (noncommutative)
 let A = symbol!(A; matrix);
 let B = symbol!(B; matrix);
 let C = symbol!(C; matrix);
 
-// ✅ Operator symbols (noncommutative) - Wave 1 Complete
+// ✅ Operator symbols (noncommutative)
 let p = symbol!(p; operator);      // Momentum operator
 let x_op = symbol!(x; operator);   // Position operator
 let H = symbol!(H; operator);      // Hamiltonian
 
-// ✅ Quaternion symbols (noncommutative) - Wave 1 Complete
+// ✅ Quaternion symbols (noncommutative)
 let i = symbol!(i; quaternion);
 let j = symbol!(j; quaternion);
 let k = symbol!(k; quaternion);
 ```
 
-**Bulk Symbol Creation (CURRENT - Manual Approach)**:
+**Bulk Symbol Creation**:
 ```rust
-// ✅ Current approach - individual symbol!() calls:
+// ✅ symbols![] macro - Returns Vec<Symbol>:
+let syms = symbols![x, y, z];                       // Vec<Symbol> of scalars (default)
+let matrices = symbols![A, B, C => matrix];         // Vec<Symbol> of matrices (noncommutative)
+let operators = symbols![p, x, h => operator];      // Vec<Symbol> of operators (noncommutative)
+let quaternions = symbols![i, j, k => quaternion];  // Vec<Symbol> of quaternions (noncommutative)
+
+// Explicit scalar type also works:
+let scalars = symbols![x, y, z => scalar];          // Explicit scalar type
+
+// Trailing commas are allowed:
+let syms = symbols![x, y, z,];                      // Trailing comma works
+
+// Access via indexing or destructuring:
+let x = &syms[0];
+let y = &syms[1];
+let z = &syms[2];
+
+// Or destructure if needed:
+let (x_clone, y_clone, z_clone) = (syms[0].clone(), syms[1].clone(), syms[2].clone());
+```
+
+**Bulk Symbol Creation (ALTERNATIVE - Individual Calls)**:
+```rust
+// ✅ Alternative approach - individual symbol!() calls:
 let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
@@ -813,15 +836,6 @@ let z = symbol!(z);
 let A = symbol!(A; matrix);
 let B = symbol!(B; matrix);
 let C = symbol!(C; matrix);
-```
-
-**Bulk Symbol Creation (FUTURE - After Wave 9)**:
-```rust
-// ✅ Will be available after symbols!() macro is implemented (Wave 9):
-let (x, y, z) = symbols!("x y z");              // All scalars (default)
-let (A, B, C) = symbols!("A B C"; matrix);      // All matrices (noncommutative)
-let (p, x, h) = symbols!("p x h"; operator);    // All operators (noncommutative)
-let (i, j, k) = symbols!("i j k"; quaternion);  // All quaternions (noncommutative)
 ```
 
 #### **Priority 2: STRONGLY RECOMMENDED - Expression Creation**
@@ -990,19 +1004,20 @@ let x = Symbol::new("x");
 let y = Symbol::new("y");
 let z = Symbol::new("z");
 
-// ✅ With individual symbol!() calls (current):
+// ✅ RECOMMENDED - symbols![] macro:
+let syms = symbols![x, y, z];                    // Returns Vec<Symbol>
+let matrices = symbols![A, B, C => matrix];      // Returns Vec<Symbol> of matrices
+let operators = symbols![p, x, h => operator];   // Returns Vec<Symbol> of operators
+
+// ✅ ALTERNATIVE - Individual symbol!() calls:
 let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
 
-// ✅ With types (current - fully supported):
+// ✅ With types:
 let A = symbol!(A; matrix);
 let B = symbol!(B; matrix);
 let p = symbol!(p; operator);
-
-// ✅ FUTURE - Once symbols!() macro is implemented (Wave 9):
-// let (x, y, z) = symbols!("x y z");
-// let (A, B, C) = symbols!("A B C"; matrix);
 ```
 
 **Priority 2: Migrate When Touching the Code**
@@ -1138,17 +1153,17 @@ let b = symbol!(b);
 let x = symbol!(x);
 let theta = symbol!(theta);
 
-// ✅ Excellent - matrix symbols (noncommutative) - Wave 1 Complete
+// ✅ Excellent - matrix symbols (noncommutative)
 let A = symbol!(A; matrix);
 let B = symbol!(B; matrix);
 let C = symbol!(C; matrix);
 
-// ✅ Excellent - operator symbols (noncommutative) - Wave 1 Complete
+// ✅ Excellent - operator symbols (noncommutative)
 let p = symbol!(p; operator);      // Momentum operator
 let x_op = symbol!(x; operator);   // Position operator
 let H = symbol!(H; operator);      // Hamiltonian
 
-// ✅ Excellent - quaternion symbols (noncommutative) - Wave 1 Complete
+// ✅ Excellent - quaternion symbols (noncommutative)
 let i = symbol!(i; quaternion);
 let j = symbol!(j; quaternion);
 let k = symbol!(k; quaternion);
@@ -1158,12 +1173,11 @@ let x = symbol!(x);
 let y = symbol!(y);
 let z = symbol!(z);
 
-// ✅ FUTURE - bulk symbol creation (after Wave 9 implementation):
-// let (x, y, z) = symbols!("x y z");              // All scalars (default)
-// let (r, theta, phi) = symbols!("r theta phi");  // Spherical coordinates
-// let (A, B, C) = symbols!("A B C"; matrix);      // All matrix symbols
-// let (p, x, h) = symbols!("p x h"; operator);    // All operator symbols
-// let (i, j, k) = symbols!("i j k"; quaternion);  // All quaternion symbols
+// let syms = symbols![x, y, z];              // All scalars (default)
+// let syms = symbols![r, theta, phi];        // Spherical coordinates
+// let syms = symbols![A, B, C => matrix];    // All matrix symbols
+// let syms = symbols![p, x, h => operator];  // All operator symbols
+// let syms = symbols![i, j, k => quaternion]; // All quaternion symbols
 
 // ✅ Excellent - simple expressions are very readable with explicit grouping
 let quadratic = expr!((a*(x^2)) + (b*x) + c);
@@ -1243,7 +1257,6 @@ let programmatic = {
 - ❌ Any `Symbol::scalar()`, `Symbol::matrix()`, `Symbol::operator()`, or `Symbol::quaternion()` call in application code
 - ❌ Simple expressions like `x + y` using verbose `Expression::add(vec![...])`
 - ❌ Runtime variables passed to macros: `expr!(i)` in a loop
-- ❌ (FUTURE) Bulk symbol creation without `symbols!()` macro once it's implemented (Wave 9)
 
 **Exception**: Direct Symbol constructors (`Symbol::scalar()`, etc.) are ONLY allowed in:
 - Macro implementations (`macros/expressions.rs`)
