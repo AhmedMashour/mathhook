@@ -164,78 +164,6 @@ macro_rules! expr {
     };
 }
 
-/// Symbol creation macro with optional type specification
-///
-/// Creates symbols with explicit type support for noncommutative algebra.
-///
-/// # Examples
-///
-/// ```rust
-/// use mathhook_core::symbol;
-///
-/// // Scalar symbols (default, commutative)
-/// let x = symbol!(x);
-/// let theta = symbol!(theta);
-///
-/// // Matrix symbols (noncommutative)
-/// let A = symbol!(A; matrix);
-/// let B = symbol!(B; matrix);
-///
-/// // Operator symbols (noncommutative)
-/// let p = symbol!(p; operator);
-/// let x_op = symbol!(x; operator);
-///
-/// // Quaternion symbols (noncommutative)
-/// let i = symbol!(i; quaternion);
-/// let j = symbol!(j; quaternion);
-/// ```
-#[macro_export]
-macro_rules! symbol {
-    // Scalar (default)
-    ($id:ident) => {
-        $crate::Symbol::scalar(stringify!($id))
-    };
-    ($name:literal) => {
-        $crate::Symbol::scalar($name)
-    };
-    ($name:expr) => {
-        $crate::Symbol::scalar($name)
-    };
-
-    // Matrix type
-    ($id:ident; matrix) => {
-        $crate::Symbol::matrix(stringify!($id))
-    };
-    ($name:literal; matrix) => {
-        $crate::Symbol::matrix($name)
-    };
-    ($name:expr; matrix) => {
-        $crate::Symbol::matrix($name)
-    };
-
-    // Operator type
-    ($id:ident; operator) => {
-        $crate::Symbol::operator(stringify!($id))
-    };
-    ($name:literal; operator) => {
-        $crate::Symbol::operator($name)
-    };
-    ($name:expr; operator) => {
-        $crate::Symbol::operator($name)
-    };
-
-    // Quaternion type
-    ($id:ident; quaternion) => {
-        $crate::Symbol::quaternion(stringify!($id))
-    };
-    ($name:literal; quaternion) => {
-        $crate::Symbol::quaternion($name)
-    };
-    ($name:expr; quaternion) => {
-        $crate::Symbol::quaternion($name)
-    };
-}
-
 /// Function expression creation (simplified)
 #[macro_export]
 macro_rules! function {
@@ -399,29 +327,5 @@ mod tests {
                 Expression::symbol(Symbol::scalar("y"))
             ])
         );
-    }
-
-    #[test]
-    fn test_symbol_macro_scalar_default() {
-        let x = symbol!(x);
-        assert_eq!(x, Symbol::scalar("x"));
-    }
-
-    #[test]
-    fn test_symbol_macro_matrix() {
-        let a = symbol!(A; matrix);
-        assert_eq!(a, Symbol::matrix("A"));
-    }
-
-    #[test]
-    fn test_symbol_macro_operator() {
-        let p = symbol!(p; operator);
-        assert_eq!(p, Symbol::operator("p"));
-    }
-
-    #[test]
-    fn test_symbol_macro_quaternion() {
-        let i = symbol!(i; quaternion);
-        assert_eq!(i, Symbol::quaternion("i"));
     }
 }

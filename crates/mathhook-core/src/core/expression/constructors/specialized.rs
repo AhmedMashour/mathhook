@@ -204,4 +204,83 @@ impl Expression {
         use crate::matrix::Matrix;
         Self::Matrix(Box::new(Matrix::from_arrays(arrays)))
     }
+
+    /// Create a commutator: [A, B] = AB - BA
+    ///
+    /// The commutator measures the failure of two operators to commute.
+    /// It is zero for commutative operators and nonzero for noncommutative.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let A = Expression::symbol(symbol!(A; matrix));
+    /// let B = Expression::symbol(symbol!(B; matrix));
+    /// let comm = Expression::commutator(A.clone(), B.clone());
+    /// // Represents: AB - BA
+    /// ```
+    ///
+    /// # Mathematical Properties
+    ///
+    /// - [A, B] = -[B, A] (antisymmetry)
+    /// - [A, A] = 0 (self-commutator is zero)
+    /// - Jacobi identity: [A, [B, C]] + [B, [C, A]] + [C, [A, B]] = 0
+    ///
+    /// # Quantum Mechanics Example
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let x = Expression::symbol(symbol!(x; operator));
+    /// let p = Expression::symbol(symbol!(p; operator));
+    /// let comm = Expression::commutator(x, p);
+    /// // In quantum mechanics: [x, p] = ih (canonical commutation relation)
+    /// ```
+    pub fn commutator(a: Expression, b: Expression) -> Self {
+        Self::add(vec![
+            Self::mul(vec![a.clone(), b.clone()]),
+            Self::mul(vec![
+                Self::integer(-1),
+                Self::mul(vec![b, a])
+            ])
+        ])
+    }
+
+    /// Create an anticommutator: {A, B} = AB + BA
+    ///
+    /// The anticommutator is the symmetric combination of two operators.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let A = Expression::symbol(symbol!(A; matrix));
+    /// let B = Expression::symbol(symbol!(B; matrix));
+    /// let anticomm = Expression::anticommutator(A.clone(), B.clone());
+    /// // Represents: AB + BA
+    /// ```
+    ///
+    /// # Mathematical Properties
+    ///
+    /// - {A, B} = {B, A} (symmetry)
+    /// - {A, A} = 2A^2 (self-anticommutator)
+    ///
+    /// # Physics Example
+    ///
+    /// ```rust
+    /// use mathhook_core::{Expression, symbol};
+    ///
+    /// let sigma_x = Expression::symbol(symbol!(sigma_x; operator));
+    /// let sigma_y = Expression::symbol(symbol!(sigma_y; operator));
+    /// let anticomm = Expression::anticommutator(sigma_x, sigma_y);
+    /// // For Pauli matrices: {sigma_x, sigma_y} = 0
+    /// ```
+    pub fn anticommutator(a: Expression, b: Expression) -> Self {
+        Self::add(vec![
+            Self::mul(vec![a.clone(), b.clone()]),
+            Self::mul(vec![b, a])
+        ])
+    }
 }
