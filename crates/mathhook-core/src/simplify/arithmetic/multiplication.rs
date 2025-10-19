@@ -19,14 +19,19 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
     }
 
     // Iteratively flatten nested multiplications to avoid stack overflow
+    // CRITICAL: Must preserve order for noncommutative multiplication
+    // Process from front (index 0) instead of back (pop) to maintain order
     let mut flattened_factors = Vec::new();
     let mut to_process: Vec<&Expression> = factors.iter().collect();
 
-    while let Some(factor) = to_process.pop() {
+    while !to_process.is_empty() {
+        let factor = to_process.remove(0);
         match factor {
             Expression::Mul(nested_factors) => {
-                // Add nested factors to the processing queue
-                to_process.extend(nested_factors.iter());
+                // Insert nested factors at the front to preserve order
+                for (i, nested) in nested_factors.iter().enumerate() {
+                    to_process.insert(i, nested);
+                }
             }
             _ => {
                 // Simplify non-Mul expressions during flattening (same pattern as addition)

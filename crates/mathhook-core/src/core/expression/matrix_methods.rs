@@ -175,9 +175,7 @@ mod tests {
     }
 
     #[test]
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_mul_preserves_noncommutative_function_order() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -200,9 +198,7 @@ mod tests {
         }
     }
 
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_transpose_product_reverses_order_two_matrices() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -221,9 +217,7 @@ mod tests {
         assert_eq!(transposed_product, expected);
     }
 
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_transpose_product_reverses_order_three_matrices() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -288,9 +282,7 @@ mod tests {
     }
 
     #[test]
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_inverse_product_reverses_order_two_matrices() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -314,7 +306,6 @@ mod tests {
     // The mathematical operations ARE correct (order IS reversed), but canonical form re-sorts
     // TODO: Fix canonical form to respect noncommutative Function expressions
     #[test]
-    #[ignore]
     fn test_inverse_product_reverses_order_three_matrices() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -344,9 +335,7 @@ mod tests {
         assert_eq!(inverse, expected);
     }
 
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_transpose_nested_product() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -373,9 +362,7 @@ mod tests {
     }
 
     #[test]
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_inverse_nested_product() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);
@@ -436,9 +423,7 @@ mod tests {
     }
 
     #[test]
-    // SKIPPED: Known limitation - Expression::mul() sorts Function expressions alphabetically
     #[test]
-    #[ignore]
     fn test_symbolic_matrix_operations_combined() {
         let a = symbol!(A; matrix);
         let b = symbol!(B; matrix);

@@ -54,6 +54,44 @@ pub(super) fn expression_order(a: &Expression, b: &Expression) -> Ordering {
         (Expression::Mul(_), _) => Ordering::Greater,
         (_, Expression::Mul(_)) => Ordering::Less,
 
+        // Function expressions - check commutativity of arguments
+        (Expression::Function { name: name1, args: args1 }, Expression::Function { name: name2, args: args2 }) => {
+            // First compare function names
+            let name_cmp = name1.cmp(name2);
+            if name_cmp != Ordering::Equal {
+                return name_cmp;
+            }
+
+            // Same function name - compare arguments
+            // But ONLY if all arguments are commutative
+            use crate::core::commutativity::Commutativity;
+
+            let args1_commutativity = Commutativity::combine(
+                args1.iter().map(|arg| arg.commutativity())
+            );
+            let args2_commutativity = Commutativity::combine(
+                args2.iter().map(|arg| arg.commutativity())
+            );
+
+            // If both functions have commutative arguments, we can compare them
+            if args1_commutativity.can_sort() && args2_commutativity.can_sort() {
+                // Compare arguments lexicographically
+                for (arg1, arg2) in args1.iter().zip(args2.iter()) {
+                    let arg_cmp = expression_order(arg1, arg2);
+                    if arg_cmp != Ordering::Equal {
+                        return arg_cmp;
+                    }
+                }
+                args1.len().cmp(&args2.len())
+            } else {
+                // Noncommutative arguments - preserve original order
+                // Don't sort, just say they're equal for sorting purposes
+                Ordering::Equal
+            }
+        }
+        (Expression::Function { .. }, _) => Ordering::Greater,
+        (_, Expression::Function { .. }) => Ordering::Less,
+
         // For other expressions, use debug representation for consistent ordering
         _ => format!("{:?}", a).cmp(&format!("{:?}", b)),
     }
