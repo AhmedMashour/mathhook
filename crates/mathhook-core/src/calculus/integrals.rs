@@ -11,6 +11,7 @@ pub mod by_parts;
 pub mod educational;
 mod function_integrals;
 pub mod rational;
+pub mod risch;
 pub mod strategy;
 pub mod substitution;
 pub mod table;

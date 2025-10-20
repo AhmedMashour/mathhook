@@ -10,7 +10,7 @@
 
 use crate::calculus::integrals::{
     basic::BasicIntegrals, by_parts::IntegrationByParts, function_integrals::FunctionIntegrals,
-    rational, substitution, table, trigonometric,
+    rational, risch, substitution, table, trigonometric,
 };
 use crate::core::{Expression, Number, Symbol};
 
@@ -48,11 +48,10 @@ pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
         return result;
     }
 
-    // Layer 7: Risch algorithm (Wave 5) - placeholder for now
-    // Coming in Wave 5: Complete algorithmic integration
-    // if let Some(result) = try_risch_integration(expr, &var) {
-    //     return result;
-    // }
+    // Layer 7: Risch algorithm (Wave 5) - ACTIVE
+    if let Some(result) = risch::try_risch_integration(expr, var.clone()) {
+        return result;
+    }
 
     // Layer 7.5: Try basic integration rules (power rule, constants, etc.)
     // These are fast and handle many common cases that don't fit above patterns
