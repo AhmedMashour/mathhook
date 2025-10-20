@@ -299,6 +299,7 @@ fn test_equation_solver() {
         for (i, step) in explanation.steps.iter().enumerate() {
             println!("Step {}: {} - {}", i + 1, step.title, step.description);
         }
+
         println!(
             "Result: {:?}, Solution count: {:?}",
             result,
