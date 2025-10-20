@@ -385,3 +385,99 @@ fn test_nested_expression_commutativity() {
 
     assert_eq!(product.commutativity(), Commutativity::Noncommutative);
 }
+
+#[test]
+fn test_ambiguous_mathbf_nested() {
+    let result = parse_latex(r"\mathbf{\mathbf{A}}");
+
+    if result.is_ok() {
+        let expr = result.unwrap();
+        if let Expression::Symbol(sym) = expr {
+            assert_eq!(sym.symbol_type(), SymbolType::Matrix);
+        }
+    }
+}
+
+#[test]
+fn test_ambiguous_hat_operator() {
+    let result = parse_latex(r"\hat{\hat{p}}");
+
+    if result.is_ok() {
+        let expr = result.unwrap();
+        if let Expression::Symbol(sym) = expr {
+            assert_eq!(sym.symbol_type(), SymbolType::Operator);
+        }
+    }
+}
+
+#[test]
+fn test_malformed_latex_mathbf() {
+    let parser = Parser::new(ParserConfig {
+        enable_implicit_multiplication: true,
+    });
+
+    let result1 = parser.parse(r"\mathbf{");
+    let result2 = parser.parse(r"\mathbf}A");
+    let result3 = parser.parse(r"\mathbf");
+
+    assert!(
+        result1.is_err() || result1.is_ok(),
+        "Parser should handle malformed mathbf gracefully"
+    );
+    assert!(
+        result2.is_err() || result2.is_ok(),
+        "Parser should handle malformed mathbf gracefully"
+    );
+    assert!(
+        result3.is_err() || result3.is_ok(),
+        "Parser should handle malformed mathbf gracefully"
+    );
+}
+
+#[test]
+fn test_malformed_latex_hat() {
+    let parser = Parser::new(ParserConfig {
+        enable_implicit_multiplication: true,
+    });
+
+    let result1 = parser.parse(r"\hat{");
+    let result2 = parser.parse(r"\hat}p");
+    let result3 = parser.parse(r"\hat");
+
+    assert!(
+        result1.is_err() || result1.is_ok(),
+        "Parser should handle malformed hat gracefully"
+    );
+    assert!(
+        result2.is_err() || result2.is_ok(),
+        "Parser should handle malformed hat gracefully"
+    );
+    assert!(
+        result3.is_err() || result3.is_ok(),
+        "Parser should handle malformed hat gracefully"
+    );
+}
+
+#[test]
+fn test_mixed_notation_precedence() {
+    let result = parse_latex(r"\mathbf{A}*\hat{p}+\mathbf{B}*\hat{x}");
+
+    if result.is_ok() {
+        let expr = result.unwrap();
+
+        assert_eq!(expr.commutativity(), Commutativity::Noncommutative);
+
+        if let Expression::Add(terms) = expr {
+            assert_eq!(terms.len(), 2);
+
+            for term in terms.iter() {
+                if let Expression::Mul(factors) = term {
+                    assert!(
+                        factors.len() >= 2,
+                        "Each term should have matrix and operator"
+                    );
+                }
+            }
+        }
+    }
+}

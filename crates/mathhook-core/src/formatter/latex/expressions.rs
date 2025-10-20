@@ -75,6 +75,9 @@ fn format_number(num: &Number) -> String {
 /// - Matrix: \mathbf{A} (bold)
 /// - Operator: \hat{p} (hat notation)
 /// - Quaternion: i, j, k (plain, as they are standard)
+///
+/// Note: Type information is cached internally within the symbol itself,
+/// so repeated calls to symbol_type() are O(1).
 fn format_symbol(symbol: &crate::core::Symbol) -> String {
     match symbol.symbol_type() {
         SymbolType::Scalar => symbol.name().to_string(),
