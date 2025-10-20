@@ -10,10 +10,7 @@
 
 mod helpers;
 
-use crate::core::commutativity::Commutativity;
-use crate::core::{Expression, Number};
-use num_bigint::BigInt;
-use num_traits::{One, Signed, ToPrimitive, Zero};
+use crate::core::Expression;
 
 /// Trait for advanced simplification operations
 pub trait AdvancedSimplify {

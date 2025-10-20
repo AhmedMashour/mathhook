@@ -69,16 +69,25 @@ fn example_quantum_mechanics() {
     println!("Momentum operator: p (type: operator)");
     println!();
 
-    let xp = Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(p.clone())]);
+    let xp = Expression::mul(vec![
+        Expression::symbol(x.clone()),
+        Expression::symbol(p.clone()),
+    ]);
 
-    let px = Expression::mul(vec![Expression::symbol(p.clone()), Expression::symbol(x.clone())]);
+    let px = Expression::mul(vec![
+        Expression::symbol(p.clone()),
+        Expression::symbol(x.clone()),
+    ]);
 
     println!("Order matters in quantum mechanics:");
     println!("  x*p = (position then momentum)");
     println!("  p*x = (momentum then position)");
     println!();
 
-    let commutator = Expression::add(vec![xp.clone(), Expression::mul(vec![Expression::integer(-1), px.clone()])]);
+    let commutator = Expression::add(vec![
+        xp.clone(),
+        Expression::mul(vec![Expression::integer(-1), px.clone()]),
+    ]);
 
     let commutator_latex = commutator.to_latex(LaTeXContext::default()).unwrap();
 
@@ -105,11 +114,17 @@ fn example_quantum_mechanics() {
     println!("Energy eigenvalue: E");
     println!();
 
-    let h_psi = Expression::mul(vec![Expression::symbol(h.clone()), Expression::symbol(psi.clone())]);
+    let h_psi = Expression::mul(vec![
+        Expression::symbol(h.clone()),
+        Expression::symbol(psi.clone()),
+    ]);
 
     let eigenvalue_eq = Expression::add(vec![
         h_psi.clone(),
-        Expression::mul(vec![Expression::integer(-1), Expression::symbol(e_val.clone())]),
+        Expression::mul(vec![
+            Expression::integer(-1),
+            Expression::symbol(e_val.clone()),
+        ]),
     ]);
 
     println!("Time-independent Schrödinger equation:");
@@ -175,7 +190,10 @@ fn example_matrix_algebra() {
     println!();
 
     let ax_eq = Expression::add(vec![
-        Expression::mul(vec![Expression::symbol(a.clone()), Expression::symbol(x.clone())]),
+        Expression::mul(vec![
+            Expression::symbol(a.clone()),
+            Expression::symbol(x.clone()),
+        ]),
         Expression::mul(vec![Expression::integer(-1), Expression::symbol(b.clone())]),
     ]);
 
@@ -213,7 +231,10 @@ fn example_matrix_algebra() {
     println!("=================================\n");
 
     let xa_eq = Expression::add(vec![
-        Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(a.clone())]),
+        Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::symbol(a.clone()),
+        ]),
         Expression::mul(vec![Expression::integer(-1), Expression::symbol(b.clone())]),
     ]);
 
@@ -304,7 +325,6 @@ fn example_quaternion_rotations() {
 
     let i = symbol!(i; quaternion);
     let j = symbol!(j; quaternion);
-    let k = symbol!(k; quaternion);
 
     println!("Quaternion basis (type: quaternion):");
     println!("  i: First imaginary unit");
@@ -320,9 +340,15 @@ fn example_quaternion_rotations() {
     println!("Part B: Multiplication Rules - Order Matters!");
     println!("==============================================\n");
 
-    let ij = Expression::mul(vec![Expression::symbol(i.clone()), Expression::symbol(j.clone())]);
+    let ij = Expression::mul(vec![
+        Expression::symbol(i.clone()),
+        Expression::symbol(j.clone()),
+    ]);
 
-    let ji = Expression::mul(vec![Expression::symbol(j.clone()), Expression::symbol(i.clone())]);
+    let ji = Expression::mul(vec![
+        Expression::symbol(j.clone()),
+        Expression::symbol(i.clone()),
+    ]);
 
     println!("Forward multiplication: i*j");
     println!("  Result: k (by definition)");
@@ -351,14 +377,9 @@ fn example_quaternion_rotations() {
     println!("\nPart C: Rotation Formula");
     println!("=========================\n");
 
-    let q = symbol!(q; quaternion);
-    let v = symbol!(v; quaternion);
-
     println!("Rotation quaternion: q");
     println!("Vector to rotate: v (represented as quaternion)");
     println!();
-
-    let qv = Expression::mul(vec![Expression::symbol(q.clone()), Expression::symbol(v.clone())]);
 
     println!("Quaternion rotation formula:");
     println!("  v' = q*v*conj(q)");
@@ -404,8 +425,14 @@ fn example_quaternion_rotations() {
     println!();
 
     let rotation_eq = Expression::add(vec![
-        Expression::mul(vec![Expression::symbol(q_var.clone()), Expression::symbol(v_in.clone())]),
-        Expression::mul(vec![Expression::integer(-1), Expression::symbol(v_out.clone())]),
+        Expression::mul(vec![
+            Expression::symbol(q_var.clone()),
+            Expression::symbol(v_in.clone()),
+        ]),
+        Expression::mul(vec![
+            Expression::integer(-1),
+            Expression::symbol(v_out.clone()),
+        ]),
     ]);
 
     let rotation_latex = rotation_eq.to_latex(LaTeXContext::default()).unwrap();

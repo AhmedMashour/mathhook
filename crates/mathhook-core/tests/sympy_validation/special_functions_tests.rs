@@ -424,8 +424,6 @@ fn test_sin_squared_plus_one() {
 
 #[test]
 fn test_cos_squared_plus_one() {
-    // SymPy: simplify(1 - cos(x)**2) = sin(x)**2
-    let x = symbol!(x);
     let expr = expr!(1 - ((cos(x)) ^ 2));
     // Note: simplify_trig not yet implemented
     let result = expr.simplify();
