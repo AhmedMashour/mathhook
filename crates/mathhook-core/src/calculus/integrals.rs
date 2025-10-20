@@ -10,7 +10,8 @@ pub mod by_parts;
 // mod definite;
 pub mod educational;
 mod function_integrals;
-// mod rational;
+pub mod rational;
+pub mod strategy;
 // mod substitution;
 // mod trigonometric;
 
@@ -22,11 +23,12 @@ pub use educational::{
     explain_power_rule, explain_sum_rule, explain_u_substitution,
 };
 pub use function_integrals::FunctionIntegrals;
-// pub use rational::RationalIntegrals;
+pub use rational::{integrate_rational, is_rational_function};
 // pub use substitution::IntegrationBySubstitution;
 // pub use trigonometric::TrigonometricIntegrals;
 
 use crate::core::{Expression, Symbol};
+use strategy::integrate_with_strategy;
 
 /// Trait for integration operations
 pub trait Integration {
@@ -71,25 +73,8 @@ pub trait Integration {
 
 impl Integration for Expression {
     fn integrate(&self, variable: Symbol) -> Expression {
-        match self {
-            // Handle existing calculus expressions
-            Expression::Calculus(data) => BasicIntegrals::handle_calculus(self, data, variable),
-
-            // Basic cases
-            Expression::Number(_) => BasicIntegrals::handle_constant(self, variable),
-            Expression::Symbol(sym) => BasicIntegrals::handle_symbol(sym, &variable),
-            Expression::Add(terms) => BasicIntegrals::handle_sum(terms, variable),
-            Expression::Mul(factors) => BasicIntegrals::handle_product(factors, variable),
-            Expression::Pow(base, exp) => BasicIntegrals::handle_power(base, exp, variable),
-
-            // Function cases - leverage existing Expression::function infrastructure
-            Expression::Function { name, args } => {
-                FunctionIntegrals::integrate(name, args, variable)
-            }
-
-            // Fall back to symbolic representation using core Expression::integral
-            _ => Expression::integral(self.clone(), variable),
-        }
+        // Delegate to strategy dispatcher which orchestrates all integration techniques
+        integrate_with_strategy(self, variable)
     }
 
     fn definite_integrate(
