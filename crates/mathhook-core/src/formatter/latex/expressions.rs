@@ -1,6 +1,7 @@
 use super::{LaTeXContext, LaTeXFormatter, MAX_RECURSION_DEPTH, MAX_TERMS_PER_OPERATION};
 use crate::core::expression::smart_display::SmartDisplayFormatter;
 use crate::core::expression::{CalculusData, LimitDirection, Matrix, RelationType};
+use crate::core::symbol::SymbolType;
 use crate::core::{Expression, MathConstant, Number};
 use crate::formatter::FormattingError;
 
@@ -18,7 +19,7 @@ pub(super) fn to_latex_with_depth_impl(
 
     Ok(match expr {
         Expression::Number(num) => format_number(num),
-        Expression::Symbol(s) => s.name().to_string(),
+        Expression::Symbol(s) => format_symbol(s),
         Expression::Add(terms) => format_addition(terms, context, depth)?,
         Expression::Mul(factors) => format_multiplication(factors, context, depth)?,
         Expression::Pow(base, exp) => format_power(base, exp, context, depth)?,
@@ -64,6 +65,22 @@ fn format_number(num: &Number) -> String {
             }
         }
         Number::Float(f) => f.to_string(),
+    }
+}
+
+/// Format symbol with type-aware notation
+///
+/// Formats symbols according to their mathematical type:
+/// - Scalar: x (plain)
+/// - Matrix: \mathbf{A} (bold)
+/// - Operator: \hat{p} (hat notation)
+/// - Quaternion: i, j, k (plain, as they are standard)
+fn format_symbol(symbol: &crate::core::Symbol) -> String {
+    match symbol.symbol_type() {
+        SymbolType::Scalar => symbol.name().to_string(),
+        SymbolType::Matrix => format!("\\mathbf{{{}}}", symbol.name()),
+        SymbolType::Operator => format!("\\hat{{{}}}", symbol.name()),
+        SymbolType::Quaternion => symbol.name().to_string(),
     }
 }
 

@@ -6,6 +6,7 @@ pub mod algebra;
 pub mod calculus;
 pub mod core;
 pub mod solvers;
+pub mod noncommutative;
 
 pub use core::{
     MessageBuilder, MessageCategory, MessageHashSystem, MessageKey, MessageTemplate, MessageType,

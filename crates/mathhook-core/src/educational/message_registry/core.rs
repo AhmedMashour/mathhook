@@ -15,6 +15,7 @@ pub enum MessageCategory {
     GeneralMath,
     Verification,
     Error,
+    NoncommutativeAlgebra,
 }
 
 /// Message types with structured classification
@@ -61,6 +62,11 @@ pub enum MessageType {
     PolynomialRationalRoot,
     PolynomialSyntheticDivision,
     PolynomialFactorization,
+    LeftMultiplyInverse,
+    RightMultiplyInverse,
+    NoncommutativeWarning,
+    CommutatorExplanation,
+    OrderMatters,
 }
 
 /// Message key serving as unique identifier for each message
@@ -280,6 +286,7 @@ pub static MESSAGE_REGISTRY: Lazy<HashMap<MessageKey, MessageTemplate>> = Lazy::
     super::calculus::initialize_calculus_messages(&mut registry);
     super::algebra::initialize_algebra_messages(&mut registry);
     super::solvers::initialize_solver_messages(&mut registry);
+    super::noncommutative::initialize_noncommutative_messages(&mut registry);
 
     registry
 });
