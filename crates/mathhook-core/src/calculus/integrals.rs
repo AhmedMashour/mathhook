@@ -12,7 +12,8 @@ pub mod educational;
 mod function_integrals;
 pub mod rational;
 pub mod strategy;
-// mod substitution;
+pub mod substitution;
+pub mod table;
 // mod trigonometric;
 
 pub use basic::BasicIntegrals;
@@ -24,7 +25,7 @@ pub use educational::{
 };
 pub use function_integrals::FunctionIntegrals;
 pub use rational::{integrate_rational, is_rational_function};
-// pub use substitution::IntegrationBySubstitution;
+pub use substitution::try_substitution;
 // pub use trigonometric::TrigonometricIntegrals;
 
 use crate::core::{Expression, Symbol};
@@ -118,8 +119,8 @@ impl IntegrationMethods {
 
     /// Attempt integration by substitution
     ///
-    /// Integration by substitution is not yet fully implemented.
-    /// Returns symbolic integral representation.
+    /// Uses u-substitution to integrate composite functions f(g(x)) where
+    /// the derivative g'(x) appears in the integrand.
     ///
     /// # Examples
     ///
@@ -135,6 +136,7 @@ impl IntegrationMethods {
     /// let result = IntegrationMethods::substitution(&expr, x);
     /// ```
     pub fn substitution(expr: &Expression, variable: Symbol) -> Expression {
-        Expression::integral(expr.clone(), variable)
+        try_substitution(expr, variable.clone())
+            .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
     }
 }

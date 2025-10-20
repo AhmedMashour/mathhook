@@ -10,7 +10,7 @@
 
 use crate::calculus::integrals::{
     basic::BasicIntegrals, by_parts::IntegrationByParts, function_integrals::FunctionIntegrals,
-    rational,
+    rational, substitution, table,
 };
 use crate::core::{Expression, Number, Symbol};
 
@@ -18,11 +18,10 @@ use crate::core::{Expression, Number, Symbol};
 ///
 /// Tries 8 techniques in order (fast to slow) until one succeeds.
 pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
-    // Layer 1: Table lookup (Wave 3) - placeholder for now
-    // Coming in Wave 3: Fast O(1) lookup for common patterns
-    // if let Some(result) = try_table_lookup(expr, &var) {
-    //     return result;
-    // }
+    // Layer 1: Table lookup (Wave 3) - ACTIVE
+    if let Some(result) = table::try_table_lookup(expr, &var) {
+        return result;
+    }
 
     // Layer 2: Rational functions (Wave 2 - Agent 2A implementing)
     if let Some(result) = try_rational_integration(expr, &var) {
@@ -39,11 +38,10 @@ pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
         return result;
     }
 
-    // Layer 5: Substitution (Wave 3) - placeholder for now
-    // Coming in Wave 3: Automatic u-substitution detection
-    // if let Some(result) = try_substitution(expr, &var) {
-    //     return result;
-    // }
+    // Layer 5: Substitution (Wave 3) - ACTIVE
+    if let Some(result) = substitution::try_substitution(expr, var.clone()) {
+        return result;
+    }
 
     // Layer 6: Trigonometric (Wave 4) - placeholder for now
     // Coming in Wave 4: sin^m*cos^n patterns
@@ -110,22 +108,22 @@ pub fn try_by_parts(expr: &Expression, var: &Symbol) -> Option<Expression> {
 /// Check if expression is a polynomial in the given variable
 ///
 /// Polynomial: only var, constants, +, *, and non-negative integer powers.
-pub fn is_polynomial(expr: &Expression, var: &Symbol) -> bool {
+pub fn is_polynomial(expr: &Expression, _var: &Symbol) -> bool {
     match expr {
         // Constants are polynomials (degree 0)
         Expression::Number(_) | Expression::Constant(_) => true,
 
         // Variable itself is a polynomial (degree 1)
-        Expression::Symbol(sym) => {
+        Expression::Symbol(_sym) => {
             // Either the variable we're checking, or a different symbol (constant w.r.t. var)
             true
         }
 
         // Sum of polynomials is a polynomial
-        Expression::Add(terms) => terms.iter().all(|t| is_polynomial(t, var)),
+        Expression::Add(terms) => terms.iter().all(|t| is_polynomial(t, _var)),
 
         // Product of polynomials is a polynomial
-        Expression::Mul(factors) => factors.iter().all(|f| is_polynomial(f, var)),
+        Expression::Mul(factors) => factors.iter().all(|f| is_polynomial(f, _var)),
 
         // Power is polynomial if base is polynomial and exponent is non-negative integer
         Expression::Pow(base, exp) => {
@@ -135,7 +133,7 @@ pub fn is_polynomial(expr: &Expression, var: &Symbol) -> bool {
                 _ => false,
             };
 
-            valid_exponent && is_polynomial(base, var)
+            valid_exponent && is_polynomial(base, _var)
         }
 
         // Functions, calculus operations, etc. are not polynomials
