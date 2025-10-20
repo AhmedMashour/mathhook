@@ -3,6 +3,7 @@
 //! This module provides stateful solver objects that complement the Expression-centric API.
 //! These are separate objects that maintain state and configuration for complex solving operations.
 
+use crate::algebra::equation_analyzer::SmartEquationSolver;
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;
 use serde::{Deserialize, Serialize};
@@ -63,6 +64,7 @@ impl Default for SolverConfig {
 /// ```
 pub struct MathSolver {
     config: SolverConfig,
+    smart_solver: SmartEquationSolver,
 }
 
 impl MathSolver {
@@ -78,6 +80,7 @@ impl MathSolver {
     pub fn new() -> Self {
         Self {
             config: SolverConfig::default(),
+            smart_solver: SmartEquationSolver::new(),
         }
     }
 
@@ -97,7 +100,10 @@ impl MathSolver {
     /// let solver = MathSolver::with_config(config);
     /// ```
     pub fn with_config(config: SolverConfig) -> Self {
-        Self { config }
+        Self {
+            config,
+            smart_solver: SmartEquationSolver::new(),
+        }
     }
 
     /// Solve an equation for a given variable
@@ -117,19 +123,34 @@ impl MathSolver {
     pub fn solve(&mut self, equation: &Expression, variable: &Symbol) -> SolverResult {
         match equation {
             Expression::Relation(relation_data) => {
-                // Extract left and right sides of the equation
+                // Extract left and right sides and convert to standard form (LHS - RHS = 0)
                 let left = &relation_data.left;
                 let right = &relation_data.right;
 
-                // Basic solving for linear equations
-                if let Some(solution) = self.solve_linear(left, right, variable) {
-                    if self.config.simplify_results {
-                        SolverResult::Single(solution.simplify())
-                    } else {
-                        SolverResult::Single(solution)
+                let standard_form = Expression::add(vec![
+                    left.clone(),
+                    Expression::mul(vec![Expression::integer(-1), right.clone()]),
+                ]);
+
+                // Use the SmartEquationSolver to solve
+                let (algebra_result, _explanation) = self
+                    .smart_solver
+                    .solve_with_equation(&standard_form, variable);
+
+                // Convert algebra::solvers::SolverResult to solvers::SolverResult
+                let result = self.convert_solver_result(algebra_result);
+
+                // Apply simplification if configured
+                if self.config.simplify_results {
+                    match result {
+                        SolverResult::Single(expr) => SolverResult::Single(expr.simplify()),
+                        SolverResult::Multiple(exprs) => {
+                            SolverResult::Multiple(exprs.iter().map(|e| e.simplify()).collect())
+                        }
+                        other => other,
                     }
                 } else {
-                    SolverResult::NoSolution
+                    result
                 }
             }
             _ => SolverResult::NoSolution,
@@ -183,17 +204,27 @@ impl MathSolver {
     }
 
     // Private helper methods
-    fn solve_linear(
+    fn convert_solver_result(
         &self,
-        left: &Expression,
-        right: &Expression,
-        variable: &Symbol,
-    ) -> Option<Expression> {
-        // Very basic linear solving: x = value
-        match (left, right) {
-            (Expression::Symbol(sym), value) if sym.name == variable.name => Some(value.clone()),
-            (value, Expression::Symbol(sym)) if sym.name == variable.name => Some(value.clone()),
-            _ => None, // More complex cases need proper implementation
+        algebra_result: crate::algebra::solvers::SolverResult,
+    ) -> SolverResult {
+        match algebra_result {
+            crate::algebra::solvers::SolverResult::Single(expr) => SolverResult::Single(expr),
+            crate::algebra::solvers::SolverResult::Multiple(exprs) => {
+                SolverResult::Multiple(exprs)
+            }
+            crate::algebra::solvers::SolverResult::NoSolution => SolverResult::NoSolution,
+            crate::algebra::solvers::SolverResult::InfiniteSolutions => {
+                SolverResult::InfiniteSolutions
+            }
+            crate::algebra::solvers::SolverResult::Parametric(exprs) => {
+                // Parametric solutions are returned as multiple solutions for simplicity
+                SolverResult::Multiple(exprs)
+            }
+            crate::algebra::solvers::SolverResult::Partial(exprs) => {
+                // Partial solutions are returned as multiple solutions
+                SolverResult::Multiple(exprs)
+            }
         }
     }
 }

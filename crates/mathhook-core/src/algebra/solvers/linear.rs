@@ -32,6 +32,13 @@ impl EquationSolver for LinearSolver {
     /// Solve linear equation ax + b = 0
     #[inline(always)]
     fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
+        // Check for noncommutative symbols - delegate to MatrixEquationSolver if found
+        if !self.check_commutativity(equation) {
+            use crate::algebra::solvers::matrix_equations::MatrixEquationSolver;
+            let matrix_solver = MatrixEquationSolver::new_fast();
+            return matrix_solver.solve(equation, variable);
+        }
+
         // Handle simplified equations that lost structure
         if let Expression::Number(Number::Integer(0)) = equation {
             // If equation simplified to just 0, it means 0 = 0 (infinite solutions)
@@ -105,31 +112,24 @@ impl EquationSolver for LinearSolver {
         }
     }
 
-    /// Solve with step-by-step explanation (CRITICAL USER REQUIREMENT)
-    /// Using super cool, human-readable messages!
+    /// Solve with step-by-step explanation
     fn solve_with_explanation(
         &self,
         equation: &Expression,
         variable: &Symbol,
     ) -> (SolverResult, StepByStepExplanation) {
-        // Simplify equation first to flatten nested structures
         let simplified_equation = equation.simplify();
-
-        // Extract coefficients for analysis
         let (a, b) = self.extract_linear_coefficients(&simplified_equation, variable);
 
-        // Handle special cases with cool explanations
         if a.is_zero() {
             return self.handle_special_case_with_style(&b);
         }
 
-        // Calculate solution
         let a_simplified = a.simplify();
         let b_simplified = b.simplify();
         let neg_b = self.negate_expression(&b_simplified).simplify();
         let solution = self.divide_expressions(&neg_b, &a_simplified).simplify();
 
-        // Simple step-by-step explanation (working TDD version)
         let steps = vec![
             Step::new(
                 "Given Equation",
@@ -162,7 +162,7 @@ impl EquationSolver for LinearSolver {
 }
 
 impl LinearSolver {
-    /// Handle special cases with smart step explanations
+    /// Handle special cases with step explanations
     fn handle_special_case_with_style(
         &self,
         b: &Expression,
@@ -203,11 +203,9 @@ impl LinearSolver {
         for term in flattened_terms.iter() {
             match term {
                 Expression::Symbol(s) if s == variable => {
-                    // x term (coefficient = 1)
                     coefficient = Expression::add(vec![coefficient, Expression::integer(1)]);
                 }
                 Expression::Mul(factors) => {
-                    // Check if this is a variable term (like 2x)
                     let mut var_coeff = Expression::integer(1);
                     let mut has_variable = false;
 
@@ -234,7 +232,6 @@ impl LinearSolver {
                 }
             }
         }
-
         (coefficient, constant)
     }
 
@@ -259,12 +256,26 @@ impl LinearSolver {
 
     /// Check if equation is linear
     fn is_linear_equation(&self, equation: &Expression) -> bool {
-        // Simplified check - real implementation would be more sophisticated
         match equation {
-            Expression::Add(_) => true,    // Assume addition can be linear
-            Expression::Symbol(_) => true, // Single variable is linear
-            Expression::Number(_) => true, // Constant is linear (degenerate)
-            _ => false,                    // Powers, functions are not linear
+            Expression::Add(_) | Expression::Symbol(_) | Expression::Number(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Check if all symbols in equation are commutative
+    fn check_commutativity(&self, expr: &Expression) -> bool {
+        match expr {
+            Expression::Symbol(s) => s.commutativity() == crate::core::Commutativity::Commutative,
+            Expression::Add(terms) | Expression::Mul(terms) => {
+                terms.iter().all(|t| self.check_commutativity(t))
+            }
+            Expression::Pow(base, exp) => {
+                self.check_commutativity(base) && self.check_commutativity(exp)
+            }
+            Expression::Function { args, .. } => {
+                args.iter().all(|a| self.check_commutativity(a))
+            }
+            _ => true,
         }
     }
 

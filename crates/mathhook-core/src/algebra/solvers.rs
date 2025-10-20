@@ -9,12 +9,14 @@ use serde::{Deserialize, Serialize};
 
 // Modern Rust: Individual solver modules
 pub mod linear;
+pub mod matrix_equations;
 pub mod polynomial;
 pub mod quadratic;
 pub mod systems;
 
 // Re-exports for easy access
 pub use linear::LinearSolver;
+pub use matrix_equations::MatrixEquationSolver;
 pub use polynomial::PolynomialSolver;
 pub use quadratic::QuadraticSolver;
 pub use systems::SystemSolver;

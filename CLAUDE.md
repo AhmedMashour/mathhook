@@ -1459,6 +1459,45 @@ Location: `crates/mathhook-benchmarks/benches/`
 - Test trivial getters/setters
 - Aim for coverage metrics over meaningful validation
 
+### Integration Testing Requirements
+
+**Lesson from Wave 10**: Always test both implementation AND API layers.
+
+When adding new functionality:
+1. **Unit tests**: Test the implementation directly (e.g., `LinearSolver::solve()`)
+2. **Integration tests**: Test through public API (e.g., `MathSolver::solve()`)
+3. **Regression tests**: Verify existing tests still pass
+
+**Example from Wave 10**:
+- Agent 10A added `MatrixEquationSolver` with 36 unit tests (all passing)
+- BUT: Didn't test through `MathSolver` API (public interface)
+- Result: Regression in `MathSolver` broke 17 existing tests
+- Fix: Agent 10B added integration testing through `SmartEquationSolver`
+
+**Best Practice**:
+```rust
+// Unit test (tests implementation directly)
+#[test]
+fn test_linear_solver_solve() {
+    let solver = LinearSolver::new();
+    let result = solver.solve(&equation, &var);
+    assert_eq!(result, expected);
+}
+
+// Integration test (tests through public API)
+#[test]
+fn test_math_solver_solve() {
+    let mut solver = MathSolver::new();
+    let result = solver.solve(&equation, &var);
+    assert_eq!(result, expected);
+}
+```
+
+**When to use each**:
+- Unit tests: Fast, focused, test specific functions
+- Integration tests: Slower, comprehensive, test full workflows
+- Always include both for major features
+
 ### Test Naming Convention
 
 ```rust
