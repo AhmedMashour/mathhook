@@ -10,7 +10,7 @@
 
 use crate::calculus::integrals::{
     basic::BasicIntegrals, by_parts::IntegrationByParts, function_integrals::FunctionIntegrals,
-    rational, substitution, table,
+    rational, substitution, table, trigonometric,
 };
 use crate::core::{Expression, Number, Symbol};
 
@@ -43,11 +43,10 @@ pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
         return result;
     }
 
-    // Layer 6: Trigonometric (Wave 4) - placeholder for now
-    // Coming in Wave 4: sin^m*cos^n patterns
-    // if let Some(result) = try_trigonometric(expr, &var) {
-    //     return result;
-    // }
+    // Layer 6: Trigonometric (Wave 4) - ACTIVE
+    if let Some(result) = trigonometric::try_trigonometric_integration(expr, var.clone()) {
+        return result;
+    }
 
     // Layer 7: Risch algorithm (Wave 5) - placeholder for now
     // Coming in Wave 5: Complete algorithmic integration

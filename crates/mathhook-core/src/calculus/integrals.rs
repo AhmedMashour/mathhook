@@ -14,7 +14,7 @@ pub mod rational;
 pub mod strategy;
 pub mod substitution;
 pub mod table;
-// mod trigonometric;
+pub mod trigonometric;
 
 pub use basic::BasicIntegrals;
 pub use by_parts::IntegrationByParts;
@@ -26,7 +26,7 @@ pub use educational::{
 pub use function_integrals::FunctionIntegrals;
 pub use rational::{integrate_rational, is_rational_function};
 pub use substitution::try_substitution;
-// pub use trigonometric::TrigonometricIntegrals;
+pub use trigonometric::try_trigonometric_integration;
 
 use crate::core::{Expression, Symbol};
 use strategy::integrate_with_strategy;
