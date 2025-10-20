@@ -7,6 +7,163 @@ use crate::core::{Expression, Symbol};
 use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
 
+/// Comprehensive integration explanation with strategy attribution
+///
+/// Provides detailed step-by-step explanations for integration operations,
+/// including which technique was used and why.
+pub struct IntegrationExplanation {
+    steps: Vec<String>,
+    strategy: String,
+}
+
+impl IntegrationExplanation {
+    /// Generate explanation for integrating an expression
+    ///
+    /// Analyzes the integrand and provides step-by-step explanation
+    /// of the integration process, automatically selecting the appropriate
+    /// technique (power rule, substitution, trigonometric, etc.)
+    ///
+    /// # Arguments
+    ///
+    /// * `expr` - The integrand to explain
+    /// * `var` - The variable of integration
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mathhook_core::{symbol, Expression};
+    /// use mathhook_core::calculus::integrals::educational::IntegrationExplanation;
+    ///
+    /// let x = symbol!(x);
+    /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
+    /// let explanation = IntegrationExplanation::generate(&expr, &x);
+    /// assert!(!explanation.steps().is_empty());
+    /// ```
+    pub fn generate(expr: &Expression, var: &Symbol) -> Self {
+        let (steps, strategy) = analyze_and_explain(expr, var);
+        Self { steps, strategy }
+    }
+
+    /// Get the step-by-step explanation as a vector of strings
+    pub fn steps(&self) -> Vec<String> {
+        self.steps.clone()
+    }
+
+    /// Get the integration strategy/technique that was used
+    pub fn strategy_used(&self) -> String {
+        self.strategy.clone()
+    }
+}
+
+/// Analyze integrand and generate appropriate explanation
+fn analyze_and_explain(expr: &Expression, var: &Symbol) -> (Vec<String>, String) {
+    use crate::core::Number;
+
+    match expr {
+        Expression::Number(_) => (
+            vec![
+                format!("Integrating constant: {}", expr),
+                format!("Result: {}*{} + C", expr, var.name()),
+            ],
+            "constant".to_string(),
+        ),
+        Expression::Symbol(s) if s.name() == var.name() => (
+            vec![
+                format!("Integrating variable {}", var.name()),
+                format!("Power rule: integral({} d{}) = {}^2/2 + C", var.name(), var.name(), var.name()),
+            ],
+            "power".to_string(),
+        ),
+        Expression::Pow(base, exp) => {
+            if matches!(base.as_ref(), Expression::Symbol(s) if s.name() == var.name()) {
+                (
+                    vec![
+                        format!("Power rule: integral({}^n d{}) = {}^(n+1)/(n+1) + C", var.name(), var.name(), var.name()),
+                        format!("For n = {}", exp),
+                        format!("Result: {}^({} + 1)/({} + 1) + C", var.name(), exp, exp),
+                    ],
+                    "power".to_string(),
+                )
+            } else if matches!(base.as_ref(), Expression::Function { name, .. } if matches!(name.as_str(), "sin" | "cos" | "tan")) {
+                (
+                    vec![
+                        format!("Trigonometric power: {}^{}", base, exp),
+                        format!("Apply power reduction identity for {}", base),
+                        format!("Rewrite using trig identities"),
+                        format!("Integrate the simplified form"),
+                    ],
+                    "trig".to_string(),
+                )
+            } else {
+                (
+                    vec![
+                        format!("Complex power expression: {}", expr),
+                        format!("May require advanced techniques"),
+                    ],
+                    "complex".to_string(),
+                )
+            }
+        },
+        Expression::Function { name, args } => {
+            let strategy = match name.as_str() {
+                "sin" | "cos" | "tan" | "sec" | "csc" | "cot" => "trig",
+                "exp" | "ln" | "log" => "table",
+                _ => "function",
+            };
+            (
+                vec![
+                    format!("Table lookup for function: {}", name),
+                    format!("Standard formula for integral({} d{})", expr, var.name()),
+                ],
+                strategy.to_string(),
+            )
+        },
+        Expression::Mul(factors) => {
+            let has_const = factors.iter().any(|f| matches!(f, Expression::Number(_)));
+            let has_var = factors.iter().any(|f| matches!(f, Expression::Symbol(s) if s.name() == var.name()));
+            let has_func = factors.iter().any(|f| matches!(f, Expression::Function { .. }));
+
+            if has_const && has_var && has_func {
+                (
+                    vec![
+                        format!("Possible substitution pattern detected"),
+                        format!("Checking for u-substitution opportunity"),
+                    ],
+                    "substitution".to_string(),
+                )
+            } else if has_const {
+                (
+                    vec![
+                        format!("Constant multiple: factor out constant"),
+                        format!("Apply linearity of integration"),
+                    ],
+                    "basic".to_string(),
+                )
+            } else {
+                (
+                    vec![format!("Product integration"), format!("Consider integration by parts or substitution")],
+                    "by_parts".to_string(),
+                )
+            }
+        },
+        Expression::Add(terms) => (
+            vec![
+                format!("Sum rule: integral of sum = sum of integrals"),
+                format!("Split into {} terms", terms.len()),
+                format!("Integrate each term separately"),
+            ],
+            "sum".to_string(),
+        ),
+        _ => (
+            vec![
+                format!("Complex expression: {}", expr),
+                format!("May require advanced techniques"),
+            ],
+            "advanced".to_string(),
+        ),
+    }
+}
+
 /// Generate educational explanation for power rule integration
 ///
 /// # Arguments

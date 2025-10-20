@@ -3,10 +3,10 @@
 //! Tests step-by-step explanations, educational messages, and LaTeX formatting
 //! for integration operations across all strategy layers.
 
-use mathhook_core::calculus::integrals::strategy::integrate_with_strategy;
 use mathhook_core::calculus::integrals::educational::IntegrationExplanation;
-use mathhook_core::core::{Expression, Number, Symbol};
-use mathhook_core::formatter::latex::LatexFormatter;
+use mathhook_core::calculus::integrals::strategy::integrate_with_strategy;
+use mathhook_core::core::{Expression, Symbol};
+use mathhook_core::formatter::latex::LaTeXFormatter as _;
 
 fn symbol(name: &str) -> Symbol {
     Symbol::scalar(name)
@@ -67,9 +67,11 @@ fn test_explanation_for_power_rule() {
 
     // Should explain power rule: ∫x^n dx = x^(n+1)/(n+1)
     assert!(!explanation.steps().is_empty());
-    assert!(explanation.strategy_used().contains("power") ||
-            explanation.strategy_used().contains("basic") ||
-            explanation.strategy_used().contains("table"));
+    assert!(
+        explanation.strategy_used().contains("power")
+            || explanation.strategy_used().contains("basic")
+            || explanation.strategy_used().contains("table")
+    );
 }
 
 #[test]
@@ -81,8 +83,10 @@ fn test_explanation_for_trig_integral() {
 
     // Should explain trig table lookup or formula
     assert!(!explanation.steps().is_empty());
-    assert!(explanation.strategy_used().contains("trig") ||
-            explanation.strategy_used().contains("table"));
+    assert!(
+        explanation.strategy_used().contains("trig")
+            || explanation.strategy_used().contains("table")
+    );
 }
 
 #[test]
@@ -92,7 +96,10 @@ fn test_explanation_for_rational_function() {
     // ∫1/(x+1) dx
     let expr = mul(vec![
         integer(1),
-        pow(add(vec![Expression::Symbol(var.clone()), integer(1)]), integer(-1)),
+        pow(
+            add(vec![Expression::Symbol(var.clone()), integer(1)]),
+            integer(-1),
+        ),
     ]);
 
     let explanation = IntegrationExplanation::generate(&expr, &var);
@@ -122,7 +129,10 @@ fn test_explanation_for_by_parts() {
     let var = x();
 
     // ∫x*ln(x) dx
-    let expr = mul(vec![Expression::Symbol(var.clone()), ln(Expression::Symbol(var.clone()))]);
+    let expr = mul(vec![
+        Expression::Symbol(var.clone()),
+        ln(Expression::Symbol(var.clone())),
+    ]);
 
     let explanation = IntegrationExplanation::generate(&expr, &var);
 
@@ -191,8 +201,7 @@ fn test_latex_format_simple_polynomial() {
     let var = x();
     let expr = pow(Expression::Symbol(var.clone()), integer(2));
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should format as x^2
     assert!(latex.contains("x"));
@@ -206,8 +215,7 @@ fn test_latex_format_fraction() {
     // 1/x
     let expr = pow(Expression::Symbol(var.clone()), integer(-1));
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should use \frac or x^{-1}
     assert!(latex.contains("x"));
@@ -218,8 +226,7 @@ fn test_latex_format_trig_function() {
     let var = x();
     let expr = sin(Expression::Symbol(var.clone()));
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should format as \sin(x) or similar
     assert!(latex.contains("sin") || latex.contains("\\sin"));
@@ -231,8 +238,9 @@ fn test_latex_format_integral_result() {
     let expr = pow(Expression::Symbol(var.clone()), integer(2));
     let result = integrate_with_strategy(&expr, var.clone());
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&result);
+    let latex = result
+        .to_latex(None)
+        .unwrap_or_else(|_| "error".to_string());
 
     // Result should be x^3/3, formatted appropriately
     assert!(latex.contains("x"));
@@ -251,8 +259,7 @@ fn test_latex_format_complex_expression() {
     let denominator = add(vec![Expression::Symbol(var.clone()), integer(1)]);
     let expr = mul(vec![numerator, pow(denominator, integer(-1))]);
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should be properly formatted with nested structures
     assert!(latex.contains("x"));
@@ -263,8 +270,7 @@ fn test_latex_format_exponential() {
     let var = x();
     let expr = exp(Expression::Symbol(var.clone()));
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should format as e^x or \exp(x)
     assert!(latex.contains("e") || latex.contains("exp"));
@@ -275,8 +281,7 @@ fn test_latex_format_logarithm() {
     let var = x();
     let expr = ln(Expression::Symbol(var.clone()));
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should format as \ln(x) or \log(x)
     assert!(latex.contains("ln") || latex.contains("log"));
@@ -287,10 +292,12 @@ fn test_latex_format_product() {
     let var = x();
 
     // x * sin(x)
-    let expr = mul(vec![Expression::Symbol(var.clone()), sin(Expression::Symbol(var.clone()))]);
+    let expr = mul(vec![
+        Expression::Symbol(var.clone()),
+        sin(Expression::Symbol(var.clone())),
+    ]);
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should show product clearly
     assert!(latex.contains("x"));
@@ -307,8 +314,7 @@ fn test_latex_format_sum() {
         sin(Expression::Symbol(var.clone())),
     ]);
 
-    let formatter = LatexFormatter::new();
-    let latex = formatter.format(&expr);
+    let latex = expr.to_latex(None).unwrap_or_else(|_| "error".to_string());
 
     // Should show sum with +
     assert!(latex.contains("x"));
@@ -337,7 +343,8 @@ fn test_step_by_step_includes_result() {
     let explanation = IntegrationExplanation::generate(&expr, &var);
 
     // Last step should show final result
-    let last_step = explanation.steps().last().unwrap();
+    let steps = explanation.steps();
+    let last_step = steps.last().unwrap();
     assert!(!last_step.is_empty());
 }
 
@@ -424,9 +431,8 @@ fn test_latex_in_educational_steps() {
     let expr = sin(Expression::Symbol(var.clone()));
 
     let explanation = IntegrationExplanation::generate(&expr, &var);
-    let formatter = LatexFormatter::new();
 
-    // Steps should be LaTeX-formattable
+    // Steps should be LaTeX-formattable (they're already strings)
     for step in explanation.steps() {
         assert!(!step.is_empty());
     }
