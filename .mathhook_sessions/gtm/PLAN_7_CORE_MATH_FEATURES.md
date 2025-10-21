@@ -1,7 +1,7 @@
 # Plan 7: Core Mathematical Features Completion
 
 **Priority**: ⚡ CRITICAL
-**Timeline**: 12-16 weeks
+**Timeline**: 24-36 weeks (updated from original 12-16 weeks estimate)
 **Waves**: 6
 **Orchestrator**: `/sc:spawn`
 

@@ -15,21 +15,33 @@
 - ❌ **MCP Integration**: Not started (new opportunity)
 - ❌ **Core Math Features**: Missing ODEs, PDEs, advanced linear algebra, special functions
 
-**Total Timeline to Market**: 20-32 weeks (~5-8 months) with complete feature set
+**Total Timeline to MVP**: 20-27 weeks (~5-7 months) for minimum viable product
+**Total Timeline to Market Adoption**: 2-4 YEARS for significant market penetration
+
+**⚠️ Critical Timeline Reality Check**:
+- **MVP Timeline**: 20-27 weeks is realistic for functional product ready for first users
+- **Market Adoption Timeline**: 2-4 years is realistic for meaningful adoption (based on JAX, Rust, new framework precedents)
+- **SymPy Network Effects**: 2.9M downloads/day, 900+ contributors, 20+ year ecosystem - switching costs are VERY high
+- **Strategy**: Lead with educational features + MCP integration (unique value), NOT just speed claims
+
+**Market Research Evidence**:
+- JAX: 2 years from launch → DeepMind production adoption
+- Rust: 4 years to critical mass in systems programming
+- SymPy: Established 20+ years ago, deeply integrated into education and research workflows
 
 ---
 
 ## All Plans Saved
 
-All plans are now available in `.mathhook_sessions/`:
+All plans are now available in `.mathhook_sessions/gtm/`:
 
-1. ✅ `PLAN_1_PERFORMANCE_RECOVERY_V2.md` - 2-3 weeks, 4 waves (UPDATED with comprehensive benchmarks)
+1. ✅ `PLAN_1_PERFORMANCE_RECOVERY.md` - 2-3 weeks, 4 waves
 2. ✅ `PLAN_2_EDUCATIONAL_INTEGRATION.md` - 6-8 weeks, 5 waves
 3. ✅ `PLAN_3_PYTHON_API_PRODUCTION.md` - 8-10 weeks, 5 waves
 4. ✅ `PLAN_4_NODEJS_API_PRODUCTION.md` - 7-9 weeks, 5 waves
-5. ✅ `PLAN_5_MARKET_LAUNCH.md` - 6-8 weeks, 6 waves (UPDATED with automated documentation pipeline via technical-writer agent)
-6. ✅ `PLAN_6_MCP_SERVER.md` - 3-4 weeks, 4 waves
-7. ✅ `PLAN_7_CORE_MATH_FEATURES.md` - 12-16 weeks, 6 waves (NEW - ODEs, PDEs, advanced math)
+5. ✅ `PLAN_5_MARKET_LAUNCH.md` - 11-13 weeks, 6 waves (UPDATED: Wave 0 timeline fixed + infrastructure budget)
+6. ✅ `PLAN_6_MCP_SERVER.md` - 3-4 weeks, 4 waves (MOVED to Phase 2 from Phase 4)
+7. ✅ `PLAN_7_CORE_MATH_FEATURES.md` - 24-36 weeks, 6 waves (UPDATED timeline - ODEs, PDEs, advanced math)
 
 ---
 
@@ -58,17 +70,21 @@ All plans are now available in `.mathhook_sessions/`:
 
 ---
 
-### Phase 2: Parallel Production Build (After Phase 1 - 12-16 weeks)
+### Phase 2: Parallel Production Build (After Phase 1 - 24-36 weeks)
 
-**Execute**: Plans 2, 3, 4, 7 in PARALLEL
+**Execute**: Plans 2, 3, 4, 6, 7 in PARALLEL
 
 **Why Parallel**:
-- Independent development tracks
+- Independent development tracks (educational, Python API, Node.js API, MCP server, core math features)
 - Maximize team velocity
-- Coordinated delivery
-- Core math features don't block API development
+- Coordinated delivery with complete feature set
+- Core math features (Plan 7) run alongside API development
 
-**Commands** (launch all 4 simultaneously):
+**⚠️ Timeline Note**: Phase 2 duration determined by longest plan (Plan 7: 24-36 weeks)
+- Plans 2, 3, 4, 6 complete in 6-10 weeks
+- Plan 7 continues for full 24-36 weeks (critical path)
+
+**Commands** (launch all 5 simultaneously):
 ```bash
 # Agent 1: Educational Integration (Rust expert for core integration)
 /sc:spawn rust-engineer "Execute Wave-Based Educational System Integration for MathHook"
@@ -79,7 +95,10 @@ All plans are now available in `.mathhook_sessions/`:
 # Agent 3: Node.js API (Backend architect for Node.js/TypeScript expertise)
 /sc:spawn backend-architect "Execute Wave-Based Node.js API Production Plan for MathHook"
 
-# Agent 4: Core Math Features (Rust expert for ODE/PDE/advanced math)
+# Agent 4: MCP Server (Rust expert for MCP integration)
+/sc:spawn rust-engineer "Execute Wave-Based MCP Server Implementation for MathHook"
+
+# Agent 5: Core Math Features (Rust expert for ODEs/PDEs/advanced math)
 /sc:spawn rust-engineer "Execute Wave-Based Core Mathematical Features Completion for MathHook"
 ```
 
@@ -87,27 +106,36 @@ All plans are now available in `.mathhook_sessions/`:
 - `PLAN_2_EDUCATIONAL_INTEGRATION.md`
 - `PLAN_3_PYTHON_API_PRODUCTION.md`
 - `PLAN_4_NODEJS_API_PRODUCTION.md`
+- `PLAN_6_MCP_SERVER.md`
 - `PLAN_7_CORE_MATH_FEATURES.md`
 
 **Coordination**: Use `/sc:pm` orchestrator for weekly sync and dependency management
+
+**Resource Allocation** (see Resource Allocation Matrix below):
+- rust-engineer: Required for Plans 2, 6, and 7 (will need 2-3 rust-engineers OR sequential execution)
+- python-expert: Dedicated to Plan 3
+- backend-architect: Dedicated to Plan 4
 
 **Deliverables**:
 - Educational features integrated end-to-end
 - `pip install mathhook` works (PyPI published)
 - `npm install mathhook` works (npm published)
 - Complete API parity with Rust core
+- MCP server published and listed on registry
 - Core CAS features complete (ODEs, PDEs, advanced linear algebra, special functions)
 
 ---
 
-### Phase 3: Market Launch (After Phase 2 - 6-8 weeks)
+### Phase 3: Market Launch (After Phase 2 - 11-13 weeks)
 
 **Execute**: Plan 5 (Market Positioning & Launch)
 
 **Why Last**:
-- Requires all components production-ready
+- Requires all components production-ready (Plans 1-4, 6 complete)
 - Coordinated announcement across channels
 - **Fully automated documentation pipeline** (notebooks, books, articles, website - all auto-generated)
+
+**⚠️ Timeline Update**: Wave 0 (automation infrastructure) requires 3-4 weeks, not 6-8 hours. Total plan timeline increased from 6-8 weeks to 11-13 weeks.
 
 **Command**:
 ```bash
@@ -130,31 +158,63 @@ All plans are now available in `.mathhook_sessions/`:
 
 ---
 
-### Phase 4: MCP Server (Parallel with Phase 3 OR After - 3-4 weeks)
+## Resource Allocation Matrix
 
-**Execute**: Plan 6 (MCP Server)
+**Phase-by-Phase Resource Assignment**:
 
-**Why Flexible Timing**:
-- Can run parallel with Phase 3 (different team/agent)
-- OR can follow Phase 3 if resources constrained
+| Phase | Duration | Plans | rust-engineer | python-expert | backend-architect | technical-writer |
+|-------|----------|-------|---------------|---------------|-------------------|------------------|
+| **Phase 1** | 2-3 weeks | Plan 1 | Performance recovery | - | - | - |
+| **Phase 2** | 24-36 weeks | Plans 2, 3, 4, 6, 7 | Educational (Plan 2) + MCP (Plan 6) + Core Math (Plan 7) | Python API (Plan 3) | Node.js API (Plan 4) | - |
+| **Phase 3** | 11-13 weeks | Plan 5 | - | - | - | Market launch (Plan 5) |
 
-**Command**:
-```bash
-/sc:spawn rust-engineer "Execute Wave-Based MCP Server Implementation for MathHook"
-```
+**Resource Conflict Resolution**:
+- **Phase 2 CRITICAL**: rust-engineer needed for Plans 2, 6, AND 7 simultaneously
+- **Recommended**: Hire 2-3 rust-engineers to run plans in parallel
+- **Alternative (slower)**: Sequential execution: Plan 2 (6-8 weeks) → Plan 6 (3-4 weeks) → Plan 7 (24-36 weeks) = 33-48 weeks total
+- **No conflicts**: Plans 3 (python-expert) and 4 (backend-architect) run fully in parallel
 
-**Bootstrap File**: `PLAN_6_MCP_SERVER.md`
+**Critical Path**: **Plan 7 (Core Math Features)** is longest in Phase 2 (24-36 weeks), determines phase completion
 
-**Research Findings**:
-- **Recommended**: Python MCP server using FastMCP (2-3 weeks)
-- **Alternative**: Rust MCP server using rmcp (4-6 weeks, better performance)
-- **Hybrid**: Python for simple queries, Rust for complex (best of both)
+---
 
-**Deliverables**:
-- 30-40 mathematical tools via MCP
-- Published to PyPI (`pip install mathhook-mcp`)
-- Listed on MCP registry (lobehub.com)
-- Claude Desktop integration working
+## Phase Transition Gates
+
+**Criteria for advancing between phases** (must pass ALL criteria to proceed):
+
+### Gate 1: Phase 1 → Phase 2
+- ✅ All performance benchmarks ≤ baseline (no regressions)
+- ✅ 10-100x faster than SymPy claim validated
+- ✅ CI performance monitoring active
+- ✅ Test pass rate ≥ 676/677 (99.85%)
+- ✅ No mathematical correctness regressions
+
+### Gate 2: Phase 2 → Phase 3
+- ✅ Educational features work end-to-end (step-by-step explanations)
+- ✅ `pip install mathhook` works (PyPI package published)
+- ✅ `npm install mathhook` works (npm package published)
+- ✅ MCP server published and listed on registry
+- ✅ Core CAS features complete (ODEs, PDEs, advanced linear algebra, special functions)
+- ✅ >90% test coverage for all APIs (Python, Node.js, Rust)
+- ✅ Cross-language API parity validated
+- ✅ Documentation complete for all APIs
+- ✅ 100% SymPy correctness validation for Plan 7 features
+
+### Gate 3: Phase 3 → Launch
+- ✅ Automated content pipeline operational (CI/CD working)
+- ✅ 6+ Jupyter notebooks generated and deployed
+- ✅ Documentation site live and tested
+- ✅ Website + interactive demo functional
+- ✅ Announcement posts drafted for all platforms
+- ✅ All content technically validated (code examples compile, math correct)
+
+### Post-Launch Success Criteria (Month 1)
+- ✅ 1000+ GitHub stars
+- ✅ 5000+ PyPI downloads
+- ✅ 1000+ npm downloads
+- ✅ Top 3 on HackerNews (if posted)
+- ✅ Positive community feedback
+- ✅ No critical bugs reported
 
 ---
 
@@ -163,14 +223,18 @@ All plans are now available in `.mathhook_sessions/`:
 | Phase | Plans | Timeline | Dependencies |
 |-------|-------|----------|--------------|
 | **Phase 1** | Plan 1 | 2-3 weeks | None (START HERE) |
-| **Phase 2** | Plans 2, 3, 4, 7 | 12-16 weeks | Requires Phase 1 |
-| **Phase 3** | Plan 5 | 6-8 weeks | Requires Phase 2 |
-| **Phase 4** | Plan 6 | 3-4 weeks | Independent OR parallel with Phase 3 |
+| **Phase 2** | Plans 2, 3, 4, 6, 7 | 24-36 weeks | Requires Phase 1 |
+| **Phase 3** | Plan 5 | 11-13 weeks | Requires Phase 2 |
 
-**Sequential Timeline**: 2-3 + 12-16 + 6-8 + 3-4 = **23-31 weeks** (~6-8 months)
+**Total Timeline to Complete Product**: 2-3 + 24-36 + 11-13 = **37-52 weeks** (~9-12 months)
 
-**Optimized Timeline** (Plan 6 parallel with Phase 3):
-2-3 + 12-16 + max(6-8, 3-4) = **20-27 weeks** (~5-7 months)
+**⚠️ Critical Path**: Plan 7 (Core Math Features) determines Phase 2 duration (24-36 weeks)
+
+**Resource Requirements**:
+- Minimum: 1 rust-engineer (sequential execution, slower)
+- Recommended: 2-3 rust-engineers (parallel execution, faster)
+
+**Market Adoption Reality**: Complete product in 9-12 months → Significant adoption in 2-4 YEARS (based on JAX, Rust precedents)
 
 ---
 

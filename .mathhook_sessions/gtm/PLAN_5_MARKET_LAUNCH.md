@@ -1,7 +1,7 @@
 # Plan 5: Market Positioning & Launch
 
 **Priority**: 🚀 MED-HIGH
-**Timeline**: 6-8 weeks
+**Timeline**: 11-13 weeks (updated from original 6-8 weeks)
 **Waves**: 6 (added Wave 0 for automation infrastructure)
 **Orchestrator**: `/sc:spawn technical-writer`
 
@@ -91,9 +91,19 @@ Rust Codebase (Single Source)
 
 ## Wave Breakdown
 
-### Wave 0: Documentation Automation Infrastructure (6-8 hours)
+### Wave 0: Documentation Automation Infrastructure (3-4 weeks)
 
 **Goal**: Establish CI/CD automation infrastructure for continuous content generation
+
+**⚠️ Timeline Update**: Original estimate of 6-8 hours was unrealistic. Proper CI/CD pipeline setup with extractors, generators, validators, GitHub Actions workflows, and testing requires 3-4 weeks of focused development.
+
+**Infrastructure Budget** (ongoing monthly costs):
+- **GitHub Actions**: Free tier likely sufficient for MVP (2000 minutes/month)
+- **Vercel Hosting**: Free tier for docs + website (hobby plan)
+- **Domain + DNS**: $12-20/year ($1-2/month)
+- **Binder/Colab**: Free (cloud notebook hosting)
+- **Estimated Monthly Cost**: $1-5/month (free tier usage) → $50-100/month (if scaling beyond free tiers)
+- **Total Infrastructure Budget**: $150-500/month at scale (includes CI, hosting, CDN, monitoring)
 
 **Architecture**:
 ```
@@ -990,7 +1000,15 @@ Source: Rust Doctests + Examples
 - Community forming (contributors, users, advocates)
 - **Content pipeline requires zero maintenance** (fully automated)
 
-**Timeline**: 6-8 weeks from kickoff to launch
+**Timeline**: 11-13 weeks from kickoff to launch (updated from original 6-8 weeks estimate)
+
+**Timeline Breakdown**:
+- Wave 0 (Automation Infrastructure): 3-4 weeks
+- Wave 1 (Content Generation): 2 weeks
+- Wave 2 (Neuro-Symbolic Positioning): 2 weeks
+- Wave 3 (Educational Enhancement): 1.5 weeks
+- Wave 4 (Technical Validation & Marketing): 1.5 weeks
+- Wave 5 (Coordinated Launch): 1 week
 
 **Dependencies**: Plans 1-4 MUST be complete before Wave 5 launch
 
