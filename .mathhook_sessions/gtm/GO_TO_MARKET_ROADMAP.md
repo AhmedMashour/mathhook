@@ -15,11 +15,11 @@
 - ❌ **MCP Integration**: Not started (new opportunity)
 - ❌ **Core Math Features**: Missing ODEs, PDEs, advanced linear algebra, special functions
 
-**Total Timeline to MVP**: 20-27 weeks (~5-7 months) for minimum viable product
+**Total Timeline to MVP**: 48-64 weeks (~12-16 months) for complete production-ready product
 **Total Timeline to Market Adoption**: 2-4 YEARS for significant market penetration
 
 **⚠️ Critical Timeline Reality Check**:
-- **MVP Timeline**: 20-27 weeks is realistic for functional product ready for first users
+- **MVP Timeline**: 48-64 weeks is realistic for complete, production-ready product with all features
 - **Market Adoption Timeline**: 2-4 years is realistic for meaningful adoption (based on JAX, Rust, new framework precedents)
 - **SymPy Network Effects**: 2.9M downloads/day, 900+ contributors, 20+ year ecosystem - switching costs are VERY high
 - **Strategy**: Lead with educational features + MCP integration (unique value), NOT just speed claims
@@ -35,13 +35,13 @@
 
 All plans are now available in `.mathhook_sessions/gtm/`:
 
-1. ✅ `PLAN_1_PERFORMANCE_RECOVERY.md` - 2-3 weeks, 4 waves
-2. ✅ `PLAN_2_EDUCATIONAL_INTEGRATION.md` - 6-8 weeks, 5 waves
-3. ✅ `PLAN_3_PYTHON_API_PRODUCTION.md` - 8-10 weeks, 5 waves
-4. ✅ `PLAN_4_NODEJS_API_PRODUCTION.md` - 7-9 weeks, 5 waves
-5. ✅ `PLAN_5_MARKET_LAUNCH.md` - 11-13 weeks, 6 waves (UPDATED: Wave 0 timeline fixed + infrastructure budget)
-6. ✅ `PLAN_6_MCP_SERVER.md` - 3-4 weeks, 4 waves (MOVED to Phase 2 from Phase 4)
-7. ✅ `PLAN_7_CORE_MATH_FEATURES.md` - 24-36 weeks, 6 waves (UPDATED timeline - ODEs, PDEs, advanced math)
+1. ✅ `PLAN_1_PERFORMANCE_RECOVERY.md` - 4-5 weeks, 5 waves (UPDATED: Added Wave 3.5, mandatory CI, baseline definition)
+2. ✅ `PLAN_2_EDUCATIONAL_INTEGRATION.md` - 7-9 weeks, 6 waves (UPDATED: Added Wave 0 pilot testing, root cause analysis)
+3. ✅ `PLAN_3_PYTHON_API_PRODUCTION.md` - 9-11 weeks, 6 waves (UPDATED: Added Wave 0 platform audit, multi-platform builds)
+4. ✅ `PLAN_4_NODEJS_API_PRODUCTION.md` - 8-10 weeks, 6 waves (UPDATED: Added Wave 0 async POC, simplified Wave 3)
+5. ✅ `PLAN_5_MARKET_LAUNCH.md` - 11-13 weeks, 6 waves (UPDATED: Wave 0 timeline fixed, analytics-first, hybrid content)
+6. ✅ `PLAN_6_MCP_SERVER.md` - 3-4 weeks, 4 waves (UPDATED: Tool namespacing, response optimization, staged deployment)
+7. ✅ `PLAN_7_CORE_MATH_FEATURES.md` - 24-36 weeks, 7 waves (UPDATED: Added Wave 0 algorithm research, realistic timeline)
 
 ---
 
@@ -222,11 +222,13 @@ All plans are now available in `.mathhook_sessions/gtm/`:
 
 | Phase | Plans | Timeline | Dependencies |
 |-------|-------|----------|--------------|
-| **Phase 1** | Plan 1 | 2-3 weeks | None (START HERE) |
+| **Phase 1** | Plan 1 | 4-5 weeks | None (START HERE) |
 | **Phase 2** | Plans 2, 3, 4, 6, 7 | 24-36 weeks | Requires Phase 1 |
 | **Phase 3** | Plan 5 | 11-13 weeks | Requires Phase 2 |
 
-**Total Timeline to Complete Product**: 2-3 + 24-36 + 11-13 = **37-52 weeks** (~9-12 months)
+**Total Timeline to Complete Product**: 4-5 + 24-36 + 11-13 = **39-54 weeks** (~10-13 months)
+
+**Realistic Timeline with Buffer**: **48-64 weeks** (~12-16 months) - includes coordination overhead, testing between phases, and iteration buffer
 
 **⚠️ Critical Path**: Plan 7 (Core Math Features) determines Phase 2 duration (24-36 weeks)
 
@@ -398,4 +400,4 @@ Requires coordination via `/sc:pm` orchestrator
 
 **The orchestrator infrastructure is ready. All plans follow the proven wave-based methodology from ORCHESTRATION_METHODOLOGY.md.**
 
-**Total Estimated Effort**: 16-25 weeks with proper orchestration and parallel execution.
+**Total Estimated Effort**: 48-64 weeks (~12-16 months) with proper orchestration and parallel execution. Optimistic timeline: 39-54 weeks if all phases complete without delays.

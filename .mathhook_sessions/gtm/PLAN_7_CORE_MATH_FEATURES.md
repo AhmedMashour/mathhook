@@ -2,7 +2,7 @@
 
 **Priority**: ⚡ CRITICAL
 **Timeline**: 24-36 weeks (updated from original 12-16 weeks estimate)
-**Waves**: 6
+**Waves**: 7 (added Wave 0 for algorithm research)
 **Orchestrator**: `/sc:spawn`
 
 ## Executive Summary
@@ -57,6 +57,225 @@ You are the Orchestrator for **MathHook Core Mathematical Features Completion**.
 ---
 
 ## Wave Breakdown
+
+### Wave 0: Algorithm Research & Architecture (2-3 weeks)
+
+**Goal**: Deep study of SymPy/Symbolica algorithms before implementation to avoid costly rewrites
+
+**Rationale**: Mathematical algorithms are complex and have many edge cases. Rushing to implementation without understanding the full problem space leads to:
+- Incorrect algorithms (mathematical bugs)
+- Incomplete implementations (missing edge cases)
+- Performance bottlenecks (wrong algorithmic approach)
+- Costly rewrites (discovered after implementation)
+
+**Research Strategy**: Study existing implementations as authoritative references
+
+**Tasks**:
+
+1. **SymPy Algorithm Study** (Primary Reference):
+   ```bash
+   # Read SymPy source code systematically
+   cd ~/Documents/work/math/sympy/
+
+   # ODE algorithms
+   rg "class ODESolver" sympy/solvers/ode/ --context 50 > .research/ode_classes.txt
+   rg "def dsolve" sympy/solvers/ode/ --context 100 > .research/ode_dsolve.txt
+
+   # Linear algebra algorithms
+   rg "def eigenvals" sympy/matrices/ --context 50 > .research/eigenvals.txt
+   rg "class QRDecomposition" sympy/matrices/ --context 100 > .research/qr_decomposition.txt
+
+   # Number theory algorithms
+   rg "def factorint" sympy/ntheory/ --context 50 > .research/factorization.txt
+   rg "class GröbnerBasis" sympy/polys/ --context 100 > .research/groebner.txt
+   ```
+
+2. **Algorithm Categorization**:
+   ```markdown
+   # .research/algorithm_matrix.md
+
+   ## ODE Solvers (7 methods identified)
+
+   | Method | SymPy Implementation | Complexity | Edge Cases |
+   |--------|---------------------|------------|-----------|
+   | Separable | `separable.py:45` | O(n) | Division by zero |
+   | Linear 1st Order | `linear.py:78` | O(n²) | Discontinuous p(x) |
+   | Exact | `exact.py:123` | O(n²) | Non-exact detection |
+   | Homogeneous | `homogeneous.py:56` | O(n²) | y/x singularities |
+   | Constant Coeff | `linear_coeff.py:234` | O(n³) | Complex roots |
+   | Cauchy-Euler | `euler.py:89` | O(n²) | x = 0 singularity |
+   | Variation of Params | `variation.py:145` | O(n³) | Difficult integrals |
+
+   **Implementation Priority**: Separable → Linear 1st → Constant Coeff (covers 80% of common cases)
+   ```
+
+3. **Mathematical Correctness Validation Strategy**:
+   ```python
+   # .research/validation_plan.py
+   """
+   For each algorithm:
+   1. Extract 50+ test cases from SymPy test suite
+   2. Categorize by: simple, medium, complex, edge cases
+   3. Document expected behavior for each case
+   4. Create correctness validation suite
+   """
+
+   validation_cases = {
+       'ode_separable': {
+           'simple': [
+               "dy/dx = x",  # SymPy result: y = x²/2 + C
+               "dy/dx = y",  # SymPy result: y = C*exp(x)
+           ],
+           'medium': [
+               "dy/dx = x*y",  # SymPy result: y = C*exp(x²/2)
+           ],
+           'edge_cases': [
+               "dy/dx = y/x",  # Homogeneous, not separable
+               "dy/dx = 0",    # Trivial: y = C
+           ]
+       }
+   }
+   ```
+
+4. **Performance Benchmark Design**:
+   ```rust
+   // .research/benchmark_plan.md
+
+   ## Performance Targets (vs SymPy)
+
+   | Operation | SymPy Time | MathHook Target | Speedup Goal |
+   |-----------|-----------|----------------|--------------|
+   | ODE solve (simple) | 50ms | <5ms | 10x |
+   | Eigenvalues 10x10 | 200ms | <20ms | 10x |
+   | Polynomial factor | 100ms | <10ms | 10x |
+   | Taylor series (order 10) | 80ms | <8ms | 10x |
+
+   **Measurement Strategy**:
+   - Run SymPy benchmarks first (establish baseline)
+   - Design Criterion benchmarks matching SymPy test cases
+   - Track performance during implementation (no regression)
+   ```
+
+5. **Architecture Design Document**:
+   ```markdown
+   # .research/architecture_design.md
+
+   ## Module Structure
+
+   ```
+   crates/mathhook-core/src/
+   ├── ode/
+   │   ├── mod.rs              # Public API
+   │   ├── first_order/
+   │   │   ├── separable.rs
+   │   │   ├── linear.rs
+   │   │   ├── exact.rs
+   │   │   └── homogeneous.rs
+   │   ├── second_order/
+   │   │   ├── linear_const_coeff.rs
+   │   │   ├── cauchy_euler.rs
+   │   │   └── variation_of_params.rs
+   │   └── classifier.rs       # Auto-detect ODE type
+   ├── linalg_advanced/
+   │   ├── decompositions/
+   │   │   ├── qr.rs
+   │   │   ├── svd.rs
+   │   │   ├── lu.rs
+   │   │   └── cholesky.rs
+   │   └── eigenvalues/
+   │       ├── symbolic.rs     # Characteristic polynomial method
+   │       └── numerical.rs    # QR algorithm
+   └── ...
+   ```
+
+   ## Algorithm Selection Framework
+
+   ```rust
+   pub enum ODEType {
+       Separable,
+       LinearFirstOrder,
+       Exact,
+       Homogeneous,
+       ConstantCoefficients,
+       // ...
+   }
+
+   pub fn classify_ode(ode: &Expression) -> Option<ODEType> {
+       // Pattern matching to identify ODE type
+       // Priority order: fastest → slowest methods
+   }
+   ```
+   ```
+
+6. **SymPy Comparison Test Suite**:
+   ```python
+   # .research/sympy_comparison_suite.py
+   """
+   Generate comprehensive test cases by running SymPy
+   and saving expected outputs for validation.
+   """
+
+   import sympy as sp
+   import json
+
+   def generate_test_cases():
+       x, y, t = sp.symbols('x y t')
+
+       test_cases = {
+           'ode_first_order': [],
+           'eigenvalues': [],
+           'factorization': [],
+           # ... for each wave
+       }
+
+       # ODE test cases
+       odes = [
+           sp.Eq(y.diff(x), x),
+           sp.Eq(y.diff(x), y),
+           sp.Eq(y.diff(x), x*y),
+           # ... 50+ cases per category
+       ]
+
+       for ode in odes:
+           solution = sp.dsolve(ode, y)
+           test_cases['ode_first_order'].append({
+               'input': str(ode),
+               'expected_output': str(solution),
+               'sympy_version': sp.__version__
+           })
+
+       # Save test oracle
+       with open('.research/test_oracle.json', 'w') as f:
+           json.dump(test_cases, f, indent=2)
+   ```
+
+**Deliverables**:
+- [ ] Algorithm research notes for all 6 implementation waves
+- [ ] Test case extraction from SymPy (500+ cases)
+- [ ] Performance benchmarks baseline (SymPy measurements)
+- [ ] Architecture design document
+- [ ] Mathematical correctness validation strategy
+- [ ] Edge case catalog for each algorithm
+- [ ] Implementation priority ranking (high-value algorithms first)
+
+**Verification**:
+```bash
+# Verify research completeness before Wave 1 implementation
+ls .research/
+# Should contain:
+# - algorithm_matrix.md
+# - validation_plan.py
+# - benchmark_plan.md
+# - architecture_design.md
+# - sympy_comparison_suite.py
+# - test_oracle.json (500+ test cases)
+# - ode_classes.txt
+# - eigenvals.txt
+# - factorization.txt
+# - groebner.txt
+```
+
+---
 
 ### Wave 1: Ordinary Differential Equations (ODEs) (16-20 hours)
 
@@ -389,6 +608,7 @@ python3 verify_ode_against_sympy.py  # Compare 50 test cases
 ## Final Success Criteria
 
 ### Wave Completion Checklist
+- [ ] Wave 0: Algorithm research & architecture (SymPy/Symbolica study, test oracle, architecture design)
 - [ ] Wave 1: ODE solvers (first/second order)
 - [ ] Wave 2: Advanced linear algebra (decompositions, eigenvalues)
 - [ ] Wave 3: Number theory & polynomial algorithms (factorization, Gröbner bases)
@@ -444,7 +664,18 @@ python3 verify_ode_against_sympy.py  # Compare 50 test cases
 
 ## Timeline & Dependencies
 
-**Total Timeline**: 12-16 weeks
+**Total Timeline**: 24-36 weeks (includes 2-3 week Wave 0 research phase)
+
+**Wave Timeline Breakdown**:
+- Wave 0 (Algorithm Research): 2-3 weeks
+- Wave 1 (ODEs): 2.5-3 weeks
+- Wave 2 (Advanced Linear Algebra): 3-3.5 weeks
+- Wave 3 (Number Theory): 3.5-4 weeks
+- Wave 4 (Series/Special Functions): 2.5-3 weeks
+- Wave 5 (PDEs): 2-2.5 weeks
+- Wave 6 (Numerical Methods): 2.5-3 weeks
+- Integration & Testing: 4-6 weeks
+- **Total**: 24-36 weeks
 
 **Dependencies**:
 - **AFTER Plan 1** (Performance Recovery): Don't add features until performance is validated
