@@ -58,6 +58,54 @@ You are the Orchestrator for **MathHook MCP Server Implementation**.
 
 ---
 
+## Tool Namespacing Strategy
+
+**Problem**: MCP tool names are global across all servers. Multiple servers with `solve` or `simplify` tools cause collisions.
+
+**Solution**: Prefix all tools with `mathhook_` namespace
+
+**Implementation**:
+
+```python
+# server.py
+from fastmcp import FastMCP
+
+# Configure namespace prefix
+mcp = FastMCP(
+    "mathhook",
+    description="Educational CAS with symbolic mathematics",
+    tool_prefix="mathhook_"  # All tools auto-prefixed
+)
+
+# Define tool WITHOUT prefix (FastMCP adds it automatically)
+@mcp.tool()
+async def solve_equation(equation: str, variable: str) -> str:
+    """Solve algebraic equations symbolically."""
+    # Implementation
+```
+
+**Result**:
+- Tool name in code: `solve_equation`
+- Tool name in MCP: `mathhook_solve_equation`
+- AI invokes: `mathhook_solve_equation("x^2 - 4 = 0", "x")`
+
+**Namespace Design**:
+```yaml
+mathhook_solve_equation       # vs sympy_solve
+mathhook_compute_derivative   # vs sympy_diff
+mathhook_explain_steps        # Unique to MathHook (no collision)
+mathhook_simplify_expression  # vs sympy_simplify
+```
+
+**Benefits**:
+1. **No Collisions**: Works alongside SymPy MCP, Mathematica MCP, etc.
+2. **Clear Origin**: AI knows which CAS is being used
+3. **Version Coexistence**: mathhook_v1 vs mathhook_v2 if needed
+
+**Alternative Considered**: Custom namespace via `@mcp.tool(name="custom_name")` but auto-prefix is cleaner
+
+---
+
 ## Wave Breakdown
 
 ### Wave 1: Python MCP Server Foundation (6-8 hours)
@@ -373,17 +421,205 @@ async def explain_solution(
 - Infinite solutions → explain condition
 - Domain restrictions → explain limitations
 
+**Response Size Optimization**:
+
+**Problem**: Large symbolic expressions can exceed MCP message limits (typical limit: 100KB JSON)
+
+**Examples of Large Responses**:
+- Polynomial expansion: `(x + 1)^100` → 101 terms
+- Matrix operations: 100x100 determinant → massive expression
+- Infinite series: Taylor series with many terms
+
+**Solution: Adaptive Response Strategy**
+
+```python
+MAX_RESPONSE_SIZE = 50_000  # 50KB safe limit for MCP messages
+
+@mcp.tool()
+async def solve_equation(equation: str, variable: str, max_solution_length: int = 1000) -> str:
+    """Solve equation with automatic response truncation."""
+    try:
+        solutions = solve(expr, variable)
+
+        # Check total response size
+        response = format_solutions(solutions)
+        if len(json.dumps(response)) > MAX_RESPONSE_SIZE:
+            # Strategy 1: Truncate individual solutions
+            response = truncate_large_solutions(solutions, max_solution_length)
+
+        if len(json.dumps(response)) > MAX_RESPONSE_SIZE:
+            # Strategy 2: Paginate solutions
+            response = {
+                "success": True,
+                "solutions_count": len(solutions),
+                "solutions_preview": solutions[:5],  # First 5
+                "truncated": True,
+                "suggestion": "Use mathhook_get_solution(index) for specific solutions",
+                "pagination": {
+                    "total": len(solutions),
+                    "showing": 5,
+                    "fetch_command": "mathhook_get_solution_batch(start=0, count=10)"
+                }
+            }
+
+        return response
+    except Exception as e:
+        # Error responses are always small
+        return format_error(e)
+```
+
+**Response Size Strategies**:
+
+1. **Truncation with Context** (for individual expressions):
+   ```python
+   def truncate_expression(expr: Expression, max_length: int = 1000) -> dict:
+       """Truncate large expression with useful metadata."""
+       expr_str = str(expr)
+       if len(expr_str) <= max_length:
+           return {"value": expr_str, "truncated": False}
+
+       return {
+           "value": expr_str[:max_length] + "...",
+           "truncated": True,
+           "full_length": len(expr_str),
+           "term_count": count_terms(expr),
+           "suggestion": "Simplify result or use mathhook_export_to_file(result_id)"
+       }
+   ```
+
+2. **Pagination** (for multiple solutions):
+   ```python
+   # Store large result set, return paged
+   result_id = cache_result(solutions)
+   return {
+       "result_id": result_id,
+       "total_count": len(solutions),
+       "page_1": solutions[0:10],
+       "next_page": "mathhook_get_page(result_id, page=2)"
+   }
+   ```
+
+3. **Compression + Base64** (for structured data):
+   ```python
+   import gzip, base64
+
+   def compress_large_result(data: dict) -> dict:
+       """Compress large JSON responses."""
+       json_bytes = json.dumps(data).encode('utf-8')
+       if len(json_bytes) < MAX_RESPONSE_SIZE:
+           return data  # No compression needed
+
+       compressed = gzip.compress(json_bytes)
+       return {
+           "compressed": True,
+           "format": "gzip+base64",
+           "data": base64.b64encode(compressed).decode('ascii'),
+           "original_size": len(json_bytes),
+           "compressed_size": len(compressed)
+       }
+   ```
+
+4. **Lazy Evaluation** (for expensive operations):
+   ```python
+   @mcp.tool()
+   async def expand_expression_lazy(expression: str, preview_only: bool = True) -> str:
+       """Expand expression with optional full evaluation."""
+       expr = Expression.parse(expression)
+
+       if preview_only:
+           # Quick estimate without full expansion
+           return {
+               "preview": "Expansion would produce ~10000 terms",
+               "estimated_size": "2.5 MB",
+               "warning": "Large result - use preview_only=False to compute",
+               "recommendation": "Consider factoring instead"
+           }
+
+       # User explicitly requested full expansion
+       result = expand(expr)
+       return format_with_size_check(result)
+   ```
+
 **Deliverables**:
 - Helpful error messages
 - Enhanced educational tools
 - Special case handling
 - Educational context for all operations
+- **Response size optimization** (truncation, pagination, compression)
+- **Large result handling** (warnings, previews, lazy evaluation)
 
 ---
 
-### Wave 4: Deployment & Distribution (4-6 hours)
+### Wave 4: Staged Deployment & Distribution (4-6 hours)
 
-**Goal**: MathHook MCP server available to all users
+**Goal**: Gradual rollout of MathHook MCP server with beta testing before public release
+
+**Staged Rollout Strategy**:
+
+**Phase 1: Internal Beta** (Week 1):
+- Deploy to development team only
+- Test all 30-40 tools with real Claude Desktop usage
+- Fix critical bugs found during dogfooding
+- Validation: All tools working in real workflows
+
+**Phase 2: Private Beta** (Week 1):
+- Invite 5-10 trusted users from MathHook community
+- Provide beta installation instructions (pre-release PyPI)
+- Collect feedback via GitHub Discussions
+- Monitor for edge cases and unexpected usage patterns
+- Validation: ≥80% positive feedback, <5 critical bugs
+
+**Phase 3: Public Beta** (Week 2):
+- Publish to PyPI with `0.1.0b1` version tag
+- Announce in MCP community channels (beta label)
+- Limit announcement scope (no major social media)
+- Continue monitoring and rapid iteration
+- Validation: 50+ beta users, stable error rate <1%
+
+**Phase 4: General Availability** (Week 2):
+- Publish stable `0.1.0` release to PyPI
+- Submit to official MCP registry (lobehub.com/mcp)
+- Full announcement (blog post, social media)
+- Documentation complete and polished
+- Validation: Smooth rollout, positive community reception
+
+**Feature Flags for Gradual Rollout**:
+
+```python
+# server.py
+import os
+
+BETA_FEATURES = os.getenv("MATHHOOK_MCP_BETA", "false").lower() == "true"
+
+@mcp.tool()
+async def advanced_polynomial_solver(equation: str) -> str:
+    """Advanced polynomial solving (BETA)."""
+    if not BETA_FEATURES:
+        return {
+            "success": False,
+            "error": "Feature not available",
+            "message": "This is a beta feature. Set MATHHOOK_MCP_BETA=true to enable."
+        }
+
+    # Beta implementation
+    return advanced_solve(equation)
+```
+
+**Rollback Strategy**:
+
+```yaml
+rollback_triggers:
+  - Critical bug affecting >10% of users
+  - Security vulnerability discovered
+  - Data corruption or mathematical errors
+  - MCP protocol incompatibility
+
+rollback_process:
+  1. Yank PyPI version (pip won't auto-install)
+  2. Publish emergency patch as new version
+  3. Notify users via GitHub release notes
+  4. Post-mortem analysis and prevention plan
+```
 
 **Deployment Options**:
 

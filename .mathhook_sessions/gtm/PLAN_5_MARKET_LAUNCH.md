@@ -91,11 +91,13 @@ Rust Codebase (Single Source)
 
 ## Wave Breakdown
 
-### Wave 0: Documentation Automation Infrastructure (3-4 weeks)
+### Wave 0: Analytics-First Content Strategy & Automation Infrastructure (3-4 weeks)
 
-**Goal**: Establish CI/CD automation infrastructure for continuous content generation
+**Goal**: Research user needs via analytics, design hybrid content model, and establish CI/CD automation infrastructure
 
 **⚠️ Timeline Update**: Original estimate of 6-8 hours was unrealistic. Proper CI/CD pipeline setup with extractors, generators, validators, GitHub Actions workflows, and testing requires 3-4 weeks of focused development.
+
+**Analytics-First Philosophy**: Measure what users need BEFORE creating content. Use data from GitHub issues, Stack Overflow, SymPy forums, and competitor analysis to identify high-value content targets.
 
 **Infrastructure Budget** (ongoing monthly costs):
 - **GitHub Actions**: Free tier likely sufficient for MVP (2000 minutes/month)
@@ -138,7 +140,108 @@ content_pipeline/
 
 **Tasks**:
 
-1. **Content Extraction Pipeline**:
+**Phase 1: Analytics Research & Content Priority** (Week 1):
+
+1. **User Needs Analysis** (data-driven):
+   ```python
+   # content_pipeline/research/analytics_collector.py
+   def analyze_user_needs():
+       """Collect and analyze user pain points from multiple sources"""
+       sources = {
+           'github_issues': scrape_github_issues(['sympy/sympy', 'matplotlib/matplotlib']),
+           'stackoverflow': search_stackoverflow([
+               'sympy', 'symbolic math python', 'cas python', 'math library slow'
+           ]),
+           'reddit': scrape_subreddit_posts(['r/Python', 'r/MachineLearning', 'r/learnmath']),
+           'sympy_forums': scrape_sympy_mailing_list(),
+           'competitor_docs': analyze_competitor_documentation(['SymPy', 'Mathematica'])
+       }
+
+       # Extract pain points and questions
+       pain_points = extract_common_problems(sources)
+       user_questions = extract_frequent_questions(sources)
+
+       # Categorize and prioritize
+       content_priorities = prioritize_by_frequency(pain_points, user_questions)
+
+       return {
+           'top_pain_points': content_priorities[:20],  # Top 20 issues
+           'most_asked_questions': user_questions[:30],  # Top 30 questions
+           'content_gaps': identify_competitor_gaps(sources),
+           'recommended_content': generate_content_recommendations(content_priorities)
+       }
+   ```
+
+2. **Content Priority Matrix** (data-driven output):
+   ```markdown
+   # Priority 1 (High Demand, High Value):
+   - Performance comparisons (mentioned 342 times on Stack Overflow)
+   - Simplification examples (189 GitHub issues)
+   - Integration with PyTorch/TensorFlow (156 forum posts)
+
+   # Priority 2 (Medium Demand, High Value):
+   - Step-by-step explanations (78 educational requests)
+   - Matrix operations (64 linear algebra questions)
+
+   # Priority 3 (Low Demand, Nice to Have):
+   - Advanced special functions (12 mentions)
+   - Visualization integration (8 requests)
+   ```
+
+3. **Hybrid Content Model Design**:
+   ```python
+   # content_pipeline/strategy/hybrid_model.py
+   def design_hybrid_content_pipeline(analytics_results):
+       """Combine automated generation with curated selection"""
+
+       # Step 1: Automated Generation (from doctests)
+       all_candidates = generate_all_content_candidates()
+
+       # Step 2: Data-Driven Curation (based on analytics)
+       curated_content = {
+           'jupyter_notebooks': select_notebooks_by_priority(
+               all_candidates['notebooks'],
+               analytics_results['top_pain_points']
+           ),
+           'blog_posts': select_blog_topics_by_demand(
+               all_candidates['blog_ideas'],
+               analytics_results['most_asked_questions']
+           ),
+           'book_chapters': select_chapters_by_learning_path(
+               all_candidates['chapters'],
+               analytics_results['recommended_content']
+           )
+       }
+
+       return {
+           'publish_now': curated_content,  # High-priority, validated content
+           'publish_later': all_candidates - curated_content,  # Low-priority candidates
+           'rationale': explain_curation_decisions(analytics_results)
+       }
+   ```
+
+4. **Validation Criteria** (analytics-driven):
+   ```yaml
+   content_selection_rules:
+     jupyter_notebooks:
+       - Must address top 10 user pain points
+       - Performance comparison required if claimed
+       - Step-by-step explanation for educational topics
+
+     blog_posts:
+       - Must answer frequently asked questions (>50 mentions)
+       - Include real-world use case from analytics
+       - Competitor comparison if gap identified
+
+     book_chapters:
+       - Follow learning path from user progression analysis
+       - Cover fundamentals before advanced topics
+       - Include practice problems for educational content
+   ```
+
+**Phase 2: Automation Infrastructure** (Weeks 2-4):
+
+5. **Content Extraction Pipeline**:
    ```python
    # content_pipeline/sources/doctest_extractor.py
    import re
@@ -364,11 +467,17 @@ content_pipeline/
    ```
 
 **Deliverables**:
-- [ ] Content extraction pipeline implemented
-- [ ] Multi-format generators working (Jupyter, LaTeX, Markdown, HTML)
-- [ ] CI/CD workflows configured and tested
-- [ ] Template system established
-- [ ] Quality validation gates active
+- [ ] **Phase 1 (Analytics Research)**:
+  - [ ] User needs analysis report (top 20 pain points, top 30 questions)
+  - [ ] Content priority matrix (data-driven ranking)
+  - [ ] Hybrid content model design document
+  - [ ] Analytics-based content selection criteria
+- [ ] **Phase 2 (Automation Infrastructure)**:
+  - [ ] Content extraction pipeline implemented
+  - [ ] Multi-format generators working (Jupyter, LaTeX, Markdown, HTML)
+  - [ ] CI/CD workflows configured and tested
+  - [ ] Template system established
+  - [ ] Quality validation gates active
 - [ ] Automated workflows running on schedule
 
 **Verification**:
@@ -397,11 +506,16 @@ echo "✅ Wave 0: Automation infrastructure verified"
 
 ---
 
-### Wave 1: Multi-Format Content Generation (10-14 hours)
+### Wave 1: Hybrid Content Generation (10-14 hours)
 
-**Goal**: Generate comprehensive content library across ALL formats from single source (doctests + examples)
+**Goal**: Generate content candidates from single source, then curate based on Wave 0 analytics
 
-**Innovation**: Single source → multiple outputs (DRY principle at content level)
+**Innovation**: Hybrid model combining automated generation with data-driven curation
+- **Step 1**: Auto-generate ALL possible content from doctests + examples
+- **Step 2**: Curate and prioritize based on user needs analysis from Wave 0
+- **Step 3**: Publish high-priority content, defer low-priority candidates
+
+**Analytics Integration**: Use Wave 0 content priority matrix to select which notebooks, blog posts, and chapters to publish first
 
 **Content Matrix** (all auto-generated):
 ```

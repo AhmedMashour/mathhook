@@ -1,9 +1,10 @@
 # Plan 2: Educational System Integration
 
 **Priority**: 📚 HIGH
-**Timeline**: 6-8 weeks
-**Waves**: 5
+**Timeline**: 7-9 weeks
+**Waves**: 6
 **Orchestrator**: `/sc:spawn`
+**Version**: V3 (Added Wave 0: Pilot Testing & API Prototype)
 
 ## Executive Summary
 
@@ -16,6 +17,44 @@
 **Goal**: Complete educational system integration so all mathematical operations provide step-by-step explanations automatically.
 
 **Unique Value Proposition**: This is MathHook's differentiator - **explainable symbolic mathematics** for education and neuro-symbolic AI (regulatory compliance).
+
+---
+
+## Root Cause Analysis: Code Duplication
+
+**Problem**: 780 lines of duplicated code in `step_by_step.rs` (lines 322-427 duplicate 1336-1443)
+
+**Root Causes Identified**:
+
+1. **Rapid Prototyping Without Refactoring**:
+   - Initial implementation focused on "making it work" for different mathematical operations
+   - Each operation type (solve, simplify, expand, etc.) got its own implementation
+   - Refactoring was deferred and never completed
+
+2. **Lack of Clear Abstraction Pattern**:
+   - `EducationalOperation` trait was designed but never enforced
+   - No clear template for how to integrate educational features into new operations
+   - Each developer created their own pattern, leading to duplication
+
+3. **Integration Gaps**:
+   - Educational system built in isolation from core operations
+   - Core operations (solvers, simplification, calculus) didn't use `EducationalOperation` trait
+   - Result: Educational code duplicated for each integration attempt
+
+4. **Missing Validation Gates**:
+   - No code review specifically checking for duplication
+   - No automated detection of code similarity
+   - No architectural enforcement of the trait-based pattern
+
+**Prevention Strategy** (for this plan and future development):
+
+1. **Mandatory Wave 0**: Prototype API and validate with users BEFORE full integration
+2. **Trait Enforcement**: All new operations MUST implement `EducationalOperation` trait
+3. **Code Review Gates**: Check for duplication before merging
+4. **Integration Template**: Document standard pattern in CLAUDE.md for future reference
+5. **User Validation**: Test with real users early to avoid building wrong abstractions
+
+**Key Insight**: The duplication exists because we built the solution before fully understanding the problem. Wave 0 pilot testing will prevent this pattern from recurring.
 
 ---
 
@@ -36,7 +75,7 @@ You are the Orchestrator for **MathHook Educational System Integration**.
 
 MathHook has a well-designed educational architecture (MessageRegistry, EducationalOperation trait, 65+ messages) but it's NOT integrated into actual solvers and operations. Current assessment: 30% complete.
 
-**Your Mission**: Execute a 5-wave plan to integrate step-by-step explanations into all core mathematical operations.
+**Your Mission**: Execute a 6-wave plan to integrate step-by-step explanations into all core mathematical operations (Wave 0 focuses on user validation).
 
 **Mandatory Reading** (in this order):
 1. `/Users/ahmedmashhour/.claude/agents/rust-engineer.md` - Your agent specification
@@ -51,7 +90,7 @@ MathHook has a well-designed educational architecture (MessageRegistry, Educatio
 4. **Strict CLAUDE.md Enforcement** - Follow documentation standards
 5. **Maintain Momentum** - Report after each wave
 
-**Wave Structure**: 5 waves targeting different integration points
+**Wave Structure**: 6 waves starting with user validation (Wave 0), then targeting different integration points
 
 **Success Criteria**:
 - EducationalOperation trait implemented for all core operations
@@ -65,6 +104,197 @@ Begin by confirming understanding and reading mandatory files.
 ---
 
 ## Wave Breakdown
+
+### Wave 0: Pilot Testing & API Prototype (1 week)
+
+**Objective**: Validate educational approach with real users BEFORE full integration to prevent building wrong abstractions.
+
+**Critical Success Criteria**:
+- ✅ 3-5 pilot users recruited (mix of students and teachers)
+- ✅ Prototype `Expression.explain()` API implemented (basic version)
+- ✅ User feedback clarity score ≥7/10 average
+- ✅ API design validated and frozen before Wave 1
+
+**Tasks**:
+
+1. **Recruit Pilot Users** (1 day):
+   - Target: 3-5 users (mix of high school students, undergrad math students, teachers)
+   - Channels: r/learnmath, math.stackexchange.com, local tutoring centers
+   - Incentive: Free early access, acknowledgment in docs
+   - Screening: Users comfortable with basic algebra and willing to provide detailed feedback
+
+2. **Implement Prototype API** (2 days):
+   - Create minimal `Expression.explain()` implementation
+   - Support 3-4 operation types as proof-of-concept:
+     - Linear equation solving: `2x + 3 = 7`
+     - Quadratic solving: `x^2 - 5x + 6 = 0`
+     - Polynomial expansion: `(x + 2)(x - 3)`
+     - Basic simplification: `2x + 3x`
+   - Output format: Step-by-step explanation with LaTeX
+   - Example:
+     ```rust
+     let expr = parse("2x + 3 = 7");
+     let explanation = expr.explain();
+     // Returns: [
+     //   "Step 1: Subtract 3 from both sides: 2x = 4",
+     //   "Step 2: Divide both sides by 2: x = 2",
+     //   "Solution: x = 2"
+     // ]
+     ```
+
+3. **User Testing Protocol** (2 days):
+   - Create standardized test cases (10 problems across 4 operation types)
+   - Ask users to:
+     a. Solve problems manually (without MathHook)
+     b. Compare their steps to MathHook explanations
+     c. Rate clarity (1-10 scale) for each explanation
+     d. Provide specific feedback on confusing steps
+   - Collect feedback via Google Forms + 15-min follow-up interviews
+   - Document common confusion patterns and clarity scores
+
+4. **API Design Freeze** (1 day):
+   - Analyze user feedback and identify critical issues
+   - Decision gate: **Only proceed to Wave 1 if average clarity score ≥7/10**
+   - If score <7/10: Iterate on API design and re-test with 2-3 users
+   - Once validated: **Freeze API signature** (critical for Plans 3 & 4 dependencies)
+   - Document final API contract in `EDUCATIONAL_API.md`
+
+**Agent Delegation**:
+```bash
+/sc:spawn rust-engineer "Implement Wave 0: Pilot Testing & API Prototype"
+```
+
+**Agent Prompt**:
+```markdown
+**Context**: You are the `rust-engineer` agent for MathHook CAS project.
+
+Implement pilot testing and API prototype for educational features.
+
+**Goal**: Validate educational approach with 3-5 real users before full integration.
+
+**Tasks**:
+
+1. **Recruit 3-5 pilot users**:
+   - Post on r/learnmath, math.stackexchange.com
+   - Target: Mix of students (high school/college) and teachers
+   - Screening criteria: Comfortable with algebra, willing to give detailed feedback
+   - Timeline: 1 day
+
+2. **Implement prototype Expression.explain()**:
+   - Create minimal implementation in `crates/mathhook-core/src/educational/prototype.rs`
+   - Support 4 operation types: linear solving, quadratic solving, expansion, simplification
+   - Use existing MessageRegistry where possible
+   - Output: Step-by-step explanations as Vec<String>
+   - Timeline: 2 days
+
+3. **User testing protocol**:
+   - Create 10 test problems (standardized across all users)
+   - User workflow: Solve manually → Compare to MathHook → Rate clarity (1-10)
+   - Collect feedback via Google Forms + 15-min interview
+   - Document results in `.mathhook_sessions/pilot_testing_results.md`
+   - Timeline: 2 days
+
+4. **API design freeze**:
+   - Analyze feedback, calculate average clarity score
+   - Decision gate: ≥7/10 average → proceed to Wave 1
+   - If <7/10 → iterate and re-test
+   - Document final API in `EDUCATIONAL_API.md`
+   - Timeline: 1 day
+
+**Deliverables**:
+- Prototype implementation (prototype.rs)
+- Pilot testing results (.mathhook_sessions/pilot_testing_results.md)
+- Frozen API specification (EDUCATIONAL_API.md)
+- Go/No-Go decision for Wave 1
+
+**Quality Target**: 9+/10 - Thorough user validation, clear API design
+```
+
+**Verification Script** (`verify_wave_0_pilot_testing.sh`):
+```bash
+#!/bin/bash
+set -e
+
+echo "=== Wave 0 Verification: Pilot Testing ==="
+
+# 1. Check prototype implementation
+if [ ! -f "crates/mathhook-core/src/educational/prototype.rs" ]; then
+    echo "❌ FAIL: Prototype implementation not found"
+    exit 1
+fi
+echo "✅ Prototype implemented"
+
+# 2. Run prototype tests
+cargo test -p mathhook-core prototype --quiet
+if [ $? -ne 0 ]; then
+    echo "❌ FAIL: Prototype tests failing"
+    exit 1
+fi
+echo "✅ Prototype tests passing"
+
+# 3. Check pilot results
+if [ ! -f ".mathhook_sessions/pilot_testing_results.md" ]; then
+    echo "❌ FAIL: Pilot testing results not found"
+    exit 1
+fi
+
+# Verify results have user ratings
+if ! grep -q "Clarity Score:" .mathhook_sessions/pilot_testing_results.md; then
+    echo "❌ FAIL: No clarity scores in results"
+    exit 1
+fi
+echo "✅ Pilot testing results documented"
+
+# 4. Check API specification
+if [ ! -f "EDUCATIONAL_API.md" ]; then
+    echo "❌ FAIL: API specification not found"
+    exit 1
+fi
+
+if ! grep -q "Expression.explain()" EDUCATIONAL_API.md; then
+    echo "❌ FAIL: API not documented"
+    exit 1
+fi
+echo "✅ API specification frozen"
+
+# 5. Validate average clarity score ≥7/10
+avg_score=$(grep "Average Clarity Score:" .mathhook_sessions/pilot_testing_results.md | awk '{print $4}')
+if (( $(echo "$avg_score < 7.0" | bc -l) )); then
+    echo "❌ FAIL: Average clarity score $avg_score < 7.0"
+    echo "⚠️  Cannot proceed to Wave 1 without user validation"
+    exit 1
+fi
+echo "✅ Average clarity score: $avg_score/10 (≥7.0 required)"
+
+echo ""
+echo "=== Wave 0 Verification: PASSED ==="
+echo "✅ Proceed to Wave 1: Integration Analysis & Cleanup"
+```
+
+**Deliverables**:
+- `crates/mathhook-core/src/educational/prototype.rs`: Basic `Expression.explain()` implementation
+- `.mathhook_sessions/pilot_testing_results.md`: User feedback summary with clarity scores
+- `EDUCATIONAL_API.md`: Frozen API contract for `Expression.explain()`
+- Decision: Go/No-Go for Wave 1 based on user validation
+
+**Exit Criteria**:
+- [ ] ≥3 pilot users tested prototype
+- [ ] Average clarity score ≥7/10
+- [ ] API design frozen and documented
+- [ ] Common confusion patterns identified and documented
+
+**Risks**:
+- Low clarity scores may require API redesign (add 3-5 days if needed)
+- Hard to recruit pilot users (mitigation: offer incentives, use existing contacts)
+- User feedback may be too vague (mitigation: structured questionnaire + interviews)
+
+**Dependencies**: None (Wave 0 is foundation for all subsequent waves)
+
+**Unblocks**: Wave 1 (only proceed if pilot validates approach)
+
+**Critical Insight**: This wave prevents the pattern that caused 780 lines of duplication - building the solution before understanding the problem. User validation FIRST, then full integration.
+
+---
 
 ### Wave 1: Integration Analysis & Cleanup (4-6 hours)
 
@@ -740,6 +970,7 @@ echo "=== Wave 5 Verification: PASSED ==="
 ## Final Success Criteria
 
 ### Wave Completion Checklist
+- [ ] Wave 0: Pilot testing complete, API design frozen (≥7/10 clarity score)
 - [ ] Wave 1: Duplication removed, integration roadmap created
 - [ ] Wave 2: Solver integration complete, EducationalOperation implemented
 - [ ] Wave 3: Expression.explain() API working end-to-end
@@ -753,6 +984,7 @@ echo "=== Wave 5 Verification: PASSED ==="
 - 100% EducationalOperation coverage for core operations
 
 ### Deliverables Checklist
+- [ ] Wave 0: Prototype implementation, pilot testing results, frozen API specification
 - [ ] Cleaned step_by_step.rs (no duplication)
 - [ ] EducationalOperation impls for all solver types
 - [ ] Expression.explain() API with all contexts
