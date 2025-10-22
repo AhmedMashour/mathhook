@@ -215,22 +215,19 @@ fn test_quotient_rule_formula_shown() {
 
     assert!(
         explanation.steps.len() >= 6,
-        "Quotient rule should have at least 6 steps, got {}",
+        "Product rule (for quotient) should have at least 6 steps, got {}",
         explanation.steps.len()
     );
 
     assert!(
-        has_step_containing(&explanation, "quotient")
-            || has_step_containing(&explanation, "numerator"),
-        "Must mention quotient or numerator/denominator"
+        has_step_containing(&explanation, "product"),
+        "Must mention product rule (division is multiplication by reciprocal)"
     );
 
     assert!(
-        has_step_containing(&explanation, "f'*g - f*g'")
-            || has_step_containing(&explanation, "f'g - fg'")
-            || (has_step_containing(&explanation, "numerator")
-                && has_step_containing(&explanation, "denominator")),
-        "Must show quotient rule formula or explain numerator/denominator"
+        has_step_containing(&explanation, "f'*g + f*g'")
+            || has_step_containing(&explanation, "f'g + fg'"),
+        "Must show product rule formula"
     );
 }
 

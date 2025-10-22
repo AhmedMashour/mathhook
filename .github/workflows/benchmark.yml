@@ -1,0 +1,140 @@
+name: Performance Benchmarks
+
+on:
+  pull_request:
+    paths:
+      - 'crates/**/*.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run benchmarks
+        run: |
+          cargo bench -p mathhook-benchmarks --no-fail-fast -- --save-baseline current
+
+      - name: Download baseline
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin main 2>/dev/null || git fetch origin master 2>/dev/null || true
+          git checkout origin/main -- benchmarks/baseline.json 2>/dev/null || \
+            git checkout origin/master -- benchmarks/baseline.json 2>/dev/null || \
+            echo "No baseline found, creating empty baseline"
+          if [ ! -f benchmarks/baseline.json ]; then
+            mkdir -p benchmarks
+            echo '{}' > benchmarks/baseline.json
+          fi
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+
+      - name: Compare with baseline
+        if: github.event_name == 'pull_request'
+        id: compare
+        run: |
+          python3 scripts/compare_benchmarks.py \
+            --baseline benchmarks/baseline.json \
+            --current target/criterion \
+            --threshold 20 \
+            --output benchmarks/comparison.md
+        continue-on-error: true
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comparison = 'Benchmark comparison report not available.';
+            try {
+              comparison = fs.readFileSync('benchmarks/comparison.md', 'utf8');
+            } catch (error) {
+              console.log('Could not read comparison.md:', error.message);
+            }
+
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Benchmark Results')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comparison
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comparison
+              });
+            }
+
+      - name: Fail on regression
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f benchmarks/regression_detected ]; then
+            echo "Performance regression detected!"
+            exit 1
+          fi
+
+      - name: Update baseline
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          python3 scripts/export_baseline.py \
+            --input target/criterion \
+            --output benchmarks/baseline.json
+
+          git config user.name "Benchmark Bot"
+          git config user.email "bot@mathhook.dev"
+          git add benchmarks/baseline.json
+          git commit -m "Update benchmark baseline [skip ci]" || echo "No changes to baseline"
+
+      - name: Push baseline update
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          git push || echo "Failed to push baseline update (this is non-critical)"
+        continue-on-error: true
+
+      - name: Upload benchmark artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            target/criterion/
+            benchmarks/
+          retention-days: 30

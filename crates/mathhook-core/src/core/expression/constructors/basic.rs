@@ -17,6 +17,7 @@ impl Expression {
     /// let expr = Expression::number(42);
     /// let expr = Expression::number(3.14);
     /// ```
+    #[inline]
     pub fn number<T: Into<Number>>(value: T) -> Self {
         Self::Number(value.into())
     }
@@ -30,6 +31,7 @@ impl Expression {
     ///
     /// let expr = Expression::integer(42);
     /// ```
+    #[inline]
     pub fn integer(value: i64) -> Self {
         Self::Number(Number::integer(value))
     }
@@ -45,6 +47,7 @@ impl Expression {
     /// let big_val = BigInt::from(42);
     /// let expr = Expression::big_integer(big_val);
     /// ```
+    #[inline]
     pub fn big_integer(value: BigInt) -> Self {
         if let Some(small_val) = value.to_i64() {
             Self::Number(Number::integer(small_val))
@@ -63,6 +66,7 @@ impl Expression {
     /// let expr = Expression::rational(3, 4); // 3/4
     /// let expr = Expression::rational(-1, 2); // -1/2
     /// ```
+    #[inline]
     pub fn rational(numerator: i64, denominator: i64) -> Self {
         let rational = BigRational::new(BigInt::from(numerator), BigInt::from(denominator));
         Self::Number(Number::rational(rational))
@@ -77,6 +81,7 @@ impl Expression {
     ///
     /// let expr = Expression::float(3.14159);
     /// ```
+    #[inline]
     pub fn float(value: f64) -> Self {
         Self::Number(Number::float(value))
     }
@@ -90,6 +95,7 @@ impl Expression {
     ///
     /// let expr = Expression::symbol(symbol!(x));
     /// ```
+    #[inline]
     pub fn symbol<T: Into<Symbol>>(symbol: T) -> Self {
         Self::Symbol(symbol.into())
     }
@@ -217,6 +223,7 @@ impl Expression {
     ///
     /// let expr = Expression::constant(MathConstant::Pi);
     /// ```
+    #[inline]
     pub fn constant(constant: MathConstant) -> Self {
         Self::Constant(constant)
     }
@@ -230,6 +237,7 @@ impl Expression {
     ///
     /// let pi = Expression::pi();
     /// ```
+    #[inline]
     pub fn pi() -> Self {
         Self::Constant(MathConstant::Pi)
     }
@@ -243,6 +251,7 @@ impl Expression {
     ///
     /// let e = Expression::e();
     /// ```
+    #[inline]
     pub fn e() -> Self {
         Self::Constant(MathConstant::E)
     }
@@ -256,6 +265,7 @@ impl Expression {
     ///
     /// let i = Expression::i();
     /// ```
+    #[inline]
     pub fn i() -> Self {
         Self::Constant(MathConstant::I)
     }
@@ -269,6 +279,7 @@ impl Expression {
     ///
     /// let inf = Expression::infinity();
     /// ```
+    #[inline]
     pub fn infinity() -> Self {
         Self::Constant(MathConstant::Infinity)
     }
@@ -282,6 +293,7 @@ impl Expression {
     ///
     /// let neg_inf = Expression::negative_infinity();
     /// ```
+    #[inline]
     pub fn negative_infinity() -> Self {
         Self::Constant(MathConstant::NegativeInfinity)
     }
@@ -295,6 +307,7 @@ impl Expression {
     ///
     /// let undef = Expression::undefined();
     /// ```
+    #[inline]
     pub fn undefined() -> Self {
         Self::Constant(MathConstant::Undefined)
     }
@@ -308,6 +321,7 @@ impl Expression {
     ///
     /// let phi = Expression::golden_ratio();
     /// ```
+    #[inline]
     pub fn golden_ratio() -> Self {
         Self::Constant(MathConstant::GoldenRatio)
     }
@@ -321,6 +335,7 @@ impl Expression {
     ///
     /// let gamma = Expression::euler_gamma();
     /// ```
+    #[inline]
     pub fn euler_gamma() -> Self {
         Self::Constant(MathConstant::EulerGamma)
     }
@@ -337,6 +352,7 @@ impl Expression {
     ///     expr!(5),
     /// );
     /// ```
+    #[inline]
     pub fn equation(left: Expression, right: Expression) -> Self {
         use crate::core::expression::{RelationData, RelationType};
         Self::Relation(Box::new(RelationData {
@@ -360,6 +376,7 @@ impl Expression {
     ///     RelationType::Greater,
     /// );
     /// ```
+    #[inline]
     pub fn relation(
         left: Expression,
         right: Expression,
@@ -395,6 +412,7 @@ impl Expression {
     /// let expr = Expression::div(Expression::integer(3), Expression::integer(4));
     /// // Produces: 3 * 4^(-1), which simplifies to 3/4
     /// ```
+    #[inline]
     pub fn div(numerator: Expression, denominator: Expression) -> Self {
         Expression::mul(vec![
             numerator,
@@ -432,6 +450,7 @@ impl Expression {
     /// );
     /// assert!(matches!(result, Err(MathError::DivisionByZero)));
     /// ```
+    #[inline]
     pub fn div_checked(
         numerator: Expression,
         denominator: Expression,

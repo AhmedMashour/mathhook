@@ -63,6 +63,7 @@ impl Symbol {
     /// let x = Symbol::new("x");
     /// let alpha = Symbol::new("α");
     /// ```
+    #[inline]
     pub fn new<S: AsRef<str>>(name: S) -> Self {
         Self::scalar(name)
     }
@@ -194,6 +195,7 @@ impl Symbol {
     /// let x = Symbol::new("x");
     /// assert_eq!(x.name(), "x");
     /// ```
+    #[inline]
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -211,6 +213,7 @@ impl Symbol {
     /// let A = Symbol::matrix("A");
     /// assert_eq!(A.symbol_type(), SymbolType::Matrix);
     /// ```
+    #[inline]
     pub fn symbol_type(&self) -> SymbolType {
         self.symbol_type
     }
@@ -229,6 +232,7 @@ impl Symbol {
     /// let A = Symbol::matrix("A");
     /// assert_eq!(A.commutativity(), Commutativity::Noncommutative);
     /// ```
+    #[inline]
     pub fn commutativity(&self) -> Commutativity {
         match self.symbol_type {
             SymbolType::Scalar => Commutativity::Commutative,

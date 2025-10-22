@@ -1,0 +1,260 @@
+simd_operations/simd_bulk_addition/10
+                        time:   [471.84 ns 481.19 ns 490.49 ns]
+                        thrpt:  [20.388 Melem/s 20.782 Melem/s 21.193 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_bulk_multiplication/10
+                        time:   [552.43 ns 606.48 ns 673.31 ns]
+                        thrpt:  [14.852 Melem/s 16.489 Melem/s 18.102 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
+simd_operations/simd_mixed_numeric/10
+                        time:   [5.9746 µs 6.0600 µs 6.1510 µs]
+                        thrpt:  [1.6257 Melem/s 1.6502 Melem/s 1.6738 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_bulk_addition/50
+                        time:   [1.4014 µs 1.4247 µs 1.4491 µs]
+                        thrpt:  [34.505 Melem/s 35.095 Melem/s 35.680 Melem/s]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+simd_operations/simd_bulk_multiplication/50
+                        time:   [1.6556 µs 1.7268 µs 1.8223 µs]
+                        thrpt:  [27.437 Melem/s 28.955 Melem/s 30.200 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+simd_operations/simd_mixed_numeric/50
+                        time:   [37.679 µs 39.083 µs 41.023 µs]
+                        thrpt:  [1.2188 Melem/s 1.2793 Melem/s 1.3270 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_bulk_addition/100
+                        time:   [2.6658 µs 2.8887 µs 3.1786 µs]
+                        thrpt:  [31.461 Melem/s 34.617 Melem/s 37.512 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) high mild
+  5 (5.00%) high severe
+simd_operations/simd_bulk_multiplication/100
+                        time:   [3.1607 µs 3.2189 µs 3.2895 µs]
+                        thrpt:  [30.400 Melem/s 31.066 Melem/s 31.638 Melem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+simd_operations/simd_mixed_numeric/100
+                        time:   [93.331 µs 94.924 µs 96.795 µs]
+                        thrpt:  [1.0331 Melem/s 1.0535 Melem/s 1.0715 Melem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+simd_operations/simd_bulk_addition/500
+                        time:   [10.362 µs 10.940 µs 11.671 µs]
+                        thrpt:  [42.843 Melem/s 45.706 Melem/s 48.255 Melem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+simd_operations/simd_bulk_multiplication/500
+                        time:   [30.066 µs 30.576 µs 31.142 µs]
+                        thrpt:  [16.056 Melem/s 16.352 Melem/s 16.630 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_mixed_numeric/500
+                        time:   [1.4798 ms 1.5073 ms 1.5423 ms]
+                        thrpt:  [324.18 Kelem/s 331.73 Kelem/s 337.89 Kelem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  6 (6.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_bulk_addition/1000
+                        time:   [19.433 µs 19.864 µs 20.356 µs]
+                        thrpt:  [49.125 Melem/s 50.342 Melem/s 51.459 Melem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+simd_operations/simd_bulk_multiplication/1000
+                        time:   [109.24 µs 112.69 µs 116.41 µs]
+                        thrpt:  [8.5902 Melem/s 8.8741 Melem/s 9.1538 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+simd_operations/simd_mixed_numeric/1000
+                        time:   [6.1559 ms 6.2965 ms 6.4473 ms]
+                        thrpt:  [155.10 Kelem/s 158.82 Kelem/s 162.44 Kelem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_bulk_addition/5000
+                        time:   [145.84 µs 153.68 µs 163.71 µs]
+                        thrpt:  [30.542 Melem/s 32.536 Melem/s 34.284 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+simd_operations/simd_bulk_multiplication/5000
+                        time:   [2.5199 ms 2.6056 ms 2.7061 ms]
+                        thrpt:  [1.8477 Melem/s 1.9189 Melem/s 1.9842 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+simd_operations/simd_mixed_numeric/5000
+                        time:   [229.58 ms 235.89 ms 244.26 ms]
+                        thrpt:  [20.470 Kelem/s 21.197 Kelem/s 21.779 Kelem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+simd_operations/simd_bulk_addition/10000
+                        time:   [216.07 µs 219.84 µs 223.74 µs]
+                        thrpt:  [44.695 Melem/s 45.488 Melem/s 46.281 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+simd_operations/simd_bulk_multiplication/10000
+                        time:   [8.1420 ms 8.3942 ms 8.6896 ms]
+                        thrpt:  [1.1508 Melem/s 1.1913 Melem/s 1.2282 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+simd_operations/simd_mixed_numeric/10000
+                        time:   [1.4187 s 1.4397 s 1.4633 s]
+                        thrpt:  [6.8339 Kelem/s 6.9460 Kelem/s 7.0488 Kelem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) high mild
+  8 (8.00%) high severe
+
+⚠️ GPU not available, skipping GPU benchmarks
+memoization/memoization_cold_cache
+                        time:   [6.9739 µs 7.6231 µs 8.4456 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  1 (1.00%) high mild
+  8 (8.00%) high severe
+memoization/memoization_warm_cache
+                        time:   [7.1420 µs 7.9086 µs 8.8466 µs]
+Found 7 outliers among 100 measurements (7.00%)
+  1 (1.00%) high mild
+  6 (6.00%) high severe
+memoization/memoization_cache_hit_rate
+                        time:   [656.42 µs 733.45 µs 838.75 µs]
+Found 4 outliers among 100 measurements (4.00%)
+  1 (1.00%) high mild
+  3 (3.00%) high severe
+
+📊 Adaptive Thresholds: SIMD=50, Parallel=1000, Confidence=0.00
+adaptive_thresholds/adaptive_threshold_test/25
+                        time:   [948.24 ns 979.10 ns 1.0182 µs]
+                        thrpt:  [24.553 Melem/s 25.534 Melem/s 26.365 Melem/s]
+Found 18 outliers among 100 measurements (18.00%)
+  7 (7.00%) high mild
+  11 (11.00%) high severe
+adaptive_thresholds/adaptive_threshold_test/50
+                        time:   [1.4998 µs 1.5469 µs 1.6122 µs]
+                        thrpt:  [31.013 Melem/s 32.322 Melem/s 33.338 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+adaptive_thresholds/adaptive_threshold_test/100
+                        time:   [2.5672 µs 2.6478 µs 2.7372 µs]
+                        thrpt:  [36.534 Melem/s 37.767 Melem/s 38.954 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+
+background_precomputation/background_precompute/0
+                        time:   [471.80 ns 489.88 ns 509.49 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  3 (3.00%) high mild
+background_precomputation/background_precompute/1
+                        time:   [491.12 ns 558.75 ns 638.29 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  4 (4.00%) high mild
+  4 (4.00%) high severe
+background_precomputation/background_precompute/2
+                        time:   [266.79 ns 275.21 ns 283.88 ns]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+background_precomputation/predictive_precomputation
+                        time:   [465.13 ns 484.48 ns 507.01 ns]
+Found 8 outliers among 100 measurements (8.00%)
+  7 (7.00%) high mild
+  1 (1.00%) high severe
+
+parallel_processing/parallel_bulk_addition/100
+                        time:   [2.3871 µs 2.4687 µs 2.5575 µs]
+                        thrpt:  [39.101 Melem/s 40.507 Melem/s 41.892 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  6 (6.00%) high mild
+parallel_processing/parallel_complex_operations/100
+                        time:   [686.61 µs 700.02 µs 713.52 µs]
+                        thrpt:  [140.15 Kelem/s 142.85 Kelem/s 145.64 Kelem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+parallel_processing/parallel_bulk_addition/500
+                        time:   [10.169 µs 10.708 µs 11.389 µs]
+                        thrpt:  [43.900 Melem/s 46.694 Melem/s 49.168 Melem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+parallel_processing/parallel_complex_operations/500
+                        time:   [4.3750 ms 4.7006 ms 5.0955 ms]
+                        thrpt:  [98.125 Kelem/s 106.37 Kelem/s 114.28 Kelem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+parallel_processing/parallel_bulk_addition/1000
+                        time:   [20.427 µs 21.194 µs 22.159 µs]
+                        thrpt:  [45.129 Melem/s 47.183 Melem/s 48.955 Melem/s]
+Found 12 outliers among 100 measurements (12.00%)
+  8 (8.00%) high mild
+  4 (4.00%) high severe
+parallel_processing/parallel_complex_operations/1000
+                        time:   [11.588 ms 12.512 ms 13.576 ms]
+                        thrpt:  [73.661 Kelem/s 79.922 Kelem/s 86.297 Kelem/s]
+Found 10 outliers among 100 measurements (10.00%)
+  3 (3.00%) high mild
+  7 (7.00%) high severe
+parallel_processing/parallel_bulk_addition/5000
+                        time:   [123.28 µs 126.47 µs 130.09 µs]
+                        thrpt:  [38.436 Melem/s 39.535 Melem/s 40.558 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+parallel_processing/parallel_complex_operations/5000
+                        time:   [110.71 ms 113.31 ms 116.05 ms]
+                        thrpt:  [43.085 Kelem/s 44.126 Kelem/s 45.165 Kelem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+parallel_processing/parallel_bulk_addition/10000
+                        time:   [229.86 µs 238.13 µs 247.17 µs]
+                        thrpt:  [40.458 Melem/s 41.994 Melem/s 43.505 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+parallel_processing/parallel_complex_operations/10000
+                        time:   [393.08 ms 403.05 ms 414.39 ms]
+                        thrpt:  [24.132 Kelem/s 24.811 Kelem/s 25.440 Kelem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  1 (1.00%) high mild
+  1 (1.00%) high severe
+
+performance_metrics/get_performance_metrics
+                        time:   [40.707 ns 43.826 ns 47.987 ns]
+Found 11 outliers among 100 measurements (11.00%)
+  3 (3.00%) high mild
+  8 (8.00%) high severe
+performance_metrics/operations_with_monitoring
+                        time:   [15.105 ns 15.780 ns 16.538 ns]
+Found 1 outliers among 100 measurements (1.00%)
+  1 (1.00%) high mild
+
+📊 Final Performance Metrics:
+   SIMD Enabled: true
+   Parallel Enabled: false
+   Memoization Enabled: true
+   Cache Size: 0/10000
+   Cache Utilization: 0.0%
+
+realistic_workflows/polynomial_workflow
+                        time:   [1.8486 µs 1.9312 µs 2.0248 µs]
+Found 14 outliers among 100 measurements (14.00%)
+  1 (1.00%) high mild
+  13 (13.00%) high severe

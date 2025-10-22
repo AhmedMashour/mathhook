@@ -1,0 +1,331 @@
+warning: unused import: `crate::expr`
+ --> crates/mathhook-core/src/algebra/complex/arithmetic.rs:9:5
+  |
+9 | use crate::expr;
+  |     ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Number`
+ --> crates/mathhook-core/src/algebra/factor/mod.rs:9:31
+  |
+9 | use crate::core::{Expression, Number};
+  |                               ^^^^^^
+
+warning: unused import: `Zero`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:11:23
+   |
+11 | use num_traits::{One, Zero};
+   |                       ^^^^
+
+warning: unused import: `crate::core::commutativity::Commutativity`
+  --> crates/mathhook-core/src/algebra/rational.rs:12:5
+   |
+12 | use crate::core::commutativity::Commutativity;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `EducationalOperation` and `OperationContext`
+ --> crates/mathhook-core/src/algebra/solvers/quadratic.rs:7:34
+  |
+7 | use crate::educational::traits::{EducationalOperation, OperationContext};
+  |                                  ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::super::utils::PartialUtils`
+ --> crates/mathhook-core/src/calculus/derivatives/partial/vector_fields/operations.rs:3:5
+  |
+3 | use super::super::utils::PartialUtils;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::core::Number`
+  --> crates/mathhook-core/src/calculus/integrals/educational.rs:60:9
+   |
+60 |     use crate::core::Number;
+   |         ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Number`
+ --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:6:31
+  |
+6 | use crate::core::{Expression, Number, Symbol};
+  |                               ^^^^^^
+
+warning: unused import: `differential_extension::DifferentialExtension`
+  --> crates/mathhook-core/src/calculus/integrals/risch/mod.rs:21:5
+   |
+21 | use differential_extension::DifferentialExtension;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `basic::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:20:9
+   |
+20 | pub use basic::*;
+   |         ^^^^^^^^
+
+warning: unused import: `functions::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:21:9
+   |
+21 | pub use functions::*;
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `specialized::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:22:9
+   |
+22 | pub use specialized::*;
+   |         ^^^^^^^^^^^^^^
+
+warning: unused import: `num_traits::Pow`
+ --> crates/mathhook-core/src/core/number/integer_ops.rs:9:5
+  |
+9 | use num_traits::Pow;
+  |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+  --> crates/mathhook-core/src/educational/step_by_step.rs:68:52
+   |
+68 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+   |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+   --> crates/mathhook-core/src/educational/step_by_step.rs:181:52
+    |
+181 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+    |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+   --> crates/mathhook-core/src/educational/step_by_step.rs:270:52
+    |
+270 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+    |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::core::Expression`
+ --> crates/mathhook-core/src/educational/traits.rs:6:5
+  |
+6 | use crate::core::Expression;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: glob import doesn't reexport anything with visibility `pub` because no imported item is public enough
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:10:9
+   |
+10 | pub use self::commutative::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+note: the most public imported item is `pub(self)`
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:10:9
+   |
+10 | pub use self::commutative::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   = help: reduce the glob import's visibility or increase visibility of imported items
+
+warning: glob import doesn't reexport anything with visibility `pub` because no imported item is public enough
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:12:9
+   |
+12 | pub use self::replacement::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+note: the most public imported item is `pub(self)`
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:12:9
+   |
+12 | pub use self::replacement::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   = help: reduce the glob import's visibility or increase visibility of imported items
+
+warning: unused import: `num_integer::Integer`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:10:5
+   |
+10 | use num_integer::Integer;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `One`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:11:18
+   |
+11 | use num_traits::{One, Zero};
+   |                  ^^^
+
+warning: variable does not need to be mutable
+   --> crates/mathhook-core/src/algebra/equation_analyzer.rs:212:22
+    |
+212 |         let (result, mut solver_steps) = match eq_type {
+    |                      ----^^^^^^^^^^^^
+    |                      |
+    |                      help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `c1`
+   --> crates/mathhook-core/src/algebra/solvers/systems.rs:126:26
+    |
+126 |             let (a1, b1, c1) =
+    |                          ^^ help: if this is intentional, prefix it with an underscore: `_c1`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `variable`
+   --> crates/mathhook-core/src/calculus/derivatives/educational/basic_rules.rs:206:5
+    |
+206 |     variable: &Symbol,
+    |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_variable`
+
+warning: unused variable: `args`
+   --> crates/mathhook-core/src/calculus/integrals/educational.rs:107:38
+    |
+107 |         Expression::Function { name, args } => {
+    |                                      ^^^^ help: try ignoring the field: `args: _`
+
+warning: unused variable: `var`
+   --> crates/mathhook-core/src/calculus/integrals/rational.rs:132:53
+    |
+132 | fn extract_numerator_denominator(expr: &Expression, var: &Symbol) -> (Expression, Expression) {
+    |                                                     ^^^ help: if this is intentional, prefix it with an underscore: `_var`
+
+warning: unused variable: `denominator`
+   --> crates/mathhook-core/src/calculus/integrals/rational.rs:374:5
+    |
+374 |     denominator: &Expression,
+    |     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_denominator`
+
+warning: unused variable: `base`
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:130:25
+    |
+130 |         Expression::Pow(base, exp) => {
+    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_base`
+
+warning: unused variable: `exp`
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:130:31
+    |
+130 |         Expression::Pow(base, exp) => {
+    |                               ^^^ help: if this is intentional, prefix it with an underscore: `_exp`
+
+warning: field `system_solver` is never read
+   --> crates/mathhook-core/src/algebra/equation_analyzer.rs:130:5
+    |
+127 | pub struct SmartEquationSolver {
+    |            ------------------- field in this struct
+...
+130 |     system_solver: SystemSolver,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: trait `CriticalPointSolver` is never used
+  --> crates/mathhook-core/src/calculus/derivatives/advanced_differentiation/implicit.rs:11:11
+   |
+11 | pub trait CriticalPointSolver {
+   |           ^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Quadratic` is never constructed
+  --> crates/mathhook-core/src/calculus/integrals/rational.rs:45:5
+   |
+43 | enum Factor {
+   |      ------ variant in this enum
+44 |     Linear { root: Expression, power: i64 },
+45 |     Quadratic { p: Expression, q: Expression, power: i64 },
+   |     ^^^^^^^^^
+   |
+   = note: `Factor` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: function `is_just_variable` is never used
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:231:4
+    |
+231 | fn is_just_variable(expr: &Expression, var: Symbol) -> bool {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: variant `ProductDifferentFreq` is never constructed
+  --> crates/mathhook-core/src/calculus/integrals/trigonometric.rs:83:5
+   |
+79 | enum TrigPattern {
+   |      ----------- variant in this enum
+...
+83 |     ProductDifferentFreq { func1: String, m: i64, func2: String, n: i64 },
+   |     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `TrigPattern` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:367:5
+    |
+366 | struct TrigStepGenerator {
+    |        ----------------- field in this struct
+367 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:467:5
+    |
+466 | struct ExpLogStepGenerator {
+    |        ------------------- field in this struct
+467 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:511:5
+    |
+510 | struct PolynomialStepGenerator {
+    |        ----------------------- field in this struct
+511 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: method `initialize_number_theory_functions` is never used
+   --> crates/mathhook-core/src/functions/intelligence.rs:162:8
+    |
+55  | impl UniversalFunctionRegistry {
+    | ------------------------------ method in this implementation
+...
+162 |     fn initialize_number_theory_functions(&mut self) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `mathhook-core` (lib) generated 38 warnings (run `cargo fix --lib -p mathhook-core` to apply 18 suggestions)
+    Finished `bench` profile [optimized] target(s) in 0.07s
+     Running benches/core_performance.rs (target/release/deps/core_performance-17764d375b6ce011)
+Benchmarking expression_creation
+Benchmarking expression_creation: Warming up for 3.0000 s
+Benchmarking expression_creation: Collecting 100 samples in estimated 5.0005 s (17M iterations)
+Benchmarking expression_creation: Analyzing
+expression_creation     time:   [292.41 ns 296.18 ns 300.72 ns]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high severe
+
+Benchmarking simplification
+Benchmarking simplification: Warming up for 3.0000 s
+Benchmarking simplification: Collecting 100 samples in estimated 5.0000 s (411M iterations)
+Benchmarking simplification: Analyzing
+simplification          time:   [11.586 ns 11.917 ns 12.445 ns]
+Found 6 outliers among 100 measurements (6.00%)
+  5 (5.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking basic_solving
+Benchmarking basic_solving: Warming up for 3.0000 s
+Benchmarking basic_solving: Collecting 100 samples in estimated 5.0177 s (1.1M iterations)
+Benchmarking basic_solving: Analyzing
+basic_solving           time:   [4.4486 µs 4.5229 µs 4.6274 µs]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking polynomial_creation
+Benchmarking polynomial_creation: Warming up for 3.0000 s
+Benchmarking polynomial_creation: Collecting 100 samples in estimated 5.0228 s (187k iterations)
+Benchmarking polynomial_creation: Analyzing
+polynomial_creation     time:   [27.086 µs 27.624 µs 28.250 µs]
+Found 9 outliers among 100 measurements (9.00%)
+  9 (9.00%) high severe
+
+Benchmarking polynomial_simplification
+Benchmarking polynomial_simplification: Warming up for 3.0000 s
+Benchmarking polynomial_simplification: Collecting 100 samples in estimated 5.0143 s (1.5M iterations)
+Benchmarking polynomial_simplification: Analyzing
+polynomial_simplification
+                        time:   [3.4163 µs 3.5319 µs 3.6817 µs]
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+
+Benchmarking expression_size_verification
+Benchmarking expression_size_verification: Warming up for 3.0000 s
+Benchmarking expression_size_verification: Collecting 100 samples in estimated 5.0000 s (9.0B iterations)
+Benchmarking expression_size_verification: Analyzing
+expression_size_verification
+                        time:   [572.79 ps 592.85 ps 614.94 ps]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+
