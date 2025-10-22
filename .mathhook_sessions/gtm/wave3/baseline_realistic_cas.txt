@@ -1,0 +1,802 @@
+warning: unused import: `crate::expr`
+ --> crates/mathhook-core/src/algebra/complex/arithmetic.rs:9:5
+  |
+9 | use crate::expr;
+  |     ^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: unused import: `Number`
+ --> crates/mathhook-core/src/algebra/factor/mod.rs:9:31
+  |
+9 | use crate::core::{Expression, Number};
+  |                               ^^^^^^
+
+warning: unused import: `Zero`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:11:23
+   |
+11 | use num_traits::{One, Zero};
+   |                       ^^^^
+
+warning: unused import: `crate::core::commutativity::Commutativity`
+  --> crates/mathhook-core/src/algebra/rational.rs:12:5
+   |
+12 | use crate::core::commutativity::Commutativity;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused imports: `EducationalOperation` and `OperationContext`
+ --> crates/mathhook-core/src/algebra/solvers/quadratic.rs:7:34
+  |
+7 | use crate::educational::traits::{EducationalOperation, OperationContext};
+  |                                  ^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+
+warning: unused import: `super::super::utils::PartialUtils`
+ --> crates/mathhook-core/src/calculus/derivatives/partial/vector_fields/operations.rs:3:5
+  |
+3 | use super::super::utils::PartialUtils;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `crate::core::Number`
+  --> crates/mathhook-core/src/calculus/integrals/educational.rs:60:9
+   |
+60 |     use crate::core::Number;
+   |         ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Number`
+ --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:6:31
+  |
+6 | use crate::core::{Expression, Number, Symbol};
+  |                               ^^^^^^
+
+warning: unused import: `differential_extension::DifferentialExtension`
+  --> crates/mathhook-core/src/calculus/integrals/risch/mod.rs:21:5
+   |
+21 | use differential_extension::DifferentialExtension;
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `basic::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:20:9
+   |
+20 | pub use basic::*;
+   |         ^^^^^^^^
+
+warning: unused import: `functions::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:21:9
+   |
+21 | pub use functions::*;
+   |         ^^^^^^^^^^^^
+
+warning: unused import: `specialized::*`
+  --> crates/mathhook-core/src/core/expression/constructors.rs:22:9
+   |
+22 | pub use specialized::*;
+   |         ^^^^^^^^^^^^^^
+
+warning: unused import: `num_traits::Pow`
+ --> crates/mathhook-core/src/core/number/integer_ops.rs:9:5
+  |
+9 | use num_traits::Pow;
+  |     ^^^^^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+  --> crates/mathhook-core/src/educational/step_by_step.rs:68:52
+   |
+68 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+   |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+   --> crates/mathhook-core/src/educational/step_by_step.rs:181:52
+    |
+181 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+    |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused imports: `MessageBuilder`, `MessageCategory`, and `MessageType`
+   --> crates/mathhook-core/src/educational/step_by_step.rs:270:52
+    |
+270 |         use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+    |                                                    ^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^  ^^^^^^^^^^^
+
+warning: unused import: `crate::core::Expression`
+ --> crates/mathhook-core/src/educational/traits.rs:6:5
+  |
+6 | use crate::core::Expression;
+  |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: glob import doesn't reexport anything with visibility `pub` because no imported item is public enough
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:10:9
+   |
+10 | pub use self::commutative::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+note: the most public imported item is `pub(self)`
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:10:9
+   |
+10 | pub use self::commutative::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   = help: reduce the glob import's visibility or increase visibility of imported items
+
+warning: glob import doesn't reexport anything with visibility `pub` because no imported item is public enough
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:12:9
+   |
+12 | pub use self::replacement::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   |
+note: the most public imported item is `pub(self)`
+  --> crates/mathhook-core/src/pattern/matching/engine/mod.rs:12:9
+   |
+12 | pub use self::replacement::*;
+   |         ^^^^^^^^^^^^^^^^^^^^
+   = help: reduce the glob import's visibility or increase visibility of imported items
+
+warning: unused import: `num_integer::Integer`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:10:5
+   |
+10 | use num_integer::Integer;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `One`
+  --> crates/mathhook-core/src/algebra/factor/mod.rs:11:18
+   |
+11 | use num_traits::{One, Zero};
+   |                  ^^^
+
+warning: variable does not need to be mutable
+   --> crates/mathhook-core/src/algebra/equation_analyzer.rs:212:22
+    |
+212 |         let (result, mut solver_steps) = match eq_type {
+    |                      ----^^^^^^^^^^^^
+    |                      |
+    |                      help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` on by default
+
+warning: unused variable: `c1`
+   --> crates/mathhook-core/src/algebra/solvers/systems.rs:126:26
+    |
+126 |             let (a1, b1, c1) =
+    |                          ^^ help: if this is intentional, prefix it with an underscore: `_c1`
+    |
+    = note: `#[warn(unused_variables)]` on by default
+
+warning: unused variable: `variable`
+   --> crates/mathhook-core/src/calculus/derivatives/educational/basic_rules.rs:206:5
+    |
+206 |     variable: &Symbol,
+    |     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_variable`
+
+warning: unused variable: `args`
+   --> crates/mathhook-core/src/calculus/integrals/educational.rs:107:38
+    |
+107 |         Expression::Function { name, args } => {
+    |                                      ^^^^ help: try ignoring the field: `args: _`
+
+warning: unused variable: `var`
+   --> crates/mathhook-core/src/calculus/integrals/rational.rs:132:53
+    |
+132 | fn extract_numerator_denominator(expr: &Expression, var: &Symbol) -> (Expression, Expression) {
+    |                                                     ^^^ help: if this is intentional, prefix it with an underscore: `_var`
+
+warning: unused variable: `denominator`
+   --> crates/mathhook-core/src/calculus/integrals/rational.rs:374:5
+    |
+374 |     denominator: &Expression,
+    |     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_denominator`
+
+warning: unused variable: `base`
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:130:25
+    |
+130 |         Expression::Pow(base, exp) => {
+    |                         ^^^^ help: if this is intentional, prefix it with an underscore: `_base`
+
+warning: unused variable: `exp`
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:130:31
+    |
+130 |         Expression::Pow(base, exp) => {
+    |                               ^^^ help: if this is intentional, prefix it with an underscore: `_exp`
+
+warning: field `system_solver` is never read
+   --> crates/mathhook-core/src/algebra/equation_analyzer.rs:130:5
+    |
+127 | pub struct SmartEquationSolver {
+    |            ------------------- field in this struct
+...
+130 |     system_solver: SystemSolver,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` on by default
+
+warning: trait `CriticalPointSolver` is never used
+  --> crates/mathhook-core/src/calculus/derivatives/advanced_differentiation/implicit.rs:11:11
+   |
+11 | pub trait CriticalPointSolver {
+   |           ^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Quadratic` is never constructed
+  --> crates/mathhook-core/src/calculus/integrals/rational.rs:45:5
+   |
+43 | enum Factor {
+   |      ------ variant in this enum
+44 |     Linear { root: Expression, power: i64 },
+45 |     Quadratic { p: Expression, q: Expression, power: i64 },
+   |     ^^^^^^^^^
+   |
+   = note: `Factor` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: function `is_just_variable` is never used
+   --> crates/mathhook-core/src/calculus/integrals/risch/differential_extension.rs:231:4
+    |
+231 | fn is_just_variable(expr: &Expression, var: Symbol) -> bool {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: variant `ProductDifferentFreq` is never constructed
+  --> crates/mathhook-core/src/calculus/integrals/trigonometric.rs:83:5
+   |
+79 | enum TrigPattern {
+   |      ----------- variant in this enum
+...
+83 |     ProductDifferentFreq { func1: String, m: i64, func2: String, n: i64 },
+   |     ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `TrigPattern` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:367:5
+    |
+366 | struct TrigStepGenerator {
+    |        ----------------- field in this struct
+367 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:467:5
+    |
+466 | struct ExpLogStepGenerator {
+    |        ------------------- field in this struct
+467 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: field `function_name` is never read
+   --> crates/mathhook-core/src/functions/education.rs:511:5
+    |
+510 | struct PolynomialStepGenerator {
+    |        ----------------------- field in this struct
+511 |     function_name: String,
+    |     ^^^^^^^^^^^^^
+
+warning: method `initialize_number_theory_functions` is never used
+   --> crates/mathhook-core/src/functions/intelligence.rs:162:8
+    |
+55  | impl UniversalFunctionRegistry {
+    | ------------------------------ method in this implementation
+...
+162 |     fn initialize_number_theory_functions(&mut self) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `mathhook-core` (lib) generated 38 warnings (run `cargo fix --lib -p mathhook-core` to apply 18 suggestions)
+    Finished `bench` profile [optimized] target(s) in 0.07s
+     Running benches/realistic_cas_benchmarks.rs (target/release/deps/realistic_cas_benchmarks-304a973b39473739)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/10
+Benchmarking bulk_numeric_operations/bulk_integer_addition/10: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_integer_addition/10: Collecting 100 samples in estimated 10.000 s (23M iterations)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/10: Analyzing
+bulk_numeric_operations/bulk_integer_addition/10
+                        time:   [404.01 ns 413.19 ns 424.62 ns]
+                        thrpt:  [23.551 Melem/s 24.202 Melem/s 24.752 Melem/s]
+Benchmarking bulk_numeric_operations/bulk_rational_addition/10
+Benchmarking bulk_numeric_operations/bulk_rational_addition/10: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_rational_addition/10: Collecting 100 samples in estimated 10.055 s (712k iterations)
+Benchmarking bulk_numeric_operations/bulk_rational_addition/10: Analyzing
+bulk_numeric_operations/bulk_rational_addition/10
+                        time:   [14.430 µs 14.678 µs 14.909 µs]
+                        thrpt:  [670.72 Kelem/s 681.27 Kelem/s 693.01 Kelem/s]
+Found 22 outliers among 100 measurements (22.00%)
+  8 (8.00%) high mild
+  14 (14.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_multiplication/10
+Benchmarking bulk_numeric_operations/bulk_multiplication/10: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_multiplication/10: Collecting 100 samples in estimated 10.002 s (15M iterations)
+Benchmarking bulk_numeric_operations/bulk_multiplication/10: Analyzing
+bulk_numeric_operations/bulk_multiplication/10
+                        time:   [593.06 ns 601.44 ns 610.21 ns]
+                        thrpt:  [16.388 Melem/s 16.627 Melem/s 16.862 Melem/s]
+Benchmarking bulk_numeric_operations/bulk_integer_addition/50
+Benchmarking bulk_numeric_operations/bulk_integer_addition/50: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_integer_addition/50: Collecting 100 samples in estimated 10.004 s (8.3M iterations)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/50: Analyzing
+bulk_numeric_operations/bulk_integer_addition/50
+                        time:   [1.1787 µs 1.1855 µs 1.1939 µs]
+                        thrpt:  [41.879 Melem/s 42.177 Melem/s 42.420 Melem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  5 (5.00%) high mild
+  4 (4.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_rational_addition/50
+Benchmarking bulk_numeric_operations/bulk_rational_addition/50: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_rational_addition/50: Collecting 100 samples in estimated 10.068 s (106k iterations)
+Benchmarking bulk_numeric_operations/bulk_rational_addition/50: Analyzing
+bulk_numeric_operations/bulk_rational_addition/50
+                        time:   [94.039 µs 94.335 µs 94.701 µs]
+                        thrpt:  [527.98 Kelem/s 530.03 Kelem/s 531.70 Kelem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  2 (2.00%) high mild
+  4 (4.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_multiplication/50
+Benchmarking bulk_numeric_operations/bulk_multiplication/50: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_multiplication/50: Collecting 100 samples in estimated 10.003 s (4.2M iterations)
+Benchmarking bulk_numeric_operations/bulk_multiplication/50: Analyzing
+bulk_numeric_operations/bulk_multiplication/50
+                        time:   [2.4951 µs 2.5735 µs 2.6591 µs]
+                        thrpt:  [18.803 Melem/s 19.429 Melem/s 20.040 Melem/s]
+Found 15 outliers among 100 measurements (15.00%)
+  9 (9.00%) high mild
+  6 (6.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_integer_addition/100
+Benchmarking bulk_numeric_operations/bulk_integer_addition/100: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_integer_addition/100: Collecting 100 samples in estimated 10.009 s (3.8M iterations)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/100: Analyzing
+bulk_numeric_operations/bulk_integer_addition/100
+                        time:   [2.3954 µs 2.4535 µs 2.5199 µs]
+                        thrpt:  [39.684 Melem/s 40.758 Melem/s 41.747 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  7 (7.00%) high mild
+  4 (4.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_rational_addition/100
+Benchmarking bulk_numeric_operations/bulk_rational_addition/100: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_rational_addition/100: Collecting 100 samples in estimated 11.192 s (35k iterations)
+Benchmarking bulk_numeric_operations/bulk_rational_addition/100: Analyzing
+bulk_numeric_operations/bulk_rational_addition/100
+                        time:   [324.87 µs 330.76 µs 337.22 µs]
+                        thrpt:  [296.54 Kelem/s 302.33 Kelem/s 307.81 Kelem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_multiplication/100
+Benchmarking bulk_numeric_operations/bulk_multiplication/100: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_multiplication/100: Collecting 100 samples in estimated 10.015 s (1.7M iterations)
+Benchmarking bulk_numeric_operations/bulk_multiplication/100: Analyzing
+bulk_numeric_operations/bulk_multiplication/100
+                        time:   [5.2796 µs 5.3145 µs 5.3502 µs]
+                        thrpt:  [18.691 Melem/s 18.816 Melem/s 18.941 Melem/s]
+Found 18 outliers among 100 measurements (18.00%)
+  3 (3.00%) low mild
+  15 (15.00%) high mild
+Benchmarking bulk_numeric_operations/bulk_integer_addition/500
+Benchmarking bulk_numeric_operations/bulk_integer_addition/500: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_integer_addition/500: Collecting 100 samples in estimated 10.005 s (1.1M iterations)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/500: Analyzing
+bulk_numeric_operations/bulk_integer_addition/500
+                        time:   [8.5267 µs 8.5573 µs 8.5938 µs]
+                        thrpt:  [58.181 Melem/s 58.429 Melem/s 58.639 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+Benchmarking bulk_numeric_operations/bulk_rational_addition/500
+Benchmarking bulk_numeric_operations/bulk_rational_addition/500: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_rational_addition/500: Collecting 100 samples in estimated 10.303 s (2100 iterations)
+Benchmarking bulk_numeric_operations/bulk_rational_addition/500: Analyzing
+bulk_numeric_operations/bulk_rational_addition/500
+                        time:   [4.9009 ms 4.9185 ms 4.9407 ms]
+                        thrpt:  [101.20 Kelem/s 101.66 Kelem/s 102.02 Kelem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_multiplication/500
+Benchmarking bulk_numeric_operations/bulk_multiplication/500: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_multiplication/500: Collecting 100 samples in estimated 10.134 s (258k iterations)
+Benchmarking bulk_numeric_operations/bulk_multiplication/500: Analyzing
+bulk_numeric_operations/bulk_multiplication/500
+                        time:   [38.612 µs 38.877 µs 39.174 µs]
+                        thrpt:  [12.764 Melem/s 12.861 Melem/s 12.949 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  5 (5.00%) high mild
+  2 (2.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_integer_addition/1000
+Benchmarking bulk_numeric_operations/bulk_integer_addition/1000: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_integer_addition/1000: Collecting 100 samples in estimated 10.019 s (606k iterations)
+Benchmarking bulk_numeric_operations/bulk_integer_addition/1000: Analyzing
+bulk_numeric_operations/bulk_integer_addition/1000
+                        time:   [16.380 µs 16.407 µs 16.435 µs]
+                        thrpt:  [60.844 Melem/s 60.950 Melem/s 61.052 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) low mild
+  2 (2.00%) high mild
+Benchmarking bulk_numeric_operations/bulk_rational_addition/1000
+Benchmarking bulk_numeric_operations/bulk_rational_addition/1000: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_rational_addition/1000: Collecting 100 samples in estimated 10.035 s (500 iterations)
+Benchmarking bulk_numeric_operations/bulk_rational_addition/1000: Analyzing
+bulk_numeric_operations/bulk_rational_addition/1000
+                        time:   [20.586 ms 20.786 ms 21.026 ms]
+                        thrpt:  [47.561 Kelem/s 48.109 Kelem/s 48.578 Kelem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking bulk_numeric_operations/bulk_multiplication/1000
+Benchmarking bulk_numeric_operations/bulk_multiplication/1000: Warming up for 3.0000 s
+Benchmarking bulk_numeric_operations/bulk_multiplication/1000: Collecting 100 samples in estimated 10.558 s (81k iterations)
+Benchmarking bulk_numeric_operations/bulk_multiplication/1000: Analyzing
+bulk_numeric_operations/bulk_multiplication/1000
+                        time:   [126.80 µs 129.54 µs 132.89 µs]
+                        thrpt:  [7.5251 Melem/s 7.7198 Melem/s 7.8866 Melem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  6 (6.00%) high mild
+  2 (2.00%) high severe
+
+Benchmarking matrix_operations/matrix_addition/2
+Benchmarking matrix_operations/matrix_addition/2: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_addition/2: Collecting 100 samples in estimated 10.066 s (737k iterations)
+Benchmarking matrix_operations/matrix_addition/2: Analyzing
+matrix_operations/matrix_addition/2
+                        time:   [10.599 µs 10.885 µs 11.192 µs]
+                        thrpt:  [357.39 Kelem/s 367.48 Kelem/s 377.39 Kelem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  1 (1.00%) high mild
+  2 (2.00%) high severe
+Benchmarking matrix_operations/matrix_multiplication/2
+Benchmarking matrix_operations/matrix_multiplication/2: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_multiplication/2: Collecting 100 samples in estimated 10.006 s (2.8M iterations)
+Benchmarking matrix_operations/matrix_multiplication/2: Analyzing
+matrix_operations/matrix_multiplication/2
+                        time:   [3.4756 µs 3.5043 µs 3.5495 µs]
+                        thrpt:  [1.1269 Melem/s 1.1415 Melem/s 1.1509 Melem/s]
+Found 13 outliers among 100 measurements (13.00%)
+  1 (1.00%) low mild
+  6 (6.00%) high mild
+  6 (6.00%) high severe
+Benchmarking matrix_operations/matrix_addition/3
+Benchmarking matrix_operations/matrix_addition/3: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_addition/3: Collecting 100 samples in estimated 10.064 s (742k iterations)
+Benchmarking matrix_operations/matrix_addition/3: Analyzing
+matrix_operations/matrix_addition/3
+                        time:   [13.545 µs 13.676 µs 13.891 µs]
+                        thrpt:  [647.90 Kelem/s 658.07 Kelem/s 664.44 Kelem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  1 (1.00%) low mild
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+Benchmarking matrix_operations/matrix_multiplication/3
+Benchmarking matrix_operations/matrix_multiplication/3: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_multiplication/3: Collecting 100 samples in estimated 10.013 s (2.2M iterations)
+Benchmarking matrix_operations/matrix_multiplication/3: Analyzing
+matrix_operations/matrix_multiplication/3
+                        time:   [4.6101 µs 4.6546 µs 4.7168 µs]
+                        thrpt:  [1.9081 Melem/s 1.9336 Melem/s 1.9522 Melem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  2 (2.00%) low mild
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+Benchmarking matrix_operations/matrix_addition/4
+Benchmarking matrix_operations/matrix_addition/4: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_addition/4: Collecting 100 samples in estimated 10.010 s (566k iterations)
+Benchmarking matrix_operations/matrix_addition/4: Analyzing
+matrix_operations/matrix_addition/4
+                        time:   [17.515 µs 17.943 µs 18.467 µs]
+                        thrpt:  [866.41 Kelem/s 891.73 Kelem/s 913.48 Kelem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  3 (3.00%) high mild
+  5 (5.00%) high severe
+Benchmarking matrix_operations/matrix_multiplication/4
+Benchmarking matrix_operations/matrix_multiplication/4: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_multiplication/4: Collecting 100 samples in estimated 10.019 s (1.7M iterations)
+Benchmarking matrix_operations/matrix_multiplication/4: Analyzing
+matrix_operations/matrix_multiplication/4
+                        time:   [6.7197 µs 7.4607 µs 8.3657 µs]
+                        thrpt:  [1.9126 Melem/s 2.1446 Melem/s 2.3811 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) high mild
+  10 (10.00%) high severe
+Benchmarking matrix_operations/matrix_addition/8
+Benchmarking matrix_operations/matrix_addition/8: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_addition/8: Collecting 100 samples in estimated 10.074 s (247k iterations)
+Benchmarking matrix_operations/matrix_addition/8: Analyzing
+matrix_operations/matrix_addition/8
+                        time:   [38.350 µs 38.689 µs 39.174 µs]
+                        thrpt:  [1.6337 Melem/s 1.6542 Melem/s 1.6688 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  2 (2.00%) high mild
+  5 (5.00%) high severe
+Benchmarking matrix_operations/matrix_multiplication/8
+Benchmarking matrix_operations/matrix_multiplication/8: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_multiplication/8: Collecting 100 samples in estimated 10.048 s (929k iterations)
+Benchmarking matrix_operations/matrix_multiplication/8: Analyzing
+matrix_operations/matrix_multiplication/8
+                        time:   [10.732 µs 10.869 µs 11.014 µs]
+                        thrpt:  [5.8110 Melem/s 5.8881 Melem/s 5.9633 Melem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  2 (2.00%) high mild
+  3 (3.00%) high severe
+Benchmarking matrix_operations/matrix_addition/16
+Benchmarking matrix_operations/matrix_addition/16: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_addition/16: Collecting 100 samples in estimated 10.277 s (81k iterations)
+Benchmarking matrix_operations/matrix_addition/16: Analyzing
+matrix_operations/matrix_addition/16
+                        time:   [125.56 µs 129.58 µs 134.88 µs]
+                        thrpt:  [1.8980 Melem/s 1.9757 Melem/s 2.0389 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  7 (7.00%) high severe
+Benchmarking matrix_operations/matrix_multiplication/16
+Benchmarking matrix_operations/matrix_multiplication/16: Warming up for 3.0000 s
+Benchmarking matrix_operations/matrix_multiplication/16: Collecting 100 samples in estimated 10.121 s (278k iterations)
+Benchmarking matrix_operations/matrix_multiplication/16: Analyzing
+matrix_operations/matrix_multiplication/16
+                        time:   [32.066 µs 34.284 µs 37.331 µs]
+                        thrpt:  [6.8576 Melem/s 7.4670 Melem/s 7.9834 Melem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  4 (4.00%) high mild
+  3 (3.00%) high severe
+
+Benchmarking polynomial_operations/dense_polynomial_simplification/5
+Benchmarking polynomial_operations/dense_polynomial_simplification/5: Warming up for 3.0000 s
+Benchmarking polynomial_operations/dense_polynomial_simplification/5: Collecting 100 samples in estimated 10.011 s (707k iterations)
+Benchmarking polynomial_operations/dense_polynomial_simplification/5: Analyzing
+polynomial_operations/dense_polynomial_simplification/5
+                        time:   [15.336 µs 16.256 µs 17.495 µs]
+                        thrpt:  [285.79 Kelem/s 307.57 Kelem/s 326.03 Kelem/s]
+Found 13 outliers among 100 measurements (13.00%)
+  5 (5.00%) high mild
+  8 (8.00%) high severe
+Benchmarking polynomial_operations/polynomial_evaluation/5
+Benchmarking polynomial_operations/polynomial_evaluation/5: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_evaluation/5: Collecting 100 samples in estimated 10.006 s (5.5M iterations)
+Benchmarking polynomial_operations/polynomial_evaluation/5: Analyzing
+polynomial_operations/polynomial_evaluation/5
+                        time:   [1.7313 µs 1.7993 µs 1.8851 µs]
+                        thrpt:  [2.6524 Melem/s 2.7789 Melem/s 2.8880 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  4 (4.00%) high mild
+  7 (7.00%) high severe
+Benchmarking polynomial_operations/polynomial_multiplication/5
+Benchmarking polynomial_operations/polynomial_multiplication/5: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_multiplication/5: Collecting 100 samples in estimated 10.263 s (187k iterations)
+Benchmarking polynomial_operations/polynomial_multiplication/5: Analyzing
+polynomial_operations/polynomial_multiplication/5
+                        time:   [47.376 µs 50.777 µs 55.164 µs]
+                        thrpt:  [90.638 Kelem/s 98.469 Kelem/s 105.54 Kelem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+Benchmarking polynomial_operations/dense_polynomial_simplification/10
+Benchmarking polynomial_operations/dense_polynomial_simplification/10: Warming up for 3.0000 s
+Benchmarking polynomial_operations/dense_polynomial_simplification/10: Collecting 100 samples in estimated 10.006 s (333k iterations)
+Benchmarking polynomial_operations/dense_polynomial_simplification/10: Analyzing
+polynomial_operations/dense_polynomial_simplification/10
+                        time:   [29.488 µs 30.485 µs 31.789 µs]
+                        thrpt:  [314.57 Kelem/s 328.03 Kelem/s 339.12 Kelem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  3 (3.00%) high mild
+  6 (6.00%) high severe
+Benchmarking polynomial_operations/polynomial_evaluation/10
+Benchmarking polynomial_operations/polynomial_evaluation/10: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_evaluation/10: Collecting 100 samples in estimated 10.003 s (3.1M iterations)
+Benchmarking polynomial_operations/polynomial_evaluation/10: Analyzing
+polynomial_operations/polynomial_evaluation/10
+                        time:   [3.1986 µs 3.4352 µs 3.8038 µs]
+                        thrpt:  [2.6290 Melem/s 2.9111 Melem/s 3.1264 Melem/s]
+Found 19 outliers among 100 measurements (19.00%)
+  6 (6.00%) high mild
+  13 (13.00%) high severe
+Benchmarking polynomial_operations/polynomial_multiplication/10
+Benchmarking polynomial_operations/polynomial_multiplication/10: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_multiplication/10: Collecting 100 samples in estimated 10.407 s (76k iterations)
+Benchmarking polynomial_operations/polynomial_multiplication/10: Analyzing
+polynomial_operations/polynomial_multiplication/10
+                        time:   [136.49 µs 144.12 µs 156.01 µs]
+                        thrpt:  [64.099 Kelem/s 69.388 Kelem/s 73.265 Kelem/s]
+Found 8 outliers among 100 measurements (8.00%)
+  5 (5.00%) high mild
+  3 (3.00%) high severe
+Benchmarking polynomial_operations/dense_polynomial_simplification/20
+Benchmarking polynomial_operations/dense_polynomial_simplification/20: Warming up for 3.0000 s
+Benchmarking polynomial_operations/dense_polynomial_simplification/20: Collecting 100 samples in estimated 10.274 s (172k iterations)
+Benchmarking polynomial_operations/dense_polynomial_simplification/20: Analyzing
+polynomial_operations/dense_polynomial_simplification/20
+                        time:   [64.346 µs 68.842 µs 75.311 µs]
+                        thrpt:  [265.57 Kelem/s 290.52 Kelem/s 310.82 Kelem/s]
+Found 7 outliers among 100 measurements (7.00%)
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+Benchmarking polynomial_operations/polynomial_evaluation/20
+Benchmarking polynomial_operations/polynomial_evaluation/20: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_evaluation/20: Collecting 100 samples in estimated 10.016 s (1.6M iterations)
+Benchmarking polynomial_operations/polynomial_evaluation/20: Analyzing
+polynomial_operations/polynomial_evaluation/20
+                        time:   [6.7048 µs 7.1505 µs 7.7202 µs]
+                        thrpt:  [2.5906 Melem/s 2.7970 Melem/s 2.9829 Melem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  2 (2.00%) high mild
+  2 (2.00%) high severe
+Benchmarking polynomial_operations/polynomial_multiplication/20
+Benchmarking polynomial_operations/polynomial_multiplication/20: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_multiplication/20: Collecting 100 samples in estimated 11.366 s (30k iterations)
+Benchmarking polynomial_operations/polynomial_multiplication/20: Analyzing
+polynomial_operations/polynomial_multiplication/20
+                        time:   [339.10 µs 367.38 µs 406.95 µs]
+                        thrpt:  [49.146 Kelem/s 54.439 Kelem/s 58.979 Kelem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  4 (4.00%) high mild
+  5 (5.00%) high severe
+Benchmarking polynomial_operations/dense_polynomial_simplification/50
+Benchmarking polynomial_operations/dense_polynomial_simplification/50: Warming up for 3.0000 s
+Benchmarking polynomial_operations/dense_polynomial_simplification/50: Collecting 100 samples in estimated 10.256 s (66k iterations)
+Benchmarking polynomial_operations/dense_polynomial_simplification/50: Analyzing
+polynomial_operations/dense_polynomial_simplification/50
+                        time:   [149.10 µs 152.93 µs 157.19 µs]
+                        thrpt:  [318.09 Kelem/s 326.94 Kelem/s 335.34 Kelem/s]
+Found 4 outliers among 100 measurements (4.00%)
+  3 (3.00%) high mild
+  1 (1.00%) high severe
+Benchmarking polynomial_operations/polynomial_evaluation/50
+Benchmarking polynomial_operations/polynomial_evaluation/50: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_evaluation/50: Collecting 100 samples in estimated 10.034 s (687k iterations)
+Benchmarking polynomial_operations/polynomial_evaluation/50: Analyzing
+polynomial_operations/polynomial_evaluation/50
+                        time:   [14.171 µs 14.743 µs 15.482 µs]
+                        thrpt:  [3.2296 Melem/s 3.3913 Melem/s 3.5284 Melem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+Benchmarking polynomial_operations/polynomial_multiplication/50
+Benchmarking polynomial_operations/polynomial_multiplication/50: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_multiplication/50: Collecting 100 samples in estimated 10.974 s (15k iterations)
+Benchmarking polynomial_operations/polynomial_multiplication/50: Analyzing
+polynomial_operations/polynomial_multiplication/50
+                        time:   [668.67 µs 708.87 µs 759.13 µs]
+                        thrpt:  [65.865 Kelem/s 70.535 Kelem/s 74.775 Kelem/s]
+Found 5 outliers among 100 measurements (5.00%)
+  1 (1.00%) high mild
+  4 (4.00%) high severe
+Benchmarking polynomial_operations/dense_polynomial_simplification/100
+Benchmarking polynomial_operations/dense_polynomial_simplification/100: Warming up for 3.0000 s
+Benchmarking polynomial_operations/dense_polynomial_simplification/100: Collecting 100 samples in estimated 10.377 s (35k iterations)
+Benchmarking polynomial_operations/dense_polynomial_simplification/100: Analyzing
+polynomial_operations/dense_polynomial_simplification/100
+                        time:   [288.84 µs 293.66 µs 298.74 µs]
+                        thrpt:  [334.74 Kelem/s 340.53 Kelem/s 346.21 Kelem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+Benchmarking polynomial_operations/polynomial_evaluation/100
+Benchmarking polynomial_operations/polynomial_evaluation/100: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_evaluation/100: Collecting 100 samples in estimated 10.093 s (359k iterations)
+Benchmarking polynomial_operations/polynomial_evaluation/100: Analyzing
+polynomial_operations/polynomial_evaluation/100
+                        time:   [27.313 µs 27.695 µs 28.117 µs]
+                        thrpt:  [3.5565 Melem/s 3.6107 Melem/s 3.6613 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) high mild
+  3 (3.00%) high severe
+Benchmarking polynomial_operations/polynomial_multiplication/100
+Benchmarking polynomial_operations/polynomial_multiplication/100: Warming up for 3.0000 s
+Benchmarking polynomial_operations/polynomial_multiplication/100: Collecting 100 samples in estimated 13.294 s (10k iterations)
+Benchmarking polynomial_operations/polynomial_multiplication/100: Analyzing
+polynomial_operations/polynomial_multiplication/100
+                        time:   [1.2843 ms 1.3037 ms 1.3244 ms]
+                        thrpt:  [75.504 Kelem/s 76.703 Kelem/s 77.860 Kelem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+
+Benchmarking mixed_symbolic_numeric/quadratic_expansion
+Benchmarking mixed_symbolic_numeric/quadratic_expansion: Warming up for 3.0000 s
+Benchmarking mixed_symbolic_numeric/quadratic_expansion: Collecting 100 samples in estimated 10.005 s (2.8M iterations)
+Benchmarking mixed_symbolic_numeric/quadratic_expansion: Analyzing
+mixed_symbolic_numeric/quadratic_expansion
+                        time:   [3.4891 µs 3.5473 µs 3.6115 µs]
+Found 6 outliers among 100 measurements (6.00%)
+  4 (4.00%) high mild
+  2 (2.00%) high severe
+Benchmarking mixed_symbolic_numeric/rational_simplification
+Benchmarking mixed_symbolic_numeric/rational_simplification: Warming up for 3.0000 s
+Benchmarking mixed_symbolic_numeric/rational_simplification: Collecting 100 samples in estimated 10.015 s (2.9M iterations)
+Benchmarking mixed_symbolic_numeric/rational_simplification: Analyzing
+mixed_symbolic_numeric/rational_simplification
+                        time:   [3.4939 µs 3.5529 µs 3.6186 µs]
+Found 5 outliers among 100 measurements (5.00%)
+  3 (3.00%) high mild
+  2 (2.00%) high severe
+Benchmarking mixed_symbolic_numeric/large_mixed_expression
+Benchmarking mixed_symbolic_numeric/large_mixed_expression: Warming up for 3.0000 s
+Benchmarking mixed_symbolic_numeric/large_mixed_expression: Collecting 100 samples in estimated 10.024 s (1.8M iterations)
+Benchmarking mixed_symbolic_numeric/large_mixed_expression: Analyzing
+mixed_symbolic_numeric/large_mixed_expression
+                        time:   [5.4976 µs 5.6007 µs 5.7323 µs]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+
+Benchmarking expression_construction/addition_construction/10
+Benchmarking expression_construction/addition_construction/10: Warming up for 3.0000 s
+Benchmarking expression_construction/addition_construction/10: Collecting 100 samples in estimated 10.002 s (21M iterations)
+Benchmarking expression_construction/addition_construction/10: Analyzing
+expression_construction/addition_construction/10
+                        time:   [465.18 ns 471.59 ns 478.46 ns]
+                        thrpt:  [20.900 Melem/s 21.205 Melem/s 21.497 Melem/s]
+Found 6 outliers among 100 measurements (6.00%)
+  3 (3.00%) low mild
+  3 (3.00%) high mild
+Benchmarking expression_construction/multiplication_construction/10
+Benchmarking expression_construction/multiplication_construction/10: Warming up for 3.0000 s
+Benchmarking expression_construction/multiplication_construction/10: Collecting 100 samples in estimated 10.002 s (22M iterations)
+Benchmarking expression_construction/multiplication_construction/10: Analyzing
+expression_construction/multiplication_construction/10
+                        time:   [462.48 ns 470.72 ns 479.49 ns]
+                        thrpt:  [20.856 Melem/s 21.244 Melem/s 21.623 Melem/s]
+Found 3 outliers among 100 measurements (3.00%)
+  2 (2.00%) high mild
+  1 (1.00%) high severe
+Benchmarking expression_construction/addition_construction/50
+Benchmarking expression_construction/addition_construction/50: Warming up for 3.0000 s
+Benchmarking expression_construction/addition_construction/50: Collecting 100 samples in estimated 10.004 s (8.1M iterations)
+Benchmarking expression_construction/addition_construction/50: Analyzing
+expression_construction/addition_construction/50
+                        time:   [1.2474 µs 1.2705 µs 1.2960 µs]
+                        thrpt:  [38.582 Melem/s 39.353 Melem/s 40.085 Melem/s]
+Found 2 outliers among 100 measurements (2.00%)
+  2 (2.00%) high mild
+Benchmarking expression_construction/multiplication_construction/50
+Benchmarking expression_construction/multiplication_construction/50: Warming up for 3.0000 s
+Benchmarking expression_construction/multiplication_construction/50: Collecting 100 samples in estimated 10.006 s (6.8M iterations)
+Benchmarking expression_construction/multiplication_construction/50: Analyzing
+expression_construction/multiplication_construction/50
+                        time:   [1.5191 µs 1.6122 µs 1.7346 µs]
+                        thrpt:  [28.825 Melem/s 31.013 Melem/s 32.915 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) high mild
+  10 (10.00%) high severe
+Benchmarking expression_construction/addition_construction/100
+Benchmarking expression_construction/addition_construction/100: Warming up for 3.0000 s
+Benchmarking expression_construction/addition_construction/100: Collecting 100 samples in estimated 10.003 s (4.3M iterations)
+Benchmarking expression_construction/addition_construction/100: Analyzing
+expression_construction/addition_construction/100
+                        time:   [2.2803 µs 2.4992 µs 2.7786 µs]
+                        thrpt:  [35.990 Melem/s 40.013 Melem/s 43.854 Melem/s]
+Found 9 outliers among 100 measurements (9.00%)
+  2 (2.00%) low mild
+  3 (3.00%) high mild
+  4 (4.00%) high severe
+Benchmarking expression_construction/multiplication_construction/100
+Benchmarking expression_construction/multiplication_construction/100: Warming up for 3.0000 s
+Benchmarking expression_construction/multiplication_construction/100: Collecting 100 samples in estimated 10.009 s (3.3M iterations)
+Benchmarking expression_construction/multiplication_construction/100: Analyzing
+expression_construction/multiplication_construction/100
+                        time:   [3.1956 µs 3.4653 µs 3.7987 µs]
+                        thrpt:  [26.325 Melem/s 28.858 Melem/s 31.293 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) low mild
+  5 (5.00%) high mild
+  5 (5.00%) high severe
+Benchmarking expression_construction/addition_construction/500
+Benchmarking expression_construction/addition_construction/500: Warming up for 3.0000 s
+Benchmarking expression_construction/addition_construction/500: Collecting 100 samples in estimated 10.023 s (1.0M iterations)
+Benchmarking expression_construction/addition_construction/500: Analyzing
+expression_construction/addition_construction/500
+                        time:   [8.9420 µs 9.7421 µs 10.789 µs]
+                        thrpt:  [46.344 Melem/s 51.324 Melem/s 55.916 Melem/s]
+Found 13 outliers among 100 measurements (13.00%)
+  4 (4.00%) high mild
+  9 (9.00%) high severe
+Benchmarking expression_construction/multiplication_construction/500
+Benchmarking expression_construction/multiplication_construction/500: Warming up for 3.0000 s
+Benchmarking expression_construction/multiplication_construction/500: Collecting 100 samples in estimated 10.075 s (328k iterations)
+Benchmarking expression_construction/multiplication_construction/500: Analyzing
+expression_construction/multiplication_construction/500
+                        time:   [33.803 µs 36.636 µs 40.162 µs]
+                        thrpt:  [12.450 Melem/s 13.648 Melem/s 14.792 Melem/s]
+Found 11 outliers among 100 measurements (11.00%)
+  1 (1.00%) high mild
+  10 (10.00%) high severe
+
+Benchmarking memory_patterns/expression_cloning
+Benchmarking memory_patterns/expression_cloning: Warming up for 3.0000 s
+Benchmarking memory_patterns/expression_cloning: Collecting 100 samples in estimated 10.001 s (12M iterations)
+Benchmarking memory_patterns/expression_cloning: Analyzing
+memory_patterns/expression_cloning
+                        time:   [827.15 ns 907.53 ns 1.0097 µs]
+Found 11 outliers among 100 measurements (11.00%)
+  4 (4.00%) high mild
+  7 (7.00%) high severe
+Benchmarking memory_patterns/expression_size
+Benchmarking memory_patterns/expression_size: Warming up for 3.0000 s
+Benchmarking memory_patterns/expression_size: Collecting 100 samples in estimated 10.000 s (15B iterations)
+Benchmarking memory_patterns/expression_size: Analyzing
+memory_patterns/expression_size
+                        time:   [589.15 ps 654.53 ps 740.75 ps]
+Found 9 outliers among 100 measurements (9.00%)
+  2 (2.00%) high mild
+  7 (7.00%) high severe
+

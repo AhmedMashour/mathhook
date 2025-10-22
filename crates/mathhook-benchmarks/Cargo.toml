@@ -35,3 +35,29 @@ harness = false
 [[bench]]
 name = "simd_performance_analysis"
 harness = false
+
+# Wave 2: Comprehensive Core Functionality Benchmarks (NEW)
+
+[[bench]]
+name = "calculus_benchmarks"
+harness = false
+
+[[bench]]
+name = "solving_benchmarks"
+harness = false
+
+[[bench]]
+name = "simplification_benchmarks"
+harness = false
+
+[[bench]]
+name = "function_evaluation_benchmarks"
+harness = false
+
+[[bench]]
+name = "educational_benchmarks"
+harness = false
+
+[[bench]]
+name = "parsing_benchmarks"
+harness = false
