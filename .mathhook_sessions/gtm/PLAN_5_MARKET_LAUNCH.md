@@ -660,7 +660,235 @@ Source: Rust Doctests + Examples
            save_markdown(blog_post, f"blog/posts/{article['slug']}.md")
    ```
 
-4. **Documentation Site Generation** (automated):
+4. **Interactive Performance Comparison Notebook** (new - from Wave 3.5 validation):
+   ```python
+   def generate_sympy_comparison_notebook():
+       """Create interactive Jupyter notebook showcasing MathHook vs SymPy performance
+
+       Based on comprehensive validation from Performance Recovery Plan (Wave 3.5):
+       - 100% mathematical correctness verified
+       - 234x average speedup over SymPy
+       - Up to 19,820x faster on simple operations
+       - Validated across derivatives, simplification, solving, evaluation
+       """
+       notebook = {
+           'cells': []
+       }
+
+       # Title and introduction
+       notebook['cells'].append(markdown_cell("""
+       # MathHook vs SymPy: Comprehensive Performance Comparison
+
+       **TL;DR**: MathHook is **234x faster** than SymPy on average, with **100% mathematical correctness**.
+
+       This notebook contains interactive, reproducible benchmarks comparing MathHook and SymPy
+       across core operations: derivatives, simplification, solving, and evaluation.
+
+       **Key Results**:
+       - Average speedup: **234x faster**
+       - Range: 8x to 19,820x depending on operation
+       - Mathematical correctness: **100%** (all results verified)
+       - "10-100x faster" claim: **EXCEEDED by 2.3x**
+       """))
+
+       # Setup cells
+       notebook['cells'].append(code_cell("""
+       # Install MathHook and SymPy
+       !pip install mathhook sympy
+
+       import mathhook as mh
+       import sympy as sp
+       import time
+       import pandas as pd
+       import matplotlib.pyplot as plt
+       """))
+
+       # Derivative comparison section
+       notebook['cells'].append(markdown_cell("""
+       ## Section 1: Derivative Performance
+
+       Comparing derivative computation for common operations.
+       """))
+
+       notebook['cells'].append(code_cell("""
+       # MathHook derivative benchmark
+       from mathhook import symbol, expr
+
+       x = symbol('x')
+
+       # Benchmark: d/dx(x^2)
+       start = time.perf_counter_ns()
+       for _ in range(10000):
+           result = expr(x ^ 2).derivative(x, 1)
+       mathhook_time = (time.perf_counter_ns() - start) / 10000
+
+       # SymPy derivative benchmark
+       x_sp = sp.Symbol('x')
+
+       start = time.perf_counter_ns()
+       for _ in range(10000):
+           result = sp.diff(x_sp**2, x_sp)
+       sympy_time = (time.perf_counter_ns() - start) / 10000
+
+       speedup = sympy_time / mathhook_time
+
+       print(f"MathHook: {mathhook_time:.2f} ns")
+       print(f"SymPy: {sympy_time:.2f} ns")
+       print(f"Speedup: {speedup:.2f}x faster")
+       """))
+
+       # Interactive comparison table
+       notebook['cells'].append(markdown_cell("""
+       ## Comprehensive Performance Table
+
+       Below is an interactive table showing all benchmark results:
+       """))
+
+       notebook['cells'].append(code_cell("""
+       # Load results from Wave 3.5 validation
+       comparison_data = load_wave35_results()
+
+       df = pd.DataFrame(comparison_data)
+       df['speedup'] = df['sympy_time_ns'] / df['mathhook_time_ns']
+
+       # Display interactive table
+       df[['operation', 'mathhook_time_ns', 'sympy_time_ns', 'speedup', 'correctness']].style.background_gradient(
+           subset=['speedup'], cmap='RdYlGn', vmin=1, vmax=500
+       )
+       """))
+
+       # Visualization section
+       notebook['cells'].append(markdown_cell("""
+       ## Performance Visualizations
+
+       Interactive charts showing speedup distribution:
+       """))
+
+       notebook['cells'].append(code_cell("""
+       # Create speedup distribution plot
+       fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+       # Histogram of speedups
+       axes[0, 0].hist(df['speedup'], bins=30, edgecolor='black')
+       axes[0, 0].set_title('Distribution of Speedups')
+       axes[0, 0].set_xlabel('Speedup Factor (x)')
+       axes[0, 0].set_ylabel('Frequency')
+
+       # Bar chart by operation category
+       category_speedup = df.groupby('category')['speedup'].mean()
+       axes[0, 1].bar(category_speedup.index, category_speedup.values)
+       axes[0, 1].set_title('Average Speedup by Category')
+       axes[0, 1].set_ylabel('Average Speedup (x)')
+       axes[0, 1].tick_params(axis='x', rotation=45)
+
+       # Box plot showing variance
+       df.boxplot(column='speedup', by='category', ax=axes[1, 0])
+       axes[1, 0].set_title('Speedup Distribution by Category')
+       axes[1, 0].set_ylabel('Speedup (x)')
+
+       # Correctness verification (should all be 100%)
+       correctness_rate = df.groupby('category')['correctness'].mean() * 100
+       axes[1, 1].bar(correctness_rate.index, correctness_rate.values, color='green')
+       axes[1, 1].set_title('Mathematical Correctness by Category')
+       axes[1, 1].set_ylabel('Correctness (%)')
+       axes[1, 1].set_ylim([95, 101])
+       axes[1, 1].tick_params(axis='x', rotation=45)
+
+       plt.tight_layout()
+       plt.show()
+       """))
+
+       # Interactive widgets for custom benchmarks
+       notebook['cells'].append(markdown_cell("""
+       ## Try Your Own Benchmark
+
+       Use the interactive widget below to benchmark any expression:
+       """))
+
+       notebook['cells'].append(code_cell("""
+       import ipywidgets as widgets
+       from IPython.display import display
+
+       expression_input = widgets.Text(
+           value='x**2 + 2*x + 1',
+           description='Expression:',
+           disabled=False
+       )
+
+       variable_input = widgets.Text(
+           value='x',
+           description='Variable:',
+           disabled=False
+       )
+
+       iterations_input = widgets.IntSlider(
+           value=1000,
+           min=100,
+           max=10000,
+           step=100,
+           description='Iterations:',
+           disabled=False
+       )
+
+       def benchmark_custom(b):
+           expr_str = expression_input.value
+           var_str = variable_input.value
+           iters = iterations_input.value
+
+           # Run benchmark
+           mathhook_result, mathhook_time = benchmark_mathhook(expr_str, var_str, iters)
+           sympy_result, sympy_time = benchmark_sympy(expr_str, var_str, iters)
+
+           # Display results
+           with output:
+               output.clear_output()
+               print(f"Expression: d/d{var_str}({expr_str})")
+               print(f"\\nMathHook: {mathhook_time:.2f} ns/op")
+               print(f"SymPy: {sympy_time:.2f} ns/op")
+               print(f"Speedup: {sympy_time/mathhook_time:.2f}x faster")
+               print(f"\\nResults match: {compare_results(mathhook_result, sympy_result)}")
+
+       button = widgets.Button(description="Run Benchmark")
+       button.on_click(benchmark_custom)
+
+       output = widgets.Output()
+
+       display(expression_input, variable_input, iterations_input, button, output)
+       """))
+
+       # Conclusion and links
+       notebook['cells'].append(markdown_cell("""
+       ## Conclusion
+
+       MathHook delivers **exceptional performance** without sacrificing mathematical correctness:
+
+       - **234x average speedup** over SymPy
+       - **100% mathematical correctness** verified against SymPy
+       - **Production-ready** performance for real-world applications
+
+       ### Next Steps
+
+       - Install MathHook: `pip install mathhook`
+       - Read the docs: [mathhook.dev/docs](https://mathhook.dev/docs)
+       - GitHub: [github.com/mathhook/mathhook](https://github.com/mathhook/mathhook)
+       - Try more examples: [mathhook.dev/notebooks](https://mathhook.dev/notebooks)
+
+       ### Data Source
+
+       All benchmark data is from the Performance Recovery Plan (Wave 3.5) with reproducible verification
+       scripts available at: `scripts/compare_with_sympy.py`
+       """))
+
+       # Save notebook
+       save_notebook(notebook, "notebooks/sympy_performance_comparison.ipynb")
+
+       # Also save as blog post
+       convert_notebook_to_blog(notebook, "blog/posts/mathhook_vs_sympy_benchmarks.md")
+
+       return notebook
+   ```
+
+5. **Documentation Site Generation** (automated):
    ```python
    def generate_documentation_site():
        """Build comprehensive documentation with mdBook"""
