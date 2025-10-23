@@ -3,6 +3,37 @@
 
 ---
 
+## **FILE ORGANIZATION STRUCTURE**
+
+**All function implementations are organized as individual modules under `src/core/functions/`:**
+
+```
+src/core/functions/
+  sin/
+    data.rs           # SIN_SPECIAL_VALUES static HashMap
+    mod.rs            # pub fn sin() implementation + tests
+  cos/
+    data.rs           # COS_SPECIAL_VALUES static HashMap
+    mod.rs            # pub fn cos() implementation + tests
+  tan/
+    data.rs           # TAN_SPECIAL_VALUES static HashMap
+    mod.rs            # pub fn tan() implementation + tests
+  gamma/
+    data.rs           # GAMMA_SPECIAL_VALUES static HashMap
+    mod.rs            # pub fn gamma() implementation + tests
+  ... (32 function folders total)
+  mod.rs              # Re-exports all function modules
+```
+
+**Benefits:**
+- **One folder per function**: Clear module boundaries
+- **Co-located data + logic**: Each function's HashMap lives with its implementation
+- **Independent testing**: Each function has its own test suite in `mod.rs`
+- **Easy discovery**: `src/core/functions/sin/` contains everything about sine
+- **Clean imports**: `use crate::core::functions::sin;`
+
+---
+
 ## **CATEGORY 1: ELEMENTARY FUNCTIONS (17 total)**
 ### **Approach: Shared Static HashMap + Implementation Logic**
 
@@ -12,9 +43,11 @@
 
 #### **1.1 sin - Sine Function**
 
+**File Location:** `src/core/functions/sin/`
+
 **Shared Data:**
 ```rust
-// functions/data/trig/sin_special_values.rs
+// src/core/functions/sin/data.rs
 pub static SIN_SPECIAL_VALUES: LazyLock<SpecialValuesMap> = LazyLock::new(|| {
     let mut map = SpecialValuesMap::new();
 
@@ -36,7 +69,7 @@ pub static SIN_SPECIAL_VALUES: LazyLock<SpecialValuesMap> = LazyLock::new(|| {
 
 **Implementation:**
 ```rust
-// core/functions/elementary/trig/sin.rs
+// src/core/functions/sin/mod.rs
 pub fn sin(arg: &Expression) -> Result<Expression, MathError> {
     // 1. Check shared special values (exact or error)
     if let Some(result) = SIN_SPECIAL_VALUES.get(arg) {
