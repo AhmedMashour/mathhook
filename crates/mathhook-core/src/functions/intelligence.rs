@@ -251,4 +251,87 @@ mod tests {
             assert_eq!(props.family(), FunctionFamily::Polynomial);
         }
     }
+
+    #[test]
+    fn test_special_function_intelligence() {
+        let registry = UniversalFunctionRegistry::new();
+
+        // Test that special functions have intelligence - CRITICAL for Wave 4-INT verification
+        assert!(
+            registry.has_intelligence("gamma"),
+            "Gamma function must be registered in universal registry"
+        );
+        assert!(
+            registry.has_intelligence("bessel_j"),
+            "Bessel J function must be registered in universal registry"
+        );
+        assert!(
+            registry.has_intelligence("bessel_y"),
+            "Bessel Y function must be registered in universal registry"
+        );
+        assert!(
+            registry.has_intelligence("zeta"),
+            "Zeta function must be registered in universal registry"
+        );
+
+        // Test properties lookup for gamma
+        if let Some(props) = registry.get_properties("gamma") {
+            assert!(props.has_derivative());
+            assert_eq!(props.family(), FunctionFamily::Special);
+        }
+
+        // Test properties lookup for zeta
+        if let Some(props) = registry.get_properties("zeta") {
+            assert!(props.has_derivative());
+            assert_eq!(props.family(), FunctionFamily::Special);
+        }
+    }
+
+    #[test]
+    fn test_all_special_functions_registered() {
+        let registry = UniversalFunctionRegistry::new();
+        let all_functions = registry.list_all_functions();
+
+        // Verify all special functions from Wave 4 are present
+        let required_special_functions = vec!["gamma", "beta", "bessel_j", "bessel_y", "zeta"];
+
+        for func in required_special_functions.iter() {
+            assert!(
+                all_functions.contains(&func.to_string()),
+                "Special function '{}' must be in registry",
+                func
+            );
+        }
+    }
+
+    #[test]
+    fn test_special_function_properties_quality() {
+        let registry = UniversalFunctionRegistry::new();
+
+        // Gamma should have enhanced properties from Wave 4A
+        if let Some(props) = registry.get_properties("gamma") {
+            match props {
+                FunctionProperties::Special(sp) => {
+                    assert!(
+                        sp.special_values.len() >= 5,
+                        "Gamma should have at least 5 special values including half-integers"
+                    );
+                }
+                _ => panic!("Gamma should have Special properties"),
+            }
+        }
+
+        // Zeta should have enhanced properties from Wave 4C
+        if let Some(props) = registry.get_properties("zeta") {
+            match props {
+                FunctionProperties::Special(sp) => {
+                    assert!(
+                        sp.special_values.len() >= 9,
+                        "Zeta should have at least 9 special values"
+                    );
+                }
+                _ => panic!("Zeta should have Special properties"),
+            }
+        }
+    }
 }

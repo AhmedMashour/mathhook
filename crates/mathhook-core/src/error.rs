@@ -66,6 +66,19 @@ pub enum MathError {
     /// - log(-1) in real domain (requires complex domain)
     /// - sqrt(-1) in real domain (branch cut on negative real axis)
     BranchCut { function: String, value: Expression },
+
+    /// Invalid integration interval
+    ///
+    /// # Examples
+    ///
+    /// - Integration where lower bound >= upper bound
+    InvalidInterval { lower: f64, upper: f64 },
+
+    /// Maximum iterations reached without convergence
+    MaxIterationsReached { max_iterations: usize },
+
+    /// Convergence failure in iterative method
+    ConvergenceFailed { reason: String },
 }
 
 impl fmt::Display for MathError {
@@ -95,6 +108,15 @@ impl fmt::Display for MathError {
             }
             MathError::BranchCut { function, value } => {
                 write!(f, "Branch cut: {}({}) requires domain specification (use complex domain or specify branch)", function, value)
+            }
+            MathError::InvalidInterval { lower, upper } => {
+                write!(f, "Invalid interval: lower bound {} >= upper bound {}", lower, upper)
+            }
+            MathError::MaxIterationsReached { max_iterations } => {
+                write!(f, "Maximum iterations ({}) reached without convergence", max_iterations)
+            }
+            MathError::ConvergenceFailed { reason } => {
+                write!(f, "Convergence failed: {}", reason)
             }
         }
     }
@@ -139,5 +161,22 @@ mod tests {
             feature: "groebner bases".to_string(),
         };
         assert_ne!(err1, err3);
+    }
+
+    #[test]
+    fn test_numerical_errors() {
+        let err = MathError::InvalidInterval {
+            lower: 1.0,
+            upper: 0.0,
+        };
+        assert!(err.to_string().contains("Invalid interval"));
+
+        let err = MathError::MaxIterationsReached { max_iterations: 100 };
+        assert!(err.to_string().contains("Maximum iterations"));
+
+        let err = MathError::ConvergenceFailed {
+            reason: "oscillating behavior".to_string(),
+        };
+        assert!(err.to_string().contains("Convergence failed"));
     }
 }

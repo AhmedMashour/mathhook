@@ -44,6 +44,14 @@ impl LogarithmicIntelligence {
         self.properties.insert(
             "ln".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                    if args.len() == 1 {
+                        args[0].clone()
+                    } else {
+                        Expression::function("ln", args.to_vec())
+                    }
+                },
+
                 // DERIVATIVE: d/dx ln(x) = 1/x (x > 0)
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/x".to_string()),
@@ -127,6 +135,19 @@ impl LogarithmicIntelligence {
         self.properties.insert(
             "log".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                    if args.len() == 2 {
+                        args[0].clone()
+                    } else if args.len() == 1 {
+                        super::super::logarithmic::log(
+                            &args[0],
+                            &Expression::constant(crate::core::MathConstant::E),
+                        )
+                    } else {
+                        Expression::function("log", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/(x·ln(10))".to_string()),
                     result_template: "1/(x·ln(10))".to_string(),

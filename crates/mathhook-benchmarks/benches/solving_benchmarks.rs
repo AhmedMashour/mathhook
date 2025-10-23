@@ -11,6 +11,8 @@ use mathhook_core::algebra::solvers::quadratic::QuadraticSolver;
 use mathhook_core::algebra::solvers::systems::SystemSolver;
 use mathhook_core::{symbol, Expression, MathSolver};
 use mathhook_core::algebra::solvers::{EquationSolver, SystemEquationSolver};
+use mathhook_core::ode::{SeparableODESolver, LinearFirstOrderSolver};
+use mathhook_core::pde::EducationalPDESolver;
 use std::hint::black_box;
 use std::time::Duration;
 
@@ -385,6 +387,79 @@ fn bench_math_solver_interface(c: &mut Criterion) {
     group.finish();
 }
 
+/// Benchmark ODE (Ordinary Differential Equation) solving
+fn bench_ode_solving(c: &mut Criterion) {
+    let mut group = c.benchmark_group("ode_solving");
+
+    let x = symbol!(x);
+    let y = symbol!(y);
+    let separable_solver = SeparableODESolver::new();
+    let linear_solver = LinearFirstOrderSolver;
+
+    // Separable ODE: dy/dx = xy
+    let separable_rhs = Expression::mul(vec![
+        Expression::symbol(x.clone()),
+        Expression::symbol(y.clone()),
+    ]);
+
+    group.bench_function("separable_ode_xy", |b| {
+        b.iter(|| black_box(separable_solver.solve(&separable_rhs, &y, &x, None)))
+    });
+
+    // Simple separable: dy/dx = x
+    let simple_separable = Expression::symbol(x.clone());
+
+    group.bench_function("separable_ode_simple", |b| {
+        b.iter(|| black_box(separable_solver.solve(&simple_separable, &y, &x, None)))
+    });
+
+    // Linear first-order: dy/dx + y = x (in standard form dy/dx = -y + x)
+    // For LinearFirstOrderSolver, we need p(x) and q(x) where dy/dx + p(x)y = q(x)
+    let p_x = Expression::integer(1); // coefficient of y
+    let q_x = Expression::symbol(x.clone()); // right-hand side
+
+    group.bench_function("linear_first_order_ode", |b| {
+        b.iter(|| black_box(LinearFirstOrderSolver::solve(&linear_solver, &p_x, &q_x, &y, &x, None)))
+    });
+
+    // Varying complexity for separable ODEs
+    for degree in [2, 3, 4].iter() {
+        let rhs = Expression::mul(vec![
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(*degree)),
+            Expression::symbol(y.clone()),
+        ]);
+
+        group.bench_with_input(
+            BenchmarkId::new("separable_degree", degree),
+            degree,
+            |b, _| b.iter(|| black_box(separable_solver.solve(&rhs, &y, &x, None))),
+        );
+    }
+
+    group.finish();
+}
+
+/// Benchmark PDE (Partial Differential Equation) solving
+fn bench_pde_solving(c: &mut Criterion) {
+    let mut group = c.benchmark_group("pde_solving");
+
+    let u = symbol!(u);
+    let x = symbol!(x);
+    let solver = EducationalPDESolver::new();
+
+    // Simple placeholder PDE (PDE solving is not fully implemented yet)
+    let pde = Expression::add(vec![
+        Expression::symbol(u.clone()),
+        Expression::symbol(x.clone()),
+    ]);
+
+    group.bench_function("pde_placeholder", |b| {
+        b.iter(|| black_box(solver.solve(&pde, &u)))
+    });
+
+    group.finish();
+}
+
 criterion_group!(
     name = solving_benchmarks;
     config = Criterion::default()
@@ -396,7 +471,9 @@ criterion_group!(
         bench_polynomial_solving,
         bench_system_solving,
         bench_matrix_equation_solving,
-        bench_math_solver_interface
+        bench_math_solver_interface,
+        bench_ode_solving,
+        bench_pde_solving
 );
 
 criterion_main!(solving_benchmarks);

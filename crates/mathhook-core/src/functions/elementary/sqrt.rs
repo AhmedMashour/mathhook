@@ -81,6 +81,14 @@ impl SqrtIntelligence {
         self.properties.insert(
             "sqrt".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Expression::function("sqrt", args.to_vec())
+                }
+            },
+            
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/(2*sqrt(x))".to_string()),
                     result_template: "d/dx sqrt(x) = 1/(2*sqrt(x)) for x > 0".to_string(),

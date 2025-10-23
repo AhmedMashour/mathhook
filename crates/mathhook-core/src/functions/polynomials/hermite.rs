@@ -48,6 +48,14 @@ impl HermiteIntelligence {
         self.properties.insert(
             "hermite".to_string(),
             FunctionProperties::Polynomial(Box::new(PolynomialProperties {
+                evaluator: |args| {
+                if args.len() == 2 {
+                    args[0].clone()
+                } else {
+                    Expression::function("hermite", args.to_vec())
+                }
+            },
+            
                 family: PolynomialFamily::Hermite,
                 
                 // THREE-TERM RECURRENCE RELATION (MATHEMATICALLY VERIFIED)

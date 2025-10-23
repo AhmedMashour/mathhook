@@ -1,0 +1,35 @@
+=== Plan 7 Wave 5 Verification: Partial Differential Equations ===
+
+Verification Date: Wed Oct 22 06:33:41 WEST 2025
+Branch: agent-7/core-math-features
+
+1. Verifying PDE module structure...
+✅ All 9 required PDE module files exist
+
+2. Running PDE test suite...
+grep: invalid option -- P
+usage: grep [-abcdDEFGHhIiJLlMmnOopqRSsUVvwXxZz] [-A num] [-B num] [-C[num]]
+	[-e pattern] [-f file] [--binary-files=value] [--color=when]
+	[--context[=num]] [--directories=action] [--label] [--line-buffered]
+	[--null] [pattern] [file ...]
+❌ FAIL: Expected 50+ PDE tests, found: 0
+test pde::standard::laplace::tests::test_solve_laplace_insufficient_bc ... ok
+test pde::standard::laplace::tests::test_solve_laplace_wrong_dimensions ... ok
+test pde::standard::wave::tests::test_compute_eigenvalues_wave_empty ... ok
+test pde::standard::wave::tests::test_compute_eigenvalues_wave_with_bc ... ok
+test pde::standard::wave::tests::test_compute_fourier_coefficients_position ... ok
+test pde::standard::wave::tests::test_compute_fourier_coefficients_velocity ... ok
+test pde::standard::laplace::tests::test_laplace_solution_with_symbolic_boundary ... ok
+test pde::standard::wave::tests::test_solve_wave_equation_wrong_dimensions ... ok
+test pde::standard::wave::tests::test_wave_solution_clone ... ok
+test pde::types::tests::test_boundary_condition_dirichlet ... ok
+test pde::standard::wave::tests::test_wave_solution_coefficients_match ... ok
+test pde::standard::wave::tests::test_solve_wave_equation_1d_basic ... ok
+test pde::standard::wave::tests::test_construct_wave_solution ... ok
+test pde::standard::wave::tests::test_neumann_boundary_condition ... ok
+test pde::standard::wave::tests::test_wave_solution_structure ... ok
+test pde::types::tests::test_initial_condition_value ... ok
+test pde::types::tests::test_pde_creation ... ok
+test pde::standard::wave::tests::test_wave_solution_with_multiple_eigenvalues ... ok
+
+test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 835 filtered out; finished in 0.01s

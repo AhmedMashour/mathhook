@@ -1,0 +1,83 @@
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    # This is a classmethod but is converted to such later in order to allow
+sympy/matrices/matrices.py-    # assignment of __doc__ since that does not work for already wrapped
+sympy/matrices/matrices.py-    # classmethods in Python 3.6.
+sympy/matrices/matrices.py-    def orthogonalize(cls, *vecs, **kwargs):
+sympy/matrices/matrices.py-        return _orthogonalize(cls, *vecs, **kwargs)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    columnspace.__doc__   = _columnspace.__doc__
+sympy/matrices/matrices.py-    nullspace.__doc__     = _nullspace.__doc__
+sympy/matrices/matrices.py-    rowspace.__doc__      = _rowspace.__doc__
+sympy/matrices/matrices.py-    orthogonalize.__doc__ = _orthogonalize.__doc__
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    orthogonalize         = classmethod(orthogonalize)  # type:ignore
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-class MatrixEigen(MatrixSubspaces):
+sympy/matrices/matrices.py-    """Provides basic matrix eigenvalue/vector operations.
+sympy/matrices/matrices.py-    Should not be instantiated directly. See ``eigen.py`` for their
+sympy/matrices/matrices.py-    implementations."""
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py:    def eigenvals(self, error_when_incomplete=True, **flags):
+sympy/matrices/matrices.py-        return _eigenvals(self, error_when_incomplete=error_when_incomplete, **flags)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    def eigenvects(self, error_when_incomplete=True, iszerofunc=_iszero, **flags):
+sympy/matrices/matrices.py-        return _eigenvects(self, error_when_incomplete=error_when_incomplete,
+sympy/matrices/matrices.py-                iszerofunc=iszerofunc, **flags)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    def is_diagonalizable(self, reals_only=False, **kwargs):
+sympy/matrices/matrices.py-        return _is_diagonalizable(self, reals_only=reals_only, **kwargs)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    def diagonalize(self, reals_only=False, sort=False, normalize=False):
+sympy/matrices/matrices.py-        return _diagonalize(self, reals_only=reals_only, sort=sort,
+sympy/matrices/matrices.py-                normalize=normalize)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    def bidiagonalize(self, upper=True):
+sympy/matrices/matrices.py-        return _bidiagonalize(self, upper=upper)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    def bidiagonal_decomposition(self, upper=True):
+sympy/matrices/matrices.py-        return _bidiagonal_decomposition(self, upper=upper)
+sympy/matrices/matrices.py-
+sympy/matrices/matrices.py-    @property
+--
+sympy/matrices/matrixbase.py-        return _columnspace(self, simplify=simplify)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    def nullspace(self, simplify: bool | Callable[[Expr], Expr] = False, iszerofunc=_iszero) -> list[Self]:
+sympy/matrices/matrixbase.py-        return _nullspace(self, simplify=simplify, iszerofunc=iszerofunc)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    def rowspace(self, simplify: bool | Callable[[Expr], Expr] = False) -> list[Self]:
+sympy/matrices/matrixbase.py-        return _rowspace(self, simplify=simplify)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    # XXX: Somehow replacing this with an ordinary use of classmethod breaks
+sympy/matrices/matrixbase.py-    # sphinx ...
+sympy/matrices/matrixbase.py-    def orthogonalize(cls, *vecs: Self, **kwargs) -> list[Self]:
+sympy/matrices/matrixbase.py-        return _orthogonalize(cls, *vecs, **kwargs)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    columnspace.__doc__   = _columnspace.__doc__
+sympy/matrices/matrixbase.py-    nullspace.__doc__     = _nullspace.__doc__
+sympy/matrices/matrixbase.py-    rowspace.__doc__      = _rowspace.__doc__
+sympy/matrices/matrixbase.py-    orthogonalize.__doc__ = _orthogonalize.__doc__
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    orthogonalize = classmethod(orthogonalize) # type: ignore
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py:    def eigenvals(self,
+sympy/matrices/matrixbase.py-                  error_when_incomplete: bool = True,
+sympy/matrices/matrixbase.py-                  **flags) -> dict[Expr, int]:
+sympy/matrices/matrixbase.py-        return _eigenvals(self, error_when_incomplete=error_when_incomplete, **flags)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    def eigenvects(self,
+sympy/matrices/matrixbase.py-                   error_when_incomplete: bool = True,
+sympy/matrices/matrixbase.py-                   iszerofunc: Callable[[Expr], bool | None] = _iszero,
+sympy/matrices/matrixbase.py-                   **flags) -> list[tuple[Expr, int, list[Self]]]:
+sympy/matrices/matrixbase.py-        return _eigenvects(self, error_when_incomplete=error_when_incomplete,
+sympy/matrices/matrixbase.py-                iszerofunc=iszerofunc, **flags)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    def is_diagonalizable(self,
+sympy/matrices/matrixbase.py-                          reals_only: bool = False,
+sympy/matrices/matrixbase.py-                          **kwargs) -> bool:
+sympy/matrices/matrixbase.py-        return _is_diagonalizable(self, reals_only=reals_only, **kwargs)
+sympy/matrices/matrixbase.py-
+sympy/matrices/matrixbase.py-    def diagonalize(self,
+sympy/matrices/matrixbase.py-                    reals_only: bool = False,
+sympy/matrices/matrixbase.py-                    sort: bool = False,
+sympy/matrices/matrixbase.py-                    normalize: bool = False

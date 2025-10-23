@@ -1,0 +1,41 @@
+sympy/ntheory/factor_.py-            fails += 1
+sympy/ntheory/factor_.py-        else:
+sympy/ntheory/factor_.py-            n //= next_p
+sympy/ntheory/factor_.py-            m = 1
+sympy/ntheory/factor_.py-            while not n % next_p:
+sympy/ntheory/factor_.py-                n //= next_p
+sympy/ntheory/factor_.py-                m += 1
+sympy/ntheory/factor_.py-                if m == 20:
+sympy/ntheory/factor_.py-                    n, mm = remove(n, next_p)
+sympy/ntheory/factor_.py-                    m += mm
+sympy/ntheory/factor_.py-                    break
+sympy/ntheory/factor_.py-            factors[next_p] = m
+sympy/ntheory/factor_.py-            fails = 0
+sympy/ntheory/factor_.py-            threshold2 = min(n, limit2)
+sympy/ntheory/factor_.py-        next_p += 4
+sympy/ntheory/factor_.py-        if threshold2 < next_p**2:
+sympy/ntheory/factor_.py-            return done(n, next_p)
+sympy/ntheory/factor_.py-    return done(n, next_p)
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py:def factorint(n, limit=None, use_trial=True, use_rho=True, use_pm1=True,
+sympy/ntheory/factor_.py-              use_ecm=True, verbose=False, visual=None, multiple=False):
+sympy/ntheory/factor_.py-    r"""
+sympy/ntheory/factor_.py-    Given a positive integer ``n``, ``factorint(n)`` returns a dict containing
+sympy/ntheory/factor_.py-    the prime factors of ``n`` as keys and their respective multiplicities
+sympy/ntheory/factor_.py-    as values. For example:
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py-    >>> from sympy.ntheory import factorint
+sympy/ntheory/factor_.py-    >>> factorint(2000)    # 2000 = (2**4) * (5**3)
+sympy/ntheory/factor_.py-    {2: 4, 5: 3}
+sympy/ntheory/factor_.py-    >>> factorint(65537)   # This number is prime
+sympy/ntheory/factor_.py-    {65537: 1}
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py-    For input less than 2, factorint behaves as follows:
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py-        - ``factorint(1)`` returns the empty factorization, ``{}``
+sympy/ntheory/factor_.py-        - ``factorint(0)`` returns ``{0:1}``
+sympy/ntheory/factor_.py-        - ``factorint(-n)`` adds ``-1:1`` to the factors and then factors ``n``
+sympy/ntheory/factor_.py-
+sympy/ntheory/factor_.py-    Partial Factorization:
+sympy/ntheory/factor_.py-

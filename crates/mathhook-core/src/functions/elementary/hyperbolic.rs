@@ -46,6 +46,14 @@ impl HyperbolicIntelligence {
         self.properties.insert(
             "sinh".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Expression::function("sinh", args.to_vec())
+                }
+            },
+            
                 // DERIVATIVE: d/dx sinh(x) = cosh(x)
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("cosh".to_string()),
@@ -102,6 +110,14 @@ impl HyperbolicIntelligence {
         self.properties.insert(
             "cosh".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Expression::function("cosh", args.to_vec())
+                }
+            },
+            
                 // DERIVATIVE: d/dx cosh(x) = sinh(x)
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("sinh".to_string()),
@@ -161,6 +177,14 @@ impl HyperbolicIntelligence {
         self.properties.insert(
             "tanh".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Expression::function("tanh", args.to_vec())
+                }
+            },
+            
                 // DERIVATIVE: d/dx tanh(x) = sech²(x) = 1 - tanh²(x)
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("sech²".to_string()),

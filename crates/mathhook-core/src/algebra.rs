@@ -8,10 +8,12 @@ pub mod equation_analyzer;
 pub mod expand;
 pub mod factor;
 pub mod gcd;
+pub mod groebner;
 pub mod matrix_correctness_tests;
 pub mod polynomial_advanced;
 pub mod polynomial_division;
 pub mod rational;
+pub mod root_finding;
 pub mod solvers;
 pub mod zero_detection;
 
@@ -32,3 +34,9 @@ pub use polynomial_division::{polynomial_div, polynomial_quo, polynomial_rem};
 // Re-export solver types
 pub use equation_analyzer::{EquationAnalyzer, EquationType, SmartEquationSolver};
 pub use solvers::{EquationSolver, SolverResult as AlgebraSolverResult};
+
+// Re-export Gröbner basis types and functions
+pub use groebner::{
+    buchberger_algorithm, GroebnerBasis, MonomialOrder, MonomialOrdering,
+    poly_reduce, poly_reduce_completely, s_polynomial,
+};

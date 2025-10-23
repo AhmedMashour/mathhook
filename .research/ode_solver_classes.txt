@@ -1,0 +1,629 @@
+sympy/solvers/ode/single.py-        terms[-1] = rhs
+sympy/solvers/ode/single.py-        return terms
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    # TODO: Add methods that can be used by many ODE solvers:
+sympy/solvers/ode/single.py-    # order
+sympy/solvers/ode/single.py-    # is_linear()
+sympy/solvers/ode/single.py-    # get_linear_coefficients()
+sympy/solvers/ode/single.py-    # eq_prepared (the ODE in prepared form)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SingleODESolver:
+sympy/solvers/ode/single.py-    """
+sympy/solvers/ode/single.py-    Base class for Single ODE solvers.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Subclasses should implement the _matches and _get_general_solution
+sympy/solvers/ode/single.py-    methods. This class is not intended to be instantiated directly but its
+sympy/solvers/ode/single.py-    subclasses are as part of dsolve.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Examples
+sympy/solvers/ode/single.py-    ========
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    You can use a subclass of SingleODEProblem to solve a particular type of
+sympy/solvers/ode/single.py-    ODE. We first define a particular ODE problem:
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    >>> from sympy import Function, Symbol
+sympy/solvers/ode/single.py-    >>> x = Symbol('x')
+sympy/solvers/ode/single.py-    >>> f = Function('f')
+sympy/solvers/ode/single.py-    >>> eq = f(x).diff(x, 2)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Now we solve this problem using the NthAlgebraic solver which is a
+sympy/solvers/ode/single.py:    subclass of SingleODESolver:
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    >>> from sympy.solvers.ode.single import NthAlgebraic, SingleODEProblem
+sympy/solvers/ode/single.py-    >>> problem = SingleODEProblem(eq, f(x), x)
+sympy/solvers/ode/single.py-    >>> solver = NthAlgebraic(problem)
+sympy/solvers/ode/single.py-    >>> solver.get_general_solution()
+sympy/solvers/ode/single.py-    [Eq(f(x), _C*x + _C)]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The normal way to solve an ODE is to use dsolve (which would use
+sympy/solvers/ode/single.py-    NthAlgebraic and other solvers internally). When using dsolve a number of
+sympy/solvers/ode/single.py-    other things are done such as evaluating integrals, simplifying the
+--
+sympy/solvers/ode/single.py-            self._matched = self._matches()
+sympy/solvers/ode/single.py-        return self._matched
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def get_general_solution(self, *, simplify: bool = True) -> list[Equality]:
+sympy/solvers/ode/single.py-        if not self.matches():
+sympy/solvers/ode/single.py-            msg = "%s solver cannot solve:\n%s"
+sympy/solvers/ode/single.py-            raise ODEMatchError(msg % (self.hint, self.ode_problem.eq))
+sympy/solvers/ode/single.py-        return self._get_general_solution(simplify_flag=simplify)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _matches(self) -> bool:
+sympy/solvers/ode/single.py:        msg = "Subclasses of SingleODESolver should implement matches."
+sympy/solvers/ode/single.py-        raise NotImplementedError(msg)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _get_general_solution(self, *, simplify_flag: bool = True) -> list[Equality]:
+sympy/solvers/ode/single.py:        msg = "Subclasses of SingleODESolver should implement get_general_solution."
+sympy/solvers/ode/single.py-        raise NotImplementedError(msg)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SinglePatternODESolver(SingleODESolver):
+sympy/solvers/ode/single.py-    '''Superclass for ODE solvers based on pattern matching'''
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def wilds(self):
+sympy/solvers/ode/single.py-        prob = self.ode_problem
+sympy/solvers/ode/single.py-        f = prob.func.func
+sympy/solvers/ode/single.py-        x = prob.sym
+sympy/solvers/ode/single.py-        order = prob.order
+sympy/solvers/ode/single.py-        return self._wilds(f, x, order)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def wilds_match(self):
+--
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        self._wilds_match = match = eq.match(pattern)
+sympy/solvers/ode/single.py-        if match is not None:
+sympy/solvers/ode/single.py-            return self._verify(f(x))
+sympy/solvers/ode/single.py-        return False
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _verify(self, fx) -> bool:
+sympy/solvers/ode/single.py-        return True
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _wilds(self, f, x, order):
+sympy/solvers/ode/single.py:        msg = "Subclasses of SingleODESolver should implement _wilds"
+sympy/solvers/ode/single.py-        raise NotImplementedError(msg)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _equation(self, fx, x, order):
+sympy/solvers/ode/single.py:        msg = "Subclasses of SingleODESolver should implement _equation"
+sympy/solvers/ode/single.py-        raise NotImplementedError(msg)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthAlgebraic(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order ordinary differential equation using algebra and
+sympy/solvers/ode/single.py-    integrals.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    There is no general form for the kind of equation that this can solve. The
+sympy/solvers/ode/single.py-    the equation is solved algebraically treating differentiation as an
+sympy/solvers/ode/single.py-    invertible algebraic function.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Examples
+sympy/solvers/ode/single.py-    ========
+--
+sympy/solvers/ode/single.py-                    # don't use integrate here because fx has been replaced by _t
+sympy/solvers/ode/single.py-                    # in the equation; integrals will not be correct while solve
+sympy/solvers/ode/single.py-                    # is at work.
+sympy/solvers/ode/single.py-                    return lambda expr: Integral(expr, var) + Dummy('C')
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-            diffcls = NthAlgebraic._diffx_stored.setdefault(var, diffx)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return diffcls
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class FirstExact(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves 1st order exact ordinary differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    A 1st order differential equation is called exact if it is the total
+sympy/solvers/ode/single.py-    differential of a function. That is, the differential equation
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: P(x, y) \,\partial{}x + Q(x, y) \,\partial{}y = 0
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    is exact if there is some function `F(x, y)` such that `P(x, y) =
+sympy/solvers/ode/single.py-    \partial{}F/\partial{}x` and `Q(x, y) = \partial{}F/\partial{}y`.  It can
+--
+sympy/solvers/ode/single.py-        y = Dummy('y')
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        m = m.subs(fx, y)
+sympy/solvers/ode/single.py-        n = n.subs(fx, y)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        gen_sol = Eq(Subs(Integral(m, x)
+sympy/solvers/ode/single.py-                          + Integral(n - Integral(m, x).diff(y), y), y, fx), C1)
+sympy/solvers/ode/single.py-        return [gen_sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class FirstLinear(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves 1st order linear differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These are differential equations of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: dy/dx + P(x) y = Q(x)\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These kinds of differential equations can be solved in a general way.  The
+sympy/solvers/ode/single.py-    integrating factor `e^{\int P(x) \,dx}` will turn the equation into a
+sympy/solvers/ode/single.py-    separable equation.  The general solution is::
+--
+sympy/solvers/ode/single.py-    def _get_general_solution(self, *, simplify_flag: bool = True):
+sympy/solvers/ode/single.py-        P, Q = self.wilds_match()
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        (C1,)  = self.ode_problem.get_numbered_constants(num=1)
+sympy/solvers/ode/single.py-        gensol = Eq(fx, ((C1 + Integral(Q*exp(Integral(P, x)), x))
+sympy/solvers/ode/single.py-            * exp(-Integral(P, x))))
+sympy/solvers/ode/single.py-        return [gensol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class AlmostLinear(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an almost-linear differential equation.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The general form of an almost linear differential equation is
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: a(x) g'(f(x)) f'(x) + b(x) g(f(x)) + c(x)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Here `f(x)` is the function to be solved for (the dependent variable).
+sympy/solvers/ode/single.py-    The substitution `g(f(x)) = u(x)` leads to a linear differential equation
+sympy/solvers/ode/single.py-    for `u(x)` of the form `a(x) u' + b(x) u + c(x) = 0`. This can be solved
+--
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _get_general_solution(self, *, simplify_flag: bool = True):
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        (C1,)  = self.ode_problem.get_numbered_constants(num=1)
+sympy/solvers/ode/single.py-        gensol = Eq(self.ly, ((C1 + Integral((self.cx/self.ax)*exp(Integral(self.bx/self.ax, x)), x))
+sympy/solvers/ode/single.py-                * exp(-Integral(self.bx/self.ax, x))))
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [gensol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class Bernoulli(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves Bernoulli differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These are equations of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: dy/dx + P(x) y = Q(x) y^n\text{, }n \ne 1`\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The substitution `w = 1/y^{1-n}` will transform an equation of this form
+sympy/solvers/ode/single.py-    into one that is linear (see the docstring of
+sympy/solvers/ode/single.py-    :obj:`~sympy.solvers.ode.single.FirstLinear`).  The general solution is::
+--
+sympy/solvers/ode/single.py-        ))
+sympy/solvers/ode/single.py-        else:
+sympy/solvers/ode/single.py-            gensol = Eq(fx**(1-n), (
+sympy/solvers/ode/single.py-                (C1 - (n - 1) * Integral(Q*exp(-n*Integral(P, x))
+sympy/solvers/ode/single.py-                            * exp(Integral(P, x)), x)
+sympy/solvers/ode/single.py-                ) * exp(-(1 - n)*Integral(P, x)))
+sympy/solvers/ode/single.py-            )
+sympy/solvers/ode/single.py-        return [gensol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class Factorable(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-        Solves equations having a solvable factor.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        This function is used to solve the equation having factors. Factors may be of type algebraic or ode. It
+sympy/solvers/ode/single.py-        will try to solve each factor independently. Factors will be solved by calling dsolve. We will return the
+sympy/solvers/ode/single.py-        list of solutions.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        Examples
+sympy/solvers/ode/single.py-        ========
+sympy/solvers/ode/single.py-
+--
+sympy/solvers/ode/single.py-                    sols.extend(sol)
+sympy/solvers/ode/single.py-                else:
+sympy/solvers/ode/single.py-                    sols.append(sol)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        if sols == []:
+sympy/solvers/ode/single.py-            raise NotImplementedError("The given ODE " + str(eq) + " cannot be solved by"
+sympy/solvers/ode/single.py-                + " the factorable method")
+sympy/solvers/ode/single.py-        return sols
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class RiccatiSpecial(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    The general Riccati equation has the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: dy/dx = f(x) y^2 + g(x) y + h(x)\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    While it does not have a general solution [1], the "special" form, `dy/dx
+sympy/solvers/ode/single.py-    = a y^2 - b x^c`, does have solutions in many cases [2].  This routine
+sympy/solvers/ode/single.py-    returns a solution for `a(dy/dx) = b y^2 + c y/x + d/x^2` that is obtained
+sympy/solvers/ode/single.py-    by using a suitable change of variables to reduce it to the special form
+sympy/solvers/ode/single.py-    and is valid when neither `a` nor `b` are zero and either `c` or `d` is
+--
+sympy/solvers/ode/single.py-        a, b, c, d = self.wilds_match()
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        (C1,) = self.ode_problem.get_numbered_constants(num=1)
+sympy/solvers/ode/single.py-        mu = sqrt(4*d*b - (a - c)**2)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        gensol = Eq(fx, (a - c - mu*tan(mu/(2*a)*log(x) + C1))/(2*b*x))
+sympy/solvers/ode/single.py-        return [gensol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class RationalRiccati(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Gives general solutions to the first order Riccati differential
+sympy/solvers/ode/single.py-    equations that have atleast one rational particular solution.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math :: y' = b_0(x) + b_1(x) y + b_2(x) y^2
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    where `b_0`, `b_1` and `b_2` are rational functions of `x`
+sympy/solvers/ode/single.py-    with `b_2 \ne 0` (`b_2 = 0` would make it a Bernoulli equation).
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Examples
+--
+sympy/solvers/ode/single.py-        return True
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _get_general_solution(self, *, simplify_flag: bool = True):
+sympy/solvers/ode/single.py-        # Match the equation
+sympy/solvers/ode/single.py-        b0, b1, b2 = self.wilds_match()
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        return solve_riccati(fx, x, b0, b1, b2, gensol=True)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SecondNonlinearAutonomousConserved(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Gives solution for the autonomous second order nonlinear
+sympy/solvers/ode/single.py-    differential equation of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math :: f''(x) = g(f(x))
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The solution for this differential equation can be computed
+sympy/solvers/ode/single.py-    by multiplying by `f'(x)` and integrating on both sides,
+sympy/solvers/ode/single.py-    converting it into a first order differential equation.
+sympy/solvers/ode/single.py-
+--
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        u = Dummy('u')
+sympy/solvers/ode/single.py-        g = g.subs(fx, u)
+sympy/solvers/ode/single.py-        C1, C2 = self.ode_problem.get_numbered_constants(num=2)
+sympy/solvers/ode/single.py-        inside = -2*Integral(g, u) + C1
+sympy/solvers/ode/single.py-        lhs = Integral(1/sqrt(inside), (u, fx))
+sympy/solvers/ode/single.py-        return [Eq(lhs, C2 + x), Eq(lhs, C2 - x)]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class Liouville(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves 2nd order Liouville differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The general form of a Liouville ODE is
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: \frac{d^2 y}{dx^2} + g(y) \left(\!
+sympy/solvers/ode/single.py-                \frac{dy}{dx}\!\right)^2 + h(x)
+sympy/solvers/ode/single.py-                \frac{dy}{dx}\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The general solution is:
+--
+sympy/solvers/ode/single.py-        d, e, k = self.wilds_match()
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        C1, C2 = self.ode_problem.get_numbered_constants(num=2)
+sympy/solvers/ode/single.py-        int = Integral(exp(Integral(self.g, self.y)), (self.y, None, fx))
+sympy/solvers/ode/single.py-        gen_sol = Eq(int + C1*Integral(exp(-Integral(self.h, x)), x) + C2, 0)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [gen_sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class Separable(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves separable 1st order differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is any differential equation that can be written as `P(y)
+sympy/solvers/ode/single.py-    \tfrac{dy}{dx} = Q(x)`.  The solution can then just be found by
+sympy/solvers/ode/single.py-    rearranging terms and integrating: `\int P(y) \,dy = \int Q(x) \,dx`.
+sympy/solvers/ode/single.py-    This hint uses :py:meth:`sympy.simplify.simplify.separatevars` as its back
+sympy/solvers/ode/single.py-    end, so if a separable equation is not caught by this solver, it is most
+sympy/solvers/ode/single.py-    likely the fault of that function.
+sympy/solvers/ode/single.py-    :py:meth:`~sympy.simplify.simplify.separatevars` is
+--
+sympy/solvers/ode/single.py-    def _get_match_object(self):
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        u = self.r2['u'].subs(self.r2['t'], self.y)
+sympy/solvers/ode/single.py-        ycoeff = 1/(self.y*(self.r2['power'] - u))
+sympy/solvers/ode/single.py-        m1 = {self.y: 1, x: -1/x, 'coeff': 1}
+sympy/solvers/ode/single.py-        m2 = {self.y: ycoeff, x: 1, 'coeff': 1}
+sympy/solvers/ode/single.py-        return m1, m2, x, x**self.r2['power']*fx
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class HomogeneousCoeffSubsDepDivIndep(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves a 1st order differential equation with homogeneous coefficients
+sympy/solvers/ode/single.py-    using the substitution `u_1 = \frac{\text{<dependent
+sympy/solvers/ode/single.py-    variable>}}{\text{<independent variable>}}`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is a differential equation
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: P(x, y) + Q(x, y) dy/dx = 0
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    such that `P` and `Q` are homogeneous and of the same order.  A function
+--
+sympy/solvers/ode/single.py-        d, e, fx, x, u, u1, y, xarg, yarg = self._get_match_object()
+sympy/solvers/ode/single.py-        (C1,) = self.ode_problem.get_numbered_constants(num=1)
+sympy/solvers/ode/single.py-        int = Integral(
+sympy/solvers/ode/single.py-            (-e/(d + u1*e)).subs({x: 1, y: u1}),
+sympy/solvers/ode/single.py-            (u1, None, fx/x))
+sympy/solvers/ode/single.py-        sol = logcombine(Eq(log(x), int + log(C1)), force=True)
+sympy/solvers/ode/single.py-        gen_sol = sol.subs(fx, u).subs(((u, u - yarg), (x, x - xarg), (u, fx)))
+sympy/solvers/ode/single.py-        return [gen_sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class HomogeneousCoeffSubsIndepDivDep(SinglePatternODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves a 1st order differential equation with homogeneous coefficients
+sympy/solvers/ode/single.py-    using the substitution `u_2 = \frac{\text{<independent
+sympy/solvers/ode/single.py-    variable>}}{\text{<dependent variable>}}`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is a differential equation
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: P(x, y) + Q(x, y) dy/dx = 0
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    such that `P` and `Q` are homogeneous and of the same order.  A function
+--
+sympy/solvers/ode/single.py-            return (b2*c1 - b1*c2)/denom, (a1*c2 - a2*c1)/denom
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _get_match_object(self):
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        self.u1 = Dummy('u1')
+sympy/solvers/ode/single.py-        u = Dummy('u')
+sympy/solvers/ode/single.py-        return [self.d, self.e, fx, x, u, self.u1, self.y, self.xarg, self.yarg]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthOrderReducible(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves ODEs that only involve derivatives of the dependent variable using
+sympy/solvers/ode/single.py-    a substitution of the form `f^n(x) = g(x)`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    For example any second order ODE of the form `f''(x) = h(f'(x), x)` can be
+sympy/solvers/ode/single.py-    transformed into a pair of 1st order ODEs `g'(x) = h(g(x), x)` and
+sympy/solvers/ode/single.py-    `f'(x) = g(x)`. Usually the 1st order ODE for `g` is easier to solve. If
+sympy/solvers/ode/single.py-    that gives an explicit solution for `g` then `f` is found simply by
+sympy/solvers/ode/single.py-    integration.
+sympy/solvers/ode/single.py-
+--
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        # Might be multiple solutions to the reduced ODE:
+sympy/solvers/ode/single.py-        fsol = []
+sympy/solvers/ode/single.py-        for gsoli in gsol:
+sympy/solvers/ode/single.py-            fsoli = dsolve(gsoli.subs(g(x), w), f(x))  # or do integration n times
+sympy/solvers/ode/single.py-            fsol.append(fsoli)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return fsol
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SecondHypergeometric(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves 2nd order linear differential equations.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    It computes special function solutions which can be expressed using the
+sympy/solvers/ode/single.py-    2F1, 1F1 or 0F1 hypergeometric functions.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: y'' + A(x) y' + B(x) y = 0\text{,}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    where `A` and `B` are rational functions.
+sympy/solvers/ode/single.py-
+--
+sympy/solvers/ode/single.py-        func = self.ode_problem.func
+sympy/solvers/ode/single.py-        if self.match_object['type'] == "2F1":
+sympy/solvers/ode/single.py-            sol = get_sol_2F1_hypergeometric(eq, func, self.match_object)
+sympy/solvers/ode/single.py-            if sol is None:
+sympy/solvers/ode/single.py-                raise NotImplementedError("The given ODE " + str(eq) + " cannot be solved by"
+sympy/solvers/ode/single.py-                    + " the hypergeometric method")
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearConstantCoeffHomogeneous(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear homogeneous differential equation with
+sympy/solvers/ode/single.py-    constant coefficients.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is an equation of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: a_n f^{(n)}(x) + a_{n-1} f^{(n-1)}(x) + \cdots + a_1 f'(x)
+sympy/solvers/ode/single.py-                + a_0 f(x) = 0\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These equations can be solved in a general manner, by taking the roots of
+--
+sympy/solvers/ode/single.py-        # A generator of constants
+sympy/solvers/ode/single.py-        constants = self.ode_problem.get_numbered_constants(num=len(roots))
+sympy/solvers/ode/single.py-        gsol_rhs = Add(*[i*j for (i, j) in zip(constants, roots)])
+sympy/solvers/ode/single.py-        gsol = Eq(fx, gsol_rhs)
+sympy/solvers/ode/single.py-        if simplify_flag:
+sympy/solvers/ode/single.py-            gsol = _get_simplified_sol([gsol], fx, collectterms)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [gsol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearConstantCoeffVariationOfParameters(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear differential equation with constant
+sympy/solvers/ode/single.py-    coefficients using the method of variation of parameters.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This method works on any differential equations of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: f^{(n)}(x) + a_{n-1} f^{(n-1)}(x) + \cdots + a_1 f'(x) + a_0
+sympy/solvers/ode/single.py-                f(x) = P(x)\text{.}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This method works by assuming that the particular solution takes the form
+--
+sympy/solvers/ode/single.py-        # A generator of constants
+sympy/solvers/ode/single.py-        constants = self.ode_problem.get_numbered_constants(num=len(roots))
+sympy/solvers/ode/single.py-        homogen_sol_rhs = Add(*[i*j for (i, j) in zip(constants, roots)])
+sympy/solvers/ode/single.py-        homogen_sol = Eq(f(x), homogen_sol_rhs)
+sympy/solvers/ode/single.py-        homogen_sol = _solve_variation_of_parameters(eq, f(x), roots, homogen_sol, order, self.r, simplify_flag)
+sympy/solvers/ode/single.py-        if simplify_flag:
+sympy/solvers/ode/single.py-            homogen_sol = _get_simplified_sol([homogen_sol], f(x), collectterms)
+sympy/solvers/ode/single.py-        return [homogen_sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearConstantCoeffUndeterminedCoefficients(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear differential equation with constant
+sympy/solvers/ode/single.py-    coefficients using the method of undetermined coefficients.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This method works on differential equations of the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: a_n f^{(n)}(x) + a_{n-1} f^{(n-1)}(x) + \cdots + a_1 f'(x)
+sympy/solvers/ode/single.py-                + a_0 f(x) = P(x)\text{,}
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    where `P(x)` is a function that has a finite number of linearly
+--
+sympy/solvers/ode/single.py-        constants = self.ode_problem.get_numbered_constants(num=len(roots))
+sympy/solvers/ode/single.py-        homogen_sol_rhs = Add(*[i*j for (i, j) in zip(constants, roots)])
+sympy/solvers/ode/single.py-        homogen_sol = Eq(f(x), homogen_sol_rhs)
+sympy/solvers/ode/single.py-        self.r.update({'list': roots, 'sol': homogen_sol, 'simpliy_flag': simplify_flag})
+sympy/solvers/ode/single.py-        gsol = _solve_undetermined_coefficients(eq, f(x), order, self.r, self.trialset)
+sympy/solvers/ode/single.py-        if simplify_flag:
+sympy/solvers/ode/single.py-            gsol = _get_simplified_sol([gsol], f(x), collectterms)
+sympy/solvers/ode/single.py-        return [gsol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearEulerEqHomogeneous(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear homogeneous variable-coefficient
+sympy/solvers/ode/single.py-    Cauchy-Euler equidimensional ordinary differential equation.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is an equation with form `0 = a_0 f(x) + a_1 x f'(x) + a_2 x^2 f''(x)
+sympy/solvers/ode/single.py-    \cdots`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These equations can be solved in a general manner, by substituting
+sympy/solvers/ode/single.py-    solutions of the form `f(x) = x^r`, and deriving a characteristic equation
+sympy/solvers/ode/single.py-    for `r`.  When there are repeated roots, we include extra terms of the
+--
+sympy/solvers/ode/single.py-                does_match = True
+sympy/solvers/ode/single.py-        return does_match
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    def _get_general_solution(self, *, simplify_flag: bool = True):
+sympy/solvers/ode/single.py-        fx = self.ode_problem.func
+sympy/solvers/ode/single.py-        eq = self.ode_problem.eq
+sympy/solvers/ode/single.py-        homogen_sol = _get_euler_characteristic_eq_sols(eq, fx, self.r)[0]
+sympy/solvers/ode/single.py-        return [homogen_sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearEulerEqNonhomogeneousVariationOfParameters(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear non homogeneous Cauchy-Euler equidimensional
+sympy/solvers/ode/single.py-    ordinary differential equation using variation of parameters.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is an equation with form `g(x) = a_0 f(x) + a_1 x f'(x) + a_2 x^2 f''(x)
+sympy/solvers/ode/single.py-    \cdots`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This method works by assuming that the particular solution takes the form
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: \sum_{x=1}^{n} c_i(x) y_i(x) {a_n} {x^n} \text{, }
+--
+sympy/solvers/ode/single.py-        f = self.ode_problem.func.func
+sympy/solvers/ode/single.py-        x = self.ode_problem.sym
+sympy/solvers/ode/single.py-        order = self.ode_problem.order
+sympy/solvers/ode/single.py-        homogen_sol, roots = _get_euler_characteristic_eq_sols(eq, f(x), self.r)
+sympy/solvers/ode/single.py-        self.r[-1] = self.r[-1]/self.r[order]
+sympy/solvers/ode/single.py-        sol = _solve_variation_of_parameters(eq, f(x), roots, homogen_sol, order, self.r, simplify_flag)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [Eq(f(x), homogen_sol.rhs + (sol.rhs - homogen_sol.rhs)*self.r[order])]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class NthLinearEulerEqNonhomogeneousUndeterminedCoefficients(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves an `n`\th order linear non homogeneous Cauchy-Euler equidimensional
+sympy/solvers/ode/single.py-    ordinary differential equation using undetermined coefficients.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    This is an equation with form `g(x) = a_0 f(x) + a_1 x f'(x) + a_2 x^2 f''(x)
+sympy/solvers/ode/single.py-    \cdots`.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These equations can be solved in a general manner, by substituting
+sympy/solvers/ode/single.py-    solutions of the form `x = exp(t)`, and deriving a characteristic equation
+sympy/solvers/ode/single.py-    of form `g(exp(t)) = b_0 f(t) + b_1 f'(t) + b_2 f''(t) \cdots` which can
+--
+sympy/solvers/ode/single.py-        eq += e.subs(re)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        self.const_undet_instance = NthLinearConstantCoeffUndeterminedCoefficients(SingleODEProblem(eq, f(x), x))
+sympy/solvers/ode/single.py-        sol = self.const_undet_instance.get_general_solution(simplify = simplify_flag)[0]
+sympy/solvers/ode/single.py-        sol = sol.subs(x, log(x)) # type: ignore
+sympy/solvers/ode/single.py-        sol = sol.subs(f(log(x)), f(x)).expand() # type: ignore
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [sol]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SecondLinearBessel(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Gives solution of the Bessel differential equation
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math :: x^2 \frac{d^2y}{dx^2} + x \frac{dy}{dx} y(x) + (x^2-n^2) y(x)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    if `n` is integer then the solution is of the form ``Eq(f(x), C0 besselj(n,x)
+sympy/solvers/ode/single.py-    + C1 bessely(n,x))`` as both the solutions are linearly independent else if
+sympy/solvers/ode/single.py-    `n` is a fraction then the solution is of the form ``Eq(f(x), C0 besselj(n,x)
+sympy/solvers/ode/single.py-    + C1 besselj(-n,x))`` which can also transform into ``Eq(f(x), C0 besselj(n,x)
+sympy/solvers/ode/single.py-    + C1 bessely(n,x))``.
+--
+sympy/solvers/ode/single.py-        a4 = self.rn['a4']
+sympy/solvers/ode/single.py-        c4 = self.rn['c4']
+sympy/solvers/ode/single.py-        d4 = self.rn['d4']
+sympy/solvers/ode/single.py-        b4 = self.rn['b4']
+sympy/solvers/ode/single.py-        n = sqrt(n**2 + Rational(1, 4)*(c4 - 1)**2)
+sympy/solvers/ode/single.py-        (C1, C2) = self.ode_problem.get_numbered_constants(num=2)
+sympy/solvers/ode/single.py-        return [Eq(f(x), ((x**(Rational(1-c4,2)))*(C1*besselj(n/d4,a4*x**d4/d4)
+sympy/solvers/ode/single.py-            + C2*bessely(n/d4,a4*x**d4/d4))).subs(x, x-b4))]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SecondLinearBesselTransform(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Solves second-order ODEs of the form y'' + A*x^k*y = 0.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    These equations have solutions in terms of Bessel functions.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The general solution is:
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math:: y(x) = \sqrt{x} \left[C_1 J_\nu(z) + C_2 Y_\nu(z)\right]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    where :math:`\nu = \frac{1}{k+2}` and :math:`z = \frac{2}{k+2} x^{(k+2)/2}`
+--
+sympy/solvers/ode/single.py-        # For y'' + A*x^k*y = 0
+sympy/solvers/ode/single.py-        # The Bessel order and argument are:
+sympy/solvers/ode/single.py-        nu = 1 / (k + 2)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        z = (2 * sqrt(Abs(A)) / (k + 2)) * x**((k + 2)/2)
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        # General solution
+sympy/solvers/ode/single.py-        return [Eq(f(x), sqrt(x) * (C1*besselj(nu, z) + C2*bessely(nu, z)))]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class SecondLinearAiry(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    Gives solution of the Airy differential equation
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    .. math :: \frac{d^2y}{dx^2} + (a + b x) y(x) = 0
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    in terms of Airy special functions airyai and airybi.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    Examples
+sympy/solvers/ode/single.py-    ========
+sympy/solvers/ode/single.py-
+--
+sympy/solvers/ode/single.py-        if m.is_positive:
+sympy/solvers/ode/single.py-            arg = - b/cbrt(m)**2 - cbrt(m)*x
+sympy/solvers/ode/single.py-        elif m.is_negative:
+sympy/solvers/ode/single.py-            arg = - b/cbrt(-m)**2 + cbrt(-m)*x
+sympy/solvers/ode/single.py-        else:
+sympy/solvers/ode/single.py-            arg = - b/cbrt(-m)**2 + cbrt(-m)*x
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-        return [Eq(f(x), C1*airyai(arg) + C2*airybi(arg))]
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py:class LieGroup(SingleODESolver):
+sympy/solvers/ode/single.py-    r"""
+sympy/solvers/ode/single.py-    This hint implements the Lie group method of solving first order differential
+sympy/solvers/ode/single.py-    equations. The aim is to convert the given differential equation from the
+sympy/solvers/ode/single.py-    given coordinate system into another coordinate system where it becomes
+sympy/solvers/ode/single.py-    invariant under the one-parameter Lie group of translations. The converted
+sympy/solvers/ode/single.py-    ODE can be easily solved by quadrature. It makes use of the
+sympy/solvers/ode/single.py-    :py:meth:`sympy.solvers.ode.infinitesimals` function which returns the
+sympy/solvers/ode/single.py-    infinitesimals of the transformation.
+sympy/solvers/ode/single.py-
+sympy/solvers/ode/single.py-    The coordinates `r` and `s` can be found by solving the following Partial

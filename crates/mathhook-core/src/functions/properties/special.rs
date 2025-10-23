@@ -26,8 +26,12 @@ pub enum SymbolicExpander {
 ///
 /// Comprehensive mathematical properties for advanced special functions
 /// following SymPy's approach but optimized for performance.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SpecialProperties {
+    /// Function pointer for O(1) evaluation dispatch
+    /// Placed first for cache-friendly access (hot path data)
+    pub evaluator: fn(&[Expression]) -> Expression,
+
     /// Quick derivative check
     pub has_derivative: bool,
 
@@ -52,12 +56,31 @@ pub struct SpecialProperties {
     pub asymptotic_behavior: Option<AsymptoticData>,
 }
 
+impl std::fmt::Debug for SpecialProperties {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SpecialProperties")
+            .field("evaluator", &"<function pointer>")
+            .field("has_derivative", &self.has_derivative)
+            .field("has_antiderivative", &self.has_antiderivative)
+            .field("antiderivative_rule", &self.antiderivative_rule)
+            .field("recurrence_relations", &self.recurrence_relations)
+            .field("differential_equation", &self.differential_equation)
+            .field("special_values", &self.special_values)
+            .field("asymptotic_behavior", &self.asymptotic_behavior)
+            .finish()
+    }
+}
+
 /// Polynomial function properties (legendre, hermite, laguerre, etc.)
 ///
 /// Comprehensive properties for orthogonal polynomials and polynomial families
 /// with focus on computational efficiency and mathematical correctness.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct PolynomialProperties {
+    /// Function pointer for O(1) evaluation dispatch
+    /// Placed first for cache-friendly access (hot path data)
+    pub evaluator: fn(&[Expression]) -> Expression,
+
     /// Polynomial family classification
     pub family: PolynomialFamily,
 
@@ -95,6 +118,24 @@ pub struct PolynomialProperties {
     /// Antiderivative rule (for polynomial integration)
     /// All polynomials are integrable, so this is always Some(...)
     pub antiderivative_rule: AntiderivativeRule,
+}
+
+impl std::fmt::Debug for PolynomialProperties {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PolynomialProperties")
+            .field("evaluator", &"<function pointer>")
+            .field("family", &self.family)
+            .field("recurrence", &self.recurrence)
+            .field("orthogonality", &self.orthogonality)
+            .field("rodrigues_formula", &self.rodrigues_formula)
+            .field("generating_function", &self.generating_function)
+            .field("special_values", &self.special_values)
+            .field("evaluation_method", &self.evaluation_method)
+            .field("numerical_evaluator", &self.numerical_evaluator)
+            .field("symbolic_expander", &self.symbolic_expander)
+            .field("antiderivative_rule", &self.antiderivative_rule)
+            .finish()
+    }
 }
 
 /// Polynomial family classification

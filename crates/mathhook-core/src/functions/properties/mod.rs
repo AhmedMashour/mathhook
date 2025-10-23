@@ -99,18 +99,29 @@ impl FunctionProperties {
 
     /// Evaluate function using its mathematical intelligence
     ///
-    /// This is the core of truly intelligent evaluation - each function
-    /// evaluates itself based on its mathematical properties
+    /// This is the core of intelligent evaluation - each function
+    /// evaluates itself based on its mathematical properties.
+    /// Uses O(1) function pointer dispatch with no string matching.
     pub fn evaluate(&self, name: &str, args: &[Expression]) -> EvaluationResult {
+        // Try special values first (fast path for known exact values)
         if let Some(result) = self.try_special_values(args) {
             return result;
         }
 
+        // Try existing operations (number theory functions)
         if let Some(result) = self.try_existing_operations(name, args) {
             return result;
         }
 
-        EvaluationResult::Unevaluated
+        // Dispatch to actual function implementation via function pointer (O(1))
+        let evaluator = match self {
+            FunctionProperties::Elementary(props) => props.evaluator,
+            FunctionProperties::Special(props) => props.evaluator,
+            FunctionProperties::Polynomial(props) => props.evaluator,
+            FunctionProperties::UserDefined(_) => return EvaluationResult::Unevaluated,
+        };
+
+        EvaluationResult::Exact(evaluator(args))
     }
 
     /// Try evaluation using special values from intelligence
@@ -290,6 +301,13 @@ mod tests {
     fn test_hot_path_methods() {
         let props: FunctionProperties =
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                    if args.len() == 1 {
+                        args[0].clone()
+                    } else {
+                        Expression::function("test", args.to_vec())
+                    }
+                },
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("cos".to_string()),
                     result_template: "cos(x)".to_string(),

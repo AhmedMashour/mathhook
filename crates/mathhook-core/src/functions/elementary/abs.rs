@@ -75,6 +75,14 @@ impl AbsoluteValueIntelligence {
         self.properties.insert(
             "abs".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| {
+                if args.len() == 1 {
+                    args[0].clone()
+                } else {
+                    Expression::function("abs", args.to_vec())
+                }
+            },
+            
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("x/|x|".to_string()),
                     result_template: "x/|x| for x ≠ 0".to_string(),

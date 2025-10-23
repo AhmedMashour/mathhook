@@ -15,9 +15,13 @@ use std::collections::HashMap;
 ///
 /// Performance-optimized layout with hot path data first
 /// for cache-friendly access patterns.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ElementaryProperties {
-    /// Most frequently accessed property (hot path data first)
+    /// Function pointer for O(1) evaluation dispatch
+    /// Placed first for cache-friendly access (hot path data)
+    pub evaluator: fn(&[Expression]) -> Expression,
+
+    /// Most frequently accessed property (hot path data)
     pub derivative_rule: Option<DerivativeRule>,
 
     /// Antiderivative rule for integration
@@ -40,6 +44,21 @@ pub struct ElementaryProperties {
 
     /// Numerical evaluation method for intelligence-driven computation
     pub numerical_evaluator: Option<NumericalEvaluator>,
+}
+
+impl std::fmt::Debug for ElementaryProperties {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ElementaryProperties")
+            .field("evaluator", &"<function pointer>")
+            .field("derivative_rule", &self.derivative_rule)
+            .field("antiderivative_rule", &self.antiderivative_rule)
+            .field("special_values", &self.special_values)
+            .field("identities", &self.identities)
+            .field("domain_range", &self.domain_range)
+            .field("periodicity", &self.periodicity)
+            .field("numerical_evaluator", &self.numerical_evaluator)
+            .finish()
+    }
 }
 
 /// User-defined function properties

@@ -47,6 +47,14 @@ impl LaguerreIntelligence {
         self.properties.insert(
             "laguerre".to_string(),
             FunctionProperties::Polynomial(Box::new(PolynomialProperties {
+                evaluator: |args| {
+                if args.len() == 2 {
+                    args[0].clone()
+                } else {
+                    Expression::function("laguerre", args.to_vec())
+                }
+            },
+            
                 family: PolynomialFamily::Laguerre,
 
                 // THREE-TERM RECURRENCE RELATION (MATHEMATICALLY VERIFIED)

@@ -1,0 +1,83 @@
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-def iter_numbered_constants(eq, start=1, prefix='C'):
+sympy/solvers/ode/ode.py-    """
+sympy/solvers/ode/ode.py-    Returns an iterator of constants that do not occur
+sympy/solvers/ode/ode.py-    in eq already.
+sympy/solvers/ode/ode.py-    """
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-    if isinstance(eq, (Expr, Eq)):
+sympy/solvers/ode/ode.py-        eq = [eq]
+sympy/solvers/ode/ode.py-    elif not iterable(eq):
+sympy/solvers/ode/ode.py-        raise ValueError("Expected Expr or iterable but got %s" % eq)
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-    atom_set = set().union(*[i.free_symbols for i in eq])
+sympy/solvers/ode/ode.py-    func_set = set().union(*[i.atoms(Function) for i in eq])
+sympy/solvers/ode/ode.py-    if func_set:
+sympy/solvers/ode/ode.py-        atom_set |= {Symbol(str(f.func)) for f in func_set}
+sympy/solvers/ode/ode.py-    return numbered_symbols(start=start, prefix=prefix, exclude=atom_set)
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py:def dsolve(eq, func=None, hint="default", simplify=True,
+sympy/solvers/ode/ode.py-    ics= None, xi=None, eta=None, x0=0, n=6, **kwargs):
+sympy/solvers/ode/ode.py-    r"""
+sympy/solvers/ode/ode.py-    Solves any (supported) kind of ordinary differential equation and
+sympy/solvers/ode/ode.py-    system of ordinary differential equations.
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-    For single ordinary differential equation
+sympy/solvers/ode/ode.py-    =========================================
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-    It is classified under this when number of equation in ``eq`` is one.
+sympy/solvers/ode/ode.py-    **Usage**
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-        ``dsolve(eq, f(x), hint)`` -> Solve ordinary differential equation
+sympy/solvers/ode/ode.py-        ``eq`` for function ``f(x)``, using method ``hint``.
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-    **Details**
+sympy/solvers/ode/ode.py-
+sympy/solvers/ode/ode.py-        ``eq`` can be any supported ordinary differential equation (see the
+sympy/solvers/ode/ode.py-            :py:mod:`~sympy.solvers.ode` docstring for supported methods).
+sympy/solvers/ode/ode.py-            This can either be an :py:class:`~sympy.core.relational.Equality`,
+sympy/solvers/ode/ode.py-            or an expression, which is assumed to be equal to ``0``.
+--
+sympy/solvers/ode/systems.py-        func_name = prev_func.func.__name__
+sympy/solvers/ode/systems.py-        func = Function(Dummy('{}_0'.format(func_name)))(t)
+sympy/solvers/ode/systems.py-        new_funcs.append(func)
+sympy/solvers/ode/systems.py-        subs_dict = {prev_func: func}
+sympy/solvers/ode/systems.py-        new_eqs = []
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-        for i in range(1, sys_order[prev_func]):
+sympy/solvers/ode/systems.py-            new_func = Function(Dummy('{}_{}'.format(func_name, i)))(t)
+sympy/solvers/ode/systems.py-            subs_dict[prev_func.diff(t, i)] = new_func
+sympy/solvers/ode/systems.py-            new_funcs.append(new_func)
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-            prev_f = subs_dict[prev_func.diff(t, i-1)]
+sympy/solvers/ode/systems.py-            new_eq = Eq(prev_f.diff(t), new_func)
+sympy/solvers/ode/systems.py-            new_eqs.append(new_eq)
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-        eqs = [eq.subs(subs_dict) for eq in eqs] + new_eqs
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-    return eqs, new_funcs
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py:def dsolve_system(eqs, funcs=None, t=None, ics=None, doit=False, simplify=True):
+sympy/solvers/ode/systems.py-    r"""
+sympy/solvers/ode/systems.py-    Solves any(supported) system of Ordinary Differential Equations
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-    Explanation
+sympy/solvers/ode/systems.py-    ===========
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-    This function takes a system of ODEs as an input, determines if the
+sympy/solvers/ode/systems.py-    it is solvable by this function, and returns the solution if found any.
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-    This function can handle:
+sympy/solvers/ode/systems.py-    1. Linear, First Order, Constant coefficient homogeneous system of ODEs
+sympy/solvers/ode/systems.py-    2. Linear, First Order, Constant coefficient non-homogeneous system of ODEs
+sympy/solvers/ode/systems.py-    3. Linear, First Order, non-constant coefficient homogeneous system of ODEs
+sympy/solvers/ode/systems.py-    4. Linear, First Order, non-constant coefficient non-homogeneous system of ODEs
+sympy/solvers/ode/systems.py-    5. Any implicit system which can be divided into system of ODEs which is of the above 4 forms
+sympy/solvers/ode/systems.py-    6. Any higher order linear system of ODEs that can be reduced to one of the 5 forms of systems described above.
+sympy/solvers/ode/systems.py-
+sympy/solvers/ode/systems.py-    The types of systems described above are not limited by the number of equations, i.e. this
+sympy/solvers/ode/systems.py-    function can solve the above types irrespective of the number of equations in the system passed.
+sympy/solvers/ode/systems.py-    But, the bigger the system, the more time it will take to solve the system.

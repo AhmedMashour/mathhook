@@ -89,6 +89,57 @@ These are non-negotiable architectural constraints. Violating them requires expl
   - SIMD-optimized numerical evaluation
   - Handles special cases (sin(π) → 0, not 1.2246467991473532e-16)
 
+#### Function Evaluation Architecture
+
+**Current Implementation (Metadata-Only Registry)**:
+
+The registry currently stores **metadata only** (properties, special values, derivative rules) but does **NOT** dispatch function evaluation.
+
+**Evaluation Paths**:
+
+1. **Direct Function Calls** (Primary - Complete Implementation):
+   ```rust
+   use mathhook_core::functions::special::gamma;
+   use mathhook_core::functions::elementary::trig::sin;
+
+   // Direct calls provide full evaluation
+   let result = gamma(&Expression::integer(5));  // Returns Expression::integer(120)
+   let trig = sin(&Expression::pi());            // Returns 0 (exact)
+   ```
+
+2. **FunctionEvaluator** (Limited - Special Values Only):
+   ```rust
+   use mathhook_core::functions::evaluation::FunctionEvaluator;
+
+   // Generic evaluation through registry - ONLY handles special values currently
+   let evaluator = FunctionEvaluator::new();
+   let result = evaluator.evaluate("gamma", &[Expression::integer(1)]);
+   // Returns Exact(1) because γ(1) = 1 is a special value
+
+   let result2 = evaluator.evaluate("gamma", &[Expression::integer(5)]);
+   // Returns Unevaluated because γ(5) = 24 is NOT in special values table
+   ```
+
+**Current Architecture**:
+- **Registry stores `FunctionProperties`** with metadata (domain, range, special values, derivatives)
+- **Direct function calls** (`gamma()`, `sin()`) contain the FULL mathematical implementation
+- **`FunctionEvaluator.evaluate()`** ONLY checks special values table, does NOT call actual function
+- **Two separate implementations**: Direct functions are complete, registry evaluation is incomplete
+
+**Limitations**:
+- ⚠️ **Incomplete dispatch**: `FunctionEvaluator` doesn't connect to actual function implementations
+- ⚠️ **Code duplication**: Special values defined in both properties AND function code
+- ⚠️ **Limited extensibility**: Can't evaluate functions generically without direct imports
+
+**When to Use**:
+- **Direct calls**: Always use these for actual evaluation (required for correctness)
+  - Example: `gamma(&expr)`, `sin(&x)`, `bessel_j(&n, &x)`
+  - Complete implementation, full functionality
+
+- **FunctionEvaluator**: Only useful for special value lookup currently
+  - Example: Checking if input matches known special values
+  - Does NOT evaluate general expressions
+
 #### LALRPOP Grammar (Parser Architecture)
 
 **Critical Understanding**: The parser has two stages:
