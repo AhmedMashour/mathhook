@@ -3,3 +3,4 @@
 /crates/mathhook-node/examples/node_modules/*
 docs/book/*
 .scannerwork/*
+./worktrees/*

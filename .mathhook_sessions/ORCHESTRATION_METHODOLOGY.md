@@ -848,6 +848,157 @@ Before declaring any release ready:
 
 ---
 
+## Module-Focused Agents with CONTEXT.md
+
+**Added**: 2025-10-30 (Post Educational Waves 1-5)
+**Purpose**: Reduce agent token consumption by 60% for module-focused work
+
+### The Problem
+
+Large codebase token consumption during module-focused work:
+- Agents working on algebra module load entire codebase context
+- Token usage: ~150K for typical agent working on single module
+- Most context is irrelevant to the specific module being modified
+- Context window pressure limits agent effectiveness
+
+### The Solution: Hybrid Approach
+
+**Keep proven orchestration methodology** + **Add per-module CONTEXT.md files**
+
+Each major module now has a CONTEXT.md file:
+- `crates/mathhook-core/src/algebra/CONTEXT.md`
+- `crates/mathhook-core/src/calculus/CONTEXT.md`
+- `crates/mathhook-core/src/parser/CONTEXT.md`
+- `crates/mathhook-core/src/functions/CONTEXT.md`
+- `crates/mathhook-core/src/educational/CONTEXT.md`
+- `crates/mathhook-core/src/simplify/CONTEXT.md`
+
+### CONTEXT.md Contents
+
+Each CONTEXT.md provides focused module information (~400-450 lines):
+1. **Module Structure**: Files, sizes, organization
+2. **Public API**: Traits, structs, enums, functions
+3. **Dependencies**: What module imports, what imports module
+4. **Testing**: Module-specific test commands
+5. **External References**: SymPy/Symbolica equivalent locations
+6. **Common Patterns & Pitfalls**: Module-specific gotchas
+7. **CLAUDE.md Constraints**: Module-specific rules and file size violations
+8. **Recent Changes**: Last 3 major modifications
+9. **Technical Debt**: Known issues and future improvements
+10. **Integration Points**: How module integrates with rest of system
+
+### Expected Token Reduction
+
+**Before** (without CONTEXT.md):
+- Agent loads: CLAUDE.md (full) + explores module + reads multiple files
+- Token consumption: ~150K tokens
+- Context pressure: HIGH
+
+**After** (with CONTEXT.md):
+- Agent loads: CLAUDE.md (relevant sections) + module CONTEXT.md + specific files
+- Token consumption: ~40-60K tokens
+- Context pressure: LOW
+- **Reduction**: 60% (90-110K tokens saved)
+
+### When to Use Module CONTEXT.md
+
+**Use for module-focused agents** when work is:
+- Contained within single module (algebra, calculus, parser, functions, educational, simplify)
+- Modifying 2-5 files within one module
+- No cross-module architectural changes
+- Standard feature addition, bug fix, or refactoring within module
+
+**Don't use for**:
+- Cross-module architectural changes
+- Work spanning multiple modules
+- New module creation
+- Major refactoring across modules
+
+### Updated Agent Prompt Template (Module-Focused)
+
+For module-focused agents, update the prompt template:
+
+```markdown
+# [WAVE NAME]: [AGENT PURPOSE]
+
+## Mission: [One-sentence goal]
+
+You are [AGENT ID] within [WAVE NAME]. Your mission is [detailed goal] **within the [MODULE NAME] module**.
+
+## Critical Context
+
+**Your Identity**: You are [AGENT ID] within [WAVE NAME], focusing on **[MODULE NAME] module only**
+**Orchestrator**: I am the orchestrator managing sequential waves with parallel agents
+**CLAUDE.md Enforcement**: MANDATORY compliance - the orchestrator WILL verify strictly
+
+### Module Context (READ THIS FIRST)
+
+**Before reading any code**, read the module CONTEXT.md:
+```
+crates/mathhook-core/src/[module]/CONTEXT.md
+```
+
+This CONTEXT.md provides:
+- Complete module structure and organization
+- Public API documentation
+- Dependencies (imports and consumers)
+- Common pitfalls specific to this module
+- CLAUDE.md constraints for this module
+- Recent changes and technical debt
+
+**Token Optimization**: By reading CONTEXT.md first, you avoid loading irrelevant context. Expected token usage: 40-60K (vs 150K without CONTEXT.md).
+
+### Your Scope: [TASK NAME] (Within [MODULE NAME])
+
+**Boundary**: Your changes MUST stay within [MODULE NAME] module
+- Files: `crates/mathhook-core/src/[module]/**`
+- If you need changes outside this module, STOP and consult orchestrator
+
+[Continue with rest of standard template...]
+```
+
+### Verification Script Addition
+
+Add module boundary check to verification scripts:
+
+```bash
+# CATEGORY X: MODULE BOUNDARY COMPLIANCE
+echo "========================================"
+echo "CATEGORY X: MODULE BOUNDARY COMPLIANCE"
+echo "Agent should only modify [MODULE] files"
+echo "========================================"
+
+OUTSIDE_CHANGES=$(git diff --name-only | grep -v "^crates/mathhook-core/src/[module]/" | wc -l)
+
+if [ "$OUTSIDE_CHANGES" -gt 0 ]; then
+    echo -e "${RED}✗ $OUTSIDE_CHANGES files modified outside [module]/ boundary${NC}"
+    git diff --name-only | grep -v "^crates/mathhook-core/src/[module]/"
+    FAILURES=$((FAILURES + 1))
+else
+    echo -e "${GREEN}✓ All changes within [module]/ boundary${NC}"
+fi
+```
+
+### Benefits
+
+1. **Token Efficiency**: 60% reduction in token consumption
+2. **Focus**: Agents stay within module boundaries
+3. **Speed**: Less context to load = faster agent startup
+4. **Quality**: More focused context = better understanding
+5. **Maintainability**: CONTEXT.md documents module architecture
+6. **Onboarding**: New agents/developers can understand module quickly
+
+### Maintenance
+
+**Keep CONTEXT.md files updated**:
+- Update when file structure changes significantly
+- Update when public API changes
+- Update "Recent Changes" section after each wave
+- Update "Technical Debt" when new debt identified
+- Review quarterly for accuracy
+
+---
+
 ## Future Improvements
 
 As you use this methodology, improve it:
@@ -857,6 +1008,7 @@ As you use this methodology, improve it:
 3. Refine verification script templates
 4. Add domain-specific guidance (if needed)
 5. Update success criteria based on learnings
+6. **Expand CONTEXT.md system** to more granular sub-modules if needed
 
 **This document should evolve with experience.**
 
