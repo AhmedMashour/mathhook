@@ -350,7 +350,7 @@ content_pipeline/
          - name: Commit updated notebooks
            run: |
              git config user.name "Content Pipeline Bot"
-             git config user.email "bot@mathhook.dev"
+             git config user.email "bot@mathhook.org"
              git add notebooks/
              git commit -m "📓 Auto-update Jupyter notebooks [skip ci]" || echo "No changes"
              git push
@@ -869,9 +869,9 @@ Source: Rust Doctests + Examples
        ### Next Steps
 
        - Install MathHook: `pip install mathhook`
-       - Read the docs: [mathhook.dev/docs](https://mathhook.dev/docs)
+       - Read the docs: [mathhook.org/docs](https://mathhook.org/docs)
        - GitHub: [github.com/mathhook/mathhook](https://github.com/mathhook/mathhook)
-       - Try more examples: [mathhook.dev/notebooks](https://mathhook.dev/notebooks)
+       - Try more examples: [mathhook.org/notebooks](https://mathhook.org/notebooks)
 
        ### Data Source
 

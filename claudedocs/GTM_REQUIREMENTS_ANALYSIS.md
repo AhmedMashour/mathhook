@@ -581,7 +581,7 @@ Phase_2_Exit_Gate:
 - GitHub Actions (CI/CD): $100-300/month for build minutes
 - Documentation hosting (GitHub Pages): $0 (free)
 - PyPI / npm: $0 (free)
-- Domain name (mathhook.dev): $12/year
+- Domain name (mathhook.org): $12/year
 - SSL certificates: $0 (Let's Encrypt)
 - Analytics (PostHog / Plausible): $0-50/month
 - MCP server hosting (optional): $20-100/month

@@ -268,7 +268,7 @@ mdBook: EXISTS and builds successfully ✅
 Architecture docs: Complete with WHY sections ✅
 Learning paths: User guide + Contributor guide ✅
 Multi-language examples: Rust, Python, Node.js ✅
-Deployment: Ready for docs.mathhook.dev ✅
+Deployment: Ready for docs.mathhook.org ✅
 ```
 
 ---

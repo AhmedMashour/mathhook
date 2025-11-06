@@ -45,13 +45,13 @@ impl CircularTrigIntelligence {
             "sin".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("sin", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        args[0].clone()
+                    } else {
+                        Expression::function("sin", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("cos".to_string()),
                     result_template: "cos(x)".to_string(),
@@ -115,13 +115,13 @@ impl CircularTrigIntelligence {
             "cos".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("cos", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        super::args[0].clone()
+                    } else {
+                        Expression::function("cos", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("-sin".to_string()),
                     result_template: "-sin(x)".to_string(),
@@ -184,13 +184,13 @@ impl CircularTrigIntelligence {
             "tan".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("tan", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        super::args[0].clone()
+                    } else {
+                        Expression::function("tan", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("sec²".to_string()),
                     result_template: "sec²(x)".to_string(),
@@ -253,13 +253,13 @@ impl CircularTrigIntelligence {
             "cot".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("cot", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        super::args[0].clone()
+                    } else {
+                        Expression::function("cot", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("-csc²".to_string()),
                     result_template: "-csc²(x)".to_string(),
@@ -313,13 +313,13 @@ impl CircularTrigIntelligence {
             "sec".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("sec", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        super::args[0].clone()
+                    } else {
+                        Expression::function("sec", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("sec·tan".to_string()),
                     result_template: "sec(x)·tan(x)".to_string(),
@@ -364,13 +364,13 @@ impl CircularTrigIntelligence {
             "csc".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    super::args[0].clone()
-                } else {
-                    Expression::function("csc", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        super::args[0].clone()
+                    } else {
+                        Expression::function("csc", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("-csc·cot".to_string()),
                     result_template: "-csc(x)·cot(x)".to_string(),

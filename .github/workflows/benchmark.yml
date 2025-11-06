@@ -119,7 +119,7 @@ jobs:
             --output benchmarks/baseline.json
 
           git config user.name "Benchmark Bot"
-          git config user.email "bot@mathhook.dev"
+          git config user.email "bot@mathhook.org"
           git add benchmarks/baseline.json
           git commit -m "Update benchmark baseline [skip ci]" || echo "No changes to baseline"
 

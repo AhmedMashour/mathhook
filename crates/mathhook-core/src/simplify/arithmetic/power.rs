@@ -78,9 +78,7 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
         }
         // (a*b)^n = a^n * b^n ONLY if commutative
         (Expression::Mul(factors), Expression::Number(Number::Integer(n))) if *n > 0 => {
-            let commutativity = Commutativity::combine(
-                factors.iter().map(|f| f.commutativity())
-            );
+            let commutativity = Commutativity::combine(factors.iter().map(|f| f.commutativity()));
 
             if commutativity.can_sort() {
                 // Safe to distribute - all factors commutative
@@ -154,11 +152,11 @@ mod tests {
 
     #[test]
     fn test_matrix_power_not_distributed() {
-        let A = Symbol::matrix("A");
-        let B = Symbol::matrix("B");
+        let matrix_a = Symbol::matrix("A");
+        let matrix_b = Symbol::matrix("B");
         let ab = Expression::mul(vec![
-            Expression::symbol(A.clone()),
-            Expression::symbol(B.clone()),
+            Expression::symbol(matrix_a.clone()),
+            Expression::symbol(matrix_b.clone()),
         ]);
         let expr = Expression::pow(ab.clone(), Expression::integer(2));
 
@@ -185,11 +183,11 @@ mod tests {
 
     #[test]
     fn test_operator_power_not_distributed() {
-        let P = Symbol::operator("P");
-        let Q = Symbol::operator("Q");
+        let matrix_p = Symbol::operator("P");
+        let matrix_q = Symbol::operator("Q");
         let pq = Expression::mul(vec![
-            Expression::symbol(P.clone()),
-            Expression::symbol(Q.clone()),
+            Expression::symbol(matrix_p.clone()),
+            Expression::symbol(matrix_q.clone()),
         ]);
         let expr = Expression::pow(pq, Expression::integer(2));
 
@@ -224,7 +222,7 @@ mod tests {
 
         // Should stay as (i*j)^2
         match simplified {
-            Expression::Pow(base, exp) => {
+            Expression::Pow(_, exp) => {
                 assert_eq!(*exp, Expression::integer(2));
             }
             _ => panic!("Expected Pow, got {:?}", simplified),
@@ -257,10 +255,10 @@ mod tests {
     #[test]
     fn test_mixed_scalar_matrix_power_not_distributed() {
         let x = Symbol::scalar("x");
-        let A = Symbol::matrix("A");
+        let matrix_a = Symbol::matrix("A");
         let xa = Expression::mul(vec![
             Expression::symbol(x.clone()),
-            Expression::symbol(A.clone()),
+            Expression::symbol(matrix_a.clone()),
         ]);
         let expr = Expression::pow(xa, Expression::integer(2));
 
@@ -268,7 +266,7 @@ mod tests {
 
         // Should stay as (x*A)^2 (noncommutative because of A)
         match simplified {
-            Expression::Pow(base, exp) => {
+            Expression::Pow(_, exp) => {
                 assert_eq!(*exp, Expression::integer(2));
             }
             _ => panic!("Expected Pow, got {:?}", simplified),

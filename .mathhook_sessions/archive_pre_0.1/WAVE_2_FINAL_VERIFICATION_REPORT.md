@@ -96,7 +96,7 @@ All P1 High Priority tasks have been **implemented** and are **working correctly
 - Learning paths: **User guide + Contributor guide** ✅
 - Multi-language examples: **Rust, Python, Node.js** ✅
 
-**Verdict**: Full documentation deployed and ready for docs.mathhook.dev.
+**Verdict**: Full documentation deployed and ready for docs.mathhook.org.
 
 ---
 

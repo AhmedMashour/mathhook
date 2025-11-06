@@ -146,11 +146,7 @@ impl Pde {
     /// let equation = expr!(add: u, x, t);
     /// let pde = Pde::new(equation, u, vec![x, t]);
     /// ```
-    pub fn new(
-        equation: Expression,
-        dependent_var: Symbol,
-        independent_vars: Vec<Symbol>,
-    ) -> Self {
+    pub fn new(equation: Expression, dependent_var: Symbol, independent_vars: Vec<Symbol>) -> Self {
         Self {
             equation,
             dependent_var,
@@ -230,7 +226,10 @@ mod tests {
         let bc = BoundaryCondition::dirichlet(value.clone(), location.clone());
 
         match bc {
-            BoundaryCondition::Dirichlet { value: v, location: l } => {
+            BoundaryCondition::Dirichlet {
+                value: v,
+                location: l,
+            } => {
                 assert_eq!(v, value);
                 assert_eq!(l, location);
             }
@@ -240,7 +239,6 @@ mod tests {
 
     #[test]
     fn test_initial_condition_value() {
-        let x = symbol!(x);
         let function = expr!(x);
         let ic = InitialCondition::value(function.clone());
 
