@@ -46,13 +46,13 @@ impl ExponentialIntelligence {
             "exp".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 1 {
-                    args[0].clone()
-                } else {
-                    Expression::function("exp", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 1 {
+                        args[0].clone()
+                    } else {
+                        Expression::function("exp", args.to_vec())
+                    }
+                },
+
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("exp".to_string()),
                     result_template: "exp(x)".to_string(),
@@ -108,6 +108,7 @@ impl ExponentialIntelligence {
         self.properties.insert(
             "sqrt".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("sqry", args.to_vec()),
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/(2√x)".to_string()),
                     result_template: "1/(2√x)".to_string(),

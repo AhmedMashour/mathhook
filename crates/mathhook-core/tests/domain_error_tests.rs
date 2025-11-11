@@ -544,28 +544,6 @@ fn test_log_negative_float() {
     );
 }
 
-/// Test future evaluation API structure
-///
-/// This test documents the intended API for domain-aware evaluation
-#[test]
-#[ignore] // Future API - not yet implemented
-fn test_future_evaluation_api_structure() {
-    let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
-
-    // Future API (not yet implemented):
-    // Real domain evaluation - should error
-    // let result = expr.evaluate_in_domain(Domain::Real);
-    // assert!(matches!(result, Err(MathError::DomainError { .. })));
-
-    // Complex domain evaluation - should succeed
-    // let result = expr.evaluate_in_domain(Domain::Complex);
-    // assert!(result.is_ok());
-
-    // Default evaluation (complex-safe)
-    // let result = expr.evaluate();
-    // assert!(result.is_ok());
-}
-
 /// Integration test: Verify that simplification doesn't lose error information
 #[test]
 fn test_simplification_preserves_error_markers() {

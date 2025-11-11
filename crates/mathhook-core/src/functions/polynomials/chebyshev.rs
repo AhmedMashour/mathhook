@@ -4,8 +4,8 @@
 //! for approximation theory with verified properties.
 
 use crate::core::{Expression, Symbol};
-use crate::functions::properties::*;
 use crate::functions::properties::rules::NumericalEvaluator;
+use crate::functions::properties::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -48,7 +48,9 @@ impl ChebyshevIntelligence {
             "chebyshev_first".to_string(),
             FunctionProperties::Polynomial(Box::new(PolynomialProperties {
                 family: PolynomialFamily::Chebyshev,
-
+                evaluator: |args| {
+                    Expression::function("hermite", args.to_vec())
+                },
                 // THREE-TERM RECURRENCE RELATION (MATHEMATICALLY VERIFIED)
                 // T_{n+1}(x) = 2x T_n(x) - T_{n-1}(x)
                 recurrence: ThreeTermRecurrence {
@@ -158,7 +160,9 @@ impl ChebyshevIntelligence {
             "chebyshev_second".to_string(),
             FunctionProperties::Polynomial(Box::new(PolynomialProperties {
                 family: PolynomialFamily::Chebyshev,
-
+                evaluator: |args| {
+                    Expression::function("chebyshev_second", args.to_vec())
+                },
                 // THREE-TERM RECURRENCE RELATION (MATHEMATICALLY VERIFIED)
                 // U_{n+1}(x) = 2x U_n(x) - U_{n-1}(x)
                 recurrence: ThreeTermRecurrence {

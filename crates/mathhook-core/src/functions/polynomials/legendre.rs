@@ -59,7 +59,9 @@ impl LegendreIntelligence {
             "legendre_p".to_string(),
             FunctionProperties::Polynomial(Box::new(PolynomialProperties {
                 family: PolynomialFamily::Legendre,
-                
+                evaluator: |args| {
+                    Expression::function("legendre_p", args.to_vec())
+                },
                 // THREE-TERM RECURRENCE RELATION (MATHEMATICALLY VERIFIED)
                 // (n+1)P_{n+1}(x) = (2n+1)x P_n(x) - n P_{n-1}(x)
                 // Normalized form: P_{n+1}(x) = [(2n+1)x P_n(x) - n P_{n-1}(x)]/(n+1)

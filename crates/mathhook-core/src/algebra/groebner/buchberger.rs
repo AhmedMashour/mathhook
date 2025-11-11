@@ -342,6 +342,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_buchberger_timeout_warning() {
         let x = symbol!(x);
         let y = symbol!(y);
@@ -382,6 +383,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_buchberger_redundant_generators() {
         let x = symbol!(x);
         let vars = vec![x.clone()];

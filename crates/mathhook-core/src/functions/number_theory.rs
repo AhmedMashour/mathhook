@@ -46,13 +46,13 @@ impl NumberTheoryIntelligence {
             "gcd".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 2 {
-                    args[0].gcd(&args[1])
-                } else {
-                    Expression::function("gcd", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 2 {
+                        args[0].gcd(&args[1])
+                    } else {
+                        Expression::function("gcd", args.to_vec())
+                    }
+                },
+
                 derivative_rule: None, // GCD is not differentiable
                 antiderivative_rule: None,
                 special_values: vec![SpecialValue {
@@ -76,13 +76,13 @@ impl NumberTheoryIntelligence {
             "lcm".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
                 evaluator: |args| {
-                if args.len() == 2 {
-                    args[0].lcm(&args[1])
-                } else {
-                    Expression::function("lcm", args.to_vec())
-                }
-            },
-            
+                    if args.len() == 2 {
+                        args[0].lcm(&args[1])
+                    } else {
+                        Expression::function("lcm", args.to_vec())
+                    }
+                },
+
                 derivative_rule: None, // LCM is not differentiable
                 antiderivative_rule: None,
                 special_values: vec![SpecialValue {
@@ -108,6 +108,7 @@ impl NumberTheoryIntelligence {
         self.properties.insert(
             "mod".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("mod", args.to_vec()),
                 derivative_rule: None,
                 antiderivative_rule: None,
                 special_values: vec![SpecialValue {
@@ -133,6 +134,7 @@ impl NumberTheoryIntelligence {
         self.properties.insert(
             "is_prime".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("is_prime", args.to_vec()),
                 derivative_rule: None,
                 antiderivative_rule: None,
                 special_values: vec![SpecialValue {

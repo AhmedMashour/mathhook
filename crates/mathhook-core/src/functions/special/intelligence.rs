@@ -88,14 +88,6 @@ impl SpecialIntelligence {
                     Expression::function("gamma", args.to_vec())
                 }
             },
-            
-            evaluator: |args| {
-                if args.len() == 1 {
-                    super::gamma::gamma(&args[0])
-                } else {
-                    Expression::function("gamma", args.to_vec())
-                }
-            },
             has_derivative: true,
             has_antiderivative: false,
             antiderivative_rule: None,
@@ -222,11 +214,7 @@ impl SpecialIntelligence {
     fn polygamma_properties() -> FunctionProperties {
         FunctionProperties::Special(Box::new(SpecialProperties {
             evaluator: |args| {
-                if args.len() == 2 {
-                    super::gamma::polygamma(&args[0], &args[1])
-                } else {
-                    Expression::function("polygamma", args.to_vec())
-                }
+                Expression::function("polygamma", args.to_vec())
             },
             
             has_derivative: true,
@@ -251,11 +239,7 @@ impl SpecialIntelligence {
     fn bessel_j_properties() -> FunctionProperties {
         FunctionProperties::Special(Box::new(SpecialProperties {
             evaluator: |args| {
-                if args.len() == 2 {
-                    super::bessel::bessel_j(&args[0], &args[1])
-                } else {
-                    Expression::function("bessel_j", args.to_vec())
-                }
+                Expression::function("bessel_j", args.to_vec())
             },
             
             has_derivative: true,
@@ -314,11 +298,7 @@ impl SpecialIntelligence {
     fn bessel_y_properties() -> FunctionProperties {
         FunctionProperties::Special(Box::new(SpecialProperties {
             evaluator: |args| {
-                if args.len() == 2 {
-                    super::bessel::bessel_y(&args[0], &args[1])
-                } else {
                     Expression::function("bessel_y", args.to_vec())
-                }
             },
             
             has_derivative: true,

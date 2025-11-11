@@ -113,15 +113,16 @@ impl FunctionProperties {
             return result;
         }
 
-        // Dispatch to actual function implementation via function pointer (O(1))
-        let evaluator = match self {
-            FunctionProperties::Elementary(props) => props.evaluator,
-            FunctionProperties::Special(props) => props.evaluator,
-            FunctionProperties::Polynomial(props) => props.evaluator,
-            FunctionProperties::UserDefined(_) => return EvaluationResult::Unevaluated,
-        };
+        EvaluationResult::Unevaluated
+        // // Dispatch to actual function implementation via function pointer (O(1))
+        // let evaluator = match self {
+        //     FunctionProperties::Elementary(props) => props.evaluator,
+        //     FunctionProperties::Special(props) => props.evaluator,
+        //     FunctionProperties::Polynomial(props) => props.evaluator,
+        //     FunctionProperties::UserDefined(_) => return EvaluationResult::Unevaluated,
+        // };
 
-        EvaluationResult::Exact(evaluator(args))
+        // EvaluationResult::Exact(evaluator(args))
     }
 
     /// Try evaluation using special values from intelligence

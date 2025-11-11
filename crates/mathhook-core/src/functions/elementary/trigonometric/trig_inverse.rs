@@ -43,6 +43,7 @@ impl InverseTrigIntelligence {
         self.properties.insert(
             "arcsin".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("arcsin", args.to_vec()),
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/√(1-x²)".to_string()),
                     result_template: "1/√(1-x²)".to_string(),
@@ -97,6 +98,7 @@ impl InverseTrigIntelligence {
         self.properties.insert(
             "arccos".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("arccos", args.to_vec()),
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("-1/√(1-x²)".to_string()),
                     result_template: "-1/√(1-x²)".to_string(),
@@ -151,6 +153,7 @@ impl InverseTrigIntelligence {
         self.properties.insert(
             "arctan".to_string(),
             FunctionProperties::Elementary(Box::new(ElementaryProperties {
+                evaluator: |args| Expression::function("arctan", args.to_vec()),
                 derivative_rule: Some(DerivativeRule {
                     rule_type: DerivativeRuleType::Simple("1/(1+x²)".to_string()),
                     result_template: "1/(1+x²)".to_string(),
