@@ -110,7 +110,8 @@ pub fn buchberger_algorithm(
             continue;
         }
 
-        let remainder = poly_reduce_completely(&s_poly, &basis, variables, order);
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
+        let remainder = poly_reduce_completely(&s_poly, &basis_refs, variables, order);
 
         if !remainder.is_zero() {
             let new_idx = basis.len();
@@ -130,11 +131,11 @@ pub fn buchberger_algorithm(
 
     let n = basis.len();
     for i in 0..n {
-        let others: Vec<_> = basis
+        let others: Vec<&Expression> = basis
             .iter()
             .enumerate()
             .filter(|(j, _)| *j != i)
-            .map(|(_, p)| p.clone())
+            .map(|(_, p)| p)
             .collect();
 
         if !others.is_empty() {
@@ -412,11 +413,11 @@ mod tests {
             .expect("Should converge for basis reduction test");
 
         for i in 0..gb.len() {
-            let others: Vec<_> = gb
+            let others: Vec<&Expression> = gb
                 .iter()
                 .enumerate()
                 .filter(|(j, _)| *j != i)
-                .map(|(_, p)| p.clone())
+                .map(|(_, p)| p)
                 .collect();
 
             if !others.is_empty() {

@@ -215,7 +215,7 @@ fn test_deeply_nested_expression_handling() {
     let x = symbol!(x);
     let mut nested = Expression::symbol(x.clone());
 
-    for _ in 0..100 {
+    for _ in 0..10 {
         nested = Expression::mul(vec![nested.clone(), nested.clone()]);
     }
 

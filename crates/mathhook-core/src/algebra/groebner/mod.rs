@@ -134,7 +134,8 @@ impl GroebnerBasis {
         for poly in &self.basis {
             if !poly.is_zero() {
                 let mut p = poly.clone();
-                p = poly_reduce_completely(&p, &reduced, &self.variables, &self.ordering);
+                let reduced_refs: Vec<&Expression> = reduced.iter().collect();
+                p = poly_reduce_completely(&p, &reduced_refs, &self.variables, &self.ordering);
 
                 if !p.is_zero() {
                     reduced.push(p);
@@ -177,7 +178,8 @@ impl GroebnerBasis {
     /// assert!(gb.contains(&test));
     /// ```
     pub fn contains(&self, poly: &Expression) -> bool {
-        let reduced = poly_reduce_completely(poly, &self.basis, &self.variables, &self.ordering);
+        let basis_refs: Vec<&Expression> = self.basis.iter().collect();
+        let reduced = poly_reduce_completely(poly, &basis_refs, &self.variables, &self.ordering);
         reduced.is_zero()
     }
 

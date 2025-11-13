@@ -24,7 +24,7 @@ use crate::core::{Expression, Number, Symbol};
 /// Tuple of (reduced polynomial, whether reduction occurred)
 pub fn poly_reduce(
     poly: &Expression,
-    basis: &[Expression],
+    basis: &[&Expression],
     variables: &[Symbol],
     order: &MonomialOrder,
 ) -> (Expression, bool) {
@@ -35,7 +35,7 @@ pub fn poly_reduce(
     let lt_poly = order.leading_monomial(poly, variables);
     let lc_poly = order.leading_coefficient(poly, variables);
 
-    for g in basis {
+    for &g in basis {
         if g.is_zero() {
             continue;
         }
@@ -44,10 +44,42 @@ pub fn poly_reduce(
         let lc_g = order.leading_coefficient(g, variables);
 
         if divides(&lt_g, &lt_poly, variables) {
-            let quotient_term = Expression::div(
-                Expression::mul(vec![lc_poly.clone(), lt_poly.clone()]),
-                Expression::mul(vec![lc_g, lt_g]),
-            );
+            // Compute quotient of monomials by subtracting exponents
+            let exp_poly = extract_exponents(&lt_poly, variables);
+            let exp_g = extract_exponents(&lt_g, variables);
+            let exp_diff: Vec<i64> = exp_poly
+                .iter()
+                .zip(exp_g.iter())
+                .map(|(e1, e2)| e1 - e2)
+                .collect();
+
+            // Build monomial from exponent differences
+            let mut mono_factors = Vec::new();
+            for (i, &exp) in exp_diff.iter().enumerate() {
+                if exp != 0 {
+                    if exp == 1 {
+                        mono_factors.push(Expression::symbol(variables[i].clone()));
+                    } else {
+                        mono_factors.push(Expression::pow(
+                            Expression::symbol(variables[i].clone()),
+                            Expression::integer(exp),
+                        ));
+                    }
+                }
+            }
+            let mono_quotient = if mono_factors.is_empty() {
+                Expression::integer(1)
+            } else if mono_factors.len() == 1 {
+                mono_factors[0].clone()
+            } else {
+                Expression::mul(mono_factors)
+            };
+
+            // Compute coefficient quotient
+            let coeff_quotient = Expression::div(lc_poly.clone(), lc_g);
+
+            // Combine: quotient_term = (lc_poly/lc_g) * mono_quotient
+            let quotient_term = Expression::mul(vec![coeff_quotient, mono_quotient]);
 
             let subtrahend = Expression::mul(vec![quotient_term, g.clone()]);
             // Use subtraction operator instead of Expression::sub
@@ -86,16 +118,17 @@ pub fn poly_reduce(
 /// let y = symbol!(y);
 /// let poly = expr!((x^2) + (x*y) + 1);
 /// let basis = vec![expr!(x - y)];
+/// let basis_refs: Vec<&Expression> = basis.iter().collect();
 /// let reduced = poly_reduce_completely(
 ///     &poly,
-///     &basis,
+///     &basis_refs,
 ///     &vec![x, y],
 ///     &MonomialOrder::Lex
 /// );
 /// ```
 pub fn poly_reduce_completely(
     poly: &Expression,
-    basis: &[Expression],
+    basis: &[&Expression],
     variables: &[Symbol],
     order: &MonomialOrder,
 ) -> Expression {
@@ -227,8 +260,9 @@ mod tests {
         let poly = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let g = Expression::symbol(x.clone());
         let basis = vec![g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
 
-        let (reduced, changed) = poly_reduce(&poly, &basis, &vars, &MonomialOrder::Lex);
+        let (reduced, changed) = poly_reduce(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
 
         assert!(changed);
         assert!(!reduced.is_zero());
@@ -243,8 +277,9 @@ mod tests {
         let poly = Expression::symbol(y.clone());
         let g = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
         let basis = vec![g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
 
-        let (reduced, changed) = poly_reduce(&poly, &basis, &vars, &MonomialOrder::Lex);
+        let (reduced, changed) = poly_reduce(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
 
         assert!(!changed);
         assert_eq!(reduced, poly);
@@ -264,22 +299,22 @@ mod tests {
         // Use subtraction operator instead of Expression::sub
         let g = Expression::symbol(x.clone()) - Expression::symbol(y.clone());
         let basis = vec![g];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
 
-        let reduced = poly_reduce_completely(&poly, &basis, &vars, &MonomialOrder::Lex);
+        let reduced = poly_reduce_completely(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
 
         assert!(!reduced.is_zero());
     }
 
     #[test]
-    #[ignore]
     fn test_reduce_to_zero() {
         let x = symbol!(x);
-        let vars = vec![x.clone()];
+        let vars = [x];
+        let poly = Expression::symbol(vars[0].clone());
+        let basis = [poly.clone()];
+        let basis_refs: Vec<&Expression> = basis.iter().collect();
 
-        let poly = Expression::symbol(x.clone());
-        let basis = vec![poly.clone()];
-
-        let reduced = poly_reduce_completely(&poly, &basis, &vars, &MonomialOrder::Lex);
+        let reduced = poly_reduce_completely(&poly, &basis_refs, &vars, &MonomialOrder::Lex);
 
         assert!(reduced.is_zero());
     }
