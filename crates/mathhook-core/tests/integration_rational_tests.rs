@@ -1,7 +1,7 @@
 //! Comprehensive tests for rational function integration via partial fractions
 
 use mathhook_core::calculus::integrals::rational::{integrate_rational, is_rational_function};
-use mathhook_core::{expr, symbol, Expression};
+use mathhook_core::{symbol, Expression};
 
 #[test]
 fn test_is_rational_function_simple() {
@@ -11,10 +11,7 @@ fn test_is_rational_function_simple() {
     let expr1 = Expression::mul(vec![
         Expression::integer(1),
         Expression::pow(
-            Expression::add(vec![
-                Expression::symbol(x.clone()),
-                Expression::integer(-2),
-            ]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]),
             Expression::integer(-1),
         ),
     ]);
@@ -40,10 +37,7 @@ fn test_rational_proper_simple_linear() {
     let expr = Expression::mul(vec![
         Expression::integer(1),
         Expression::pow(
-            Expression::add(vec![
-                Expression::symbol(x.clone()),
-                Expression::integer(-2),
-            ]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]),
             Expression::integer(-1),
         ),
     ]);
@@ -78,10 +72,7 @@ fn test_rational_proper_constant_numerator() {
     let expr = Expression::mul(vec![
         Expression::integer(5),
         Expression::pow(
-            Expression::add(vec![
-                Expression::symbol(x.clone()),
-                Expression::integer(-3),
-            ]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-3)]),
             Expression::integer(-1),
         ),
     ]);
@@ -116,11 +107,7 @@ fn test_rational_improper_polynomial_division() {
     let integral = result.unwrap();
     // Should contain both polynomial terms and logarithmic term
     let result_str = integral.to_string();
-    assert!(
-        result_str.contains("ln")
-            || result_str.contains("log")
-            || result_str.contains("x")
-    );
+    assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("x"));
 }
 
 #[test]
@@ -199,11 +186,7 @@ fn test_rational_quadratic_irreducible_x_numerator() {
 
     let integral = result.unwrap();
     let result_str = integral.to_string();
-    assert!(
-        result_str.contains("ln")
-            || result_str.contains("log")
-            || result_str.contains("x")
-    );
+    assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("x"));
 }
 
 #[test]
@@ -487,9 +470,5 @@ fn test_rational_linear_numerator_quadratic_denominator() {
     let integral = result.unwrap();
     let result_str = integral.to_string();
     // Should contain both ln and atan terms
-    assert!(
-        result_str.contains("ln")
-            || result_str.contains("log")
-            || result_str.contains("atan")
-    );
+    assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("atan"));
 }
