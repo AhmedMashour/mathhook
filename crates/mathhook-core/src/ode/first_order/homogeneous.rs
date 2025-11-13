@@ -7,7 +7,7 @@
 
 use crate::calculus::integrals::Integration;
 use crate::core::{Expression, Symbol};
-use super::{ODEError, ODEResult};
+use super::ODEResult;
 use crate::simplify::Simplify;
 
 /// Homogeneous ODE solver

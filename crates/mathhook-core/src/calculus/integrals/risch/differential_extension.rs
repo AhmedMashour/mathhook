@@ -3,7 +3,7 @@
 //! Builds a tower of differential extensions for integrand expressions.
 //! Each extension represents a transcendental function (exponential or logarithmic).
 
-use crate::core::{Expression, Number, Symbol};
+use crate::core::{Expression, Symbol};
 
 /// Differential extension tower element
 #[derive(Debug, Clone, PartialEq)]

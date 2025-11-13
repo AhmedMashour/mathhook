@@ -7,8 +7,8 @@
 //! x(t) = c₁e^(λ₁t)v₁ + c₂e^(λ₂t)v₂ + ... + cₙe^(λₙt)vₙ
 
 use crate::core::{Expression, Symbol};
-use crate::matrix::{EigenOperations, Matrix};
-use crate::ode::first_order::{ODEError, ODEResult};
+use crate::matrix::Matrix;
+use crate::ode::first_order::ODEError;
 use crate::simplify::Simplify;
 
 /// Linear system of ODEs solver

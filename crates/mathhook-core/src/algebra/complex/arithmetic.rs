@@ -6,7 +6,6 @@
 
 use super::operations::ComplexOperations;
 use crate::core::Expression;
-use crate::expr;
 use crate::simplify::Simplify;
 
 impl Expression {

@@ -1,7 +1,9 @@
-//! Educational Wrapper for ODE Solvers
+
 //!
 //! Wraps ODE solvers to capture intermediate steps and provide
 //! human-readable explanations of the solution process.
+
+use crate::algebra::solvers::SolverResult;
 
 use crate::core::{Expression, Symbol};
 use crate::ode::educational::steps::{ODEPhase, ODESolutionStep, ODEStepFactory};
@@ -237,7 +239,6 @@ impl Default for EducationalODESolver {
 /// Implement the EquationSolver trait for integration with SmartEquationSolver
 impl crate::algebra::solvers::EquationSolver for EducationalODESolver {
     fn solve(&self, _equation: &Expression, _variable: &Symbol) -> crate::algebra::solvers::SolverResult {
-        use crate::algebra::solvers::SolverResult;
 
         // Placeholder: Full integration will classify ODE type and route to appropriate solver
         SolverResult::NoSolution
@@ -248,7 +249,6 @@ impl crate::algebra::solvers::EquationSolver for EducationalODESolver {
         equation: &Expression,
         variable: &Symbol,
     ) -> (crate::algebra::solvers::SolverResult, crate::educational::step_by_step::StepByStepExplanation) {
-        use crate::algebra::solvers::SolverResult;
         use crate::educational::step_by_step::{Step, StepByStepExplanation};
 
         let mut steps = Vec::new();

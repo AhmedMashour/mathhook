@@ -6,9 +6,8 @@ mod noncommutative;
 mod quadratic;
 
 use crate::core::commutativity::Commutativity;
-use crate::core::{Expression, Number};
-use num_integer::Integer;
-use num_traits::{One, Zero};
+use crate::core::{Expression};
+// num_traits imports removed
 
 /// Trait for factoring expressions
 pub trait Factor {

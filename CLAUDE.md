@@ -1782,10 +1782,10 @@ cargo build --release
 cargo build -p mathhook-core
 
 # Check without building (fast)
-cargo check
+cargo clippy
 
 # Check all targets
-cargo check --all-targets
+cargo clippy --all-targets
 ```
 
 ### Parser Regeneration

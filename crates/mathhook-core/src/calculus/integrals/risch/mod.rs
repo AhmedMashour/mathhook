@@ -18,7 +18,6 @@ pub mod hermite;
 pub mod rde;
 
 use crate::core::{Expression, Symbol};
-use differential_extension::DifferentialExtension;
 
 /// Risch integration result
 #[derive(Debug, Clone, PartialEq)]

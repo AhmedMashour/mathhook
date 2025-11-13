@@ -57,7 +57,6 @@ impl IntegrationExplanation {
 
 /// Analyze integrand and generate appropriate explanation
 fn analyze_and_explain(expr: &Expression, var: &Symbol) -> (Vec<String>, String) {
-    use crate::core::Number;
 
     match expr {
         Expression::Number(_) => (

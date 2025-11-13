@@ -38,7 +38,6 @@ pub mod standard;
 pub mod educational;
 
 // Re-exports
-pub use classification::*;
 pub use educational::*;
 pub use method_of_characteristics::*;
 pub use separation_of_variables::*;

@@ -41,3 +41,21 @@ pub enum Expression {
     Calculus(Box<CalculusData>),
     MethodCall(Box<MethodCallData>),
 }
+
+#[cfg(test)]
+mod size_tests {
+    use super::*;
+
+    #[test]
+    fn test_expression_size_constraint() {
+        // Expression MUST be exactly 32 bytes for cache-line optimization
+        // Two expressions fit in a 64-byte cache line (standard on modern CPUs)
+        assert_eq!(
+            std::mem::size_of::<Expression>(),
+            32,
+            "Expression size constraint violated! Expected 32 bytes, got {} bytes. \
+             This breaks cache-line optimization.",
+            std::mem::size_of::<Expression>()
+        );
+    }
+}

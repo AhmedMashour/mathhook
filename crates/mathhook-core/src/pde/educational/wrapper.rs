@@ -1,7 +1,8 @@
-//! Educational Wrapper for PDE Solvers
 //!
 //! Wraps PDE solvers to capture intermediate steps and provide
 //! human-readable explanations of the solution process.
+
+use crate::algebra::solvers::SolverResult;
 
 use crate::core::{Expression, Symbol};
 
@@ -23,9 +24,11 @@ impl Default for EducationalPDESolver {
 
 /// Implement the EquationSolver trait for integration with SmartEquationSolver
 impl crate::algebra::solvers::EquationSolver for EducationalPDESolver {
-    fn solve(&self, _equation: &Expression, _variable: &Symbol) -> crate::algebra::solvers::SolverResult {
-        use crate::algebra::solvers::SolverResult;
-
+    fn solve(
+        &self,
+        _equation: &Expression,
+        _variable: &Symbol,
+    ) -> crate::algebra::solvers::SolverResult {
         // Placeholder: Full integration will classify PDE type and route to appropriate solver
         SolverResult::NoSolution
     }
@@ -34,8 +37,10 @@ impl crate::algebra::solvers::EquationSolver for EducationalPDESolver {
         &self,
         equation: &Expression,
         variable: &Symbol,
-    ) -> (crate::algebra::solvers::SolverResult, crate::educational::step_by_step::StepByStepExplanation) {
-        use crate::algebra::solvers::SolverResult;
+    ) -> (
+        crate::algebra::solvers::SolverResult,
+        crate::educational::step_by_step::StepByStepExplanation,
+    ) {
         use crate::educational::step_by_step::{Step, StepByStepExplanation};
 
         let mut steps = Vec::new();
@@ -43,13 +48,13 @@ impl crate::algebra::solvers::EquationSolver for EducationalPDESolver {
         // Add classification step
         steps.push(Step::new(
             "PDE Classification",
-            "Analyzing partial differential equation structure..."
+            "Analyzing partial differential equation structure...",
         ));
 
         // Placeholder: Full integration will use PDEClassifier
         steps.push(Step::new(
             "Status",
-            "PDE solving integration in progress (Wave 5-INT)"
+            "PDE solving integration in progress (Wave 5-INT)",
         ));
 
         let result = self.solve(equation, variable);

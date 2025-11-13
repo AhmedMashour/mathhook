@@ -65,7 +65,7 @@ pub trait StepByStep {
 impl StepByStep for Expression {
     /// Generate step-by-step explanation for simplification
     fn explain_simplification(&self) -> StepByStepExplanation {
-        use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+        // Unused message registry imports removed
 
         let mut steps = Vec::new();
         let initial_expr = self.clone();
@@ -178,7 +178,7 @@ impl StepByStep for Expression {
 
     /// Generate step-by-step explanation for expansion
     fn explain_expansion(&self) -> StepByStepExplanation {
-        use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+        // Unused message registry imports removed
 
         let mut steps = Vec::new();
         let initial_expr = self.clone();
@@ -267,7 +267,7 @@ impl StepByStep for Expression {
 
     /// Generate step-by-step explanation for factorization
     fn explain_factorization(&self) -> StepByStepExplanation {
-        use crate::educational::message_registry::{MessageBuilder, MessageCategory, MessageType};
+        // Unused message registry imports removed
 
         let mut steps = Vec::new();
         let initial_expr = self.clone();

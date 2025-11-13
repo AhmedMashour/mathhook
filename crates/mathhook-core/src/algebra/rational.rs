@@ -9,7 +9,6 @@
 //! - In general, simplification with noncommutative terms is NOT always valid
 //! - This implementation currently preserves order and does NOT auto-simplify noncommutative rationals
 
-use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;

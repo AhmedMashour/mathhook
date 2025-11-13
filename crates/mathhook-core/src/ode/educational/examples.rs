@@ -5,8 +5,7 @@
 //! - Common pitfalls and mistakes
 //! - Reference material for students
 
-use crate::core::{Expression, Symbol};
-use crate::ode::educational::{ODEExplanation, ODESolutionStep, ODEStepFactory, ODEPhase};
+use crate::ode::educational::{ODEExplanation, ODEStepFactory};
 use crate::{expr, symbol};
 
 /// Collection of educational ODE examples
@@ -38,12 +37,7 @@ impl ODEExamples {
         ));
 
         // Step 2: Separation
-        steps.push(ODEStepFactory::separation(
-            &rhs,
-            &expr!(x),
-            "x",
-            "1",
-        ));
+        steps.push(ODEStepFactory::separation(&rhs, &expr!(x), "x", "1"));
 
         // Step 3: Integration (left side)
         steps.push(ODEStepFactory::integration(
@@ -102,12 +96,7 @@ impl ODEExamples {
             "Can be written as dy/dx = 1·y, where g(x) = 1 and h(y) = y",
         ));
 
-        steps.push(ODEStepFactory::separation(
-            &rhs,
-            &expr!(1 / y),
-            "1",
-            "y",
-        ));
+        steps.push(ODEStepFactory::separation(&rhs, &expr!(1 / y), "1", "y"));
 
         // Integration: ∫(1/y)dy = ln|y|
         steps.push(ODEStepFactory::integration(
@@ -205,12 +194,7 @@ impl ODEExamples {
             "Equation dy/dx = xy can be written as dy/y = x dx (product of functions of different variables)",
         ));
 
-        steps.push(ODEStepFactory::separation(
-            &rhs,
-            &expr!(1 / y),
-            "x",
-            "y",
-        ));
+        steps.push(ODEStepFactory::separation(&rhs, &expr!(1 / y), "x", "y"));
 
         steps.push(ODEStepFactory::integration(
             &expr!(1 / y),
@@ -265,12 +249,7 @@ impl ODEExamples {
             "Standard separable form dy/dx = g(x) with initial condition y(0) = 1",
         ));
 
-        steps.push(ODEStepFactory::separation(
-            &rhs,
-            &expr!(x),
-            "x",
-            "1",
-        ));
+        steps.push(ODEStepFactory::separation(&rhs, &expr!(x), "x", "1"));
 
         steps.push(ODEStepFactory::integration(
             &expr!(1),
@@ -292,7 +271,8 @@ impl ODEExamples {
             &expr!(y), // Placeholder: y = x²/2 + 1
             "applying initial condition y(0) = 1",
         );
-        ic_step.description = "Substitute x = 0, y = 1 into general solution to find C = 1".to_string();
+        ic_step.description =
+            "Substitute x = 0, y = 1 into general solution to find C = 1".to_string();
         steps.push(ic_step);
 
         let solution = expr!(y); // Placeholder: y = x²/2 + 1

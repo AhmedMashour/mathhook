@@ -3,7 +3,6 @@
 //! This module defines the core architectural pattern for integrating educational
 //! explanations across all mathematical operations in MathHook.
 
-use crate::core::Expression;
 use crate::educational::step_by_step::StepByStepExplanation;
 
 /// Context information for educational operations

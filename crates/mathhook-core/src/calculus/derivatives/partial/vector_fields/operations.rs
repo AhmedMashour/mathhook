@@ -1,6 +1,5 @@
 //! Core vector field operations including divergence, curl, Laplacian, and gradient magnitude
 
-use super::super::utils::PartialUtils;
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;

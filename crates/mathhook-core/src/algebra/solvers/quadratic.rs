@@ -4,7 +4,7 @@
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::core::{Expression, Number, Symbol};
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
-use crate::educational::traits::{EducationalOperation, OperationContext};
+// Unused educational imports removed
 use crate::formatter::latex::LaTeXFormatter;
 use crate::simplify::Simplify;
 use num_bigint::BigInt;

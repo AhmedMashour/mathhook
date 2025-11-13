@@ -6,7 +6,6 @@
 use super::types::Number;
 use crate::error::MathError;
 use num_bigint::BigInt;
-use num_traits::Pow;
 
 impl Number {
     /// Power operation with overflow checking

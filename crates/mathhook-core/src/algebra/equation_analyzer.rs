@@ -4,7 +4,7 @@
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::algebra::solvers::{LinearSolver, PolynomialSolver, QuadraticSolver, SystemSolver};
 use crate::algebra::solvers::matrix_equations::MatrixEquationSolver;
-use crate::algebra::root_finding::{NewtonRaphson, RootFinder, RootFindingConfig};
+// Unused imports removed
 use crate::core::{Expression, Number, Symbol};
 use crate::core::symbol::SymbolType;
 use crate::educational::step_by_step::{Step, StepByStepExplanation};
