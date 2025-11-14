@@ -3,8 +3,8 @@ use crate::core::expression::Expression;
 
 #[test]
 fn test_digamma_symbolic() {
-    use crate::core::symbol::Symbol;
-    let z = Expression::Symbol(Symbol::new("z"));
+    use crate::symbol;
+    let z = Expression::symbol(symbol!(z));
     let result = digamma(&z).unwrap();
     assert_eq!(result.to_string(), "digamma(z)");
 }

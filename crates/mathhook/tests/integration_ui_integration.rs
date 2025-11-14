@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_ui_expression_display() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
@@ -20,7 +20,7 @@ fn test_ui_expression_display() {
 
 #[test]
 fn test_ui_latex_output() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
@@ -33,8 +33,8 @@ fn test_ui_latex_output() {
 
 #[test]
 fn test_ui_complex_display() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     let expr = Expression::add(vec![
         Expression::mul(vec![

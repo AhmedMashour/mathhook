@@ -2,12 +2,12 @@
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use mathhook_benchmarks::BenchmarkData;
-use mathhook_core::{Expression, MathSolver, Simplify, Symbol};
+use mathhook_core::{symbol, Expression, MathSolver, Simplify};
 use std::hint::black_box;
 
 /// Benchmark basic arithmetic operations
 fn bench_arithmetic_operations(c: &mut Criterion) {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     c.bench_function("expression_creation", |b| {
         b.iter(|| {
@@ -32,7 +32,7 @@ fn bench_arithmetic_operations(c: &mut Criterion) {
 fn bench_solver_operations(c: &mut Criterion) {
     let mut solver = MathSolver::new();
     let equation = Expression::equation(Expression::symbol("x"), Expression::integer(42));
-    let variable = Symbol::new("x");
+    let variable = symbol!(x);
 
     c.bench_function("basic_solving", |b| {
         b.iter(|| black_box(solver.solve(&equation, &variable)))

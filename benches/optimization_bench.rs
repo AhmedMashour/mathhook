@@ -6,7 +6,7 @@ use std::hint::black_box;
 
 /// Benchmark basic arithmetic operations
 fn bench_arithmetic_operations(c: &mut Criterion) {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     c.bench_function("addition_benchmark", |b| {
         b.iter(|| {
@@ -32,7 +32,7 @@ fn bench_arithmetic_operations(c: &mut Criterion) {
 
 /// Benchmark simplification performance
 fn bench_simplification_performance(c: &mut Criterion) {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     c.bench_function("simple_simplification", |b| {
         b.iter(|| {
@@ -80,7 +80,7 @@ fn bench_gcd_operations(c: &mut Criterion) {
     });
 
     c.bench_function("polynomial_gcd", |b| {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         b.iter(|| {
             let poly1 = Expression::mul(vec![
                 Expression::integer(black_box(6)),
@@ -105,7 +105,7 @@ fn bench_memory_optimization(c: &mut Criterion) {
     });
 
     c.bench_function("expression_creation", |b| {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         b.iter(|| {
             let expr = Expression::add(vec![
                 Expression::symbol(x.clone()),
@@ -116,7 +116,7 @@ fn bench_memory_optimization(c: &mut Criterion) {
     });
 
     c.bench_function("bulk_operations", |b| {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         b.iter(|| {
             let mut result = Expression::integer(0);
             for i in 0..black_box(100) {

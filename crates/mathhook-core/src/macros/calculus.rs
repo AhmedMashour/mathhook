@@ -14,10 +14,10 @@
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::{calculus, expr};
-/// use mathhook_core::{Expression, Symbol};
+/// use mathhook_core::{calculus, expr, symbol};
+/// use mathhook_core::Expression;
 ///
-/// let x = Symbol::new("x");
+/// let x = symbol!(x);
 /// let x_expr = expr!(x);
 ///
 /// // Derivative construction
@@ -134,11 +134,11 @@ macro_rules! calculus {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Expression, Symbol};
+    use crate::Expression;
 
     #[test]
     fn test_calculus_derivative() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let x_expr = Expression::symbol(x.clone());
         let derivative = calculus!(derivative: x_expr, x, 1);
 
@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn test_calculus_integral() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let x_expr = Expression::symbol(x.clone());
         let integral = calculus!(integral: x_expr, x);
 
@@ -164,7 +164,7 @@ mod tests {
 
     #[test]
     fn test_calculus_limit() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let x_expr = Expression::symbol(x.clone());
         let limit = calculus!(limit: x_expr, x, Expression::integer(0));
 
@@ -177,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_calculus_series() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let x_expr = Expression::symbol(x.clone());
         let series = calculus!(series: x_expr, x, Expression::integer(0), 5);
 
@@ -190,7 +190,7 @@ mod tests {
 
     #[test]
     fn test_calculus_common_derivatives() {
-        let x_expr = Expression::symbol(Symbol::new("x"));
+        let x_expr = Expression::symbol(symbol!(x));
 
         // Test sin derivative
         let sin_deriv = calculus!(d/dx: sin(x_expr.clone()));
@@ -213,7 +213,7 @@ mod tests {
 
     #[test]
     fn test_calculus_rules() {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         let f = Expression::function("f", vec![Expression::symbol(x.clone())]);
         let g = Expression::function("g", vec![Expression::symbol(x.clone())]);
 

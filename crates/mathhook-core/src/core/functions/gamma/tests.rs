@@ -25,8 +25,8 @@ fn test_gamma_half_integers() {
 
 #[test]
 fn test_gamma_symbolic() {
-    use crate::core::symbol::Symbol;
-    let x = Expression::Symbol(Symbol::new("x"));
+    use crate::symbol;
+    let x = Expression::symbol(symbol!(x));
     let result = gamma(&x).unwrap();
     assert_eq!(result.to_string(), "gamma(x)");
 }

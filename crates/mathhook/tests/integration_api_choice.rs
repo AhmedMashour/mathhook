@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_expression_api() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test different ways to create expressions
     let expr1 = Expression::symbol(x.clone());
@@ -19,8 +19,8 @@ fn test_expression_api() {
 
 #[test]
 fn test_operator_overloading() {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Test operator overloading
     let sum = Expression::symbol(x.clone()) + Expression::symbol(y.clone());
@@ -36,7 +36,7 @@ fn test_operator_overloading() {
 
 #[test]
 fn test_convenience_methods() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test convenience methods
     let zero = Expression::integer(0);
@@ -51,7 +51,7 @@ fn test_convenience_methods() {
 
 #[test]
 fn test_api_consistency() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test that different API approaches give same results
     let method1 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);

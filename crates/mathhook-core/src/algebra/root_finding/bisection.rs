@@ -81,11 +81,7 @@ impl BisectionMethod {
 }
 
 impl RootFinder for BisectionMethod {
-    fn find_root<F>(
-        &self,
-        f: F,
-        config: &RootFindingConfig,
-    ) -> Result<RootResult, MathError>
+    fn find_root<F>(&self, f: F, config: &RootFindingConfig) -> Result<RootResult, MathError>
     where
         F: Fn(f64) -> f64,
     {
@@ -195,12 +191,14 @@ mod tests {
 
     #[test]
     fn test_bisection_cubic() {
-        let method = BisectionMethod::new(-2.0, 0.0);
+        let method = BisectionMethod::new(0.0, 1.0);
         let config = RootFindingConfig::default();
 
-        let result = method.find_root(|x| x * x * x + x * x - 1.0, &config).unwrap();
+        let result = method
+            .find_root(|x| x * x * x + x * x - 1.0, &config)
+            .unwrap();
 
-        let expected = -1.4655712318767680266567312093829;
+        let expected = 0.7548776662466927600690417477;
         assert!((result.root - expected).abs() < 1e-9);
         assert!(result.converged);
     }
@@ -233,7 +231,9 @@ mod tests {
         let method = BisectionMethod::new(-2.0, 2.0);
         let config = RootFindingConfig::default();
 
-        let result = method.find_root(|x| x * (x - 1.0) * (x + 1.0), &config).unwrap();
+        let result = method
+            .find_root(|x| x * (x - 1.0) * (x + 1.0), &config)
+            .unwrap();
 
         assert!(result.converged);
         assert!(
@@ -274,7 +274,7 @@ mod tests {
 
     #[test]
     fn test_bisection_polynomial_with_close_roots() {
-        let method = BisectionMethod::new(0.5, 2.5);
+        let method = BisectionMethod::new(0.5, 1.5);
         let config = RootFindingConfig::default();
 
         let result = method
@@ -282,20 +282,18 @@ mod tests {
             .unwrap();
 
         assert!(result.converged);
-        assert!(
-            (result.root - 1.0).abs() < 1e-9 || (result.root - 2.0).abs() < 1e-9
-        );
+        assert!((result.root - 1.0).abs() < 1e-9);
     }
 
     #[test]
     fn test_bisection_oscillatory_function() {
-        let method = BisectionMethod::new(0.0, 1.0);
+        let method = BisectionMethod::new(0.1, 0.5);
         let config = RootFindingConfig::default();
 
         let result = method.find_root(|x| (10.0 * x).sin(), &config).unwrap();
 
         assert!(result.converged);
-        assert!(result.root.abs() < 1e-9 || (result.root - std::f64::consts::PI / 10.0).abs() < 1e-9);
+        assert!((result.root - std::f64::consts::PI / 10.0).abs() < 1e-9);
     }
 
     #[test]

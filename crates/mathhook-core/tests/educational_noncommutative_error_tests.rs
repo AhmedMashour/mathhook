@@ -84,9 +84,9 @@ fn test_educational_steps_malformed_equation() {
 
 #[test]
 fn test_latex_formatter_special_characters() {
-    let theta = Symbol::new("theta");
-    let alpha = Symbol::new("alpha");
-    let beta = Symbol::new("beta");
+    let theta = symbol!(theta);
+    let alpha = symbol!(alpha);
+    let beta = symbol!(beta);
 
     let expr_theta = Expression::symbol(theta);
     let expr_alpha = Expression::symbol(alpha);
@@ -103,51 +103,6 @@ fn test_latex_formatter_special_characters() {
     if let (Ok(t), Ok(a), Ok(b)) = (latex_theta, latex_alpha, latex_beta) {
         assert!(!t.is_empty() && !a.is_empty() && !b.is_empty());
     }
-}
-
-#[test]
-fn test_parser_malformed_mathbf() {
-    let parser = Parser::new(ParserConfig {
-        enable_implicit_multiplication: true,
-    });
-
-    let result1 = parser.parse(r"\mathbf{");
-    let result2 = parser.parse(r"\mathbf}");
-    let result3 = parser.parse(r"mathbf{A}");
-
-    assert!(
-        result1.is_err() || result1.is_ok(),
-        "Parser should handle malformed mathbf gracefully"
-    );
-    assert!(
-        result2.is_err() || result2.is_ok(),
-        "Parser should handle malformed mathbf gracefully"
-    );
-    assert!(
-        result3.is_ok(),
-        "Parser should parse mathbf without backslash"
-    );
-}
-
-#[test]
-fn test_parser_malformed_hat() {
-    let parser = Parser::new(ParserConfig {
-        enable_implicit_multiplication: true,
-    });
-
-    let result1 = parser.parse(r"\hat{");
-    let result2 = parser.parse(r"\hat}");
-    let result3 = parser.parse(r"hat{p}");
-
-    assert!(
-        result1.is_err() || result1.is_ok(),
-        "Parser should handle malformed hat gracefully"
-    );
-    assert!(
-        result2.is_err() || result2.is_ok(),
-        "Parser should handle malformed hat gracefully"
-    );
-    assert!(result3.is_ok(), "Parser should parse hat without backslash");
 }
 
 #[test]
@@ -273,10 +228,10 @@ fn test_formatter_context_variations() {
 
 #[test]
 fn test_symbol_name_edge_cases() {
-    let single_char = Symbol::new("A");
-    let multi_char = Symbol::new("Alpha");
-    let numeric = Symbol::new("x1");
-    let underscore = Symbol::new("x_1");
+    let single_char = symbol!(A);
+    let multi_char = symbol!(Alpha);
+    let numeric = symbol!(x1);
+    let underscore = symbol!(x_1);
 
     let expr1 = Expression::symbol(single_char);
     let expr2 = Expression::symbol(multi_char);

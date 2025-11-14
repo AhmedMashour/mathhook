@@ -181,7 +181,7 @@ impl JacobianDeterminant {
     /// use mathhook_core::calculus::derivatives::JacobianDeterminant;
     ///
     /// let r = symbol!(r);
-    /// let theta = Symbol::new("theta");
+    /// let theta = symbol!(theta);
     /// let functions = vec![
     ///     Expression::mul(vec![
     ///         Expression::symbol(r.clone()),
@@ -321,7 +321,7 @@ mod tests {
     #[test]
     fn test_polar_to_cartesian_jacobian() {
         let r = symbol!(r);
-        let theta = Symbol::new("theta");
+        let theta = symbol!(theta);
 
         let functions = vec![
             Expression::mul(vec![

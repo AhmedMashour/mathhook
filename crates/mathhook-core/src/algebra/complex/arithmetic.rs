@@ -208,7 +208,7 @@ impl Expression {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::symbol;
+    use crate::{expr, symbol};
 
     #[test]
     fn test_complex_addition() {

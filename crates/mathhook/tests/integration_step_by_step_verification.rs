@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_step_verification() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::integer(5),

@@ -5,8 +5,9 @@
 /// 2. SmartEquationSolver correctly routes to PDE solver
 /// 3. No stub implementations remain in the critical path
 /// 4. Architecture follows CLAUDE.md patterns (registry-based, not hardcoded)
-
-use mathhook_core::algebra::equation_analyzer::{EquationAnalyzer, EquationType, SmartEquationSolver};
+use mathhook_core::algebra::equation_analyzer::{
+    EquationAnalyzer, EquationType, SmartEquationSolver,
+};
 use mathhook_core::core::{Expression, Symbol};
 use mathhook_core::symbol;
 
@@ -35,7 +36,7 @@ fn test_pde_detection_partial_function() {
 
     let partial_expr = Expression::function(
         "partial",
-        vec![Expression::symbol(u.clone()), Expression::symbol(t.clone())]
+        vec![Expression::symbol(u.clone()), Expression::symbol(t.clone())],
     );
 
     let equation_type = EquationAnalyzer::analyze(&partial_expr, &u);
@@ -104,7 +105,7 @@ fn test_non_pde_still_works() {
     let y_prime = Symbol::new("y'");
     let ode = Expression::add(vec![
         Expression::symbol(y_prime),
-        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())])
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
     ]);
 
     let ode_type = EquationAnalyzer::analyze(&ode, &y);
@@ -140,10 +141,7 @@ fn test_architectural_pattern_no_hardcoded_pde_matching() {
     let u = symbol!(u);
 
     // Test multiple partial derivative notations
-    let notations = vec![
-        Symbol::new("∂u"),
-        Symbol::new("partial_u"),
-    ];
+    let notations = vec![Symbol::new("∂u"), Symbol::new("partial_u")];
 
     for notation in notations {
         let expr = Expression::symbol(notation);
@@ -180,9 +178,10 @@ fn test_no_stub_implementations_in_pde_routing() {
     );
 
     // Should mention PDE classification
-    let has_pde_classification = explanation.steps.iter().any(|step| {
-        step.title.contains("PDE") || step.description.contains("partial")
-    });
+    let has_pde_classification = explanation
+        .steps
+        .iter()
+        .any(|step| step.title.contains("PDE") || step.description.contains("partial"));
 
     assert!(
         has_pde_classification,

@@ -6,8 +6,8 @@ use std::hint::black_box;
 
 /// Benchmark against Symbolica's core operations
 fn bench_symbolica_challenge(c: &mut Criterion) {
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     c.bench_function("symbolica_arithmetic_challenge", |b| {
         b.iter(|| {
@@ -57,7 +57,7 @@ fn bench_symbolica_challenge(c: &mut Criterion) {
 /// Benchmark memory efficiency vs Symbolica
 fn bench_memory_efficiency(c: &mut Criterion) {
     c.bench_function("memory_compact_vs_symbolica", |b| {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         b.iter(|| {
             let expressions: Vec<Expression> = (0..black_box(1000))
                 .map(|i| {
@@ -69,7 +69,7 @@ fn bench_memory_efficiency(c: &mut Criterion) {
     });
 
     c.bench_function("bulk_simplification_vs_symbolica", |b| {
-        let x = Symbol::new("x");
+        let x = symbol!(x);
         b.iter(|| {
             let mut results = Vec::new();
             for i in 0..black_box(100) {

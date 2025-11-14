@@ -7,7 +7,7 @@ use std::hint::black_box;
 
 /// Benchmark basic expression operations for solvers
 fn bench_basic_solver_operations(c: &mut Criterion) {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     c.bench_function("expression_creation", |b| {
         b.iter(|| {
@@ -49,7 +49,7 @@ fn bench_basic_solver_operations(c: &mut Criterion) {
 
 /// Benchmark simplification operations
 fn bench_simplification(c: &mut Criterion) {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     c.bench_function("linear_simplification", |b| {
         b.iter(|| {

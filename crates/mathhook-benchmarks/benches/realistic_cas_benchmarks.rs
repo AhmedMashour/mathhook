@@ -88,7 +88,7 @@ fn bench_matrix_operations(c: &mut Criterion) {
 fn bench_polynomial_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("polynomial_operations");
 
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     // Test different polynomial degrees
     for degree in [5, 10, 20, 50, 100].iter() {
@@ -137,8 +137,8 @@ fn bench_polynomial_operations(c: &mut Criterion) {
 fn bench_mixed_operations(c: &mut Criterion) {
     let mut group = c.benchmark_group("mixed_symbolic_numeric");
 
-    let x = Symbol::new("x");
-    let y = Symbol::new("y");
+    let x = symbol!(x);
+    let y = symbol!(y);
 
     // Realistic expression: (2x + 3y + 5)^2 expansion
     let expr = Expression::pow(
@@ -220,7 +220,7 @@ fn bench_memory_patterns(c: &mut Criterion) {
     let mut group = c.benchmark_group("memory_patterns");
 
     // Expression cloning cost
-    let complex_expr = create_large_mixed_expression(&Symbol::new("x"), &Symbol::new("y"), 100);
+    let complex_expr = create_large_mixed_expression(&symbol!(x), &symbol!(y), 100);
     group.bench_function("expression_cloning", |b| {
         b.iter(|| black_box(complex_expr.clone()))
     });

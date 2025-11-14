@@ -5,8 +5,9 @@
 /// 2. SmartEquationSolver correctly routes to ODE solver
 /// 3. No stub implementations remain in the critical path
 /// 4. Architecture follows CLAUDE.md patterns (registry-based, not hardcoded)
-
-use mathhook_core::algebra::equation_analyzer::{EquationAnalyzer, EquationType, SmartEquationSolver};
+use mathhook_core::algebra::equation_analyzer::{
+    EquationAnalyzer, EquationType, SmartEquationSolver,
+};
 use mathhook_core::core::{Expression, Symbol};
 use mathhook_core::symbol;
 
@@ -19,7 +20,7 @@ fn test_ode_detection_simple_derivative() {
 
     let lhs = Expression::add(vec![
         Expression::symbol(y_prime),
-        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())])
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
     ]);
 
     let equation_type = EquationAnalyzer::analyze(&lhs, &y);
@@ -40,7 +41,7 @@ fn test_ode_detection_function_derivative() {
 
     let derivative_expr = Expression::function(
         "derivative",
-        vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())]
+        vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())],
     );
 
     let equation_type = EquationAnalyzer::analyze(&derivative_expr, &y);
@@ -79,7 +80,7 @@ fn test_smart_solver_ode_routing() {
 
     let equation = Expression::add(vec![
         Expression::symbol(y_prime),
-        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())])
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
     ]);
 
     let mut solver = SmartEquationSolver::new();
@@ -133,10 +134,7 @@ fn test_architectural_pattern_no_hardcoded_ode_matching() {
     let y = symbol!(y);
 
     // Test multiple derivative notations
-    let notations = vec![
-        Symbol::new("y'"),
-        Symbol::new("y_prime"),
-    ];
+    let notations = vec![Symbol::new("y'"), Symbol::new("y_prime")];
 
     for notation in notations {
         let expr = Expression::symbol(notation);
@@ -174,9 +172,10 @@ fn test_no_stub_implementations_in_routing() {
     );
 
     // Should mention ODE classification
-    let has_ode_classification = explanation.steps.iter().any(|step| {
-        step.title.contains("ODE") || step.description.contains("differential")
-    });
+    let has_ode_classification = explanation
+        .steps
+        .iter()
+        .any(|step| step.title.contains("ODE") || step.description.contains("differential"));
 
     assert!(
         has_ode_classification,

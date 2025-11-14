@@ -1,5 +1,5 @@
 // auto-generated: "lalrpop 0.22.2"
-// sha3: fa19df970180fb0d1d4fed4cdc43ae0e2d5deab7656726a0af1bfd941b82a716
+// sha3: 75b1170396e2f86a22191d7b206c8eaf9c80a3103a02796d8fdaeaa749011c56
 use std::ops::Neg;
 use crate::core::{Expression, Symbol};
 use crate::parser::constants::{resolve_special_function, resolve_standard_function, resolve_wolfram_function, pascal_to_snake_case};
@@ -17209,7 +17209,7 @@ fn __action206<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("alpha"))
+    Expression::symbol(crate::symbol!(alpha))
 }
 
 #[allow(unused_variables)]
@@ -17221,7 +17221,7 @@ fn __action207<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("beta"))
+    Expression::symbol(crate::symbol!(beta))
 }
 
 #[allow(unused_variables)]
@@ -17233,7 +17233,7 @@ fn __action208<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("delta"))
+    Expression::symbol(crate::symbol!(delta))
 }
 
 #[allow(unused_variables)]
@@ -17245,7 +17245,7 @@ fn __action209<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("epsilon"))
+    Expression::symbol(crate::symbol!(epsilon))
 }
 
 #[allow(unused_variables)]
@@ -17257,7 +17257,7 @@ fn __action210<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("zeta"))
+    Expression::symbol(crate::symbol!(zeta))
 }
 
 #[allow(unused_variables)]
@@ -17269,7 +17269,7 @@ fn __action211<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("eta"))
+    Expression::symbol(crate::symbol!(eta))
 }
 
 #[allow(unused_variables)]
@@ -17281,7 +17281,7 @@ fn __action212<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("theta"))
+    Expression::symbol(crate::symbol!(theta))
 }
 
 #[allow(unused_variables)]
@@ -17293,7 +17293,7 @@ fn __action213<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("iota"))
+    Expression::symbol(crate::symbol!(iota))
 }
 
 #[allow(unused_variables)]
@@ -17305,7 +17305,7 @@ fn __action214<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("kappa"))
+    Expression::symbol(crate::symbol!(kappa))
 }
 
 #[allow(unused_variables)]
@@ -17317,7 +17317,7 @@ fn __action215<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("lambda"))
+    Expression::symbol(crate::symbol!(lambda))
 }
 
 #[allow(unused_variables)]
@@ -17329,7 +17329,7 @@ fn __action216<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("mu"))
+    Expression::symbol(crate::symbol!(mu))
 }
 
 #[allow(unused_variables)]
@@ -17341,7 +17341,7 @@ fn __action217<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("nu"))
+    Expression::symbol(crate::symbol!(nu))
 }
 
 #[allow(unused_variables)]
@@ -17353,7 +17353,7 @@ fn __action218<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("xi"))
+    Expression::symbol(crate::symbol!(xi))
 }
 
 #[allow(unused_variables)]
@@ -17365,7 +17365,7 @@ fn __action219<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("omicron"))
+    Expression::symbol(crate::symbol!(omicron))
 }
 
 #[allow(unused_variables)]
@@ -17377,7 +17377,7 @@ fn __action220<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("rho"))
+    Expression::symbol(crate::symbol!(rho))
 }
 
 #[allow(unused_variables)]
@@ -17389,7 +17389,7 @@ fn __action221<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("sigma"))
+    Expression::symbol(crate::symbol!(sigma))
 }
 
 #[allow(unused_variables)]
@@ -17401,7 +17401,7 @@ fn __action222<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("tau"))
+    Expression::symbol(crate::symbol!(tau))
 }
 
 #[allow(unused_variables)]
@@ -17413,7 +17413,7 @@ fn __action223<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("upsilon"))
+    Expression::symbol(crate::symbol!(upsilon))
 }
 
 #[allow(unused_variables)]
@@ -17425,7 +17425,7 @@ fn __action224<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("chi"))
+    Expression::symbol(crate::symbol!(chi))
 }
 
 #[allow(unused_variables)]
@@ -17437,7 +17437,7 @@ fn __action225<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("psi"))
+    Expression::symbol(crate::symbol!(psi))
 }
 
 #[allow(unused_variables)]
@@ -17449,7 +17449,7 @@ fn __action226<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("omega"))
+    Expression::symbol(crate::symbol!(omega))
 }
 
 #[allow(unused_variables)]
@@ -17461,7 +17461,7 @@ fn __action227<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("alpha"))
+    Expression::symbol(crate::symbol!(alpha))
 }
 
 #[allow(unused_variables)]
@@ -17473,7 +17473,7 @@ fn __action228<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("beta"))
+    Expression::symbol(crate::symbol!(beta))
 }
 
 #[allow(unused_variables)]
@@ -17485,7 +17485,7 @@ fn __action229<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("delta"))
+    Expression::symbol(crate::symbol!(delta))
 }
 
 #[allow(unused_variables)]
@@ -17497,7 +17497,7 @@ fn __action230<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("epsilon"))
+    Expression::symbol(crate::symbol!(epsilon))
 }
 
 #[allow(unused_variables)]
@@ -17509,7 +17509,7 @@ fn __action231<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("zeta"))
+    Expression::symbol(crate::symbol!(zeta))
 }
 
 #[allow(unused_variables)]
@@ -17521,7 +17521,7 @@ fn __action232<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("eta"))
+    Expression::symbol(crate::symbol!(eta))
 }
 
 #[allow(unused_variables)]
@@ -17533,7 +17533,7 @@ fn __action233<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("theta"))
+    Expression::symbol(crate::symbol!(theta))
 }
 
 #[allow(unused_variables)]
@@ -17545,7 +17545,7 @@ fn __action234<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("iota"))
+    Expression::symbol(crate::symbol!(iota))
 }
 
 #[allow(unused_variables)]
@@ -17557,7 +17557,7 @@ fn __action235<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("kappa"))
+    Expression::symbol(crate::symbol!(kappa))
 }
 
 #[allow(unused_variables)]
@@ -17569,7 +17569,7 @@ fn __action236<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("lambda"))
+    Expression::symbol(crate::symbol!(lambda))
 }
 
 #[allow(unused_variables)]
@@ -17581,7 +17581,7 @@ fn __action237<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("mu"))
+    Expression::symbol(crate::symbol!(mu))
 }
 
 #[allow(unused_variables)]
@@ -17593,7 +17593,7 @@ fn __action238<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("nu"))
+    Expression::symbol(crate::symbol!(nu))
 }
 
 #[allow(unused_variables)]
@@ -17605,7 +17605,7 @@ fn __action239<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("xi"))
+    Expression::symbol(crate::symbol!(xi))
 }
 
 #[allow(unused_variables)]
@@ -17617,7 +17617,7 @@ fn __action240<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("omicron"))
+    Expression::symbol(crate::symbol!(omicron))
 }
 
 #[allow(unused_variables)]
@@ -17629,7 +17629,7 @@ fn __action241<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("rho"))
+    Expression::symbol(crate::symbol!(rho))
 }
 
 #[allow(unused_variables)]
@@ -17641,7 +17641,7 @@ fn __action242<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("sigma"))
+    Expression::symbol(crate::symbol!(sigma))
 }
 
 #[allow(unused_variables)]
@@ -17653,7 +17653,7 @@ fn __action243<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("tau"))
+    Expression::symbol(crate::symbol!(tau))
 }
 
 #[allow(unused_variables)]
@@ -17665,7 +17665,7 @@ fn __action244<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("upsilon"))
+    Expression::symbol(crate::symbol!(upsilon))
 }
 
 #[allow(unused_variables)]
@@ -17677,7 +17677,7 @@ fn __action245<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("chi"))
+    Expression::symbol(crate::symbol!(chi))
 }
 
 #[allow(unused_variables)]
@@ -17689,7 +17689,7 @@ fn __action246<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("psi"))
+    Expression::symbol(crate::symbol!(psi))
 }
 
 #[allow(unused_variables)]
@@ -17701,7 +17701,7 @@ fn __action247<
     (_, __0, _): (usize, &'input str, usize),
 ) -> Expression
 {
-    Expression::symbol(Symbol::new("omega"))
+    Expression::symbol(crate::symbol!(omega))
 }
 
 #[allow(unused_variables)]

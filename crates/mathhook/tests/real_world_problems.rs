@@ -8,9 +8,9 @@ use std::time::Instant;
 fn test_physics_kinematics() {
     // Physics: Kinematic equations
     // s = ut + (1/2)at² where s=displacement, u=initial velocity, a=acceleration, t=time
-    let u = Expression::symbol(Symbol::new("u"));
-    let a = Expression::symbol(Symbol::new("a"));
-    let t = Expression::symbol(Symbol::new("t"));
+    let u = Expression::symbol(symbol!(u));
+    let a = Expression::symbol(symbol!(a));
+    let t = Expression::symbol(symbol!(t));
 
     let displacement = Expression::add(vec![
         Expression::mul(vec![u, t.clone()]),
@@ -35,10 +35,10 @@ fn test_physics_kinematics() {
 fn test_engineering_beam_deflection() {
     // Engineering: Beam deflection equation
     // δ = (wL⁴)/(8EI) for uniformly distributed load
-    let w = Expression::symbol(Symbol::new("w")); // load per unit length
-    let l = Expression::symbol(Symbol::new("L")); // beam length
-    let e = Expression::symbol(Symbol::new("E")); // elastic modulus
-    let i = Expression::symbol(Symbol::new("I")); // moment of inertia
+    let w = Expression::symbol(symbol!(w)); // load per unit length
+    let l = Expression::symbol(symbol!(L)); // beam length
+    let e = Expression::symbol(symbol!(E)); // elastic modulus
+    let i = Expression::symbol(symbol!(I)); // moment of inertia
 
     let deflection = Expression::mul(vec![
         w,
@@ -59,10 +59,10 @@ fn test_engineering_beam_deflection() {
 fn test_economics_compound_interest() {
     // Economics: Compound interest formula
     // A = P(1 + r/n)^(nt) where A=amount, P=principal, r=rate, n=compounds per year, t=time
-    let p = Expression::symbol(Symbol::new("P"));
-    let r = Expression::symbol(Symbol::new("r"));
-    let n = Expression::symbol(Symbol::new("n"));
-    let t = Expression::symbol(Symbol::new("t"));
+    let p = Expression::symbol(symbol!(P));
+    let r = Expression::symbol(symbol!(r));
+    let n = Expression::symbol(symbol!(n));
+    let t = Expression::symbol(symbol!(t));
 
     let compound_interest = Expression::mul(vec![
         p,
@@ -85,10 +85,10 @@ fn test_economics_compound_interest() {
 #[test]
 fn test_chemistry_ideal_gas_law() {
     // Chemistry: Ideal gas law PV = nRT
-    let v = Expression::symbol(Symbol::new("V"));
-    let n = Expression::symbol(Symbol::new("n"));
-    let r = Expression::symbol(Symbol::new("R"));
-    let temp = Expression::symbol(Symbol::new("T"));
+    let v = Expression::symbol(symbol!(V));
+    let n = Expression::symbol(symbol!(n));
+    let r = Expression::symbol(symbol!(R));
+    let temp = Expression::symbol(symbol!(T));
 
     // Rearrange to solve for pressure: P = nRT/V
     let pressure = Expression::mul(vec![
@@ -109,10 +109,10 @@ fn test_chemistry_ideal_gas_law() {
 fn test_statistics_normal_distribution() {
     // Statistics: Normal distribution probability density function
     // f(x) = (1/σ√(2π)) * e^(-(x-μ)²/(2σ²))
-    let x = Expression::symbol(Symbol::new("x"));
-    let mu = Expression::symbol(Symbol::new("mu"));
-    let sigma = Expression::symbol(Symbol::new("sigma"));
-    let pi = Expression::symbol(Symbol::new("pi"));
+    let x = Expression::symbol(symbol!(x));
+    let mu = Expression::symbol(symbol!(mu));
+    let sigma = Expression::symbol(symbol!(sigma));
+    let pi = Expression::symbol(symbol!(pi));
 
     let normal_pdf = Expression::mul(vec![
         Expression::pow(sigma.clone(), Expression::integer(-1)),
@@ -150,9 +150,9 @@ fn test_statistics_normal_distribution() {
 fn test_calculus_optimization_problem() {
     // Calculus: Optimization problem - minimize surface area of cylinder with fixed volume
     // V = πr²h (constraint), A = 2πr² + 2πrh (objective)
-    let r = Expression::symbol(Symbol::new("r"));
-    let h = Expression::symbol(Symbol::new("h"));
-    let pi = Expression::symbol(Symbol::new("pi"));
+    let r = Expression::symbol(symbol!(r));
+    let h = Expression::symbol(symbol!(h));
+    let pi = Expression::symbol(symbol!(pi));
 
     let surface_area = Expression::add(vec![
         Expression::mul(vec![
@@ -177,11 +177,11 @@ fn test_calculus_optimization_problem() {
 fn test_signal_processing_fourier_series() {
     // Signal Processing: Fourier series coefficients
     // f(x) = a₀/2 + Σ(aₙcos(nx) + bₙsin(nx))
-    let x = Expression::symbol(Symbol::new("x"));
-    let a0 = Expression::symbol(Symbol::new("a0"));
-    let a1 = Expression::symbol(Symbol::new("a1"));
-    let b1 = Expression::symbol(Symbol::new("b1"));
-    let n = Expression::symbol(Symbol::new("n"));
+    let x = Expression::symbol(symbol!(x));
+    let a0 = Expression::symbol(symbol!(a0));
+    let a1 = Expression::symbol(symbol!(a1));
+    let b1 = Expression::symbol(symbol!(b1));
+    let n = Expression::symbol(symbol!(n));
 
     let fourier_series = Expression::add(vec![
         Expression::mul(vec![
@@ -209,10 +209,10 @@ fn test_signal_processing_fourier_series() {
 fn test_machine_learning_cost_function() {
     // Machine Learning: Mean squared error cost function
     // J(θ) = (1/2m) * Σ(hθ(x) - y)²
-    let theta = Expression::symbol(Symbol::new("theta"));
-    let x = Expression::symbol(Symbol::new("x"));
-    let y = Expression::symbol(Symbol::new("y"));
-    let m = Expression::symbol(Symbol::new("m"));
+    let theta = Expression::symbol(symbol!(theta));
+    let x = Expression::symbol(symbol!(x));
+    let y = Expression::symbol(symbol!(y));
+    let m = Expression::symbol(symbol!(m));
 
     // Simplified version: J = (1/2m) * (θx - y)²
     let cost_function = Expression::mul(vec![
@@ -240,11 +240,11 @@ fn test_machine_learning_cost_function() {
 fn test_quantum_mechanics_schrodinger() {
     // Quantum Mechanics: Time-independent Schrödinger equation patterns
     // Ĥψ = Eψ, where Ĥ = -ℏ²/(2m)∇² + V(x)
-    let psi = Expression::symbol(Symbol::new("psi"));
-    let e = Expression::symbol(Symbol::new("E"));
-    let hbar = Expression::symbol(Symbol::new("hbar"));
-    let m = Expression::symbol(Symbol::new("m"));
-    let v = Expression::symbol(Symbol::new("V"));
+    let psi = Expression::symbol(symbol!(psi));
+    let e = Expression::symbol(symbol!(E));
+    let hbar = Expression::symbol(symbol!(hbar));
+    let m = Expression::symbol(symbol!(m));
+    let v = Expression::symbol(symbol!(V));
 
     // Hamiltonian operator pattern (kinetic + potential energy)
     let hamiltonian = Expression::add(vec![
@@ -276,9 +276,9 @@ fn test_quantum_mechanics_schrodinger() {
 #[test]
 fn test_real_world_performance_benchmark() {
     // Performance test with real-world complexity
-    let x = Expression::symbol(Symbol::new("x"));
-    let y = Expression::symbol(Symbol::new("y"));
-    let z = Expression::symbol(Symbol::new("z"));
+    let x = Expression::symbol(symbol!(x));
+    let y = Expression::symbol(symbol!(y));
+    let z = Expression::symbol(symbol!(z));
 
     let start = Instant::now();
 
@@ -308,7 +308,7 @@ fn test_real_world_performance_benchmark() {
     let simplified = complex_expr.simplify();
     let gcd_result = simplified.gcd(&Expression::mul(vec![
         Expression::integer(2),
-        Expression::symbol(Symbol::new("x")),
+        Expression::symbol(symbol!(x)),
     ]));
     let factored = simplified.factor_gcd();
 

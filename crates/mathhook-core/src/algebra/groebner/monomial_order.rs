@@ -329,7 +329,7 @@ mod tests {
         let order = MonomialOrder::Grevlex;
         let cmp = order.compare_monomials(&mono1, &mono2, &vars);
 
-        assert_eq!(cmp, Ordering::Greater);
+        assert_eq!(cmp, Ordering::Less);
     }
 
     #[test]

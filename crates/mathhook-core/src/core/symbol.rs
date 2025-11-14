@@ -55,13 +55,16 @@ pub struct Symbol {
 impl Symbol {
     /// Create a new scalar symbol (default behavior, backward compatible)
     ///
+    /// **Note**: Prefer using `symbol!(x)` macro in application code.
+    /// This method is kept for backward compatibility and internal use.
+    ///
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Symbol;
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
-    /// let alpha = Symbol::new("α");
+    /// let x = symbol!(x);
+    /// let alpha = symbol!(alpha);
     /// ```
     #[inline]
     pub fn new<S: AsRef<str>>(name: S) -> Self {
@@ -83,26 +86,21 @@ impl Symbol {
         let name_str = name.as_ref();
 
         let interned_name = match name_str {
-            "x" | "y" | "z" | "a" | "b" | "c" | "t" | "n" | "i" | "j" | "k" => {
-                match name_str {
-                    "x" => {
-                        static X_SYMBOL: std::sync::OnceLock<Arc<str>> =
-                            std::sync::OnceLock::new();
-                        X_SYMBOL.get_or_init(|| "x".into()).clone()
-                    }
-                    "y" => {
-                        static Y_SYMBOL: std::sync::OnceLock<Arc<str>> =
-                            std::sync::OnceLock::new();
-                        Y_SYMBOL.get_or_init(|| "y".into()).clone()
-                    }
-                    "z" => {
-                        static Z_SYMBOL: std::sync::OnceLock<Arc<str>> =
-                            std::sync::OnceLock::new();
-                        Z_SYMBOL.get_or_init(|| "z".into()).clone()
-                    }
-                    _ => Self::intern_symbol(name_str),
+            "x" | "y" | "z" | "a" | "b" | "c" | "t" | "n" | "i" | "j" | "k" => match name_str {
+                "x" => {
+                    static X_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                    X_SYMBOL.get_or_init(|| "x".into()).clone()
                 }
-            }
+                "y" => {
+                    static Y_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                    Y_SYMBOL.get_or_init(|| "y".into()).clone()
+                }
+                "z" => {
+                    static Z_SYMBOL: std::sync::OnceLock<Arc<str>> = std::sync::OnceLock::new();
+                    Z_SYMBOL.get_or_init(|| "z".into()).clone()
+                }
+                _ => Self::intern_symbol(name_str),
+            },
             _ => Self::intern_symbol(name_str),
         };
 
@@ -190,9 +188,9 @@ impl Symbol {
     /// # Examples
     ///
     /// ```rust
-    /// use mathhook_core::Symbol;
+    /// use mathhook_core::symbol;
     ///
-    /// let x = Symbol::new("x");
+    /// let x = symbol!(x);
     /// assert_eq!(x.name(), "x");
     /// ```
     #[inline]

@@ -12,12 +12,12 @@
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::simplify;
+/// use mathhook_core::{simplify, symbol};
 /// use mathhook_core::Expression;
 ///
 /// let zero = Expression::integer(0);
 /// let one = Expression::integer(1);
-/// let x = Expression::symbol(mathhook_core::Symbol::new("x"));
+/// let x = Expression::symbol(symbol!(x));
 ///
 /// // Zero and one detection
 /// assert!(simplify!(is_zero: zero));
@@ -264,7 +264,7 @@ macro_rules! simplify {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Expression, MathConstant, Number, Symbol};
+    use crate::{Expression, MathConstant, Number};
 
     #[test]
     fn test_simplify_is_zero() {
@@ -319,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_simplify_fold_non_constants() {
-        let a = Expression::symbol(Symbol::new("x"));
+        let a = Expression::symbol(symbol!(x));
         let b = Expression::integer(3);
 
         let result = simplify!(fold: +, a, b);
@@ -351,7 +351,7 @@ mod tests {
     #[test]
     fn test_simplify_identity_mul_one() {
         let one = Expression::integer(1);
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
 
         if let Some(result) = simplify!(identity: mul_one, one) {
             assert_eq!(result, Expression::integer(1));
@@ -362,7 +362,7 @@ mod tests {
 
     #[test]
     fn test_simplify_power_rules() {
-        let x = Expression::symbol(Symbol::new("x"));
+        let x = Expression::symbol(symbol!(x));
 
         // x^0 = 1
         let power_zero = simplify!(power: x.clone(), 0);

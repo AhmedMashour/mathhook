@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_step_by_step_basic() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(0)]);
 
@@ -17,7 +17,7 @@ fn test_step_by_step_basic() {
 
 #[test]
 fn test_step_by_step_complex() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::add(vec![
         Expression::integer(2),
@@ -33,7 +33,7 @@ fn test_step_by_step_complex() {
 
 #[test]
 fn test_step_by_step_verification() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::mul(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
 

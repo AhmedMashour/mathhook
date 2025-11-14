@@ -17,14 +17,20 @@ fn test_scalar_behavior_unchanged() {
     assert_eq!(x.symbol_type(), SymbolType::Scalar);
     assert_eq!(y.symbol_type(), SymbolType::Scalar);
 
-    let xy = Expression::mul(vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())]);
+    let xy = Expression::mul(vec![
+        Expression::symbol(x.clone()),
+        Expression::symbol(y.clone()),
+    ]);
 
     let yx = Expression::mul(vec![Expression::symbol(y), Expression::symbol(x)]);
 
     let xy_str = xy.to_string();
     let yx_str = yx.to_string();
 
-    assert_eq!(xy_str, yx_str, "Scalar multiplication should be commutative");
+    assert_eq!(
+        xy_str, yx_str,
+        "Scalar multiplication should be commutative"
+    );
 }
 
 #[test]
@@ -42,7 +48,9 @@ fn test_backward_compatibility_formatter() {
     let x = symbol!(x);
     let expr = Expression::mul(vec![Expression::integer(2), Expression::symbol(x)]);
 
-    let latex = expr.to_latex(mathhook_core::formatter::latex::LaTeXContext::default()).unwrap();
+    let latex = expr
+        .to_latex(mathhook_core::formatter::latex::LaTeXContext::default())
+        .unwrap();
 
     assert!(!latex.contains(r"\mathbf{"), "Scalar should not use bold");
     assert!(!latex.contains(r"\hat{"), "Scalar should not use hat");
@@ -173,8 +181,14 @@ fn test_emoji_compliance() {
                     } else if path.extension().map_or(false, |ext| ext == "rs") {
                         if let Ok(contents) = fs::read_to_string(&path) {
                             let emoji_patterns = vec![
-                                "\u{2705}", "\u{274C}", "\u{26A0}", "\u{1F680}",
-                                "\u{2728}", "\u{1F4A1}", "\u{1F4DD}", "\u{1F527}"
+                                "\u{2705}",
+                                "\u{274C}",
+                                "\u{26A0}",
+                                "\u{1F680}",
+                                "\u{2728}",
+                                "\u{1F4A1}",
+                                "\u{1F4DD}",
+                                "\u{1F527}",
                             ];
                             for pattern in &emoji_patterns {
                                 if contents.contains(pattern) {
@@ -234,8 +248,7 @@ fn test_all_existing_tests_pass() {
         assert!(
             !has_failures,
             "Some existing tests failed:\nSTDOUT:\n{}\nSTDERR:\n{}",
-            stdout,
-            stderr
+            stdout, stderr
         );
     }
 }

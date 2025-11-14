@@ -4,7 +4,7 @@ use mathhook::prelude::*;
 
 #[test]
 fn test_json_serialization() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
     let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(5)]);
 
     // Test JSON serialization
@@ -18,7 +18,7 @@ fn test_json_serialization() {
 
 #[test]
 fn test_complex_json() {
-    let x = Symbol::new("x");
+    let x = symbol!(x);
 
     let expr = Expression::pow(
         Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
