@@ -92,7 +92,7 @@ let result = evaluator.evaluate("gamma", &[expr]);
 
 ### 1. CLAUDE.md (Enhanced)
 
-**Location**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/CLAUDE.md`
+**Location**: `/Users/ahmedmashhour/Documents/work/math/mathhook/CLAUDE.md`
 
 **Changes**:
 - Added "Function Evaluation Architecture" section (69 lines)

@@ -13,28 +13,28 @@ You are the Orchestrator for Plan 10: Integration Tests Fixes.
 
 CRITICAL FIRST STEP - Read these files in order and line by line to learn the proven methodology:
 
-1. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/CLAUDE.md
+1. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/CLAUDE.md
    - This is the SINGLE SOURCE OF TRUTH for all development rules
    - Contains architectural constraints, coding standards, and non-negotiables
    - CLAUDE.md ALWAYS overrides any other documentation
 
-2. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/ORCHESTRATION_METHODOLOGY.md
+2. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/ORCHESTRATION_METHODOLOGY.md
    - Complete orchestration methodology from Educational Waves 1-5
    - Contains wave templates, agent prompts, verification patterns
    - Shows exactly how to structure work, launch agents, verify results
 
-3. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/INTEGRATION_TESTS_ORCHESTRATION_SPEC.md
+3. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/INTEGRATION_TESTS_ORCHESTRATION_SPEC.md
    - CRITICAL: 100% complete investigation with verified root causes
    - Contains mathematical proofs for all 8 tests
    - Exact file locations and line numbers for all issues
    - Verified by playground execution
 
-4. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/PLAN_10_INTEGRATION_TESTS_FIXES_ORCHESTRATION.md
+4. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/PLAN_10_INTEGRATION_TESTS_FIXES_ORCHESTRATION.md
    - Complete orchestration plan with 4 phases, 6 waves
    - Wave 1.1 fully specified with agent prompt and verification script
    - Dependencies and timeline clearly defined
 
-5. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/PLAN_10_STATUS.md
+5. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/PLAN_10_STATUS.md
    - Current status and bootstrap commands
    - Files created during investigation
    - Verification playground results

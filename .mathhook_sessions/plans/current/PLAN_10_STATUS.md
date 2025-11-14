@@ -162,7 +162,7 @@ $ cargo test --test integration_comprehensive
 
 ```bash
 # Navigate to workspace
-cd /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math
+cd /Users/ahmedmashhour/Documents/work/math/mathhook
 
 # Launch Wave 1.1 Agent
 # Copy agent prompt from PLAN_10_INTEGRATION_TESTS_FIXES_ORCHESTRATION.md

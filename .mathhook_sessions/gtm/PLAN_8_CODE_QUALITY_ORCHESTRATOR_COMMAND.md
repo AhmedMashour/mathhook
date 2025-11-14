@@ -55,7 +55,7 @@ You are the Orchestrator for Plan 8: Code Quality, Mathematical Correctness, and
 
 CRITICAL FIRST STEP - Read these files in order and line by line:
 
-1. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/CLAUDE.md
+1. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/CLAUDE.md
    - This is the SINGLE SOURCE OF TRUTH for all development rules
    - Contains architectural constraints, coding standards, and non-negotiables
    - CLAUDE.md ALWAYS overrides any other documentation
@@ -66,10 +66,10 @@ CRITICAL FIRST STEP - Read these files in order and line by line:
    - Contains wave templates, agent prompts, verification patterns
    - Shows exactly how to structure work, launch agents, verify results
 
-3. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/gtm/PLAN_8_CODE_QUALITY_ORCHESTRATOR_COMMAND.md
+3. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/gtm/PLAN_8_CODE_QUALITY_ORCHESTRATOR_COMMAND.md
    - This file - complete context for Plan 8 and skip copy-paste block and goal statement block
 
-4. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/.mathhook_sessions/gtm/PLAN_8_PHASED_ROADMAP.md
+4. Read: /Users/ahmedmashhour/Documents/work/math/mathhook/.mathhook_sessions/gtm/PLAN_8_PHASED_ROADMAP.md
    - Detailed 4-phase breakdown with all wave objectives
    - Current status for each issue category
    - Success criteria and deliverables for each phase
@@ -845,7 +845,7 @@ All mathematical correctness fixes must validate against SymPy.
 # Wave N.M Verification Script
 # Target Quality Score: >= [TARGET]/10
 
-PROJECT_ROOT="/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math"
+PROJECT_ROOT="/Users/ahmedmashhour/Documents/work/math/mathhook"
 cd "$PROJECT_ROOT"
 
 TOTAL_SCORE=0

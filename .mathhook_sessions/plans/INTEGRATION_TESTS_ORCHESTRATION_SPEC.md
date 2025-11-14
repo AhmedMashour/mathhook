@@ -631,7 +631,7 @@ pub fn integrate(expr: &Expression, variable: Symbol) -> Option<Expression> {
 ## References
 
 ### Test File
-- **Location**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/crates/mathhook-core/tests/integration_comprehensive.rs`
+- **Location**: `/Users/ahmedmashhour/Documents/work/math/mathhook/crates/mathhook-core/tests/integration_comprehensive.rs`
 - **Lines**:
   - Test 1: 619-629
   - Test 2: 676-689
@@ -643,10 +643,10 @@ pub fn integrate(expr: &Expression, variable: Symbol) -> Option<Expression> {
   - Test 8: 599-610
 
 ### Implementation Files
-- **by_parts.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/crates/mathhook-core/src/calculus/integrals/by_parts.rs`
-- **basic.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/crates/mathhook-core/src/calculus/integrals/basic.rs`
-- **substitution.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/crates/mathhook-core/src/calculus/integrals/substitution.rs`
-- **strategy.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math/crates/mathhook-core/src/calculus/integrals/strategy.rs`
+- **by_parts.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/crates/mathhook-core/src/calculus/integrals/by_parts.rs`
+- **basic.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/crates/mathhook-core/src/calculus/integrals/basic.rs`
+- **substitution.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/crates/mathhook-core/src/calculus/integrals/substitution.rs`
+- **strategy.rs**: `/Users/ahmedmashhour/Documents/work/math/mathhook/crates/mathhook-core/src/calculus/integrals/strategy.rs`
 
 ### Verification Playgrounds
 - **Test 8**: `playground_test_8_trace.rs`

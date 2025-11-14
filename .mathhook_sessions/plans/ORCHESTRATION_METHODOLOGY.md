@@ -139,7 +139,7 @@ Every wave follows this structure:
 
 **Outputs**:
 - Wave plan
-- Verification script (`.mathhook_sessions/verify_[wave_name].sh`)
+- Verification script (`.mathhook_sessions/scripts/verify_[wave_name].sh`)
 - Success criteria checklist
 
 ### Phase 2: Agent Execution (Agents)
@@ -368,7 +368,7 @@ You are [AGENT ID] within [WAVE NAME]. Your mission is [detailed goal].
 
 When you complete, the orchestrator WILL run:
 ```bash
-bash .mathhook_sessions/verify_[wave_name].sh
+bash .mathhook_sessions/scripts/verify_[wave_name].sh
 ```
 
 **If verification fails**, the orchestrator will launch a continuation agent or reject the work.
@@ -741,15 +741,97 @@ Use TodoWrite tool to track progress:
 
 ### Create These Documents Per Wave
 
-1. **Verification Script**: `.mathhook_sessions/verify_[wave_name].sh`
-2. **Verification Report**: `.mathhook_sessions/[WAVE_NAME]_VERIFICATION_REPORT.md`
-3. **Agent Logs** (optional): `.mathhook_sessions/agent_logs/AGENT_[ID]_[NAME]_LOG.md`
+1. **Verification Script**: `.mathhook_sessions/scripts/verify_[wave_name].sh`
+2. **Verification Report**: `.mathhook_sessions/reports/[WAVE_NAME]_VERIFICATION_REPORT.md`
+3. **Wave Documentation**: `.mathhook_sessions/waves/WAVE_[NUMBER].md`
 
 ### Create These Documents Per Release
 
-1. **Quality Audit**: `.mathhook_sessions/[PROJECT]_QUALITY_AUDIT.md`
-2. **Release Readiness**: `.mathhook_sessions/[PROJECT]_[VERSION]_READY.md`
-3. **Orchestration Summary**: `.mathhook_sessions/ORCHESTRATION_SUMMARY.md` (this type of doc)
+1. **Quality Audit**: `.mathhook_sessions/reports/[PROJECT]_QUALITY_AUDIT.md`
+2. **Release Readiness**: `.mathhook_sessions/reports/[PROJECT]_[VERSION]_READY.md`
+3. **Orchestration Plans**: `.mathhook_sessions/plans/[PROJECT]_PLAN.md`
+
+### .mathhook_sessions Directory Structure
+
+The `.mathhook_sessions/` directory is organized into focused subdirectories:
+
+```
+.mathhook_sessions/
+├── README.md                      (Navigation guide)
+├── scripts/                       (44 verification scripts)
+│   └── verify_*.sh                (Verification scripts for each wave)
+│
+├── plans/                         (Orchestration plans and designs)
+│   ├── current/                   (Active work-in-progress plans)
+│   │   └── PLAN_*.md              (Current plan files)
+│   ├── *_ORCHESTRATOR_COMMAND.md  (Orchestration templates)
+│   ├── *_ROADMAP.md               (Feature roadmaps)
+│   ├── *_DESIGN.md                (Architecture designs)
+│   └── ORCHESTRATION_METHODOLOGY.md (This file)
+│
+├── reports/                       (Verification reports and audits)
+│   ├── *_REPORT.md                (Completion reports)
+│   ├── *_VERIFICATION_REPORT.md   (Wave verification reports)
+│   ├── *_AUDIT.md                 (Quality audits)
+│   └── *_ANALYSIS.md              (Gap analyses)
+│
+├── waves/                         (Wave-specific documentation)
+│   ├── WAVE_*.md                  (Individual wave docs)
+│   └── *WAVE*_VERIFICATION_REPORT.md (Wave verification reports)
+│
+├── reference/                     (Technical references)
+│   ├── SYMPY_*.md                 (SymPy comparisons)
+│   ├── NAMING_CONVENTIONS.md      (Coding standards)
+│   └── FEATURES_CATALOG.md        (Feature catalog)
+│
+├── research/                      (Research documents)
+│   └── *.md                       (Research findings)
+│
+├── development/                   (Development guides)
+│   ├── RECOVERY_GUIDE.md          (Troubleshooting)
+│   └── *.md                       (Dev toolkits)
+│
+├── documentation/                 (Backed up integrated docs)
+│   └── *.md                       (Documentation backups)
+│
+└── archive/                       (Historical documents)
+    └── ai/                        (AI session notes)
+```
+
+### File Organization Guidelines
+
+**When creating new files, place them in the appropriate subdirectory:**
+
+1. **Verification Scripts**:
+   - Location: `.mathhook_sessions/scripts/verify_[wave_name].sh`
+   - Naming: `verify_[wave_name].sh` or `verify_[feature].sh`
+   - Example: `verify_educational_wave_1.sh`, `verify_matrix_solver.sh`
+
+2. **Verification Reports**:
+   - Location: `.mathhook_sessions/reports/[WAVE_NAME]_VERIFICATION_REPORT.md`
+   - Naming: `[WAVE_NAME]_VERIFICATION_REPORT.md` or `[FEATURE]_REPORT.md`
+   - Example: `EDUCATIONAL_WAVE_1_VERIFICATION_REPORT.md`, `FIX_SUMMARY.md`
+
+3. **Wave Documentation**:
+   - Location: `.mathhook_sessions/waves/WAVE_[NUMBER].md`
+   - Naming: `WAVE_[NUMBER].md` or descriptive wave names
+   - Example: `WAVE_1.md`, `EDUCATIONAL_WAVE_1.md`
+
+4. **Plans and Designs**:
+   - Location: `.mathhook_sessions/plans/[NAME].md`
+   - Active work: `.mathhook_sessions/plans/current/PLAN_*.md`
+   - Naming: Descriptive with suffix: `*_PLAN.md`, `*_DESIGN.md`, `*_ROADMAP.md`
+   - Example: `INTEGRATION_PLAN.md`, `MATRIX_SOLVER_DESIGN.md`
+
+5. **Quality Audits**:
+   - Location: `.mathhook_sessions/reports/[PROJECT]_AUDIT.md`
+   - Example: `EDUCATIONAL_QUALITY_AUDIT.md`
+
+6. **Reference Documents**:
+   - Location: `.mathhook_sessions/reference/[NAME].md`
+   - Example: `SYMPY_QUICK_REFERENCE.md`, `NAMING_CONVENTIONS.md`
+
+**IMPORTANT**: Never create files directly in `.mathhook_sessions/` root. Always use the appropriate subdirectory.
 
 ---
 

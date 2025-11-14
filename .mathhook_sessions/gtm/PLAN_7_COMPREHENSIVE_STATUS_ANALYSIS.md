@@ -3,7 +3,6 @@
 **Date**: 2025-10-22
 **Analyst**: Claude Code (Orchestrator)
 **Branch**: agent-7/core-math-features
-**Worktree**: worktrees/agent-7-core-math
 **Analysis Type**: Wave-by-Wave Assessment for Continuation Agents
 
 ---

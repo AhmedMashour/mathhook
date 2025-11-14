@@ -5,7 +5,7 @@ echo "=== Plan 7 Wave 6 Verification: Numerical Methods & Integration ===="
 echo ""
 
 # Change to worktree directory
-cd /Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math
+cd /Users/ahmedmashhour/Documents/work/math/mathhook
 
 echo "Verification Date: $(date)"
 echo "Branch: $(git branch --show-current)"

@@ -6,7 +6,7 @@
 
 set -e
 
-PROJECT_ROOT="/Users/ahmedmashhour/Documents/work/math/mathhook/worktrees/agent-7-core-math"
+PROJECT_ROOT="/Users/ahmedmashhour/Documents/work/math/mathhook
 cd "$PROJECT_ROOT"
 
 echo "========================================="
