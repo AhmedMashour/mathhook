@@ -122,7 +122,7 @@ impl LinearFirstOrderSolver {
         _initial_condition: Option<(Expression, Expression)>,
     ) -> ODEResult {
         // Integrating factor: μ(x) = exp(∫p(x)dx)
-        let p_integral = p.integrate(independent.clone());
+        let p_integral = p.integrate(independent.clone(), 0);
 
         let mu = Expression::function("exp", vec![p_integral]);
 
@@ -132,7 +132,7 @@ impl LinearFirstOrderSolver {
         // Integrating both sides: μ(x) * y = ∫μ(x) * q(x) dx + C
 
         let rhs = Expression::mul(vec![mu.clone(), q.clone()]);
-        let rhs_integral = rhs.integrate(independent.clone());
+        let rhs_integral = rhs.integrate(independent.clone(), 0);
 
         // Add constant of integration
         let c = Expression::symbol(Symbol::scalar("C"));

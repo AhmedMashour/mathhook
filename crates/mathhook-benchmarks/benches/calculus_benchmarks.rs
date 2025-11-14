@@ -2,7 +2,6 @@
 ///
 /// Tests derivatives, integrals, and limits with varying complexity levels.
 /// Critical for measuring symbolic calculus performance.
-
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use mathhook_core::calculus::derivatives::DerivativeWithSteps;
 use mathhook_core::calculus::integrals::strategy::integrate_with_strategy;
@@ -18,21 +17,12 @@ fn bench_derivatives(c: &mut Criterion) {
 
     // Power rule derivatives: d/dx(x^n)
     for power in [2, 5, 10, 20, 50].iter() {
-        let expr = Expression::pow(
-            Expression::symbol(x.clone()),
-            Expression::integer(*power),
-        );
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(*power));
 
         group.throughput(Throughput::Elements(1));
-        group.bench_with_input(
-            BenchmarkId::new("power_rule", power),
-            power,
-            |b, _| {
-                b.iter(|| {
-                    black_box(expr.derivative_with_steps(&x, 1))
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("power_rule", power), power, |b, _| {
+            b.iter(|| black_box(expr.derivative_with_steps(&x, 1)))
+        });
     }
 
     // Product rule: d/dx(f(x) * g(x))
@@ -65,10 +55,7 @@ fn bench_derivatives(c: &mut Criterion) {
             Expression::integer(1),
         ]),
         Expression::pow(
-            Expression::add(vec![
-                Expression::symbol(x.clone()),
-                Expression::integer(-1),
-            ]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]),
             Expression::integer(-1),
         ),
     ]);
@@ -79,20 +66,11 @@ fn bench_derivatives(c: &mut Criterion) {
 
     // Higher order derivatives
     for order in [1, 2, 3, 5].iter() {
-        let expr = Expression::pow(
-            Expression::symbol(x.clone()),
-            Expression::integer(10),
-        );
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(10));
 
-        group.bench_with_input(
-            BenchmarkId::new("higher_order", order),
-            order,
-            |b, &ord| {
-                b.iter(|| {
-                    black_box(expr.derivative_with_steps(&x, ord))
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("higher_order", order), order, |b, &ord| {
+            b.iter(|| black_box(expr.derivative_with_steps(&x, ord)))
+        });
     }
 
     // Trigonometric derivatives
@@ -141,10 +119,7 @@ fn bench_derivatives(c: &mut Criterion) {
             Expression::integer(-2),
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
         ]),
-        Expression::function(
-            "exp",
-            vec![Expression::symbol(x.clone())],
-        ),
+        Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
 
     group.bench_function("complex_mixed_derivative", |b| {
@@ -162,29 +137,22 @@ fn bench_integrals(c: &mut Criterion) {
 
     // Power rule integration: ∫x^n dx
     for power in [1, 2, 5, 10].iter() {
-        let expr = Expression::pow(
-            Expression::symbol(x.clone()),
-            Expression::integer(*power),
-        );
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(*power));
 
         group.throughput(Throughput::Elements(1));
-        group.bench_with_input(
-            BenchmarkId::new("power_rule", power),
-            power,
-            |b, _| {
-                b.iter(|| {
-                    let result = integrate_with_strategy(&expr, x.clone());
-                    black_box(result)
-                })
-            },
-        );
+        group.bench_with_input(BenchmarkId::new("power_rule", power), power, |b, _| {
+            b.iter(|| {
+                let result = integrate_with_strategy(&expr, x.clone(), 0);
+                black_box(result)
+            })
+        });
     }
 
     // Trigonometric integrals
     let sin_expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     group.bench_function("trigonometric_integral_sin", |b| {
         b.iter(|| {
-            let result = integrate_with_strategy(&sin_expr, x.clone());
+            let result = integrate_with_strategy(&sin_expr, x.clone(), 0);
             black_box(result)
         })
     });
@@ -192,7 +160,7 @@ fn bench_integrals(c: &mut Criterion) {
     let cos_expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
     group.bench_function("trigonometric_integral_cos", |b| {
         b.iter(|| {
-            let result = integrate_with_strategy(&cos_expr, x.clone());
+            let result = integrate_with_strategy(&cos_expr, x.clone(), 0);
             black_box(result)
         })
     });
@@ -201,7 +169,7 @@ fn bench_integrals(c: &mut Criterion) {
     let exp_expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
     group.bench_function("exponential_integral", |b| {
         b.iter(|| {
-            let result = integrate_with_strategy(&exp_expr, x.clone());
+            let result = integrate_with_strategy(&exp_expr, x.clone(), 0);
             black_box(result)
         })
     });
@@ -220,7 +188,7 @@ fn bench_integrals(c: &mut Criterion) {
 
     group.bench_function("rational_integral", |b| {
         b.iter(|| {
-            let result = integrate_with_strategy(&rational_expr, x.clone());
+            let result = integrate_with_strategy(&rational_expr, x.clone(), 0);
             black_box(result)
         })
     });
@@ -231,10 +199,7 @@ fn bench_integrals(c: &mut Criterion) {
             .map(|i| {
                 Expression::mul(vec![
                     Expression::integer((i + 1) as i64),
-                    Expression::pow(
-                        Expression::symbol(x.clone()),
-                        Expression::integer(i as i64),
-                    ),
+                    Expression::pow(Expression::symbol(x.clone()), Expression::integer(i as i64)),
                 ])
             })
             .collect();
@@ -246,7 +211,7 @@ fn bench_integrals(c: &mut Criterion) {
             degree,
             |b, _| {
                 b.iter(|| {
-                    let result = integrate_with_strategy(&poly_expr, x.clone());
+                    let result = integrate_with_strategy(&poly_expr, x.clone(), 0);
                     black_box(result)
                 })
             },
@@ -255,10 +220,7 @@ fn bench_integrals(c: &mut Criterion) {
 
     // Substitution integration: ∫2x * e^(x^2) dx
     let substitution_expr = Expression::mul(vec![
-        Expression::mul(vec![
-            Expression::integer(2),
-            Expression::symbol(x.clone()),
-        ]),
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
         Expression::function(
             "exp",
             vec![Expression::pow(
@@ -270,7 +232,7 @@ fn bench_integrals(c: &mut Criterion) {
 
     group.bench_function("substitution_integral", |b| {
         b.iter(|| {
-            let result = integrate_with_strategy(&substitution_expr, x.clone());
+            let result = integrate_with_strategy(&substitution_expr, x.clone(), 0);
             black_box(result)
         })
     });
@@ -287,10 +249,7 @@ fn bench_derivative_simplification(c: &mut Criterion) {
     // Derivative that simplifies significantly
     for degree in [3, 5, 10, 20].iter() {
         let expr = Expression::pow(
-            Expression::add(vec![
-                Expression::symbol(x.clone()),
-                Expression::integer(1),
-            ]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
             Expression::integer(*degree),
         );
 

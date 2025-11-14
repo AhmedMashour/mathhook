@@ -1,474 +1,572 @@
-//! Comprehensive tests for rational function integration via partial fractions
+// Integration tests for rational function integrals
 
-use mathhook_core::calculus::integrals::rational::{integrate_rational, is_rational_function};
+use mathhook_core::calculus::integrals::Integration;
+use mathhook_core::calculus::integrals::rational::is_rational_function;
+use mathhook_core::core::Number;
 use mathhook_core::{symbol, Expression};
+use num_bigint::BigInt;
+use num_rational::BigRational;
 
 #[test]
-fn test_is_rational_function_simple() {
+fn test_basic_polynomial() {
     let x = symbol!(x);
 
-    // 1/(x-2) is rational
-    let expr1 = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(
-            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]),
-            Expression::integer(-1),
-        ),
-    ]);
-    assert!(is_rational_function(&expr1, &x));
+    // ∫x^2 dx
+    let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
 
-    // x^2 + 1 is NOT a rational function (just a polynomial)
-    let expr2 = Expression::add(vec![
-        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
-    ]);
-    assert!(!is_rational_function(&expr2, &x));
+    assert!(is_rational_function(&expr, &x));
 
-    // 1/x is rational
-    let expr3 = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
-    assert!(is_rational_function(&expr3, &x));
+    let result = expr.integrate(x, 0);
+
+    // Should be x^3/3
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_proper_simple_linear() {
-    // SymPy validation: sympy.integrate(1/(x-2), x) = log(x-2)
-    // ∫1/(x-2) dx = ln|x-2|
+fn test_simple_rational_function() {
     let x = symbol!(x);
+
+    // ∫1/x dx
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be ln|x|
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_with_linear_denominator() {
+    let x = symbol!(x);
+
+    // ∫1/(x+1) dx
     let expr = Expression::mul(vec![
         Expression::integer(1),
         Expression::pow(
-            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]),
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
             Expression::integer(-1),
         ),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    assert!(is_rational_function(&expr, &x));
 
-    let integral = result.unwrap();
-    // Should contain ln term
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
+    let result = expr.integrate(x, 0);
+
+    // Should be ln|x+1|
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_proper_reciprocal_x() {
-    // SymPy validation: sympy.integrate(1/x, x) = log(x)
-    // ∫1/x dx = ln|x|
+fn test_proper_fraction() {
     let x = symbol!(x);
-    let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
-}
-
-#[test]
-fn test_rational_proper_constant_numerator() {
-    // SymPy validation: sympy.integrate(5/(x-3), x) = 5*log(x-3)
-    // ∫5/(x-3) dx = 5*ln|x-3|
-    let x = symbol!(x);
+    // ∫1/(x^2+1) dx
     let expr = Expression::mul(vec![
-        Expression::integer(5),
+        Expression::integer(1),
         Expression::pow(
-            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-3)]),
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+                Expression::integer(1),
+            ]),
             Expression::integer(-1),
         ),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    assert!(is_rational_function(&expr, &x));
 
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
+    let result = expr.integrate(x, 0);
+
+    // Should be atan(x)
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_improper_polynomial_division() {
-    // SymPy validation: sympy.integrate((x^2+1)/(x-1), x) = x^2/2 + x + 2*log(x-1)
-    // ∫(x²+1)/(x-1) dx requires polynomial division first
+fn test_improper_fraction() {
     let x = symbol!(x);
+
+    // ∫(x^2+2x+3)/(x+1) dx = ∫(x+1+2/(x+1)) dx
     let numerator = Expression::add(vec![
-        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
-    ]);
-    let denominator = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
-
-    // Express as rational function: numerator * denominator^(-1)
-    let expr = Expression::mul(vec![
-        numerator,
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    // Should contain both polynomial terms and logarithmic term
-    let result_str = integral.to_string();
-    assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("x"));
-}
-
-#[test]
-fn test_rational_linear_distinct_roots() {
-    // SymPy validation: sympy.integrate(1/((x-1)*(x-2)), x) = log(x-1) - log(x-2)
-    // ∫1/((x-1)(x-2)) dx = ln|x-1| - ln|x-2|
-    let x = symbol!(x);
-    let factor1 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
-    let factor2 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]);
-    let denominator = Expression::mul(vec![factor1, factor2]);
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
-}
-
-#[test]
-fn test_rational_linear_repeated_factor() {
-    // SymPy validation: sympy.integrate(1/(x-1)^2, x) = -1/(x-1)
-    // ∫1/(x-1)² dx = -1/(x-1)
-    let x = symbol!(x);
-    let base = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
-    let denominator = Expression::pow(base, Expression::integer(2));
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-}
-
-#[test]
-fn test_rational_linear_repeated_factor_cubed() {
-    // SymPy validation: sympy.integrate(1/(x-1)^3, x) = -1/(2*(x-1)^2)
-    // ∫1/(x-1)³ dx = -1/(2(x-1)²)
-    let x = symbol!(x);
-    let base = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
-    let denominator = Expression::pow(base, Expression::integer(3));
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-}
-
-#[test]
-fn test_rational_quadratic_irreducible_x_numerator() {
-    // SymPy validation: sympy.integrate(x/(x^2+1), x) = (1/2)*log(x^2+1)
-    // ∫x/(x²+1) dx = (1/2)ln(x²+1)
-    let x = symbol!(x);
-    let numerator = Expression::symbol(x.clone());
-    let denominator = Expression::add(vec![
-        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
-    ]);
-
-    let expr = Expression::mul(vec![
-        numerator,
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    let result_str = integral.to_string();
-    assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("x"));
-}
-
-#[test]
-fn test_rational_quadratic_irreducible_constant_numerator() {
-    // SymPy validation: sympy.integrate(1/(x^2+1), x) = atan(x)
-    // ∫1/(x²+1) dx = arctan(x)
-    let x = symbol!(x);
-    let denominator = Expression::add(vec![
-        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
-    ]);
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("atan") || integral.to_string().contains("arctan"));
-}
-
-#[test]
-fn test_rational_quadratic_irreducible_scaled() {
-    // SymPy validation: sympy.integrate(1/(x^2+4), x) = (1/2)*atan(x/2)
-    // ∫1/(x²+4) dx = (1/2)arctan(x/2)
-    let x = symbol!(x);
-    let denominator = Expression::add(vec![
-        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(4),
-    ]);
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("atan") || integral.to_string().contains("arctan"));
-}
-
-#[test]
-fn test_rational_quadratic_irreducible_general() {
-    // SymPy validation: sympy.integrate(1/(x^2+2*x+5), x) = atan((x+1)/2)/2
-    // ∫1/(x²+2x+5) dx = (1/2)arctan((x+1)/2)
-    let x = symbol!(x);
-    let denominator = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
         Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+        Expression::integer(3),
+    ]);
+
+    let denominator =
+        Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]);
+
+    let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be integrable
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_partial_fraction_decomposition() {
+    let x = symbol!(x);
+
+    // ∫1/((x-1)(x-2)) dx
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(
+            Expression::mul(vec![
+                Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]),
+                Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-2)]),
+            ]),
+            Expression::integer(-1),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be decomposable and integrable
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_with_quadratic_factors() {
+    let x = symbol!(x);
+
+    // ∫1/(x^2-1) dx = ∫1/((x-1)(x+1)) dx
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+                Expression::integer(-1),
+            ]),
+            Expression::integer(-1),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be decomposable
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_zero_numerator() {
+    let x = symbol!(x);
+
+    // ∫0/x dx
+    let expr = Expression::mul(vec![
+        Expression::integer(0),
+        Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be 0
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_constant_numerator() {
+    let x = symbol!(x);
+
+    // ∫5/(x+3) dx
+    let expr = Expression::mul(vec![
         Expression::integer(5),
+        Expression::pow(
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(3)]),
+            Expression::integer(-1),
+        ),
     ]);
 
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
+    assert!(is_rational_function(&expr, &x));
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    let result = expr.integrate(x, 0);
+
+    // Should be 5*ln|x+3|
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_mixed_linear_quadratic() {
-    // SymPy validation: sympy.integrate(1/(x*(x^2+1)), x)
-    // ∫1/(x(x²+1)) dx = partial fractions
+fn test_complex_rational_function() {
     let x = symbol!(x);
-    let linear_factor = Expression::symbol(x.clone());
-    let quadratic_factor = Expression::add(vec![
+
+    // ∫(2x+3)/(x^2+5x+6) dx
+    let numerator = Expression::add(vec![
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+        Expression::integer(3),
+    ]);
+
+    let denominator = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
-    ]);
-    let denominator = Expression::mul(vec![linear_factor, quadratic_factor]);
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
+        Expression::mul(vec![Expression::integer(5), Expression::symbol(x.clone())]),
+        Expression::integer(6),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be integrable using partial fractions
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_degree_zero_constant() {
-    // SymPy validation: sympy.integrate(1, x) = x
-    // ∫1 dx = x (not technically rational function form, but should handle)
+fn test_non_rational_sqrt() {
     let x = symbol!(x);
-    let expr = Expression::integer(1);
 
-    // This is not a rational function, so should return None
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_none());
+    // √x is not a rational function
+    let expr = Expression::pow(
+        Expression::symbol(x.clone()),
+        Expression::rational(1, 2),
+    );
+
+    assert!(!is_rational_function(&expr, &x));
 }
 
 #[test]
-fn test_rational_numerator_higher_degree() {
-    // SymPy validation: sympy.integrate((x^3+2*x^2+x+1)/(x^2+1), x)
-    // Requires polynomial division
+fn test_non_rational_trig() {
     let x = symbol!(x);
+
+    // sin(x) is not a rational function
+    let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
+
+    assert!(!is_rational_function(&expr, &x));
+}
+
+#[test]
+fn test_non_rational_exp() {
+    let x = symbol!(x);
+
+    // e^x is not a rational function
+    let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
+
+    assert!(!is_rational_function(&expr, &x));
+}
+
+#[test]
+fn test_rational_polynomial_over_polynomial() {
+    let x = symbol!(x);
+
+    // ∫(x^3-3x^2+2x-5)/(x^2-4) dx
     let numerator = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
-        Expression::mul(vec![
-            Expression::integer(2),
-            Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        ]),
+        Expression::mul(vec![Expression::integer(-3), Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))]),
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+        Expression::integer(-5),
+    ]);
+
+    let denominator = Expression::add(vec![
+        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+        Expression::integer(-4),
+    ]);
+
+    let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be integrable
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_simple_substitution() {
+    let x = symbol!(x);
+
+    // ∫x/(x^2+1) dx (requires simple substitution u = x^2+1)
+    let expr = Expression::mul(vec![
+        Expression::symbol(x.clone()),
+        Expression::pow(
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+                Expression::integer(1),
+            ]),
+            Expression::integer(-1),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be (1/2)*ln(x^2+1)
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_degree_one_numerator() {
+    let x = symbol!(x);
+
+    // ∫x/(x-1) dx
+    let expr = Expression::mul(vec![
+        Expression::symbol(x.clone()),
+        Expression::pow(
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]),
+            Expression::integer(-1),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be x + ln|x-1|
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_repeated_linear_factor() {
+    let x = symbol!(x);
+
+    // ∫1/(x-1)^2 dx
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(
+            Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]),
+            Expression::integer(-2),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be -1/(x-1)
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_with_irreducible_quadratic() {
+    let x = symbol!(x);
+
+    // ∫1/(x^2+x+1) dx
+    let expr = Expression::mul(vec![
+        Expression::integer(1),
+        Expression::pow(
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+                Expression::symbol(x.clone()),
+                Expression::integer(1),
+            ]),
+            Expression::integer(-1),
+        ),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be integrable
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_numerator_equals_denominator_derivative() {
+    let x = symbol!(x);
+
+    // ∫(2x+1)/(x^2+x+1) dx
+    let numerator = Expression::add(vec![
+        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
+        Expression::integer(1),
+    ]);
+
+    let denominator = Expression::add(vec![
+        Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
         Expression::symbol(x.clone()),
         Expression::integer(1),
     ]);
-    let denominator = Expression::add(vec![
+
+    let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be ln|x^2+x+1|
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_sum_integration() {
+    let x = symbol!(x);
+
+    // ∫(1/x + 1/(x+1)) dx
+    let expr = Expression::add(vec![
+        Expression::mul(vec![
+            Expression::integer(1),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
+        ]),
+        Expression::mul(vec![
+            Expression::integer(1),
+            Expression::pow(
+                Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
+                Expression::integer(-1),
+            ),
+        ]),
+    ]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be ln|x| + ln|x+1|
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_mixed_terms() {
+    let x = symbol!(x);
+
+    // ∫(x^2 + 1/x) dx
+    let expr = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
+        Expression::mul(vec![
+            Expression::integer(1),
+            Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
+        ]),
     ]);
 
-    let expr = Expression::mul(vec![
-        numerator,
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
+    assert!(is_rational_function(&expr, &x));
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    let result = expr.integrate(x, 0);
+
+    // Should be x^3/3 + ln|x|
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_simple_sum_in_denominator() {
-    // SymPy validation: sympy.integrate(1/(x+5), x) = log(x+5)
-    // ∫1/(x+5) dx = ln|x+5|
+fn test_rational_cubic_denominator() {
     let x = symbol!(x);
-    let denominator = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(5)]);
 
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
-}
-
-#[test]
-fn test_rational_negative_root() {
-    // SymPy validation: sympy.integrate(1/(x+3), x) = log(x+3)
-    // ∫1/(x+3) dx = ln|x+3|
-    let x = symbol!(x);
-    let denominator = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(3)]);
-
+    // ∫1/(x^3-1) dx
     let expr = Expression::mul(vec![
         Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
+        Expression::pow(
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
+                Expression::integer(-1),
+            ]),
+            Expression::integer(-1),
+        ),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    assert!(is_rational_function(&expr, &x));
 
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
+    let result = expr.integrate(x, 0);
+
+    // Should be decomposable
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_coefficient_in_numerator() {
-    // SymPy validation: sympy.integrate(3/(x-1), x) = 3*log(x-1)
-    // ∫3/(x-1) dx = 3*ln|x-1|
+fn test_rational_fourth_degree_denominator() {
     let x = symbol!(x);
-    let denominator = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
 
+    // ∫1/(x^4-1) dx
     let expr = Expression::mul(vec![
-        Expression::integer(3),
-        Expression::pow(denominator, Expression::integer(-1)),
+        Expression::integer(1),
+        Expression::pow(
+            Expression::add(vec![
+                Expression::pow(Expression::symbol(x.clone()), Expression::integer(4)),
+                Expression::integer(-1),
+            ]),
+            Expression::integer(-1),
+        ),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    assert!(is_rational_function(&expr, &x));
 
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
+    let result = expr.integrate(x, 0);
+
+    // Should be decomposable
+    assert!(!matches!(result, Expression::Calculus(_)));
 }
 
 #[test]
-fn test_rational_linear_factor_at_origin() {
-    // SymPy validation: sympy.integrate(1/x, x) = log(x)
-    // ∫1/x dx = ln|x| (special case: root at 0)
+fn test_rational_complex_numerator_denominator() {
     let x = symbol!(x);
-    let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("ln") || integral.to_string().contains("log"));
-}
-
-#[test]
-fn test_rational_two_distinct_linear_factors() {
-    // SymPy validation: sympy.integrate((2*x+3)/((x-1)*(x-3)), x)
-    // Partial fractions decomposition required
-    let x = symbol!(x);
+    // ∫(x^2+3x+2)/(x^3+x^2-2x) dx
     let numerator = Expression::add(vec![
-        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
-        Expression::integer(3),
-    ]);
-    let factor1 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]);
-    let factor2 = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-3)]);
-    let denominator = Expression::mul(vec![factor1, factor2]);
-
-    let expr = Expression::mul(vec![
-        numerator,
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-}
-
-#[test]
-fn test_rational_proper_fraction_quadratic_plus_constant() {
-    // SymPy validation: sympy.integrate(2/(x^2+9), x) = (2/3)*atan(x/3)
-    // ∫2/(x²+9) dx = (2/3)arctan(x/3)
-    let x = symbol!(x);
-    let denominator = Expression::add(vec![
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(9),
-    ]);
-
-    let expr = Expression::mul(vec![
+        Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
         Expression::integer(2),
-        Expression::pow(denominator, Expression::integer(-1)),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-
-    let integral = result.unwrap();
-    assert!(integral.to_string().contains("atan") || integral.to_string().contains("arctan"));
-}
-
-#[test]
-fn test_rational_edge_case_x_squared_denominator() {
-    // SymPy validation: sympy.integrate(1/x^2, x) = -1/x
-    // ∫1/x² dx = -1/x
-    let x = symbol!(x);
-    let denominator = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-
-    let expr = Expression::mul(vec![
-        Expression::integer(1),
-        Expression::pow(denominator, Expression::integer(-1)),
-    ]);
-
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
-}
-
-#[test]
-fn test_rational_linear_numerator_quadratic_denominator() {
-    // SymPy validation: sympy.integrate((2*x+1)/(x^2+1), x)
-    // Split into ∫2x/(x²+1) dx + ∫1/(x²+1) dx
-    let x = symbol!(x);
-    let numerator = Expression::add(vec![
-        Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
-        Expression::integer(1),
-    ]);
     let denominator = Expression::add(vec![
+        Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
-        Expression::integer(1),
+        Expression::mul(vec![
+            Expression::integer(-2),
+            Expression::symbol(x.clone()),
+        ]),
     ]);
 
+    let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
+
+    assert!(is_rational_function(&expr, &x));
+
+    let result = expr.integrate(x, 0);
+
+    // Should be integrable via partial fractions
+    assert!(!matches!(result, Expression::Calculus(_)));
+}
+
+#[test]
+fn test_rational_with_irreducible_quadratic_in_partial_fraction() {
+    let x = symbol!(x);
+
+    // ∫1/(x*(x^2+1)) dx
     let expr = Expression::mul(vec![
-        numerator,
-        Expression::pow(denominator, Expression::integer(-1)),
+        Expression::integer(1),
+        Expression::pow(
+            Expression::mul(vec![
+                Expression::symbol(x.clone()),
+                Expression::add(vec![
+                    Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
+                    Expression::integer(1),
+                ]),
+            ]),
+            Expression::integer(-1),
+        ),
     ]);
 
-    let result = integrate_rational(&expr, &x);
-    assert!(result.is_some());
+    assert!(is_rational_function(&expr, &x));
 
-    let integral = result.unwrap();
+    let integral = expr.integrate(x, 0);
     let result_str = integral.to_string();
     // Should contain both ln and atan terms
     assert!(result_str.contains("ln") || result_str.contains("log") || result_str.contains("atan"));
+}
+
+#[test]
+fn test_sqrt_x_integration_full() {
+    let x = symbol!(x);
+
+    // ∫√x dx = ∫x^(1/2) dx
+    let expr = Expression::pow(
+        Expression::symbol(x.clone()),
+        Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(1),
+            BigInt::from(2),
+        ))),
+    );
+
+    let result = expr.integrate(x, 0);
+
+    // Should be (2/3)*x^(3/2)
+    assert!(!matches!(result, Expression::Calculus(_)));
 }

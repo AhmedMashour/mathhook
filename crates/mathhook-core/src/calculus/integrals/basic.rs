@@ -6,6 +6,9 @@
 use crate::calculus::integrals::Integration;
 use crate::core::{Expression, Number, Symbol};
 use crate::simplify::Simplify;
+use num_bigint::BigInt;
+use num_rational::BigRational;
+use num_traits::Zero;
 
 /// Basic integration operations
 pub struct BasicIntegrals;
@@ -21,7 +24,7 @@ impl BasicIntegrals {
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::integral(Expression::symbol(x.clone()), x.clone());
-    /// let result = expr.integrate(x);
+    /// let result = expr.integrate(x, 0);
     /// ```
     pub fn handle_calculus(
         expr: &Expression,
@@ -92,6 +95,12 @@ impl BasicIntegrals {
 
     /// Handle integration of sum expressions using linearity
     ///
+    /// # Arguments
+    ///
+    /// * `terms` - Terms in the sum
+    /// * `variable` - Variable to integrate with respect to
+    /// * `depth` - Current recursion depth
+    ///
     /// # Examples
     ///
     /// ```rust
@@ -101,12 +110,12 @@ impl BasicIntegrals {
     ///
     /// let x = symbol!(x);
     /// let terms = vec![Expression::symbol(x.clone()), Expression::integer(5)];
-    /// let result = BasicIntegrals::handle_sum(&terms, x);
+    /// let result = BasicIntegrals::handle_sum(&terms, x, 0);
     /// ```
-    pub fn handle_sum(terms: &[Expression], variable: Symbol) -> Expression {
+    pub fn handle_sum(terms: &[Expression], variable: Symbol, depth: usize) -> Expression {
         let integrals: Vec<Expression> = terms
             .iter()
-            .map(|term| term.integrate(variable.clone()))
+            .map(|term| term.integrate(variable.clone(), depth))
             .collect();
         Expression::add(integrals).simplify()
     }
@@ -114,6 +123,12 @@ impl BasicIntegrals {
     /// Handle integration of product expressions
     ///
     /// Preserves factor order for noncommutative expressions (matrices, operators, quaternions).
+    ///
+    /// # Arguments
+    ///
+    /// * `factors` - Factors in the product
+    /// * `variable` - Variable to integrate with respect to
+    /// * `depth` - Current recursion depth
     ///
     /// # Examples
     ///
@@ -123,35 +138,36 @@ impl BasicIntegrals {
     ///
     /// let x = symbol!(x);
     /// let factors = vec![Expression::integer(3), Expression::symbol(x.clone())];
-    /// let result = BasicIntegrals::handle_product(&factors, x);
+    /// let result = BasicIntegrals::handle_product(&factors, x, 0);
     /// ```
-    pub fn handle_product(factors: &[Expression], variable: Symbol) -> Expression {
+    pub fn handle_product(factors: &[Expression], variable: Symbol, depth: usize) -> Expression {
         let (constants, variables): (Vec<_>, Vec<_>) = factors
             .iter()
             .partition(|f| Self::is_constant_wrt(f, &variable));
 
         if variables.len() == 1 {
-            // Integrate the single variable factor, keep constants in original order
             let constant_part = if constants.is_empty() {
                 Expression::integer(1)
             } else {
                 Expression::mul(constants.into_iter().cloned().collect())
             };
 
-            Expression::mul(vec![constant_part, variables[0].integrate(variable)]).simplify()
+            Expression::mul(vec![constant_part, variables[0].integrate(variable, depth)]).simplify()
         } else if variables.is_empty() {
-            // All constants: ∫c dx = c*x (order preserved)
             Expression::mul(vec![
                 Expression::mul(factors.to_vec()),
                 Expression::symbol(variable),
             ])
         } else {
-            // Complex product: preserve as symbolic integral (order maintained)
             Expression::integral(Expression::mul(factors.to_vec()), variable)
         }
     }
 
     /// Handle integration of power expressions using power rule
+    ///
+    /// Power rule for integer exponents: ∫x^n dx = x^(n+1)/(n+1) + C (n ≠ -1)
+    /// Power rule for rational exponents: ∫x^(p/q) dx = (q/(p+q))·x^((p+q)/q) + C (p+q ≠ 0)
+    /// Special case: ∫x^(-1) dx = ln|x| + C
     ///
     /// # Examples
     ///
@@ -192,8 +208,40 @@ impl BasicIntegrals {
                     Expression::symbol(variable),
                 ])
             }
+        } else if let (Expression::Symbol(sym), Expression::Number(Number::Rational(r))) = (base, exp) {
+            if *sym == variable {
+                let p = r.numer();
+                let q = r.denom();
+
+                let p_plus_q = p + q;
+
+                if p_plus_q.is_zero() {
+                    Expression::function(
+                        "ln",
+                        vec![Expression::function(
+                            "abs",
+                            vec![Expression::symbol(variable)],
+                        )],
+                    )
+                } else {
+                    let new_exp_rational = BigRational::new(p_plus_q.clone(), q.clone());
+                    let new_exp = Expression::Number(Number::rational(new_exp_rational));
+
+                    let coefficient_rational = BigRational::new(q.clone(), p_plus_q.clone());
+                    let coefficient = Expression::Number(Number::rational(coefficient_rational));
+
+                    Expression::mul(vec![
+                        coefficient,
+                        Expression::pow(Expression::symbol(variable), new_exp),
+                    ])
+                }
+            } else {
+                Expression::mul(vec![
+                    Expression::pow(base.clone(), exp.clone()),
+                    Expression::symbol(variable),
+                ])
+            }
         } else {
-            // Try advanced power integration techniques
             Expression::integral(Expression::pow(base.clone(), exp.clone()), variable)
         }
     }
@@ -231,6 +279,7 @@ impl BasicIntegrals {
 mod tests {
     use super::*;
     use crate::symbol;
+    use num_bigint::BigInt;
 
     #[test]
     fn test_constant_integration() {
@@ -238,7 +287,6 @@ mod tests {
         let expr = Expression::integer(5);
         let result = BasicIntegrals::handle_constant(&expr, x.clone());
 
-        // ∫5 dx = 5x
         assert_eq!(
             result,
             Expression::mul(vec![Expression::integer(5), Expression::symbol(x)])
@@ -250,7 +298,6 @@ mod tests {
         let x = symbol!(x);
         let result = BasicIntegrals::handle_symbol(&x, &x);
 
-        // ∫x dx = x²/2
         let expected = Expression::mul(vec![
             Expression::rational(1, 2),
             Expression::pow(Expression::symbol(x), Expression::integer(2)),
@@ -262,9 +309,8 @@ mod tests {
     fn test_sum_integration() {
         let x = symbol!(x);
         let terms = vec![Expression::symbol(x.clone()), Expression::integer(3)];
-        let result = BasicIntegrals::handle_sum(&terms, x.clone());
+        let result = BasicIntegrals::handle_sum(&terms, x.clone(), 0);
 
-        // ∫(x + 3) dx = x²/2 + 3x
         assert!(!result.is_zero());
     }
 
@@ -273,15 +319,11 @@ mod tests {
         let x = symbol!(x);
         let a = crate::core::Symbol::matrix("A");
 
-        // ∫A dx where A is a matrix (constant with respect to x)
-        // Result should be A*x (order preserved)
         let result = BasicIntegrals::handle_symbol(&a, &x);
 
-        // Result should be A*x (as a product)
         if let Expression::Mul(factors) = &result {
             assert_eq!(factors.len(), 2, "Result should be a product of two factors");
 
-            // Verify both A and x are present in the product
             let has_a = factors.iter().any(|f| {
                 if let Expression::Symbol(s) = f {
                     s.name() == "A"
@@ -309,14 +351,11 @@ mod tests {
         let t = symbol!(t);
         let p = crate::core::Symbol::operator("P");
 
-        // ∫P dt where P is an operator (constant with respect to t)
-        // Result should be P*t (order preserved)
         let result = BasicIntegrals::handle_symbol(&p, &t);
 
         if let Expression::Mul(factors) = &result {
             assert_eq!(factors.len(), 2, "Result should be a product of two factors");
 
-            // Verify both P and t are present
             let has_p = factors.iter().any(|f| {
                 if let Expression::Symbol(s) = f {
                     s.name() == "P"
@@ -345,8 +384,6 @@ mod tests {
         let a = crate::core::Symbol::matrix("A");
         let b = crate::core::Symbol::matrix("B");
 
-        // ∫(A*B) dx where A, B are matrices (constants w.r.t. x)
-        // Result should be (A*B)*x (order preserved)
         let product = Expression::mul(vec![
             Expression::symbol(a.clone()),
             Expression::symbol(b.clone()),
@@ -355,9 +392,9 @@ mod tests {
         let result = BasicIntegrals::handle_product(
             &vec![Expression::symbol(a.clone()), Expression::symbol(b.clone())],
             x.clone(),
+            0,
         );
 
-        // Should preserve A*B order
         assert!(!result.is_zero());
     }
 
@@ -366,7 +403,6 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
 
-        // ∫y dx = y*x (commutative, order doesn't matter mathematically)
         let result = BasicIntegrals::handle_symbol(&y, &x);
 
         if let Expression::Mul(factors) = &result {
@@ -395,10 +431,82 @@ mod tests {
         let x = symbol!(x);
         let a = crate::core::Symbol::matrix("A");
 
-        // Matrix A is constant with respect to scalar x
         assert!(BasicIntegrals::is_constant_wrt(
             &Expression::symbol(a),
             &x
         ));
+    }
+
+    #[test]
+    fn test_rational_exponent_one_half() {
+        let x = symbol!(x);
+        let base = Expression::symbol(x.clone());
+        let exp = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(1),
+            BigInt::from(2),
+        )));
+        let result = BasicIntegrals::handle_power(&base, &exp, x.clone());
+
+        let expected_coeff = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(2),
+            BigInt::from(3),
+        )));
+        let expected_exp = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(3),
+            BigInt::from(2),
+        )));
+        let expected = Expression::mul(vec![
+            expected_coeff,
+            Expression::pow(Expression::symbol(x), expected_exp),
+        ]);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_rational_exponent_two_thirds() {
+        let x = symbol!(x);
+        let base = Expression::symbol(x.clone());
+        let exp = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(2),
+            BigInt::from(3),
+        )));
+        let result = BasicIntegrals::handle_power(&base, &exp, x.clone());
+
+        let expected_coeff = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(3),
+            BigInt::from(5),
+        )));
+        let expected_exp = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(5),
+            BigInt::from(3),
+        )));
+        let expected = Expression::mul(vec![
+            expected_coeff,
+            Expression::pow(Expression::symbol(x), expected_exp),
+        ]);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_rational_exponent_minus_one() {
+        let x = symbol!(x);
+        let base = Expression::symbol(x.clone());
+        let exp = Expression::Number(Number::rational(BigRational::new(
+            BigInt::from(-1),
+            BigInt::from(1),
+        )));
+        let result = BasicIntegrals::handle_power(&base, &exp, x.clone());
+
+        let expected = Expression::function(
+            "ln",
+            vec![Expression::function(
+                "abs",
+                vec![Expression::symbol(x)],
+            )],
+        );
+
+        assert_eq!(result, expected);
     }
 }

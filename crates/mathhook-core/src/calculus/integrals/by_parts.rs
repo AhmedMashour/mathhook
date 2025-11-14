@@ -39,16 +39,18 @@ impl IntegrationByParts {
     /// ]);
     /// let result = IntegrationByParts::integrate(&expr, x);
     /// ```
-    pub fn integrate(expr: &Expression, variable: Symbol) -> Option<Expression> {
+    pub fn integrate(expr: &Expression, variable: Symbol, depth: usize) -> Option<Expression> {
         // Try to identify if this is a product suitable for integration by parts
         if let Expression::Mul(factors) = expr {
             if factors.len() == 2 {
                 // Try both orderings: (u=f0, dv=f1) and (u=f1, dv=f0)
-                if let Some(result) = Self::try_by_parts(&factors[0], &factors[1], variable.clone())
+                if let Some(result) =
+                    Self::try_by_parts(&factors[0], &factors[1], variable.clone(), depth)
                 {
                     return Some(result);
                 }
-                if let Some(result) = Self::try_by_parts(&factors[1], &factors[0], variable) {
+                if let Some(result) = Self::try_by_parts(&factors[1], &factors[0], variable, depth)
+                {
                     return Some(result);
                 }
             }
@@ -71,7 +73,12 @@ impl IntegrationByParts {
     /// let dv = Expression::function("exp", vec![Expression::symbol(x.clone())]);
     /// let result = IntegrationByParts::try_by_parts(&u, &dv, x);
     /// ```
-    pub fn try_by_parts(u: &Expression, dv: &Expression, variable: Symbol) -> Option<Expression> {
+    pub fn try_by_parts(
+        u: &Expression,
+        dv: &Expression,
+        variable: Symbol,
+        depth: usize,
+    ) -> Option<Expression> {
         // Check if this is a good choice based on LIATE
         if !Self::is_good_u_choice(u, &variable) {
             return None;
@@ -81,7 +88,7 @@ impl IntegrationByParts {
         let du = u.derivative(variable.clone());
 
         // Compute v = integral of dv
-        let v = dv.integrate(variable.clone());
+        let v = dv.integrate(variable.clone(), depth + 1);
 
         // Check if v is simpler (not just symbolic integral)
         if Self::is_symbolic_integral(&v) {
@@ -97,7 +104,7 @@ impl IntegrationByParts {
         } else {
             Expression::mul(vec![v.clone(), du]).simplify()
         };
-        let integral_v_du = v_du.integrate(variable);
+        let integral_v_du = v_du.integrate(variable, depth + 1);
 
         // Check if integration of v*du failed (returned symbolic integral)
         if Self::is_symbolic_integral(&integral_v_du) {
@@ -195,7 +202,7 @@ impl IntegrationByParts {
         let mut current = expr.clone();
 
         for _ in 0..max_iterations {
-            if let Some(result) = Self::integrate(&current, variable.clone()) {
+            if let Some(result) = Self::integrate(&current, variable.clone(), 0) {
                 // Check if the result still contains integrals
                 if Self::contains_integral(&result) {
                     current = result;
@@ -239,7 +246,7 @@ mod tests {
             Expression::function("exp", vec![Expression::symbol(x.clone())]),
         ]);
 
-        let result = IntegrationByParts::integrate(&expr, x);
+        let result = IntegrationByParts::integrate(&expr, x, 0);
         assert!(result.is_some());
     }
 
@@ -252,7 +259,7 @@ mod tests {
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
         ]);
 
-        let result = IntegrationByParts::integrate(&expr, x);
+        let result = IntegrationByParts::integrate(&expr, x, 0);
         assert!(result.is_some());
     }
 
@@ -269,7 +276,7 @@ mod tests {
         let x = symbol!(x);
         let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
         let as_product = Expression::mul(vec![expr, Expression::integer(1)]);
-        let result = IntegrationByParts::integrate(&as_product, x);
+        let result = IntegrationByParts::integrate(&as_product, x, 0);
         assert!(result.is_some());
     }
 

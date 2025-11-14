@@ -85,7 +85,7 @@ fn test_substitution_integrates_with_trait() {
     let x = symbol!(x);
     let integrand = Expression::symbol(x.clone());
 
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
     assert!(
         matches!(result, Expression::Calculus(_))
             || matches!(result, Expression::Pow(_, _))
@@ -267,7 +267,7 @@ fn test_substitution_integration_endpoint() {
     ]);
     let integrand = Expression::function("exp", vec![inner]);
 
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
     assert!(
         matches!(result, Expression::Calculus(_))
             || matches!(result, Expression::Function { .. })
@@ -297,7 +297,7 @@ fn test_substitution_strategy_layer_integration() {
     let x = symbol!(x);
     let integrand = Expression::pow(Expression::symbol(x.clone()), Expression::integer(3));
 
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
     assert!(!matches!(result, Expression::Calculus(_)));
 }
 
@@ -332,7 +332,7 @@ fn test_substitution_infrastructure_complete() {
     let tests_passed = vec![
         try_substitution(&Expression::integer(5), x.clone()).is_none(),
         try_substitution(&Expression::symbol(x.clone()), x.clone()).is_none(),
-        Expression::integer(5).integrate(x.clone()).to_string().len() > 0,
+        Expression::integer(5).integrate(x.clone(), 0).to_string().len() > 0,
     ];
 
     assert!(tests_passed.iter().all(|&b| b), "All infrastructure tests should pass");

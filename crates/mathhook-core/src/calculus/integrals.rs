@@ -33,8 +33,21 @@ use crate::core::{Expression, Symbol};
 use strategy::integrate_with_strategy;
 
 /// Trait for integration operations
+///
+/// # Breaking Change (Plan 10, Wave 1.1)
+///
+/// Added `depth` parameter to prevent infinite recursion in integration by parts.
+/// The `depth` parameter tracks recursion depth and enables maximum depth limiting.
+///
+/// Default depth is 0 (top-level call). Internal implementations increment this
+/// to prevent stack overflow in cases where simplification fails.
 pub trait Integration {
-    /// Compute indefinite integral
+    /// Compute indefinite integral with recursion depth tracking
+    ///
+    /// # Arguments
+    ///
+    /// * `variable` - The variable to integrate with respect to
+    /// * `depth` - Current recursion depth (default: 0)
     ///
     /// # Examples
     ///
@@ -46,9 +59,9 @@ pub trait Integration {
     ///
     /// let x = symbol!(x);
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-    /// let result = expr.integrate(x);
+    /// let result = expr.integrate(x, 0);
     /// ```
-    fn integrate(&self, variable: Symbol) -> Expression;
+    fn integrate(&self, variable: Symbol, depth: usize) -> Expression;
 
     /// Compute definite integral
     ///
@@ -74,9 +87,9 @@ pub trait Integration {
 }
 
 impl Integration for Expression {
-    fn integrate(&self, variable: Symbol) -> Expression {
+    fn integrate(&self, variable: Symbol, depth: usize) -> Expression {
         // Delegate to strategy dispatcher which orchestrates all integration techniques
-        integrate_with_strategy(self, variable)
+        integrate_with_strategy(self, variable, depth)
     }
 
     fn definite_integrate(
@@ -114,7 +127,7 @@ impl IntegrationMethods {
     /// let result = IntegrationMethods::by_parts(&expr, x);
     /// ```
     pub fn by_parts(expr: &Expression, variable: Symbol) -> Expression {
-        IntegrationByParts::integrate(expr, variable.clone())
+        IntegrationByParts::integrate(expr, variable.clone(), 0)
             .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
     }
 

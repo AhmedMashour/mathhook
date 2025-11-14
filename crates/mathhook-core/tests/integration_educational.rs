@@ -236,7 +236,7 @@ fn test_latex_format_trig_function() {
 fn test_latex_format_integral_result() {
     let var = x();
     let expr = pow(Expression::Symbol(var.clone()), integer(2));
-    let result = integrate_with_strategy(&expr, var.clone());
+    let result = integrate_with_strategy(&expr, var.clone(), 0);
 
     let latex = result
         .to_latex(None)

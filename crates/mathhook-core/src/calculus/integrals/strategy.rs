@@ -17,7 +17,7 @@ use crate::core::{Expression, Number, Symbol};
 /// Main integration strategy dispatcher
 ///
 /// Tries 8 techniques in order (fast to slow) until one succeeds.
-pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
+pub fn integrate_with_strategy(expr: &Expression, var: Symbol, depth: usize) -> Expression {
     // Layer 1: Table lookup (Wave 3) - ACTIVE
     if let Some(result) = table::try_table_lookup(expr, &var) {
         return result;
@@ -34,7 +34,7 @@ pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
     }
 
     // Layer 4: By parts (existing - already working)
-    if let Some(result) = try_by_parts(expr, &var) {
+    if let Some(result) = try_by_parts(expr, &var, depth) {
         return result;
     }
 
@@ -55,7 +55,7 @@ pub fn integrate_with_strategy(expr: &Expression, var: Symbol) -> Expression {
 
     // Layer 7.5: Try basic integration rules (power rule, constants, etc.)
     // These are fast and handle many common cases that don't fit above patterns
-    if let Some(result) = try_basic_integration(expr, &var) {
+    if let Some(result) = try_basic_integration(expr, &var, depth) {
         return result;
     }
 
@@ -98,8 +98,8 @@ pub fn try_registry_integration(expr: &Expression, var: &Symbol) -> Option<Expre
 /// Try integration by parts (Layer 4)
 ///
 /// Uses LIATE heuristic for products like x*exp(x).
-pub fn try_by_parts(expr: &Expression, var: &Symbol) -> Option<Expression> {
-    IntegrationByParts::integrate(expr, var.clone())
+pub fn try_by_parts(expr: &Expression, var: &Symbol, depth: usize) -> Option<Expression> {
+    IntegrationByParts::integrate(expr, var.clone(), depth)
 }
 
 
@@ -142,7 +142,7 @@ pub fn is_polynomial(expr: &Expression, _var: &Symbol) -> bool {
 /// Try basic integration rules (Layer 7.5)
 ///
 /// Power rule, constants, sums, products with constant factors.
-pub fn try_basic_integration(expr: &Expression, var: &Symbol) -> Option<Expression> {
+pub fn try_basic_integration(expr: &Expression, var: &Symbol, depth: usize) -> Option<Expression> {
     let result = match expr {
         // Handle existing calculus expressions
         Expression::Calculus(data) => BasicIntegrals::handle_calculus(expr, data, var.clone()),
@@ -150,8 +150,8 @@ pub fn try_basic_integration(expr: &Expression, var: &Symbol) -> Option<Expressi
         // Basic cases
         Expression::Number(_) => BasicIntegrals::handle_constant(expr, var.clone()),
         Expression::Symbol(sym) => BasicIntegrals::handle_symbol(sym, var),
-        Expression::Add(terms) => BasicIntegrals::handle_sum(terms, var.clone()),
-        Expression::Mul(factors) => BasicIntegrals::handle_product(factors, var.clone()),
+        Expression::Add(terms) => BasicIntegrals::handle_sum(terms, var.clone(), depth),
+        Expression::Mul(factors) => BasicIntegrals::handle_product(factors, var.clone(), depth),
         Expression::Pow(base, exp) => BasicIntegrals::handle_power(base, exp, var.clone()),
 
         // Not a basic pattern

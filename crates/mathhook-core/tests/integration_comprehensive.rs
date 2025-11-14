@@ -33,7 +33,7 @@ fn test_rational_plus_polynomial() {
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -53,7 +53,7 @@ fn test_rational_decomposition_multiple_terms() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -69,7 +69,7 @@ fn test_substitution_with_trig_inside() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -83,7 +83,7 @@ fn test_trig_power_reduction() {
         Expression::integer(2),
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -97,7 +97,7 @@ fn test_trig_power_reduction_cos() {
         Expression::integer(2),
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -114,7 +114,7 @@ fn test_trig_product_sin_cos_different_powers() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -130,7 +130,7 @@ fn test_trig_exponential_product() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -144,7 +144,7 @@ fn test_trig_over_polynomial() {
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
     ]);
 
-    let _result = integrate_with_strategy(&expr, x.clone());
+    let _result = integrate_with_strategy(&expr, x.clone(), 0);
     // Non-elementary, may return symbolic
 }
 
@@ -160,7 +160,7 @@ fn test_rational_times_exponential() {
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let _result = integrate_with_strategy(&expr, x.clone());
+    let _result = integrate_with_strategy(&expr, x.clone(), 0);
     // Non-elementary (exponential integral)
 }
 
@@ -174,7 +174,7 @@ fn test_rational_times_logarithm() {
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -197,7 +197,7 @@ fn test_rational_plus_trig_plus_polynomial() {
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -217,7 +217,7 @@ fn test_nested_substitution_candidate() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -238,7 +238,7 @@ fn test_chain_rule_pattern() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -254,7 +254,7 @@ fn test_constant_times_integrable() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -269,7 +269,7 @@ fn test_sum_of_different_strategy_terms() {
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -289,7 +289,7 @@ fn test_rational_with_quadratic_denominator() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -309,7 +309,7 @@ fn test_rational_with_linear_numerator() {
     ]);
     let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -332,7 +332,7 @@ fn test_fallthrough_table_to_rational() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -343,7 +343,7 @@ fn test_fallthrough_substitution_to_trig() {
     // ∫tan(x) dx
     let expr = Expression::function("tan", vec![Expression::symbol(x.clone())]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -357,7 +357,7 @@ fn test_fallthrough_all_to_risch() {
         vec![Expression::function("exp", vec![Expression::symbol(x.clone())])],
     );
 
-    let _result = integrate_with_strategy(&expr, x.clone());
+    let _result = integrate_with_strategy(&expr, x.clone(), 0);
     // Non-elementary, Risch should recognize
 }
 
@@ -373,7 +373,7 @@ fn test_large_polynomial_sum() {
         .collect();
     let expr = Expression::add(terms);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -390,7 +390,7 @@ fn test_product_of_many_constants() {
         Expression::symbol(x.clone()),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -403,7 +403,7 @@ fn test_integrate_zero() {
     // ∫0 dx
     let expr = Expression::integer(0);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -414,7 +414,7 @@ fn test_integrate_one() {
     // ∫1 dx = x
     let expr = Expression::integer(1);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -432,7 +432,7 @@ fn test_proper_rational_function() {
     ]);
     let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -448,7 +448,7 @@ fn test_improper_rational_function() {
     ]);
     let expr = Expression::mul(vec![numerator, Expression::pow(denominator, Expression::integer(-1))]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -464,7 +464,7 @@ fn test_trig_secant_squared() {
         Expression::integer(2),
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -478,7 +478,7 @@ fn test_trig_sin_cubed() {
         Expression::integer(3),
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -498,7 +498,7 @@ fn test_trig_product_even_powers() {
         ),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -514,7 +514,7 @@ fn test_exponential_polynomial_product() {
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -525,7 +525,7 @@ fn test_logarithm_alone() {
     // ∫ln(x) dx
     let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -544,7 +544,7 @@ fn test_substitution_sqrt_linear() {
         ])],
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -561,7 +561,7 @@ fn test_substitution_trig_argument() {
         ])],
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -577,7 +577,7 @@ fn test_rational_plus_exponential() {
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -591,7 +591,7 @@ fn test_trig_plus_polynomial() {
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -605,7 +605,7 @@ fn test_product_requiring_parts_and_substitution() {
         Expression::function("ln", vec![Expression::symbol(x.clone())]),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -626,7 +626,7 @@ fn test_partial_fractions_three_factors() {
         Expression::pow(denominator, Expression::integer(-1)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -644,7 +644,7 @@ fn test_rational_with_repeated_factor() {
         Expression::pow(denominator, Expression::integer(-1)),
     ]);
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -657,7 +657,7 @@ fn test_very_simple_polynomial() {
     // ∫x dx
     let expr = Expression::symbol(x.clone());
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -668,7 +668,7 @@ fn test_negative_power() {
     // ∫x^(-3) dx
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-3));
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }
 
@@ -684,6 +684,6 @@ fn test_fractional_power() {
         Expression::Number(Number::rational(BigRational::new(1.into(), 2.into()))),
     );
 
-    let result = integrate_with_strategy(&expr, x.clone());
+    let result = integrate_with_strategy(&expr, x.clone(), 0);
     assert!(!is_symbolic_integral(&result));
 }

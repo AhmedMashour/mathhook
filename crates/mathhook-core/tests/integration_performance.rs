@@ -67,7 +67,7 @@ fn test_simple_polynomial_fast() {
     let expr = pow(Expression::Symbol(var.clone()), integer(2));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -86,7 +86,7 @@ fn test_simple_trig_fast() {
     let expr = sin(Expression::Symbol(var.clone()));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -105,7 +105,7 @@ fn test_simple_exponential_fast() {
     let expr = exp(Expression::Symbol(var.clone()));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -128,7 +128,7 @@ fn test_polynomial_sum_linear_time() {
     let expr = add(terms);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -156,7 +156,7 @@ fn test_rational_function_reasonable_time() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -180,7 +180,7 @@ fn test_partial_fractions_moderate_time() {
     let expr = mul(vec![integer(1), pow(denominator, integer(-1))]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -199,7 +199,7 @@ fn test_trig_power_reduction_fast() {
     let expr = pow(sin(Expression::Symbol(var.clone())), integer(2));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -218,7 +218,7 @@ fn test_by_parts_reasonable_time() {
     let expr = mul(vec![Expression::Symbol(var.clone()), ln(Expression::Symbol(var.clone()))]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -240,7 +240,7 @@ fn test_substitution_fast() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -262,7 +262,7 @@ fn test_trig_product_moderate_time() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -284,7 +284,7 @@ fn test_exponential_polynomial_product() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -304,7 +304,7 @@ fn test_does_not_hang_on_complex_integral() {
     let expr = exp(pow(Expression::Symbol(var.clone()), integer(2)));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -327,7 +327,7 @@ fn test_does_not_hang_on_non_integrable() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -352,7 +352,7 @@ fn test_table_lookup_instant() {
 
     for expr in test_cases {
         let start = Instant::now();
-        let _result = integrate_with_strategy(&expr, var.clone());
+        let _result = integrate_with_strategy(&expr, var.clone(), 0);
         let duration = start.elapsed();
 
         assert!(
@@ -383,7 +383,7 @@ fn test_strategy_fallthrough_not_exponential() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -415,7 +415,7 @@ fn test_large_sum_linear_scaling() {
     let expr = add(terms);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -440,7 +440,7 @@ fn test_nested_products_reasonable() {
     ]);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -459,7 +459,7 @@ fn test_constant_integration_instant() {
     let expr = integer(5);
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -479,7 +479,7 @@ fn test_risch_timeout_protection() {
     let expr = exp(exp(Expression::Symbol(var.clone())));
 
     let start = Instant::now();
-    let _result = integrate_with_strategy(&expr, var.clone());
+    let _result = integrate_with_strategy(&expr, var.clone(), 0);
     let duration = start.elapsed();
 
     assert!(
@@ -500,7 +500,7 @@ fn test_multiple_integrations_no_memory_leak() {
 
     let start = Instant::now();
     for _ in 0..100 {
-        let _result = integrate_with_strategy(&expr, var.clone());
+        let _result = integrate_with_strategy(&expr, var.clone(), 0);
     }
     let duration = start.elapsed();
 

@@ -105,7 +105,7 @@ impl ExactODESolver {
         // ∂F/∂x = M(x,y) and ∂F/∂y = N(x,y)
 
         // Integrate M with respect to x: F(x,y) = ∫M(x,y)dx + g(y)
-        let f_from_m = m.integrate(x.clone());
+        let f_from_m = m.integrate(x.clone(), 0);
 
         // To find g(y), differentiate F with respect to y and compare with N
         // ∂F/∂y = ∂/∂y[∫M dx] + g'(y) = N(x,y)
@@ -119,7 +119,7 @@ impl ExactODESolver {
         .simplify();
 
         // Integrate g'(y) with respect to y to get g(y)
-        let g = g_prime.integrate(y.clone());
+        let g = g_prime.integrate(y.clone(), 0);
 
         // F(x,y) = ∫M dx + g(y)
         let potential = Expression::add(vec![f_from_m, g]).simplify();
@@ -173,7 +173,7 @@ impl ExactODESolver {
         // Check if quotient is independent of y (crude check: no y symbols)
         if !self.contains_symbol(&quotient, y) {
             // μ(x) = exp(∫[(∂M/∂y - ∂N/∂x) / N] dx)
-            let integral = quotient.integrate(x.clone());
+            let integral = quotient.integrate(x.clone(), 0);
             return Some(Expression::function("exp", vec![integral]));
         }
 
@@ -194,7 +194,7 @@ impl ExactODESolver {
 
         if !self.contains_symbol(&quotient_y, x) {
             // μ(y) = exp(∫[(∂N/∂x - ∂M/∂y) / M] dy)
-            let integral = quotient_y.integrate(y.clone());
+            let integral = quotient_y.integrate(y.clone(), 0);
             return Some(Expression::function("exp", vec![integral]));
         }
 

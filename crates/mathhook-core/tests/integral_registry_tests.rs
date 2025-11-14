@@ -137,7 +137,7 @@ fn test_integrate_sin_produces_neg_cos() {
     // ∫ sin(x) dx = -cos(x) + C
     let x = symbol!(x);
     let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::mul(vec![
         Expression::integer(-1),
@@ -152,7 +152,7 @@ fn test_integrate_cos_produces_sin() {
     // ∫ cos(x) dx = sin(x) + C
     let x = symbol!(x);
     let expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function("sin", vec![Expression::symbol(symbol!(x))]);
 
@@ -164,7 +164,7 @@ fn test_integrate_tan_produces_neg_ln_abs_cos() {
     // ∫ tan(x) dx = -ln|cos(x)| + C
     let x = symbol!(x);
     let expr = Expression::function("tan", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::mul(vec![
         Expression::integer(-1),
@@ -188,7 +188,7 @@ fn test_integrate_sec_produces_ln_sec_plus_tan() {
     // ∫ sec(x) dx = ln|sec(x) + tan(x)| + C
     let x = symbol!(x);
     let expr = Expression::function("sec", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::function(
         "ln",
@@ -209,7 +209,7 @@ fn test_integrate_csc_produces_neg_ln_csc_plus_cot() {
     // ∫ csc(x) dx = -ln|csc(x) + cot(x)| + C
     let x = symbol!(x);
     let expr = Expression::function("csc", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::mul(vec![
         Expression::integer(-1),
@@ -233,7 +233,7 @@ fn test_integrate_cot_produces_ln_abs_sin() {
     // ∫ cot(x) dx = ln|sin(x)| + C
     let x = symbol!(x);
     let expr = Expression::function("cot", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function(
         "ln",
@@ -258,7 +258,7 @@ fn test_integrate_exp_produces_exp() {
     // ∫ exp(x) dx = exp(x) + C
     let x = symbol!(x);
     let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function("exp", vec![Expression::symbol(symbol!(x))]);
 
@@ -271,7 +271,7 @@ fn test_integrate_ln_produces_x_ln_x_minus_x() {
     // This uses integration by parts
     let x = symbol!(x);
     let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::add(vec![
         Expression::mul(vec![
@@ -289,7 +289,7 @@ fn test_integrate_log_base_10() {
     // ∫ log₁₀(x) dx = (1/ln(10)) · [x·ln(x) - x] + C
     let x = symbol!(x);
     let expr = Expression::function("log", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     // Result includes the 1/ln(10) factor
     let expected = Expression::mul(vec![
@@ -321,7 +321,7 @@ fn test_integrate_arcsin_produces_x_arcsin_plus_sqrt() {
     // ∫ arcsin(x) dx = x·arcsin(x) + √(1-x²) + C
     let x = symbol!(x);
     let expr = Expression::function("arcsin", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::add(vec![
         Expression::mul(vec![
@@ -348,7 +348,7 @@ fn test_integrate_arccos_produces_x_arccos_minus_sqrt() {
     // ∫ arccos(x) dx = x·arccos(x) - √(1-x²) + C
     let x = symbol!(x);
     let expr = Expression::function("arccos", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::add(vec![
         Expression::mul(vec![
@@ -378,7 +378,7 @@ fn test_integrate_arctan_produces_x_arctan_minus_half_ln() {
     // ∫ arctan(x) dx = x·arctan(x) - (1/2)·ln(1+x²) + C
     let x = symbol!(x);
     let expr = Expression::function("arctan", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::add(vec![
         Expression::mul(vec![
@@ -412,7 +412,7 @@ fn test_integrate_sinh_produces_cosh() {
     // ∫ sinh(x) dx = cosh(x) + C
     let x = symbol!(x);
     let expr = Expression::function("sinh", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function("cosh", vec![Expression::symbol(symbol!(x))]);
 
@@ -424,7 +424,7 @@ fn test_integrate_cosh_produces_sinh() {
     // ∫ cosh(x) dx = sinh(x) + C
     let x = symbol!(x);
     let expr = Expression::function("cosh", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function("sinh", vec![Expression::symbol(symbol!(x))]);
 
@@ -436,7 +436,7 @@ fn test_integrate_tanh_produces_ln_cosh() {
     // ∫ tanh(x) dx = ln(cosh(x)) + C
     let x = symbol!(x);
     let expr = Expression::function("tanh", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::function(
         "ln",
@@ -458,7 +458,7 @@ fn test_integrate_sqrt_produces_two_thirds_x_to_three_halves() {
     // ∫ √x dx = (2/3)·x^(3/2) + C
     let x = symbol!(x);
     let expr = Expression::function("sqrt", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     let expected = Expression::mul(vec![
         Expression::mul(vec![
@@ -487,7 +487,7 @@ fn test_fundamental_theorem_sin() {
     // Verify: d/dx(∫ sin(x) dx) = sin(x)
     let x = symbol!(x);
     let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
     let derivative = integral.derivative(x);
 
     assert_eq!(derivative.simplify(), expr.simplify());
@@ -498,7 +498,7 @@ fn test_fundamental_theorem_cos() {
     // Verify: d/dx(∫ cos(x) dx) = cos(x)
     let x = symbol!(x);
     let expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
     let derivative = integral.derivative(x);
 
     assert_eq!(derivative.simplify(), expr.simplify());
@@ -509,7 +509,7 @@ fn test_fundamental_theorem_exp() {
     // Verify: d/dx(∫ exp(x) dx) = exp(x)
     let x = symbol!(x);
     let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
     let derivative = integral.derivative(x);
 
     assert_eq!(derivative, expr);
@@ -520,7 +520,7 @@ fn test_fundamental_theorem_sinh() {
     // Verify: d/dx(∫ sinh(x) dx) = sinh(x)
     let x = symbol!(x);
     let expr = Expression::function("sinh", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
     let derivative = integral.derivative(x);
 
     assert_eq!(derivative.simplify(), expr.simplify());
@@ -531,7 +531,7 @@ fn test_fundamental_theorem_cosh() {
     // Verify: d/dx(∫ cosh(x) dx) = cosh(x)
     let x = symbol!(x);
     let expr = Expression::function("cosh", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
     let derivative = integral.derivative(x);
 
     assert_eq!(derivative.simplify(), expr.simplify());
@@ -546,7 +546,7 @@ fn test_integrate_unknown_function_returns_symbolic() {
     // Unknown functions should return symbolic integral expression
     let x = symbol!(x);
     let expr = Expression::function("mystery_func", vec![Expression::symbol(x.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     // Should return Expression::Calculus with Integral variant (symbolic representation)
     // Exact structure depends on implementation, but should not panic
@@ -570,7 +570,7 @@ fn test_integrate_sin_2x_with_linear_substitution() {
     let x = symbol!(x);
     let inner = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let expr = Expression::function("sin", vec![inner]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     // Expected: -(1/2)·cos(2x)
     // Will be enabled after Phase 2 linear substitution implementation
@@ -583,7 +583,7 @@ fn test_integrate_cos_3x_with_linear_substitution() {
     let x = symbol!(x);
     let inner = Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]);
     let expr = Expression::function("cos", vec![inner]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     // Expected: (1/3)·sin(3x)
     // Will be enabled after Phase 2 linear substitution implementation
@@ -594,7 +594,7 @@ fn test_integrate_constant_function_with_respect_to_x() {
     // ∫ 5 dx = 5x + C
     let x = symbol!(x);
     let expr = Expression::integer(5);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::mul(vec![Expression::integer(5), Expression::symbol(x)]);
 
@@ -608,7 +608,7 @@ fn test_integrate_function_of_different_variable() {
     let x = symbol!(x);
     let y = symbol!(y);
     let expr = Expression::function("sin", vec![Expression::symbol(y.clone())]);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     // Should be sin(y)·x (treating sin(y) as constant with respect to x)
     let expected = Expression::mul(vec![
@@ -624,7 +624,7 @@ fn test_integrate_zero_produces_zero() {
     // ∫ 0 dx = 0 + C = 0
     let x = symbol!(x);
     let expr = Expression::integer(0);
-    let integral = expr.integrate(x.clone());
+    let integral = expr.integrate(x.clone(), 0);
 
     let expected = Expression::mul(vec![Expression::integer(0), Expression::symbol(x)]);
 
@@ -643,7 +643,7 @@ fn test_integrate_sin_of_polynomial() {
     let x = symbol!(x);
     let inner = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     let expr = Expression::function("sin", vec![inner]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     // This integral is not elementary, should return symbolic
     // Will be properly handled after Phase 3
@@ -659,7 +659,7 @@ fn test_integrate_sin_x_times_cos_x() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
     ]);
-    let integral = expr.integrate(x);
+    let integral = expr.integrate(x, 0);
 
     // Will be enabled after Phase 3 implementation
     // Expected: (1/2)·sin²(x) or equivalent form

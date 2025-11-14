@@ -15,7 +15,7 @@ fn test_strategy_routes_to_basic_power_rule() {
     // SymPy: sympy.integrate(x**2, x) = x**3/3
     let x = symbol!(x);
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 7.5 (basic integration) - power rule
     // Result should be x^3/3
@@ -27,7 +27,7 @@ fn test_strategy_routes_to_basic_constant() {
     // SymPy: sympy.integrate(5, x) = 5*x
     let x = symbol!(x);
     let expr = Expression::integer(5);
-    let result = expr.integrate(x.clone());
+    let result = expr.integrate(x.clone(), 0);
 
     // Should route to Layer 7.5 (basic integration) - constant rule
     // Result should be 5*x
@@ -44,7 +44,7 @@ fn test_strategy_routes_to_registry_sin() {
     // SymPy: sympy.integrate(sin(x), x) = -cos(x)
     let x = symbol!(x);
     let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 3 (function registry)
     // Result should be -cos(x)
@@ -56,7 +56,7 @@ fn test_strategy_routes_to_registry_cos() {
     // SymPy: sympy.integrate(cos(x), x) = sin(x)
     let x = symbol!(x);
     let expr = Expression::function("cos", vec![Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 3 (function registry)
     // Result should be sin(x)
@@ -72,7 +72,7 @@ fn test_strategy_routes_to_registry_exp() {
     // SymPy: sympy.integrate(exp(x), x) = exp(x)
     let x = symbol!(x);
     let expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 3 (function registry)
     // Result should be exp(x)
@@ -91,7 +91,7 @@ fn test_strategy_routes_to_by_parts_x_times_exp() {
         Expression::symbol(x.clone()),
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 4 (by parts) using LIATE heuristic
     // Result should be x*exp(x) - exp(x)
@@ -106,7 +106,7 @@ fn test_strategy_routes_to_by_parts_x_times_sin() {
         Expression::symbol(x.clone()),
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 4 (by parts)
     assert!(!result.is_zero());
@@ -117,7 +117,7 @@ fn test_strategy_routes_to_basic_sum() {
     // SymPy: sympy.integrate(x + 3, x) = x**2/2 + 3*x
     let x = symbol!(x);
     let expr = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(3)]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 7.5 (basic integration) - sum rule (linearity)
     assert!(!result.is_zero());
@@ -130,7 +130,7 @@ fn test_strategy_routes_to_basic_product_with_constant() {
     // TODO: Debug stack overflow when integrating 3*x (simple product with constant * symbol)
     let x = symbol!(x);
     let expr = Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 7.5 (basic integration) - product with constant
     assert!(!result.is_zero());
@@ -141,7 +141,7 @@ fn test_strategy_routes_to_basic_reciprocal() {
     // SymPy: sympy.integrate(1/x, x) = log(abs(x))
     let x = symbol!(x);
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should route to Layer 7.5 (basic integration) - special case x^(-1)
     // Result should be ln(abs(x))
@@ -163,7 +163,7 @@ fn test_strategy_symbolic_fallback_non_elementary() {
             Expression::integer(2),
         )],
     );
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should fall through all layers to Layer 8 (symbolic fallback)
     // Result should be Integral(exp(x^2), x) - a Calculus expression
@@ -175,7 +175,7 @@ fn test_strategy_symbolic_fallback_unknown_function() {
     // Custom function with no integration rule
     let x = symbol!(x);
     let expr = Expression::function("custom_fn", vec![Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should fall through to Layer 8 (symbolic fallback)
     assert!(matches!(result, Expression::Calculus(_)));
@@ -190,7 +190,7 @@ fn test_strategy_handles_complex_product() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::function("exp", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Complex product that doesn't match simple patterns
     // May return symbolic or may succeed depending on implementation
@@ -203,7 +203,7 @@ fn test_strategy_handles_nested_functions() {
     let x = symbol!(x);
     let inner_sin = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     let expr = Expression::function("sin", vec![inner_sin]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Nested functions without matching u-substitution pattern
     // Should return symbolic integral
@@ -219,7 +219,7 @@ fn test_strategy_handles_division_by_variable_function() {
         Expression::integer(1),
         Expression::pow(denominator, Expression::integer(-1)),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Division by function - may not have pattern match
     assert!(!result.is_zero());
@@ -234,7 +234,7 @@ fn test_regression_power_rule_x_squared() {
     // SymPy: sympy.integrate(x**2, x) = x**3/3
     let x = symbol!(x);
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
-    let result = expr.integrate(x.clone());
+    let result = expr.integrate(x.clone(), 0);
 
     // Verify power rule still works after strategy dispatcher
     assert!(!result.is_zero());
@@ -249,7 +249,7 @@ fn test_regression_power_rule_x_cubed() {
     // SymPy: sympy.integrate(x**3, x) = x**4/4
     let x = symbol!(x);
     let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(3));
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Verify power rule with different exponent
     assert!(!result.is_zero());
@@ -263,7 +263,7 @@ fn test_regression_constant_multiple() {
         Expression::integer(5),
         Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Verify constant multiples still work
     assert!(!result.is_zero());
@@ -278,7 +278,7 @@ fn test_regression_sum_of_terms() {
         Expression::symbol(x.clone()),
         Expression::integer(1),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Verify linearity (sum rule) still works
     assert!(!result.is_zero());
@@ -289,7 +289,7 @@ fn test_regression_sin_function() {
     // SymPy: sympy.integrate(sin(x), x) = -cos(x)
     let x = symbol!(x);
     let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Verify function registry still works
     assert!(!result.is_zero());
@@ -308,7 +308,7 @@ fn test_layer_interaction_registry_then_basic() {
     let y = symbol!(y);
     // y is constant w.r.t. x, so it's just constant * x
     let expr = Expression::mul(vec![Expression::symbol(y.clone()), Expression::symbol(x.clone())]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should handle properly through layer fallthrough
     assert!(!result.is_zero());
@@ -322,7 +322,7 @@ fn test_layer_interaction_product_of_functions() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // May use by parts or trig identities
     assert!(!result.is_zero());
@@ -334,7 +334,7 @@ fn test_layer_interaction_linear_substitution() {
     let x = symbol!(x);
     let inner = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let expr = Expression::function("sin", vec![inner]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should use function registry with linear substitution
     assert!(!result.is_zero());
@@ -348,7 +348,7 @@ fn test_layer_interaction_sum_of_functions() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should use linearity to split, then function registry for each term
     assert!(!result.is_zero());
@@ -362,7 +362,7 @@ fn test_layer_interaction_constant_times_function() {
         Expression::integer(3),
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
     ]);
-    let result = expr.integrate(x);
+    let result = expr.integrate(x, 0);
 
     // Should extract constant and use function registry
     assert!(!result.is_zero());

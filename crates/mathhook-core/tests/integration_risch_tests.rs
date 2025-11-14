@@ -480,7 +480,7 @@ fn test_integration_via_strategy_exp_x() {
     let integrand = Expression::function("exp", vec![Expression::symbol(x.clone())]);
 
     use mathhook_core::calculus::integrals::Integration;
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // Should succeed via Risch or other layers
     // Not a symbolic integral
@@ -501,7 +501,7 @@ fn test_integration_via_strategy_one_over_x() {
     let integrand = Expression::div(Expression::integer(1), Expression::symbol(x.clone()));
 
     use mathhook_core::calculus::integrals::Integration;
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // Should succeed via Risch or other layers
     if let Expression::Calculus(data) = &result {
@@ -522,7 +522,7 @@ fn test_integration_via_strategy_exp_x_squared() {
     let integrand = Expression::function("exp", vec![x_squared]);
 
     use mathhook_core::calculus::integrals::Integration;
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // Should return symbolic integral (non-elementary)
     let is_symbolic = if let Expression::Calculus(data) = &result {
@@ -555,7 +555,7 @@ fn test_multiple_layers_cooperation() {
 
     use mathhook_core::calculus::integrals::Integration;
     for case in test_cases {
-        let result = case.integrate(x.clone());
+        let result = case.integrate(x.clone(), 0);
         // Should not panic
         let _ = result;
     }
@@ -574,7 +574,7 @@ fn test_risch_does_not_interfere_with_polynomials() {
     ]);
 
     use mathhook_core::calculus::integrals::Integration;
-    let result = poly.integrate(x);
+    let result = poly.integrate(x, 0);
 
     // Should succeed (not return symbolic integral)
     if let Expression::Calculus(data) = &result {

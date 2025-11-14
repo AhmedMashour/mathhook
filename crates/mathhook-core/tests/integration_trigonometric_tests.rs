@@ -11,7 +11,7 @@ use mathhook_core::symbol;
 fn test_sin_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("sin", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x), x) = -cos(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -21,7 +21,7 @@ fn test_sin_basic() {
 fn test_cos_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("cos", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x), x) = sin(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -34,7 +34,7 @@ fn test_sin_cubed() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(3)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**3, x) = -cos(x) + cos(x)**3/3
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -47,7 +47,7 @@ fn test_sin_fifth() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(5)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**5, x) = -cos(x) + 2*cos(x)**3/3 - cos(x)**5/5
     // For odd powers, our algorithm should handle this
@@ -67,7 +67,7 @@ fn test_sin_cubed_cos_squared() {
         Expression::integer(2)
     );
     let integrand = Expression::mul(vec![sin_cubed, cos_squared]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**3 * cos(x)**2, x) = -cos(x)**3/3 + cos(x)**5/5
     // Odd sine power, so should use cos substitution
@@ -83,7 +83,7 @@ fn test_sin_cos_fourth() {
         Expression::integer(4)
     );
     let integrand = Expression::mul(vec![sin_x, cos_fourth]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x) * cos(x)**4, x) = -cos(x)**5/5
     // Odd sine power (m=1), so use cos substitution
@@ -97,7 +97,7 @@ fn test_cos_cubed() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
         Expression::integer(3)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x)**3, x) = sin(x) - sin(x)**3/3
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -110,7 +110,7 @@ fn test_cos_fifth() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
         Expression::integer(5)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x)**5, x) = sin(x) - 2*sin(x)**3/3 + sin(x)**5/5
     // Odd cosine power, should use sin substitution
@@ -129,7 +129,7 @@ fn test_sin_squared_cos_cubed() {
         Expression::integer(3)
     );
     let integrand = Expression::mul(vec![sin_squared, cos_cubed]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**2 * cos(x)**3, x) = sin(x)**3/3 - sin(x)**5/5
     // Odd cosine power, so should use sin substitution
@@ -145,7 +145,7 @@ fn test_sin_fourth_cos() {
     );
     let cos_x = Expression::function("cos", vec![Expression::symbol(x.clone())]);
     let integrand = Expression::mul(vec![sin_fourth, cos_x]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**4 * cos(x), x) = sin(x)**5/5
     // Odd cosine power (n=1), so use sin substitution
@@ -159,7 +159,7 @@ fn test_sin_squared() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**2, x) = x/2 - sin(2*x)/4
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -172,7 +172,7 @@ fn test_cos_squared() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x)**2, x) = x/2 + sin(2*x)/4
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -190,7 +190,7 @@ fn test_sin_squared_cos_squared() {
         Expression::integer(2)
     );
     let integrand = Expression::mul(vec![sin_sq, cos_sq]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**2 * cos(x)**2, x) = x/8 - sin(4*x)/32
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -203,7 +203,7 @@ fn test_sin_fourth() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(4)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**4, x) = 3*x/8 - sin(2*x)/4 + sin(4*x)/32
     // Both even, use power reduction (may return symbolic if not fully implemented)
@@ -217,7 +217,7 @@ fn test_cos_fourth() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
         Expression::integer(4)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x)**4, x) = 3*x/8 + sin(2*x)/4 + sin(4*x)/32
     // Both even, use power reduction (may return symbolic if not fully implemented)
@@ -231,7 +231,7 @@ fn test_tan_squared() {
         Expression::function("tan", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(tan(x)**2, x) = tan(x) - x
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -244,7 +244,7 @@ fn test_sec_squared() {
         Expression::function("sec", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sec(x)**2, x) = tan(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -262,7 +262,7 @@ fn test_tan_cubed_sec_squared() {
         Expression::integer(2)
     );
     let integrand = Expression::mul(vec![tan_cubed, sec_squared]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(tan(x)**3 * sec(x)**2, x) = tan(x)**4/4
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -274,7 +274,7 @@ fn test_tan_sec() {
     let tan_x = Expression::function("tan", vec![Expression::symbol(x.clone())]);
     let sec_x = Expression::function("sec", vec![Expression::symbol(x.clone())]);
     let integrand = Expression::mul(vec![tan_x, sec_x]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(tan(x)*sec(x), x) = sec(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -292,7 +292,7 @@ fn test_tan_fourth_sec_squared() {
         Expression::integer(2)
     );
     let integrand = Expression::mul(vec![tan_fourth, sec_squared]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(tan(x)**4 * sec(x)**2, x) = tan(x)**5/5
     // Pattern: tan^m * sec^2, use u = tan(x)
@@ -306,7 +306,7 @@ fn test_cot_squared() {
         Expression::function("cot", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cot(x)**2, x) = -cot(x) - x
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -319,7 +319,7 @@ fn test_csc_squared() {
         Expression::function("csc", vec![Expression::symbol(x.clone())]),
         Expression::integer(2)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(csc(x)**2, x) = -cot(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -337,7 +337,7 @@ fn test_cot_cubed_csc_squared() {
         Expression::integer(2)
     );
     let integrand = Expression::mul(vec![cot_cubed, csc_squared]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cot(x)**3 * csc(x)**2, x) = -cot(x)**4/4
     // Pattern: cot^m * csc^2, use u = cot(x)
@@ -350,7 +350,7 @@ fn test_cot_csc() {
     let cot_x = Expression::function("cot", vec![Expression::symbol(x.clone())]);
     let csc_x = Expression::function("csc", vec![Expression::symbol(x.clone())]);
     let integrand = Expression::mul(vec![cot_x, csc_x]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cot(x)*csc(x), x) = -csc(x)
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -360,7 +360,7 @@ fn test_cot_csc() {
 fn test_tan_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("tan", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(tan(x), x) = -ln(cos(x))
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -370,7 +370,7 @@ fn test_tan_basic() {
 fn test_cot_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("cot", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cot(x), x) = ln(sin(x))
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -380,7 +380,7 @@ fn test_cot_basic() {
 fn test_sec_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("sec", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sec(x), x) = ln(sec(x) + tan(x))
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -390,7 +390,7 @@ fn test_sec_basic() {
 fn test_csc_basic() {
     let x = symbol!(x);
     let integrand = Expression::function("csc", vec![Expression::symbol(x.clone())]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(csc(x), x) = -ln(csc(x) + cot(x))
     assert!(!matches!(result, Expression::Calculus(_)));
@@ -402,7 +402,7 @@ fn test_sin_cos_product() {
     let sin_x = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     let cos_x = Expression::function("cos", vec![Expression::symbol(x.clone())]);
     let integrand = Expression::mul(vec![sin_x, cos_x]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)*cos(x), x) = sin(x)**2/2
     // This is sin^1 * cos^1, odd cosine so use sin substitution
@@ -416,7 +416,7 @@ fn test_sin_sixth() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(6)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(sin(x)**6, x) = 5*x/16 - 15*sin(2*x)/64 + 3*sin(4*x)/64 - sin(6*x)/192
     // Both even (m=6, n=0), use power reduction (may return symbolic)
@@ -430,7 +430,7 @@ fn test_cos_sixth() {
         Expression::function("cos", vec![Expression::symbol(x.clone())]),
         Expression::integer(6)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // SymPy: integrate(cos(x)**6, x) = 5*x/16 + 15*sin(2*x)/64 + 3*sin(4*x)/64 + sin(6*x)/192
     // Both even (m=0, n=6), use power reduction (may return symbolic)
@@ -444,7 +444,7 @@ fn test_negative_powers_are_not_trig_patterns() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(-1)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // Negative powers are not simple trig patterns
     // Should fall through to other strategies or return symbolic
@@ -457,7 +457,7 @@ fn test_mixed_trig_functions_not_supported() {
     let sin_x = Expression::function("sin", vec![Expression::symbol(x.clone())]);
     let tan_x = Expression::function("tan", vec![Expression::symbol(x.clone())]);
     let integrand = Expression::mul(vec![sin_x, tan_x]);
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // Mixed sin*tan not a recognized pattern
     // Should return symbolic or be handled by other strategies
@@ -471,7 +471,7 @@ fn test_zero_power_edge_case() {
         Expression::function("sin", vec![Expression::symbol(x.clone())]),
         Expression::integer(0)
     );
-    let result = integrand.integrate(x);
+    let result = integrand.integrate(x, 0);
 
     // sin^0 = 1, should integrate to x
     // This may be simplified before reaching trig integration

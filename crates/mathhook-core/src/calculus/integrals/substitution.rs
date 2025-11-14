@@ -17,6 +17,17 @@
 //! - Exponential compositions: ∫e^x*sin(e^x) dx = -cos(e^x)
 //! - Logarithmic patterns: ∫1/(x*ln(x)) dx = ln|ln(x)|
 //! - Rational functions: ∫x/(x²+1) dx = (1/2)*ln(x²+1)
+//!
+//! # Patterns Recognized
+//!
+//! **Pattern 1**: `f'(x)·g(f(x))` - Exact derivative match
+//! - Example: `2x·e^(x²)` where u = x², du = 2x dx
+//!
+//! **Pattern 2**: `c·f'(x)·g(f(x))` - Derivative with coefficient
+//! - Example: `x·sin(x²)` where u = x², du = 2x dx, coefficient = 1/2
+//!
+//! **Pattern 3**: `f^n(x)·f'(x)` - Power of function times derivative
+//! - Example: `sin³(x)·cos(x)` where u = sin(x), du = cos(x) dx
 
 use crate::calculus::derivatives::Derivative;
 use crate::core::{Expression, Number, Symbol};
@@ -56,20 +67,25 @@ use crate::simplify::Simplify;
 /// assert!(result.is_some());
 /// ```
 pub fn try_substitution(expr: &Expression, var: Symbol) -> Option<Expression> {
-    let candidates = find_substitution_candidates(expr, &var);
 
-    for candidate in candidates {
+    let candidates = find_substitution_candidates(expr, &var);
+    for (i, c) in candidates.iter().enumerate() {
+    }
+
+    for (idx, candidate) in candidates.iter().enumerate() {
+
         let g_prime = candidate.derivative(var.clone());
 
         if let Some((f_of_u, constant_factor)) =
-            check_derivative_match(expr, &candidate, &g_prime, &var)
+            check_derivative_match(expr, candidate, &g_prime, &var)
         {
+
             let u_symbol = Symbol::scalar("u");
             let u_expr = Expression::symbol(u_symbol.clone());
 
             let integrated = integrate_in_u(&f_of_u, u_symbol)?;
 
-            let result = substitute_back(&integrated, &u_expr, &candidate);
+            let result = substitute_back(&integrated, &u_expr, candidate);
 
             let final_result = if (constant_factor - 1.0).abs() > 1e-10 {
                 if constant_factor.abs() < 1.0 {
@@ -84,6 +100,7 @@ pub fn try_substitution(expr: &Expression, var: Symbol) -> Option<Expression> {
             };
 
             return Some(final_result);
+        } else {
         }
     }
 
@@ -112,6 +129,17 @@ fn collect_candidates_recursive(
 ) {
     match expr {
         Expression::Function { name: _, args } => {
+            // For function arguments, consider the function itself as a candidate
+            // Example: sin(x) is a candidate in sin³(x)·cos(x)
+            if args.len() == 1 && contains_variable(&args[0], var) {
+                // If argument is just x, consider the whole function
+                if is_simple_variable(&args[0], var) {
+                    candidates.push(expr.clone());
+                } else {
+                    // If argument is composite, consider the argument
+                    candidates.push(args[0].clone());
+                }
+            }
             for arg in args.iter() {
                 if contains_variable(arg, var) && !is_simple_variable(arg, var) {
                     candidates.push(arg.clone());
@@ -155,6 +183,27 @@ fn contains_variable(expr: &Expression, var: &Symbol) -> bool {
     }
 }
 
+/// Check if expression contains the given candidate expression
+///
+/// This is used to separate f(u) from g'(x): factors containing the candidate are f(u)
+fn contains_expression(expr: &Expression, candidate: &Expression) -> bool {
+    if expr == candidate {
+        return true;
+    }
+
+    match expr {
+        Expression::Add(terms) => terms.iter().any(|t| contains_expression(t, candidate)),
+        Expression::Mul(factors) => factors.iter().any(|f| contains_expression(f, candidate)),
+        Expression::Pow(base, exp) => {
+            contains_expression(base, candidate) || contains_expression(exp, candidate)
+        }
+        Expression::Function { name: _, args } => {
+            args.iter().any(|a| contains_expression(a, candidate))
+        }
+        _ => false,
+    }
+}
+
 /// Check if expression is just the variable itself
 fn is_simple_variable(expr: &Expression, var: &Symbol) -> bool {
     matches!(expr, Expression::Symbol(s) if s == var)
@@ -184,22 +233,82 @@ fn expressions_equivalent(a: &Expression, b: &Expression) -> bool {
 /// Returns Some((f(u), constant_factor)) if a match is found, where:
 /// - f(u) is the expression in terms of u
 /// - constant_factor accounts for numerical differences between g'(x) and actual factor
+///
+/// This function recognizes patterns where the derivative appears as:
+/// 1. Exact match: `g'(x)` appears as-is
+/// 2. With coefficient: `c·g'(x)` where c is a constant
+/// 3. Distributed across factors: g'(x) = a*b and both a and b appear separately in the product
 fn check_derivative_match(
     expr: &Expression,
     g: &Expression,
     g_prime: &Expression,
     var: &Symbol,
 ) -> Option<(Expression, f64)> {
+
     let expr_simplified = expr.clone().simplify();
     let g_prime_simplified = g_prime.clone().simplify();
 
+
     if let Expression::Mul(factors) = &expr_simplified {
+
         let u_symbol = Symbol::scalar("u");
         let u_expr = Expression::symbol(u_symbol.clone());
 
+        // NEW STRATEGY: Separate factors into:
+        // 1. Those that contain the candidate g (these are f(u))
+        // 2. The rest (these could be g'(x) or constants)
+        let (f_of_g_factors, derivative_candidate_factors): (Vec<_>, Vec<_>) = factors
+            .iter()
+            .partition(|f| contains_expression(f, g));
+
+        for (i, f) in f_of_g_factors.iter().enumerate() {
+        }
+        for (i, f) in derivative_candidate_factors.iter().enumerate() {
+        }
+
+        if !f_of_g_factors.is_empty() && !derivative_candidate_factors.is_empty() {
+            // Reconstruct what we think is the derivative from available factors
+            let derivative_candidate = if derivative_candidate_factors.len() == 1 {
+                derivative_candidate_factors[0].clone()
+            } else {
+                Expression::mul(
+                    derivative_candidate_factors
+                        .iter()
+                        .map(|f| (*f).clone())
+                        .collect(),
+                )
+            };
+
+
+            // Check if this matches the derivative (possibly with a constant ratio)
+            if let Some(ratio) = compute_constant_ratio(&derivative_candidate, &g_prime_simplified)
+            {
+
+                // Success! We found the derivative (with coefficient ratio)
+                // The remaining factors (those containing g) become f(u)
+                let remaining = if f_of_g_factors.is_empty() {
+                    Expression::integer(1)
+                } else if f_of_g_factors.len() == 1 {
+                    f_of_g_factors[0].clone()
+                } else {
+                    Expression::mul(f_of_g_factors.iter().map(|f| (*f).clone()).collect())
+                };
+
+
+                // Replace g with u in the remaining expression
+                let f_of_u = replace_expression(&remaining, g, &u_expr);
+
+                return Some((f_of_u, ratio));
+            } else {
+            }
+        } else {
+        }
+
+        // Fallback: Try the old partitioning strategy for backward compatibility
         let (derivative_factors, other_factors): (Vec<_>, Vec<_>) = factors
             .iter()
             .partition(|f| factor_matches_derivative(f, &g_prime_simplified, var));
+
 
         if derivative_factors.is_empty() {
             return None;
@@ -221,13 +330,42 @@ fn check_derivative_match(
             Expression::mul(other_factors.iter().map(|f| (*f).clone()).collect())
         };
 
-        let f_of_u = substitute_back(&remaining, g, &u_expr);
+        let f_of_u = replace_expression(&remaining, g, &u_expr);
 
         Some((f_of_u, constant_factor))
     } else {
         let constant_factor = compute_constant_ratio(&expr_simplified, &g_prime_simplified)?;
         let f_of_u = Expression::integer(1);
         Some((f_of_u, constant_factor))
+    }
+}
+
+/// Replace all occurrences of `pattern` with `replacement` in `expr`
+///
+/// This is used to convert f(g(x)) to f(u) by replacing g(x) with u.
+fn replace_expression(expr: &Expression, pattern: &Expression, replacement: &Expression) -> Expression {
+    // Check if the entire expression matches the pattern
+    if expr == pattern {
+        return replacement.clone();
+    }
+
+    // Recursively replace in subexpressions
+    match expr {
+        Expression::Add(terms) => {
+            Expression::add(terms.iter().map(|t| replace_expression(t, pattern, replacement)).collect())
+        }
+        Expression::Mul(factors) => {
+            Expression::mul(factors.iter().map(|f| replace_expression(f, pattern, replacement)).collect())
+        }
+        Expression::Pow(base, exp) => Expression::pow(
+            replace_expression(base, pattern, replacement),
+            replace_expression(exp, pattern, replacement),
+        ),
+        Expression::Function { name, args } => Expression::function(
+            name,
+            args.iter().map(|a| replace_expression(a, pattern, replacement)).collect(),
+        ),
+        _ => expr.clone(),
     }
 }
 
@@ -274,61 +412,139 @@ fn factor_matches_derivative(factor: &Expression, derivative: &Expression, var: 
 }
 
 /// Compute constant ratio between two expressions
+///
+/// Returns Some(ratio) where expr = ratio * target
+/// This handles cases like:
+/// - expr = 2x, target = 2x → ratio = 1.0
+/// - expr = x, target = 2x → ratio = 0.5
+/// - expr = 3x, target = 2x → ratio = 1.5
 fn compute_constant_ratio(expr: &Expression, target: &Expression) -> Option<f64> {
+
     if expr == target {
         return Some(1.0);
     }
 
-    match (expr, target) {
+    let expr_simp = expr.clone().simplify();
+    let target_simp = target.clone().simplify();
+
+
+    if expr_simp == target_simp {
+        return Some(1.0);
+    }
+
+    // Try to match structurally by extracting coefficients
+    match (&expr_simp, &target_simp) {
         (Expression::Number(n1), Expression::Number(n2)) => {
             let v1 = number_to_f64(n1)?;
             let v2 = number_to_f64(n2)?;
             if v2.abs() > 1e-10 {
-                Some(v1 / v2)
+                let ratio = v1 / v2;
+                Some(ratio)
             } else {
                 None
             }
         }
-        (Expression::Mul(factors), _) => {
-            let (constants, rest): (Vec<_>, Vec<_>) =
-                factors.iter().partition(|f| matches!(f, Expression::Number(_)));
+        // Both are products - try to extract coefficients
+        (Expression::Mul(e_factors), Expression::Mul(t_factors)) => {
+            let e_coeff = extract_coefficient(e_factors);
+            let t_coeff = extract_coefficient(t_factors);
 
-            let constant_product = if constants.is_empty() {
-                1.0
-            } else {
-                constants
+
+            let e_non_const: Vec<_> = e_factors
+                .iter()
+                .filter(|f| !matches!(f, Expression::Number(_)))
+                .collect();
+            let t_non_const: Vec<_> = t_factors
+                .iter()
+                .filter(|f| !matches!(f, Expression::Number(_)))
+                .collect();
+
+            // Check if non-constant parts match
+            if e_non_const.len() == t_non_const.len()
+                && e_non_const
                     .iter()
-                    .filter_map(|c| {
-                        if let Expression::Number(n) = c {
-                            number_to_f64(n)
-                        } else {
-                            None
-                        }
-                    })
-                    .product()
-            };
+                    .zip(t_non_const.iter())
+                    .all(|(a, b)| *a == *b)
+            {
+                if t_coeff.abs() > 1e-10 {
+                    let ratio = e_coeff / t_coeff;
+                    return Some(ratio);
+                }
+            }
+            None
+        }
+        // expr is product, target is not - check if they match structurally
+        (Expression::Mul(factors), _) => {
+            let coeff = extract_coefficient(factors);
+            let non_const: Vec<_> = factors
+                .iter()
+                .filter(|f| !matches!(f, Expression::Number(_)))
+                .collect();
 
-            let remaining = if rest.is_empty() {
+            let non_const_product = if non_const.is_empty() {
                 Expression::integer(1)
-            } else if rest.len() == 1 {
-                rest[0].clone()
+            } else if non_const.len() == 1 {
+                (*non_const[0]).clone()
             } else {
-                Expression::mul(rest.iter().map(|f| (*f).clone()).collect())
+                Expression::mul(non_const.iter().map(|f| (*f).clone()).collect())
             };
 
-            if remaining == *target || remaining.clone().simplify() == target.clone().simplify() {
-                Some(constant_product)
+
+            if non_const_product == target_simp {
+                Some(coeff)
+            } else {
+                None
+            }
+        }
+        // target is product, expr is not
+        (_, Expression::Mul(factors)) => {
+            let coeff = extract_coefficient(factors);
+            let non_const: Vec<_> = factors
+                .iter()
+                .filter(|f| !matches!(f, Expression::Number(_)))
+                .collect();
+
+            let non_const_product = if non_const.is_empty() {
+                Expression::integer(1)
+            } else if non_const.len() == 1 {
+                (*non_const[0]).clone()
+            } else {
+                Expression::mul(non_const.iter().map(|f| (*f).clone()).collect())
+            };
+
+
+            if expr_simp == non_const_product && coeff.abs() > 1e-10 {
+                let ratio = 1.0 / coeff;
+                Some(ratio)
             } else {
                 None
             }
         }
         _ => {
-            if expr.clone().simplify() == target.clone().simplify() {
-                Some(1.0)
+            None
+        }
+    }
+}
+
+/// Extract numeric coefficient from a product of factors
+///
+/// Returns the product of all numeric factors, or 1.0 if there are none
+fn extract_coefficient(factors: &[Expression]) -> f64 {
+    let nums: Vec<f64> = factors
+        .iter()
+        .filter_map(|f| {
+            if let Expression::Number(n) = f {
+                number_to_f64(n)
             } else {
                 None
             }
-        }
+        })
+        .collect();
+
+    if nums.is_empty() {
+        1.0
+    } else {
+        nums.iter().product()
     }
 }
 
@@ -348,7 +564,8 @@ fn number_to_f64(num: &Number) -> Option<f64> {
 /// Integrate expression with respect to u
 fn integrate_in_u(expr: &Expression, u: Symbol) -> Option<Expression> {
     use crate::calculus::integrals::strategy::integrate_with_strategy;
-    let result = integrate_with_strategy(expr, u);
+    let result = integrate_with_strategy(expr, u, 0);
+
 
     if matches!(result, Expression::Calculus(_)) {
         None
@@ -358,31 +575,11 @@ fn integrate_in_u(expr: &Expression, u: Symbol) -> Option<Expression> {
 }
 
 /// Substitute u = g(x) back into the result
+///
+/// After integrating f(u), we have a result in terms of u.
+/// This function replaces u with g(x) to get the final answer.
 fn substitute_back(expr: &Expression, u: &Expression, g: &Expression) -> Expression {
-    match expr {
-        Expression::Symbol(s) => {
-            if Expression::symbol(s.clone()) == *u {
-                g.clone()
-            } else {
-                expr.clone()
-            }
-        }
-        Expression::Add(terms) => {
-            Expression::add(terms.iter().map(|t| substitute_back(t, u, g)).collect())
-        }
-        Expression::Mul(factors) => {
-            Expression::mul(factors.iter().map(|f| substitute_back(f, u, g)).collect())
-        }
-        Expression::Pow(base, exp) => Expression::pow(
-            substitute_back(base, u, g),
-            substitute_back(exp, u, g),
-        ),
-        Expression::Function { name, args } => Expression::function(
-            name,
-            args.iter().map(|a| substitute_back(a, u, g)).collect(),
-        ),
-        _ => expr.clone(),
-    }
+    replace_expression(expr, u, g)
 }
 
 #[cfg(test)]
@@ -436,5 +633,73 @@ mod tests {
 
         assert!(!candidates.is_empty());
         assert!(candidates.contains(&x_squared));
+    }
+
+    #[test]
+    fn test_replace_expression() {
+        let x = symbol!(x);
+        let u = symbol!(u);
+
+        // Test replacing x² with u in exp(x²)
+        let x_squared = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
+        let expr = Expression::function("exp", vec![x_squared.clone()]);
+        let u_expr = Expression::symbol(u.clone());
+
+        let result = replace_expression(&expr, &x_squared, &u_expr);
+        let expected = Expression::function("exp", vec![u_expr]);
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_exponential_chain_rule_pattern() {
+        // Test 3: ∫2x·e^(x²) dx
+        let x = symbol!(x);
+        let expr = Expression::mul(vec![
+            Expression::integer(2),
+            Expression::symbol(x.clone()),
+            Expression::function("exp", vec![Expression::pow(
+                Expression::symbol(x.clone()),
+                Expression::integer(2),
+            )]),
+        ]);
+
+        let result = try_substitution(&expr, x);
+        assert!(result.is_some(), "Exponential chain rule pattern should succeed");
+    }
+
+    #[test]
+    fn test_trig_substitution_with_coefficient() {
+        // Test 4: ∫x·sin(x²) dx
+        let x = symbol!(x);
+        let expr = Expression::mul(vec![
+            Expression::symbol(x.clone()),
+            Expression::function("sin", vec![Expression::pow(
+                Expression::symbol(x.clone()),
+                Expression::integer(2),
+            )]),
+        ]);
+
+        let result = try_substitution(&expr, x);
+        assert!(
+            result.is_some(),
+            "Trig substitution with coefficient should succeed"
+        );
+    }
+
+    #[test]
+    fn test_power_chain_rule_pattern() {
+        // Test 7: ∫sin³(x)·cos(x) dx
+        let x = symbol!(x);
+        let expr = Expression::mul(vec![
+            Expression::pow(
+                Expression::function("sin", vec![Expression::symbol(x.clone())]),
+                Expression::integer(3),
+            ),
+            Expression::function("cos", vec![Expression::symbol(x.clone())]),
+        ]);
+
+        let result = try_substitution(&expr, x);
+        assert!(result.is_some(), "Power chain rule pattern should succeed");
     }
 }

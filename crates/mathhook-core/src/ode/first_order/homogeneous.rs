@@ -81,7 +81,7 @@ impl HomogeneousODESolver {
 
         // Left side: ∫ dv/(f(v) - v)
         let lhs_integrand = Expression::pow(f_minus_v, Expression::integer(-1)).simplify();
-        let lhs_integral = lhs_integrand.integrate(v.clone());
+        let lhs_integral = lhs_integrand.integrate(v.clone(), 0);
 
         // Right side: ∫ dx/x = ln|x|
         let rhs_integral = Expression::function("log", vec![Expression::symbol(independent.clone())]);
