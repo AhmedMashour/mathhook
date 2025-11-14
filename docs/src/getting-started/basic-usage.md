@@ -1,6 +1,6 @@
 # Basic Usage
 
-This chapter provides a comprehensive guide to using MathHook in your projects.
+This chapter provides a guide to using MathHook in your projects.
 
 ## Expression Creation
 

@@ -647,7 +647,7 @@ When Risch proves non-elementary, express result in terms of special functions:
 ### Books
 
 - **Bronstein (2005)**: The definitive reference on Risch algorithm
-  - Comprehensive treatment of all cases
+  - Treatment of all cases
   - Detailed proofs and algorithms
   - Recommended for implementers
 

@@ -33,6 +33,9 @@
 
 - [Complex Numbers](./advanced/complex-numbers.md)
 - [Matrix Operations](./advanced/matrices.md)
+- [Noncommutative Algebra](./advanced/noncommutative-algebra.md)
+  - [API Reference](./advanced/noncommutative-api-reference.md)
+  - [Examples](./advanced/noncommutative-examples.md)
 - [System Solving](./advanced/system-solving.md)
 - [Special Functions](./advanced/special-functions.md)
 - [Assumptions System](./advanced/assumptions.md)
@@ -41,6 +44,7 @@
 # Parser and Formatting
 
 - [LaTeX Parsing](./parser/latex.md)
+- [Noncommutative Parser Design](./parser/noncommutative-design.md)
 - [Wolfram Language](./parser/wolfram.md)
 - [Expression Formatting](./parser/formatting.md)
 - [Custom Parsers](./parser/custom.md)
@@ -85,6 +89,7 @@
 # Contributing
 
 - [Development Guide](./contributing/development.md)
+- [Architecture Reference](./contributing/architecture-reference.md)
 - [Testing Strategy](./contributing/testing.md)
 - [Code Style](./contributing/style.md)
 - [Documentation Standards](./contributing/documentation.md)
@@ -93,6 +98,7 @@
 # Appendix
 
 - [Mathematical Notation](./appendix/notation.md)
+- [Risch Algorithm](./appendix/risch-algorithm.md)
 - [Error Messages](./appendix/errors.md)
 - [FAQ](./appendix/faq.md)
 - [Glossary](./appendix/glossary.md)

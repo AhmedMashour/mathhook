@@ -267,6 +267,6 @@ set_global_config(config);
 
 ## Next Steps
 
-- [Basic Usage](./basic-usage.md) - Comprehensive usage guide
+- [Basic Usage](./basic-usage.md) - Usage guide
 - [Core Concepts](../core/expressions.md) - Deep dive into the type system
 - [API Reference](../api/core.md) - Complete API documentation

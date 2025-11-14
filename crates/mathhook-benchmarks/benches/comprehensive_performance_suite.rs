@@ -241,7 +241,7 @@ fn bench_background_precomputation(c: &mut Criterion) {
     let mut group = c.benchmark_group("background_precomputation");
 
     // Submit common expressions for background computation
-    let common_expressions = vec![
+    let common_expressions = [
         Expression::add(vec![Expression::symbol("x"), Expression::integer(1)]),
         Expression::mul(vec![Expression::symbol("x"), Expression::integer(2)]),
         Expression::pow(Expression::symbol("x"), Expression::integer(2)),

@@ -1,6 +1,6 @@
 # Noncommutative Algebra Examples
 
-Comprehensive examples for MathHook's noncommutative algebra support.
+Examples for MathHook's noncommutative algebra support.
 
 ## Quantum Mechanics
 

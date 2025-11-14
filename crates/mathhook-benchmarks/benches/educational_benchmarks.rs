@@ -2,7 +2,6 @@
 ///
 /// Tests step-by-step explanation generation for derivatives and solving.
 /// Focuses on performance of educational content creation.
-
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use mathhook_core::calculus::derivatives::DerivativeWithSteps;
 use mathhook_core::{symbol, Expression};
@@ -17,10 +16,7 @@ fn bench_derivative_explanations(c: &mut Criterion) {
 
     // Power rule explanation: d/dx(x^3)
     group.bench_function("power_rule_explanation", |b| {
-        let expr = Expression::pow(
-            Expression::symbol(x.clone()),
-            Expression::integer(3),
-        );
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(3));
         b.iter(|| black_box(expr.derivative_with_steps(&x, 1)))
     });
 
@@ -53,10 +49,7 @@ fn bench_derivative_explanations(c: &mut Criterion) {
                 Expression::integer(1),
             ]),
             Expression::pow(
-                Expression::add(vec![
-                    Expression::symbol(x.clone()),
-                    Expression::integer(-1),
-                ]),
+                Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(-1)]),
                 Expression::integer(-1),
             ),
         ]);
@@ -85,10 +78,7 @@ fn bench_derivative_explanations(c: &mut Criterion) {
             BenchmarkId::new("higher_order_explanation", order),
             order,
             |b, &ord| {
-                let expr = Expression::pow(
-                    Expression::symbol(x.clone()),
-                    Expression::integer(5),
-                );
+                let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(5));
                 b.iter(|| black_box(expr.derivative_with_steps(&x, ord)))
             },
         );
@@ -109,10 +99,7 @@ fn bench_step_complexity(c: &mut Criterion) {
             .map(|i| {
                 Expression::mul(vec![
                     Expression::integer(i as i64),
-                    Expression::pow(
-                        Expression::symbol(x.clone()),
-                        Expression::integer(i as i64),
-                    ),
+                    Expression::pow(Expression::symbol(x.clone()), Expression::integer(i as i64)),
                 ])
             })
             .collect();
@@ -222,10 +209,7 @@ fn bench_rational_explanations(c: &mut Criterion) {
 
     // Simple rational: d/dx(1/x)
     group.bench_function("reciprocal_explanation", |b| {
-        let expr = Expression::pow(
-            Expression::symbol(x.clone()),
-            Expression::integer(-1),
-        );
+        let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(-1));
         b.iter(|| black_box(expr.derivative_with_steps(&x, 1)))
     });
 
@@ -237,10 +221,7 @@ fn bench_rational_explanations(c: &mut Criterion) {
                 Expression::integer(1),
             ]),
             Expression::pow(
-                Expression::add(vec![
-                    Expression::symbol(x.clone()),
-                    Expression::integer(1),
-                ]),
+                Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
                 Expression::integer(-1),
             ),
         ]);
@@ -252,10 +233,7 @@ fn bench_rational_explanations(c: &mut Criterion) {
         let expr = Expression::mul(vec![
             Expression::add(vec![
                 Expression::pow(Expression::symbol(x.clone()), Expression::integer(3)),
-                Expression::mul(vec![
-                    Expression::integer(2),
-                    Expression::symbol(x.clone()),
-                ]),
+                Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
             ]),
             Expression::pow(
                 Expression::add(vec![

@@ -9,4 +9,4 @@ This chapter covers internal implementation details. Key topics:
 - Memory layout optimization (32-byte expressions)
 - Thread safety guarantees
 
-See [CLAUDE.md](../../CLAUDE.md) for comprehensive architectural documentation.
+See [CLAUDE.md](../../CLAUDE.md) for architectural documentation.

@@ -10,4 +10,4 @@ Key points:
 4. **Follow Style Guide** - Run `cargo fmt` and `cargo clippy`
 5. **Test Coverage** - Add tests for new features
 
-See [CLAUDE.md](../../CLAUDE.md) for comprehensive guidelines.
+See [CLAUDE.md](../../CLAUDE.md) for guidelines.
