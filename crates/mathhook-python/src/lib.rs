@@ -43,6 +43,8 @@ fn mathhook(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register functions from functions module
     m.add_function(wrap_pyfunction!(functions::parse, m)?)?;
     m.add_function(wrap_pyfunction!(functions::symbols, m)?)?;
+    m.add_function(wrap_pyfunction!(functions::symbol, m)?)?;
+    m.add_function(wrap_pyfunction!(functions::solve, m)?)?;
     m.add_function(wrap_pyfunction!(functions::init_printing, m)?)?;
     m.add_function(wrap_pyfunction!(functions::pprint, m)?)?;
     m.add_function(wrap_pyfunction!(functions::sin, m)?)?;

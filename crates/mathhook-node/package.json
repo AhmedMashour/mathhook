@@ -1,6 +1,6 @@
 {
   "name": "mathhook-node",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Node.js bindings for MathHook mathematical engine",
   "author": "Ahmed Mashhour <mpghknown@gmail.com>",
   "main": "index.js",
@@ -38,8 +38,9 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release",
-    "build:debug": "napi build --platform",
+    "build": "napi build --platform --release && npm run postbuild",
+    "build:debug": "napi build --platform && npm run postbuild",
+    "postbuild": "node -e \"const fs=require('fs'); const c='\\n// === Custom aliases for API compatibility ===\\n// Expression is an alias for JsExpression (matches README documentation)\\nmodule.exports.Expression = module.exports.JsExpression;\\n'; if(!fs.readFileSync('index.js','utf8').includes('Expression = module.exports.JsExpression')){fs.appendFileSync('index.js',c);console.log('Added Expression alias');}\"",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "ava",
     "universal": "napi universal",
@@ -68,15 +69,15 @@
     "url": "https://github.com/AhmedMashour/mathhook/issues"
   },
   "optionalDependencies": {
-    "mathhook-node-linux-x64-gnu": "0.1.1",
-    "mathhook-node-linux-x64-musl": "0.1.1",
-    "mathhook-node-linux-arm64-gnu": "0.1.1",
-    "mathhook-node-linux-arm64-musl": "0.1.1",
-    "mathhook-node-darwin-arm64": "0.1.1",
-    "mathhook-node-darwin-universal": "0.1.1",
-    "mathhook-node-linux-arm-gnueabihf": "0.1.1",
-    "mathhook-node-win32-ia32-msvc": "0.1.1",
-    "mathhook-node-win32-x64-msvc": "0.1.1",
-    "mathhook-node-win32-arm64-msvc": "0.1.1"
+    "mathhook-node-linux-x64-gnu": "0.1.2",
+    "mathhook-node-linux-x64-musl": "0.1.2",
+    "mathhook-node-linux-arm64-gnu": "0.1.2",
+    "mathhook-node-linux-arm64-musl": "0.1.2",
+    "mathhook-node-darwin-arm64": "0.1.2",
+    "mathhook-node-darwin-universal": "0.1.2",
+    "mathhook-node-linux-arm-gnueabihf": "0.1.2",
+    "mathhook-node-win32-ia32-msvc": "0.1.2",
+    "mathhook-node-win32-x64-msvc": "0.1.2",
+    "mathhook-node-win32-arm64-msvc": "0.1.2"
   }
 }

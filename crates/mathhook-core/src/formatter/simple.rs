@@ -1,7 +1,7 @@
 use super::{FormattingContext, FormattingError};
 use crate::core::expression::smart_display::SmartDisplayFormatter;
 use crate::core::expression::RelationType;
-use crate::core::{Expression, Number};
+use crate::core::{Expression, MathConstant, Number};
 
 const MAX_RECURSION_DEPTH: usize = 1000;
 const MAX_TERMS_PER_OPERATION: usize = 10000;
@@ -343,6 +343,17 @@ impl SimpleFormatter for Expression {
                     ))
                 }
             }
+            Expression::Constant(c) => Ok(match c {
+                MathConstant::Pi => "π".to_owned(),
+                MathConstant::E => "e".to_owned(),
+                MathConstant::I => "i".to_owned(),
+                MathConstant::Infinity => "∞".to_owned(),
+                MathConstant::NegativeInfinity => "-∞".to_owned(),
+                MathConstant::Undefined => "undefined".to_owned(),
+                MathConstant::GoldenRatio => "φ".to_owned(),
+                MathConstant::EulerGamma => "γ".to_owned(),
+                MathConstant::TribonacciConstant => "T".to_owned(),
+            }),
             _ => Ok("unknown".to_owned()),
         }
     }

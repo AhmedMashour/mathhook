@@ -262,7 +262,7 @@ impl PyExpression {
     /// print(str(x))
     /// ```
     pub fn __str__(&self) -> String {
-        format!("{}", self.inner)
+        self.to_simple()
     }
     /// Compute the derivative with respect to a variable
     ///

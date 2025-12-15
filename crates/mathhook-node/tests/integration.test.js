@@ -150,7 +150,7 @@ test('factory methods create valid expressions', t => {
     t.truthy(intExpr);
     t.truthy(floatExpr);
     t.is(symExpr.toString(), 't');
-    t.is(intExpr.toString(), 'Integer(42)');
+    t.is(intExpr.toString(), '42');
     t.true(floatExpr.toString().includes('3.14'));
 });
 
@@ -163,9 +163,9 @@ test('mathematical constants', t => {
     t.truthy(piExpr);
     t.truthy(eExpr);
     t.truthy(iExpr);
-    t.true(piExpr.toString().includes('Pi'));
-    t.true(eExpr.toString().includes('E'));
-    t.true(iExpr.toString().includes('I'));
+    t.is(piExpr.toString(), 'π');
+    t.is(eExpr.toString(), 'e');
+    t.is(iExpr.toString(), 'i');
 });
 
 // Test 17: Chaining with function shortcuts
@@ -273,7 +273,7 @@ test('integration of all Week 1 features', t => {
     t.true(parsed.toString().includes('sin'));
     t.true(composed.toString().includes('cos'));
     t.truthy(fluent.toString());
-    t.true(constant.toString().includes('Pi'));
+    t.true(constant.toString().includes('π'));
 });
 
 // Test 26: Operator precedence

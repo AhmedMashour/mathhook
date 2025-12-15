@@ -16,7 +16,7 @@ lalrpop = "0.22.2"
 
 [dependencies]
 # Procedural macros (expr!, etc.)
-mathhook-macros = { version = "0.1.1", path = "../mathhook-macros" }
+mathhook-macros = { version = "0.1.2", path = "../mathhook-macros" }
 
 # Parser dependencies
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }

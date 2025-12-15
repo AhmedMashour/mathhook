@@ -542,7 +542,7 @@ checksum = "34080505efa8e45a4b816c349525ebe327ceaa8559756f0356cba97ef3bf7432"
 
 [[package]]
 name = "mathhook"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "criterion",
  "mathhook-core",
@@ -553,7 +553,7 @@ dependencies = [
 
 [[package]]
 name = "mathhook-benchmarks"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "criterion",
  "mathhook-core",
@@ -565,7 +565,7 @@ dependencies = [
 
 [[package]]
 name = "mathhook-core"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "criterion",
  "dirs",
@@ -587,7 +587,7 @@ dependencies = [
 
 [[package]]
 name = "mathhook-macros"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "mathhook-core",
  "proc-macro2",
@@ -597,7 +597,7 @@ dependencies = [
 
 [[package]]
 name = "mathhook-node"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "mathhook-core",
  "mathhook-macros",
@@ -610,7 +610,7 @@ dependencies = [
 
 [[package]]
 name = "mathhook-python"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "mathhook-core",
  "mathhook-macros",

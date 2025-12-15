@@ -153,7 +153,25 @@ impl MathSolver {
                     result
                 }
             }
-            _ => SolverResult::NoSolution,
+            // If not a relation, treat expression as "expression = 0"
+            _ => {
+                let (algebra_result, _explanation) =
+                    self.smart_solver.solve_with_equation(equation, variable);
+
+                let result = self.convert_solver_result(algebra_result);
+
+                if self.config.simplify_results {
+                    match result {
+                        SolverResult::Single(expr) => SolverResult::Single(expr.simplify()),
+                        SolverResult::Multiple(exprs) => {
+                            SolverResult::Multiple(exprs.iter().map(|e| e.simplify()).collect())
+                        }
+                        other => other,
+                    }
+                } else {
+                    result
+                }
+            }
         }
     }
 

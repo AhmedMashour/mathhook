@@ -314,6 +314,34 @@ export declare class JsExpression {
    */
   derivative(variable: string): JsExpression
   /**
+   * Compute derivative with flexible variable input (alias for derivative)
+   *
+   * This method accepts either a symbol expression or a string variable name.
+   * It's an alias for `derivative()` with more flexible input.
+   *
+   * # Arguments
+   *
+   * * `variable` - Either a JsExpression symbol or a string variable name
+   *
+   * # Examples
+   *
+   * ```javascript
+   * const { symbol } = require('mathhook-node');
+   *
+   * const x = symbol('x');
+   * const expr = x.pow(2).add(x.multiply(2)).add(1);
+   *
+   * // Using string (like derivative)
+   * const d1 = expr.diff('x');
+   *
+   * // Using expression
+   * const d2 = expr.diff(x);
+   *
+   * // Both produce the same result: 2*x + 2
+   * ```
+   */
+  diff(variable: JsExpression | string): JsExpression
+  /**
    * Compute nth derivative
    *
    * # Examples
@@ -1294,6 +1322,40 @@ export declare function sinMacroGenerated(x: JsExpression | number): JsExpressio
  * ```
  */
 export declare function sqrt(x: JsExpression | number): JsExpression
+
+/**
+ * Create a single symbol
+ *
+ * Creates a symbolic variable for use in mathematical expressions.
+ * This is the primary way to create variables in MathHook.
+ *
+ * # Arguments
+ *
+ * * `name` - Name of the symbol (e.g., "x", "y", "theta")
+ *
+ * # Returns
+ *
+ * A JsExpression representing the symbol
+ *
+ * # Examples
+ *
+ * ```javascript
+ * const { symbol } = require('mathhook-node');
+ *
+ * // Create a single symbol
+ * const x = symbol('x');
+ * const y = symbol('y');
+ *
+ * // Use in expressions
+ * const expr = x.pow(2).add(y);
+ * console.log(expr.toSimple());  // "x^2 + y"
+ *
+ * // Greek letters
+ * const theta = symbol('θ');
+ * const alpha = symbol('alpha');
+ * ```
+ */
+export declare function symbol(name: string): JsExpression
 
 /**
  * Create multiple symbols at once from a string specification

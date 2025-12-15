@@ -275,10 +275,10 @@ if $PUBLISH_PYPI; then
 fi
 
 # ============================================================================
-# Publish to npm (cross-platform binaries)
+# Publish to npm (cross-platform binaries with platform packages)
 # ============================================================================
 if $PUBLISH_NPM; then
-    log_info "Publishing to npm (cross-platform)..."
+    log_info "Publishing to npm (cross-platform with platform packages)..."
 
     # Check for npm
     if ! command -v npm &> /dev/null; then
@@ -300,8 +300,9 @@ if $PUBLISH_NPM; then
     # Install dependencies
     npm install
 
-    # Clean old binaries
+    # Clean old binaries and npm packages
     rm -f *.node 2>/dev/null || true
+    rm -rf npm/ 2>/dev/null || true
 
     # Define targets
     NPM_TARGETS=()
@@ -321,9 +322,11 @@ if $PUBLISH_NPM; then
         else
             NPM_TARGETS+=("aarch64-apple-darwin")
         fi
-        # Linux targets
+        # Linux targets (GNU and musl)
         NPM_TARGETS+=("x86_64-unknown-linux-gnu")
+        NPM_TARGETS+=("x86_64-unknown-linux-musl")
         NPM_TARGETS+=("aarch64-unknown-linux-gnu")
+        NPM_TARGETS+=("aarch64-unknown-linux-musl")
     fi
 
     # Ensure rust targets are installed
@@ -336,9 +339,14 @@ if $PUBLISH_NPM; then
     for target in "${NPM_TARGETS[@]}"; do
         log_info "Building npm binary for $target..."
 
-        # Use zig for Linux cross-compilation
+        # Use zig for cross-compilation (Linux targets and non-native macOS)
         if [[ "$target" == *"linux"* ]] && $HAS_ZIG; then
             npx napi build --platform --release --target "$target" --zig || {
+                log_warn "Failed to build for $target (continuing...)"
+            }
+        elif [[ "$target" == *"apple"* ]] && [[ "$target" != *"$(uname -m | sed 's/arm64/aarch64/')"* ]] && $HAS_ZIG; then
+            # Cross-compile for other macOS arch using zig
+            npx napi build --platform --release --target "$target" || {
                 log_warn "Failed to build for $target (continuing...)"
             }
         else
@@ -352,16 +360,91 @@ if $PUBLISH_NPM; then
     log_info "Built binaries:"
     ls -la *.node 2>/dev/null || true
 
+    # Create npm directory structure with package.json files
+    log_info "Creating npm platform package directories..."
+    rm -rf npm/ 2>/dev/null || true
+    npx napi create-npm-dirs --npm-dir npm || {
+        log_error "Failed to create npm directories"
+        exit 1
+    }
+
+    # Map targets to npm directory names (bash 3.x compatible)
+    get_npm_dir() {
+        case "$1" in
+            aarch64-apple-darwin) echo "darwin-arm64" ;;
+            x86_64-apple-darwin) echo "darwin-x64" ;;
+            x86_64-unknown-linux-gnu) echo "linux-x64-gnu" ;;
+            x86_64-unknown-linux-musl) echo "linux-x64-musl" ;;
+            aarch64-unknown-linux-gnu) echo "linux-arm64-gnu" ;;
+            aarch64-unknown-linux-musl) echo "linux-arm64-musl" ;;
+            x86_64-pc-windows-msvc) echo "win32-x64-msvc" ;;
+            aarch64-pc-windows-msvc) echo "win32-arm64-msvc" ;;
+            i686-pc-windows-msvc) echo "win32-ia32-msvc" ;;
+            armv7-unknown-linux-gnueabihf) echo "linux-arm-gnueabihf" ;;
+            *) echo "" ;;
+        esac
+    }
+
+    # Copy built binaries to their respective npm directories
+    log_info "Copying binaries to npm platform directories..."
+    for node_file in mathhook-node.*.node; do
+        if [ -f "$node_file" ]; then
+            # Extract platform from filename (e.g., mathhook-node.darwin-arm64.node -> darwin-arm64)
+            platform=$(echo "$node_file" | sed 's/mathhook-node\.\(.*\)\.node/\1/')
+            if [ -d "npm/$platform" ]; then
+                cp "$node_file" "npm/$platform/"
+                log_info "  Copied $node_file to npm/$platform/"
+            fi
+        fi
+    done
+
+    # List generated packages
+    log_info "Generated npm packages:"
+    ls -la npm/ 2>/dev/null || true
+
     if $DRY_RUN; then
         log_info "[DRY RUN] Would publish to npm"
+        log_info "Main package:"
         npm pack --dry-run
+        log_info "Platform packages:"
+        for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+                log_info "  - $(basename "$pkg_dir")"
+                (cd "$pkg_dir" && npm pack --dry-run 2>/dev/null || true)
+            fi
+        done
     else
         # Set npm token if provided
         if [ -n "${NPM_TOKEN:-}" ]; then
             echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         fi
 
-        # Publish
+        # Publish platform-specific packages first
+        log_info "Publishing platform-specific packages..."
+        for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+                pkg_name=$(basename "$pkg_dir")
+                log_info "Publishing $pkg_name..."
+                (
+                    cd "$pkg_dir"
+                    # Copy .npmrc if exists
+                    if [ -f "../../.npmrc" ]; then
+                        cp "../../.npmrc" .npmrc
+                    fi
+                    npm publish --access public 2>&1 || {
+                        log_warn "$pkg_name may already be published (continuing...)"
+                    }
+                    rm -f .npmrc 2>/dev/null || true
+                )
+            fi
+        done
+
+        # Wait a bit for npm to index the platform packages
+        log_info "Waiting 10s for npm to index platform packages..."
+        sleep 10
+
+        # Publish main package
+        log_info "Publishing main mathhook-node package..."
         npm publish --access public || {
             log_warn "npm publish may have failed (version might already exist)"
         }
@@ -372,6 +455,13 @@ if $PUBLISH_NPM; then
         fi
 
         log_success "npm publishing complete!"
+        log_info "Published packages:"
+        log_info "  - mathhook-node (main package)"
+        for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+                log_info "  - mathhook-node-$(basename "$pkg_dir")"
+            fi
+        done
     fi
 
     cd "$PROJECT_ROOT"

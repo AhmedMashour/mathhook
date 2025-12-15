@@ -77,6 +77,63 @@ pub fn symbols(names: &str) -> PyResult<Vec<PyExpression>> {
         .collect())
 }
 
+/// Create a single symbol
+///
+/// # Arguments
+///
+/// * `name` - The name of the symbol
+///
+/// # Examples
+///
+/// ```python
+/// from mathhook import symbol
+///
+/// x = symbol('x')
+/// y = symbol('y')
+/// ```
+#[pyfunction]
+pub fn symbol(name: &str) -> PyExpression {
+    PyExpression {
+        inner: Expression::symbol(Symbol::new(name)),
+    }
+}
+
+/// Solve an equation for a variable
+///
+/// Solves the equation `expression = 0` for the given variable.
+///
+/// # Arguments
+///
+/// * `equation` - The equation to solve (treated as `equation = 0`)
+/// * `variable` - The variable name to solve for
+///
+/// # Examples
+///
+/// ```python
+/// from mathhook import symbol, solve
+///
+/// x = symbol('x')
+/// solutions = solve(x**2 - 4, 'x')  # Returns [2, -2]
+/// ```
+#[pyfunction]
+pub fn solve(equation: &PyExpression, variable: &str) -> Vec<PyExpression> {
+    use mathhook_core::MathSolver;
+    let mut solver = MathSolver::new();
+    let sym = Symbol::new(variable);
+    let result = solver.solve(&equation.inner, &sym);
+
+    match result {
+        mathhook_core::solvers::SolverResult::Single(expr) => {
+            vec![PyExpression { inner: expr }]
+        }
+        mathhook_core::solvers::SolverResult::Multiple(exprs) => exprs
+            .into_iter()
+            .map(|expr| PyExpression { inner: expr })
+            .collect(),
+        _ => vec![],
+    }
+}
+
 #[doc = " Parse a mathematical expression from a string"]
 #[doc = ""]
 #[doc = " Parses mathematical expressions in standard notation, LaTeX, or Wolfram format."]

@@ -367,12 +367,47 @@ jobs:
           cd crates/mathhook-node
           npm install
 
-      - name: Move artifacts
+      - name: Generate platform packages
         run: |
           cd crates/mathhook-node
-          npm run artifacts || true
+          # Create platform-specific package directories with package.json
+          npx napi create-npm-dirs --npm-dir npm
+          # Copy binaries to their directories
+          for node_file in *.node; do
+            if [ -f "$node_file" ]; then
+              platform=$(echo "$node_file" | sed 's/mathhook-node\.\(.*\)\.node/\1/')
+              if [ -d "npm/$platform" ]; then
+                cp "$node_file" "npm/$platform/"
+                echo "Copied $node_file to npm/$platform/"
+              fi
+            fi
+          done
+          echo "Generated platform packages:"
+          ls -la npm/ || echo "No npm/ directory"
 
-      - name: Publish to npm
+      - name: Publish platform packages
+        if: ${{ github.event.inputs.dry_run != true }}
+        run: |
+          cd crates/mathhook-node
+          # Publish each platform-specific package
+          for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+              pkg_name=$(basename "$pkg_dir")
+              echo "Publishing mathhook-node-$pkg_name..."
+              (
+                cd "$pkg_dir"
+                npm publish --access public || echo "Package may already exist"
+              )
+            fi
+          done
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Wait for npm index
+        if: ${{ github.event.inputs.dry_run != true }}
+        run: sleep 15
+
+      - name: Publish main package
         if: ${{ github.event.inputs.dry_run != true }}
         run: |
           cd crates/mathhook-node
@@ -385,7 +420,14 @@ jobs:
         run: |
           echo "DRY RUN: Would publish to npm"
           cd crates/mathhook-node
+          echo "Main package:"
           npm pack --dry-run
+          echo "Platform packages:"
+          for pkg_dir in npm/*/; do
+            if [ -d "$pkg_dir" ]; then
+              echo "  - $(basename "$pkg_dir")"
+            fi
+          done
 
   # ============================================================================
   # GitHub Release: Create release with changelog

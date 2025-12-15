@@ -264,6 +264,52 @@ impl JsExpression {
             inner: self.inner.derivative(symbol),
         })
     }
+    /// Compute derivative with flexible variable input (alias for derivative)
+    ///
+    /// This method accepts either a symbol expression or a string variable name.
+    /// It's an alias for `derivative()` with more flexible input.
+    ///
+    /// # Arguments
+    ///
+    /// * `variable` - Either a JsExpression symbol or a string variable name
+    ///
+    /// # Examples
+    ///
+    /// ```javascript
+    /// const { symbol } = require('mathhook-node');
+    ///
+    /// const x = symbol('x');
+    /// const expr = x.pow(2).add(x.multiply(2)).add(1);
+    ///
+    /// // Using string (like derivative)
+    /// const d1 = expr.diff('x');
+    ///
+    /// // Using expression
+    /// const d2 = expr.diff(x);
+    ///
+    /// // Both produce the same result: 2*x + 2
+    /// ```
+    #[napi]
+    pub fn diff(&self, variable: Either<&JsExpression, String>) -> Result<JsExpression> {
+        let symbol = match variable {
+            Either::A(expr) => {
+                // Try to extract symbol name from expression
+                match &expr.inner {
+                    Expression::Symbol(s) => s.clone(),
+                    _ => {
+                        return Err(Error::new(
+                            Status::InvalidArg,
+                            "Variable must be a symbol expression or string".to_string(),
+                        ));
+                    }
+                }
+            }
+            Either::B(name) => Symbol::new(name),
+        };
+        Ok(JsExpression {
+            inner: self.inner.derivative(symbol),
+        })
+    }
     /// Compute nth derivative
     ///
     /// # Examples
@@ -1067,7 +1113,7 @@ impl JsExpression {
     #[napi]
     #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
-        format!("{}", self.inner)
+        self.to_simple()
     }
 }
 /// Advanced polynomial operations

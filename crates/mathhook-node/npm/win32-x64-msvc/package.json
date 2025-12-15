@@ -1,0 +1,41 @@
+{
+  "name": "mathhook-node-win32-x64-msvc",
+  "version": "0.1.2",
+  "cpu": [
+    "x64"
+  ],
+  "main": "mathhook-node.win32-x64-msvc.node",
+  "files": [
+    "mathhook-node.win32-x64-msvc.node"
+  ],
+  "description": "Node.js bindings for MathHook mathematical engine",
+  "keywords": [
+    "mathematics",
+    "symbolic",
+    "algebra",
+    "calculus",
+    "equation",
+    "solver",
+    "napi-rs"
+  ],
+  "author": "Ahmed Mashhour <mpghknown@gmail.com>",
+  "homepage": "https://github.com/AhmedMashour/mathhook",
+  "license": "MIT OR Apache-2.0",
+  "engines": {
+    "node": ">= 10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AhmedMashour/mathhook.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AhmedMashour/mathhook/issues"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "os": [
+    "win32"
+  ]
+}

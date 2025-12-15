@@ -59,6 +59,43 @@ pub fn groebner_basis(
         .map(|expr| JsExpression { inner: expr })
         .collect())
 }
+/// Create a single symbol
+///
+/// Creates a symbolic variable for use in mathematical expressions.
+/// This is the primary way to create variables in MathHook.
+///
+/// # Arguments
+///
+/// * `name` - Name of the symbol (e.g., "x", "y", "theta")
+///
+/// # Returns
+///
+/// A JsExpression representing the symbol
+///
+/// # Examples
+///
+/// ```javascript
+/// const { symbol } = require('mathhook-node');
+///
+/// // Create a single symbol
+/// const x = symbol('x');
+/// const y = symbol('y');
+///
+/// // Use in expressions
+/// const expr = x.pow(2).add(y);
+/// console.log(expr.toSimple());  // "x^2 + y"
+///
+/// // Greek letters
+/// const theta = symbol('θ');
+/// const alpha = symbol('alpha');
+/// ```
+#[napi]
+pub fn symbol(name: String) -> JsExpression {
+    JsExpression {
+        inner: Expression::symbol(Symbol::new(&name)),
+    }
+}
+
 /// Create multiple symbols at once from a string specification
 ///
 /// Supports three input formats:
@@ -183,7 +220,7 @@ pub fn sqrt(x: Either<&JsExpression, f64>) -> JsExpression {
         }
     };
     JsExpression {
-        inner: Expression::pow(expr, Expression::rational(1, 2)),
+        inner: Expression::function("sqrt", vec![expr]),
     }
 }
 mathhook_macros::generate_nodejs_binding!(abs);
