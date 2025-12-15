@@ -2,13 +2,18 @@
 name = "mathhook"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+documentation.workspace = true
+readme = "README.md"
+keywords.workspace = true
+categories.workspace = true
 description = "High-performance educational computer algebra system with ergonomic Rust macros"
 
 [dependencies]
-mathhook-core = { path = "../mathhook-core" }
+mathhook-core = { version = "0.1.0", path = "../mathhook-core" }
 num-bigint.workspace = true
 num-rational.workspace = true
 serde_json.workspace = true

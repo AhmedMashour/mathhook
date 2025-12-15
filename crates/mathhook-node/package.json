@@ -4,7 +4,12 @@
   "description": "Node.js bindings for MathHook mathematical engine",
   "author": "Ahmed Mashhour <mpghknown@gmail.com>",
   "main": "index.js",
+  "module": "index.mjs",
   "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "napi": {
     "binaryName": "mathhook-node",
     "targets": [

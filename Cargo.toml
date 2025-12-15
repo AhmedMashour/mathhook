@@ -12,10 +12,14 @@ members = [
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["Ahmed Mashhour"]
+authors = ["Ahmed Mashhour <mpghknown@gmail.com>"]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/ahmedmashour/mathhook"
-homepage = "https://github.com/ahmedmashour/mathhook"
+repository = "https://github.com/AhmedMashour/mathhook"
+homepage = "https://github.com/AhmedMashour/mathhook"
+documentation = "https://docs.rs/mathhook"
+readme = "README.md"
+keywords = ["mathematics", "algebra", "symbolic", "calculus", "education"]
+categories = ["mathematics", "science", "algorithms"]
 
 [workspace.dependencies]
 # Core math dependencies

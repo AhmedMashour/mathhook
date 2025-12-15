@@ -8,11 +8,10 @@ High-performance computer algebra system for Python, powered by Rust.
 
 ## Features
 
-- **Blazing Fast**: 10-100x faster than SymPy for common operations
+- **High Performance**: Rust-powered core targeting 10-100x speedup over SymPy
 - **Symbolic Mathematics**: Expressions, algebra, calculus, and matrix operations
-- **Multiple Input Formats**: Parse LaTeX, Wolfram Language, and standard notation
-- **Educational**: Step-by-step explanations for all operations
-- **Type-Safe**: Full type hints for excellent IDE support
+- **Multiple Input/Output Formats**: Parse and emit LaTeX, Wolfram Language, and standard notation
+- **Educational**: Step-by-step explanations for simplification and derivatives
 - **Memory Efficient**: Rust-powered core with minimal Python overhead
 
 ## Installation
@@ -590,12 +589,22 @@ Benchmark results vs SymPy (lower is better):
 
 *Benchmarks on Apple M1, Python 3.11*
 
-## API Reference
+## Actual API Reference
 
-For complete API documentation, see:
-- [Online Documentation](https://mathhook.readthedocs.io)
-- [Usage Guide](USAGE.md)
-- [Examples](examples/)
+For the complete API documentation, see the **[Python Bindings Guide](../../docs/src/bindings/python.md)** in the mdbook.
+
+### Quick Reference
+
+The main classes exported:
+
+| Class | Purpose |
+|-------|---------|
+| `Expression` | Core symbolic expression with algebra, calculus, matrices |
+| `Symbol` | Create symbolic variables via `symbol('x')` |
+| `ODESolver` | Numerical ODE methods (Euler, RK4, RKF45) |
+| `PDESolver` | PDE solvers (heat, wave, Laplace) |
+| `GroebnerBasis` | Gröbner basis computation |
+| `EvalContext` | Controlled evaluation context |
 
 ## Common Issues
 

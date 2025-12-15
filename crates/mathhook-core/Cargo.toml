@@ -2,9 +2,13 @@
 name = "mathhook-core"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
 description = "Core mathematical engine for MathHook - expressions, algebra, and solving"
 
 [build-dependencies]
@@ -12,7 +16,7 @@ lalrpop = "0.22.2"
 
 [dependencies]
 # Procedural macros (expr!, etc.)
-mathhook-macros = { path = "../mathhook-macros" }
+mathhook-macros = { version = "0.1.0", path = "../mathhook-macros" }
 
 # Parser dependencies
 lalrpop-util = { version = "0.22.2", features = ["lexer", "unicode"] }

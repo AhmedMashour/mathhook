@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Python bindings for MathHook mathematical engine"
+publish = false  # Published to PyPI via maturin, not crates.io
 
 [lib]
 name = "mathhook_python"

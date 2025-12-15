@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Performance benchmarks for MathHook ecosystem"
+publish = false  # Internal benchmarking only
 
 [dependencies]
 mathhook-core = { path = "../mathhook-core" }

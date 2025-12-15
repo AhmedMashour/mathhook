@@ -361,6 +361,44 @@ mdbook serve --open  # Preview at localhost:3000
 
 ---
 
+## AI-Assisted Development
+
+MathHook embraces AI-assisted development. Contributors are welcome to use AI tools (Claude, GPT, Copilot, etc.) to help with:
+
+- Code implementation
+- Documentation writing
+- Test generation
+- Bug investigation
+- Code review assistance
+
+### Current Status
+
+We maintain internal AI development guidelines (`CLAUDE.md`) that help AI assistants understand our codebase, priorities, and conventions. This file is currently in `.gitignore` while I refine our AI workflow.
+
+**Why gitignored?**
+- We're iterating on the optimal format and content
+- The workflow is still maturing
+- We want to establish best practices before making it public
+
+### Guidelines for AI-Assisted Contributions
+
+1. **Verify AI output**: AI can make mistakes, especially with mathematical correctness
+2. **Run all tests**: `cargo test` must pass regardless of how code was written
+3. **Follow the rules**: AI-generated code must follow the same standards as human code
+4. **Disclose if asked**: Be transparent about AI assistance if maintainers ask
+5. **Own your contribution**: You're responsible for the code you submit, regardless of how it was generated
+
+### Future Plans
+
+We plan to:
+- Publish our AI development guidelines once stabilized
+- Share patterns that work well for CAS development with AI
+- Document common AI pitfalls specific to symbolic math
+
+Contributors interested in helping refine our AI workflow are welcome to open an issue or discussion.
+
+---
+
 ## Getting Help
 
 1. **Read the docs**: [docs/src/contributing/](docs/src/contributing/)

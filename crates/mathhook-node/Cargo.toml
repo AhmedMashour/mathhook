@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Node.js bindings for MathHook mathematical engine"
+publish = false  # Published to npm via napi-rs, not crates.io
 
 [lib]
 crate-type = ["cdylib"]

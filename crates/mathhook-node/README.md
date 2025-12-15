@@ -8,13 +8,13 @@ High-performance computer algebra system for Node.js and TypeScript, powered by 
 
 ## Features
 
-- **Blazing Fast**: 10-100x faster than JavaScript-based CAS libraries
-- **Native Performance**: Rust-powered core with zero-cost TypeScript bindings
+- **High Performance**: Rust-powered core targeting 10-100x speedup over JS-based CAS
+- **Native Performance**: N-API bindings with minimal overhead
 - **Symbolic Mathematics**: Expressions, algebra, calculus, and matrix operations
-- **Multiple Input Formats**: Parse LaTeX, Wolfram Language, and standard notation
-- **Educational**: Step-by-step explanations for all operations
-- **TypeScript First**: Full type definitions included
-- **Cross-Platform**: Works on Windows, macOS, Linux, and ARM
+- **Multiple Input/Output Formats**: Parse and emit LaTeX, Wolfram Language, and standard notation
+- **Educational**: Step-by-step explanations for simplification and derivatives
+- **TypeScript Support**: Type definitions included
+- **Cross-Platform**: Pre-built binaries for Windows, macOS, Linux (x64, ARM64)
 
 ## Installation
 
@@ -634,13 +634,22 @@ Benchmark results vs mathjs (lower is better):
 
 *Benchmarks on Apple M1, Node.js 18*
 
-## API Reference
+## Actual API Reference
 
-For complete API documentation, see:
-- [TypeScript Definitions](index.d.ts)
-- [Usage Guide](USAGE.md)
-- [Examples](examples/)
-- [Online Documentation](https://mathhook.readthedocs.io)
+For the complete API documentation, see the **[Node.js Bindings Guide](../../docs/src/bindings/nodejs.md)** in the mdbook.
+
+### Quick Reference
+
+The main classes and types exported:
+
+| Export | Purpose |
+|--------|---------|
+| `Expression` | Core symbolic expression with algebra, calculus, matrices |
+| `symbol` | Create symbolic variables |
+| `EvalContext` | Controlled evaluation context |
+| `sin`, `cos`, `tan` | Trigonometric functions |
+| `solve` | Equation solving |
+| `parse` | Parse expressions from strings |
 
 ## Debugging
 

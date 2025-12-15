@@ -6,6 +6,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+documentation.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Procedural macros for MathHook - expr!, symbol!, symbols!, function!"
 
 [lib]
 proc-macro = true
