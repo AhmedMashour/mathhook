@@ -13,6 +13,7 @@ use napi_derive::napi;
 
 #[doc = " Step in explanation"]
 #[napi(object)]
+#[derive(Clone)]
 pub struct JsStep {
     pub title: String,
     pub description: String,
@@ -60,6 +61,40 @@ pub struct JsSolverResult {
     pub count: u32,
     #[doc = " Optional metadata about the solution"]
     pub metadata: Option<String>,
+}
+
+#[doc = " Result from solveWithSteps containing both solutions and educational steps"]
+#[napi]
+pub struct JsSolveWithStepsResult {
+    pub(crate) result_type: String,
+    pub(crate) solutions: Vec<JsExpression>,
+    pub(crate) steps: Vec<JsStep>,
+}
+
+#[napi]
+impl JsSolveWithStepsResult {
+    #[doc = " Get the result type: \"single\", \"multiple\", \"no_solution\", \"infinite\", \"parametric\", \"partial\""]
+    #[napi(getter)]
+    pub fn get_result_type(&self) -> String {
+        self.result_type.clone()
+    }
+
+    #[doc = " Get the solution expressions"]
+    #[napi(getter)]
+    pub fn get_solutions(&self) -> Vec<JsExpression> {
+        self.solutions
+            .iter()
+            .map(|e| JsExpression {
+                inner: e.inner.clone(),
+            })
+            .collect()
+    }
+
+    #[doc = " Get the steps of the solving process"]
+    #[napi(getter)]
+    pub fn get_steps(&self) -> Vec<JsStep> {
+        self.steps.clone()
+    }
 }
 
 #[doc = " JavaScript wrapper for MathSolver"]
@@ -217,6 +252,97 @@ impl JsMathSolver {
                 count: 0,
                 metadata: Some("Infinite solutions exist (identity equation)".to_string()),
             },
+        }
+    }
+
+    #[doc = " Solve an equation with step-by-step educational explanation"]
+    #[doc = ""]
+    #[doc = " Returns both the solution(s) and a step-by-step explanation of the solving process."]
+    #[doc = " Use this when you need to show how the equation was solved."]
+    #[doc = " For performance-critical code where only the answer is needed, use `solve()` instead."]
+    #[doc = ""]
+    #[doc = " # Arguments"]
+    #[doc = ""]
+    #[doc = " * `equation` - The equation expression to solve"]
+    #[doc = " * `variable` - Name of the variable to solve for"]
+    #[doc = ""]
+    #[doc = " # Returns"]
+    #[doc = ""]
+    #[doc = " Object containing:"]
+    #[doc = " - `resultType`: \"single\", \"multiple\", \"no_solution\", or \"infinite\""]
+    #[doc = " - `solutions`: Array of JsExpression solution objects"]
+    #[doc = " - `steps`: Array of step objects with title, description, before, and after"]
+    #[doc = ""]
+    #[doc = " # Examples"]
+    #[doc = ""]
+    #[doc = " ```javascript"]
+    #[doc = " const { JsMathSolver, parse } = require('mathhook-node');"]
+    #[doc = ""]
+    #[doc = " const solver = new JsMathSolver();"]
+    #[doc = " const equation = parse('x^2 - 4');"]
+    #[doc = " const result = solver.solveWithSteps(equation, 'x');"]
+    #[doc = ""]
+    #[doc = " console.log('Result type:', result.resultType);"]
+    #[doc = " console.log('Solutions:', result.solutions.map(s => s.toSimple()));"]
+    #[doc = " for (const step of result.steps) {"]
+    #[doc = "     console.log(`${step.title}: ${step.description}`);"]
+    #[doc = " }"]
+    #[doc = " ```"]
+    #[napi]
+    pub fn solve_with_steps(
+        &mut self,
+        equation: &JsExpression,
+        variable: String,
+    ) -> JsSolveWithStepsResult {
+        use mathhook_core::algebra::solvers::SolverResult;
+
+        let symbol = Symbol::new(variable);
+        let (solver_result, explanation) = equation.inner.solve_with_steps(&symbol);
+
+        let (solutions, result_type) = match solver_result {
+            SolverResult::Single(expr) => {
+                (vec![JsExpression { inner: expr }], "single".to_string())
+            }
+            SolverResult::Multiple(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| JsExpression { inner: e })
+                    .collect(),
+                "multiple".to_string(),
+            ),
+            SolverResult::NoSolution => (vec![], "no_solution".to_string()),
+            SolverResult::InfiniteSolutions => (vec![], "infinite".to_string()),
+            SolverResult::Parametric(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| JsExpression { inner: e })
+                    .collect(),
+                "parametric".to_string(),
+            ),
+            SolverResult::Partial(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| JsExpression { inner: e })
+                    .collect(),
+                "partial".to_string(),
+            ),
+        };
+
+        let steps = explanation
+            .steps
+            .iter()
+            .map(|step| JsStep {
+                title: step.title.clone(),
+                description: step.description.clone(),
+                before: format!("{}", explanation.initial_expression),
+                after: format!("{}", step.expression),
+            })
+            .collect();
+
+        JsSolveWithStepsResult {
+            result_type,
+            solutions,
+            steps,
         }
     }
 }

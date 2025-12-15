@@ -32,6 +32,7 @@ fn mathhook(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyExpression>()?;
     m.add_class::<PyMathSolver>()?;
     m.add_class::<PySolverResult>()?;
+    m.add_class::<PySolveWithStepsResult>()?;
     m.add_class::<PyStep>()?;
     m.add_class::<PyStepByStepExplanation>()?;
     m.add_class::<PyPattern>()?;

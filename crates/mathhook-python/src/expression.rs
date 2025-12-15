@@ -2,8 +2,9 @@
 //!
 //! This module was automatically extracted from lib.rs using syn-based refactoring.
 use crate::helpers::{sympify_python, PRINT_CONFIG};
-use crate::types::{PyPattern, PyStep, PyStepByStepExplanation};
+use crate::types::{PyPattern, PySolveWithStepsResult, PyStep, PyStepByStepExplanation};
 use mathhook_core::algebra::polynomial_advanced::AdvancedPolynomial;
+use mathhook_core::algebra::solvers::SolverResult;
 use mathhook_core::algebra::{Collect, Expand, Factor};
 use mathhook_core::calculus::derivatives::{Derivative, DerivativeWithSteps};
 use mathhook_core::calculus::integrals::Integration;
@@ -849,6 +850,91 @@ impl PyExpression {
                 .collect(),
         }
     }
+
+    /// Solve equation with step-by-step explanation
+    ///
+    /// Solves the equation `self = 0` for the given variable and returns
+    /// both the solutions and educational steps showing the solving process.
+    ///
+    /// # Arguments
+    ///
+    /// * `variable` - The variable to solve for (as string)
+    ///
+    /// # Returns
+    ///
+    /// A PySolveWithStepsResult containing solutions and steps
+    ///
+    /// # Examples
+    ///
+    /// ```python
+    /// from mathhook import parse
+    ///
+    /// # Solve x^2 - 4 = 0
+    /// expr = parse('x^2 - 4')
+    /// result = expr.solve_with_steps('x')
+    ///
+    /// print(f"Solutions: {result.solutions}")
+    /// print(f"Result type: {result.result_type}")
+    ///
+    /// for step in result.steps:
+    ///     print(f"{step.title}: {step.description}")
+    /// ```
+    pub fn solve_with_steps(&self, variable: String) -> PySolveWithStepsResult {
+        let symbol = Symbol::new(&variable);
+        let (solver_result, explanation) = self.inner.solve_with_steps(&symbol);
+
+        // Convert SolverResult to solutions list and result_type
+        let (solutions, result_type) = match solver_result {
+            SolverResult::Single(expr) => {
+                (vec![PyExpression { inner: expr }], "single".to_string())
+            }
+            SolverResult::Multiple(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| PyExpression { inner: e })
+                    .collect(),
+                "multiple".to_string(),
+            ),
+            SolverResult::NoSolution => (vec![], "no_solution".to_string()),
+            SolverResult::InfiniteSolutions => (vec![], "infinite".to_string()),
+            SolverResult::Parametric(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| PyExpression { inner: e })
+                    .collect(),
+                "parametric".to_string(),
+            ),
+            SolverResult::Partial(exprs) => (
+                exprs
+                    .into_iter()
+                    .map(|e| PyExpression { inner: e })
+                    .collect(),
+                "partial".to_string(),
+            ),
+        };
+
+        // Convert steps
+        let steps = explanation
+            .steps
+            .iter()
+            .map(|step| PyStep {
+                title: step.title.clone(),
+                description: step.description.clone(),
+                before: format!("{}", step.expression),
+                after: String::new(),
+                expression: Some(PyExpression {
+                    inner: step.expression.clone(),
+                }),
+            })
+            .collect();
+
+        PySolveWithStepsResult {
+            solutions,
+            steps,
+            result_type,
+        }
+    }
+
     /// Compute limit of expression as variable approaches a value
     ///
     /// # Examples

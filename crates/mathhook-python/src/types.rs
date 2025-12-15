@@ -52,6 +52,21 @@ pub struct PySolverResult {
     pub metadata: Option<String>,
 }
 
+/// Result from solve_with_steps containing both solutions and educational steps
+#[pyclass]
+#[derive(Clone)]
+pub struct PySolveWithStepsResult {
+    /// List of solution expressions
+    #[pyo3(get)]
+    pub solutions: Vec<PyExpression>,
+    /// Step-by-step explanation of the solving process
+    #[pyo3(get)]
+    pub steps: Vec<PyStep>,
+    /// Result type: "single", "multiple", "no_solution", "infinite"
+    #[pyo3(get)]
+    pub result_type: String,
+}
+
 #[pyclass]
 #[derive(Clone, Default)]
 pub struct PyODESolver {}

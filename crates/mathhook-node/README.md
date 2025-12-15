@@ -501,7 +501,7 @@ console.log(expr.toString());  // x^2/2
 ### Step-by-Step Explanations
 
 ```typescript
-import { JsExpression, symbol } from 'mathhook-node';
+import { JsExpression, symbol, JsMathSolver, parse } from 'mathhook-node';
 
 const x = symbol('x');
 const expr = JsExpression.integer(2).add(JsExpression.integer(3));
@@ -520,6 +520,39 @@ explanation.steps.forEach((step, i) => {
 // Derivative with steps
 const poly = x.pow(2);
 const derivExplanation = poly.derivativeWithSteps('x');
+```
+
+### Solve with Steps
+
+Get step-by-step explanations when solving equations:
+
+```typescript
+import { JsMathSolver, parse } from 'mathhook-node';
+
+const solver = new JsMathSolver();
+const equation = parse('x^2 - 4');
+
+// Solve with educational steps
+const result = solver.solveWithSteps(equation, 'x');
+
+console.log('Result type:', result.resultType);  // 'multiple'
+console.log('Solutions:', result.solutions.map(s => s.toSimple()));  // ['2', '-2']
+
+// Display solving steps
+for (const step of result.steps) {
+  console.log(`${step.title}: ${step.description}`);
+  console.log(`  Before: ${step.before}`);
+  console.log(`  After: ${step.after}`);
+}
+```
+
+Result structure:
+```typescript
+interface JsSolveWithStepsResult {
+  resultType: string;        // "single", "multiple", "no_solution", "infinite", etc.
+  solutions: JsExpression[]; // Actual expression objects (not strings)
+  steps: JsStep[];           // Step-by-step explanation
+}
 ```
 
 ## Evaluation
@@ -671,6 +704,7 @@ import {
   JsExpression,
   JsMathSolver,
   JsSolverResult,
+  JsSolveWithStepsResult,
   JsStep,
   JsStepByStepExplanation,
   EvalContext,
@@ -716,6 +750,13 @@ function findRoots(expr: JsExpression, varName: string): string[] {
 | `JsMathSolver` | Equation solver class |
 | `EvalContext` | Evaluation context for controlled evaluation |
 | `JsPDESolver` | PDE solver class |
+
+### JsMathSolver Methods
+
+| Method | Description |
+|--------|-------------|
+| `.solve(expr, var)` | Solve equation, returns result with solutions as strings |
+| `.solveWithSteps(expr, var)` | Solve with step-by-step explanation, returns JsExpression solutions |
 
 ### Mathematical Functions
 

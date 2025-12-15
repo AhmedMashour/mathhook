@@ -15,8 +15,9 @@ pub use eval_context::EvalContext;
 pub use expression::JsExpression;
 pub use functions::*;
 pub use types::{
-    JsMathSolver, JsPDESolver, JsSolverResult, JsStep, JsStepByStepExplanation,
-    LUDecompositionResult, PDESolution, QRDecompositionResult, SVDDecompositionResult,
+    JsMathSolver, JsPDESolver, JsSolveWithStepsResult, JsSolverResult, JsStep,
+    JsStepByStepExplanation, LUDecompositionResult, PDESolution, QRDecompositionResult,
+    SVDDecompositionResult,
 };
 
 // Macro-generated bindings (inline in lib.rs so NAPI can discover them)
