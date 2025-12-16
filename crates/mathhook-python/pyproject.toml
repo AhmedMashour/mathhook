@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "mathhook"
-version = "0.1.2"
+version = "0.1.4"
 description = "High-performance educational computer algebra system"
 readme = "README.md"
 authors = [{name = "Ahmed Mashhour", email = "mpghknown@gmail.com"}]

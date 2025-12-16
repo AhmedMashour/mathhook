@@ -242,7 +242,10 @@ if $PUBLISH_PYPI; then
 
         # Use zig for Linux cross-compilation
         if [[ "$target" == *"linux"* ]] && $HAS_ZIG; then
-            maturin build --release --target "$target" --zig || {
+            # For Linux cross-compilation, specify Python versions explicitly
+            maturin build --release --target "$target" --zig \
+                -i python3.8 -i python3.9 -i python3.10 -i python3.11 -i python3.12 \
+                --compatibility manylinux2014 || {
                 log_warn "Failed to build for $target (continuing...)"
             }
         else
