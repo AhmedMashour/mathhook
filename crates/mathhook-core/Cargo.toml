@@ -46,6 +46,10 @@ proptest.workspace = true
 cuda = []
 webgpu = []
 
+# Binding generation features (used by macro expansion)
+python-bindings = []
+nodejs-bindings = []
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
