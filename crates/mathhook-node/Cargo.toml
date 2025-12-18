@@ -12,12 +12,16 @@ publish = false  # Published to npm via napi-rs, not crates.io
 crate-type = ["cdylib"]
 
 [dependencies]
-mathhook-core = { path = "../mathhook-core" }
-mathhook-macros = { path = "../mathhook-macros" }
+mathhook-core = { path = "../mathhook-core", features = ["nodejs-bindings"] }
+mathhook-macros = { path = "../mathhook-macros", features = ["nodejs-bindings"] }
 napi = { workspace = true, features = ["napi4"] }
 napi-derive.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+
+[features]
+default = ["nodejs-bindings"]
+nodejs-bindings = []
 
 [build-dependencies]
 napi-build = "2.2"

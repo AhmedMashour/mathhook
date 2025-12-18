@@ -6,10 +6,12 @@
 use crate::algebra::equation_analyzer::SmartEquationSolver;
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;
+use mathhook_macros::{mathhook_enum, mathhook_impl, mathhook_struct};
 use serde::{Deserialize, Serialize};
 
 /// Result of a solving operation
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[mathhook_enum(module = "solvers", skip_python, skip_nodejs)]
 pub enum SolverResult {
     /// Single solution found
     Single(Expression),
@@ -23,6 +25,7 @@ pub enum SolverResult {
 
 /// Configuration for solving operations
 #[derive(Debug, Clone)]
+#[mathhook_struct(module = "solvers", skip_python, skip_nodejs)]
 pub struct SolverConfig {
     pub max_iterations: u32,
     pub tolerance: f64,
@@ -62,11 +65,13 @@ impl Default for SolverConfig {
 /// let result = solver.solve(&equation, &x);
 /// // Result: SolverResult::Single for x = 2
 /// ```
+#[mathhook_struct(module = "solvers", skip_python, skip_nodejs)]
 pub struct MathSolver {
     config: SolverConfig,
     smart_solver: SmartEquationSolver,
 }
 
+#[mathhook_impl(skip_python, skip_nodejs)]
 impl MathSolver {
     /// Create a new solver with default configuration
     ///

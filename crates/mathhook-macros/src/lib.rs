@@ -17,6 +17,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Ident};
 
+mod export;
 mod expr;
 mod function;
 mod symbol;
@@ -684,6 +685,210 @@ pub fn generate_nodejs_constant_binding(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
+}
+
+// ============================================================================
+// Export Macro System - Automatic Python/Node.js Binding Generation
+// ============================================================================
+
+/// Export a Rust function to Python and Node.js.
+///
+/// This macro generates wrapper functions for both Python (PyO3) and Node.js (NAPI)
+/// from a single Rust function definition.
+///
+/// # Attributes
+///
+/// - `name = "..."` - Custom name in bindings (default: function name)
+/// - `module = "..."` - Place in submodule (default: root)
+/// - `python_name = "..."` - Python-specific name override
+/// - `nodejs_name = "..."` - Node.js-specific name override
+/// - `skip_python` - Don't generate Python binding
+/// - `skip_nodejs` - Don't generate Node.js binding
+///
+/// # Examples
+///
+/// Basic function:
+/// ```rust,ignore
+/// #[mathhook_fn]
+/// pub fn double(x: i64) -> i64 { x * 2 }
+/// ```
+///
+/// With Expression:
+/// ```rust,ignore
+/// #[mathhook_fn]
+/// pub fn simplify(e: Expression) -> Expression {
+///     e.simplify()
+/// }
+/// ```
+///
+/// In submodule:
+/// ```rust,ignore
+/// #[mathhook_fn(module = "algebra")]
+/// pub fn factor(e: Expression) -> Expression { ... }
+/// ```
+///
+/// Custom naming:
+/// ```rust,ignore
+/// #[mathhook_fn(python_name = "differentiate", nodejs_name = "diff")]
+/// pub fn derivative(e: Expression, v: Symbol) -> Expression { ... }
+/// ```
+#[proc_macro_attribute]
+pub fn mathhook_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+
+    match export::process_function(attr2, item2) {
+        Ok(output) => TokenStream::from(output),
+        Err(err) => TokenStream::from(err.to_compile_error()),
+    }
+}
+
+/// Export a Rust struct to Python and Node.js.
+///
+/// Generates wrapper structs with field accessors and conversion traits.
+///
+/// # Attributes
+///
+/// - `name = "..."` - Custom wrapper name (default: Py/Js prefix + struct name)
+/// - `module = "..."` - Place in submodule (default: root)
+/// - `opaque` - Don't expose fields, only methods
+/// - `skip_python` - Don't generate Python wrapper
+/// - `skip_nodejs` - Don't generate Node.js wrapper
+///
+/// # Examples
+///
+/// Basic struct:
+/// ```rust,ignore
+/// #[mathhook_struct]
+/// pub struct Point {
+///     pub x: f64,
+///     pub y: f64,
+/// }
+/// ```
+///
+/// Custom name:
+/// ```rust,ignore
+/// #[mathhook_struct(name = "MathPoint")]
+/// pub struct Point { ... }
+/// ```
+#[proc_macro_attribute]
+pub fn mathhook_struct(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+
+    match export::process_struct(attr2, item2) {
+        Ok(output) => TokenStream::from(output),
+        Err(err) => TokenStream::from(err.to_compile_error()),
+    }
+}
+
+/// Export methods on a struct or enum to Python and Node.js.
+///
+/// Place on impl blocks to export methods to the wrapper types.
+/// Works for both struct and enum impl blocks.
+///
+/// # Attributes
+///
+/// - `skip = [method1, method2]` - Skip specific methods
+/// - `skip_python` - Don't generate Python methods
+/// - `skip_nodejs` - Don't generate Node.js methods
+///
+/// # Examples
+///
+/// Struct methods:
+/// ```rust,ignore
+/// #[mathhook_struct]
+/// pub struct Expression { ... }
+///
+/// #[mathhook_impl]
+/// impl Expression {
+///     pub fn simplify(&self) -> Self { ... }
+///     pub fn expand(&self) -> Self { ... }
+/// }
+/// ```
+///
+/// Enum methods:
+/// ```rust,ignore
+/// #[mathhook_enum]
+/// pub enum SolverResult { ... }
+///
+/// #[mathhook_impl]
+/// impl SolverResult {
+///     pub fn count(&self) -> usize { ... }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn mathhook_impl(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+
+    match export::process_impl(attr2, item2) {
+        Ok(output) => TokenStream::from(output),
+        Err(err) => TokenStream::from(err.to_compile_error()),
+    }
+}
+
+/// Export a Rust enum to Python and Node.js as a tagged union.
+///
+/// Generates wrapper with discriminator property, type checkers,
+/// variant accessors, and static constructors.
+///
+/// # Attributes
+///
+/// - `name = "..."` - Custom wrapper name
+/// - `discriminator = "..."` - Custom discriminator field name (default: "variant_type")
+/// - `module = "..."` - Place in submodule
+/// - `skip_python` - Don't generate Python wrapper
+/// - `skip_nodejs` - Don't generate Node.js wrapper
+///
+/// # Generated Methods
+///
+/// For each variant `Foo`:
+/// - Property: `variant_type` → "foo" (snake_case)
+/// - Checker: `is_foo()` → bool
+/// - Accessor: `as_foo()` → inner value (raises if wrong variant)
+/// - Constructor: `MyEnum.foo(...)` → instance
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// #[mathhook_enum]
+/// pub enum SolverResult {
+///     Single(Expression),
+///     Multiple(Vec<Expression>),
+///     NoSolution,
+///     Infinite { parameter: Symbol, family: Expression },
+/// }
+/// ```
+///
+/// Generated Python:
+/// ```python
+/// result = solve(equation)
+/// if result.is_single():
+///     print(result.as_single())
+/// elif result.variant_type == "multiple":
+///     for sol in result.as_multiple():
+///         print(sol)
+/// ```
+///
+/// Generated Node.js:
+/// ```javascript
+/// const result = solve(equation);
+/// if (result.isSingle()) {
+///     console.log(result.asSingle());
+/// } else if (result.variantType === "multiple") {
+///     result.asMultiple().forEach(console.log);
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn mathhook_enum(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let attr2 = proc_macro2::TokenStream::from(attr);
+    let item2 = proc_macro2::TokenStream::from(item);
+
+    match export::process_enum(attr2, item2) {
+        Ok(output) => TokenStream::from(output),
+        Err(err) => TokenStream::from(err.to_compile_error()),
+    }
 }
 
 #[cfg(test)]

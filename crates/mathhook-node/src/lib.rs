@@ -24,3 +24,6 @@ pub use types::{
 mathhook_macros::generate_nodejs_binding!(sin_macro_generated);
 mathhook_macros::generate_nodejs_binding!(cos_macro_generated);
 mathhook_macros::generate_nodejs_binding!(tan_macro_generated);
+
+#[cfg(test)]
+mod export_integration_test;

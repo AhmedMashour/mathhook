@@ -13,11 +13,15 @@ name = "mathhook_python"
 crate-type = ["cdylib"]
 
 [dependencies]
-mathhook-core = { path = "../mathhook-core" }
-mathhook-macros = { path = "../mathhook-macros" }
+mathhook-core = { path = "../mathhook-core", features = ["python-bindings"] }
+mathhook-macros = { path = "../mathhook-macros", features = ["python-bindings"] }
 pyo3 = { workspace = true, features = ["extension-module"] }
 serde.workspace = true
 serde_json.workspace = true
+
+[features]
+default = ["python-bindings"]
+python-bindings = []
 
 [build-dependencies]
 pyo3-build-config = "0.26"
