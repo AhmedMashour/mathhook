@@ -113,7 +113,6 @@ pub fn process_function(attrs: TokenStream, item: TokenStream) -> Result<TokenSt
 
     if !config.skip_python {
         let python_wrapper = generate_python_wrapper(&func, &config)?;
-        // let mod_name = quote::format_ident!("__py_{}", func_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
             #[cfg(feature = "python-bindings")]
@@ -122,18 +121,17 @@ pub fn process_function(attrs: TokenStream, item: TokenStream) -> Result<TokenSt
     }
 
     if !config.skip_nodejs {
-        // let nodejs_wrapper = generate_nodejs_wrapper(&func, &config)?;
-        // let mod_name = quote::format_ident!("__js_{}", func_name.to_string().to_case(Case::Snake));
-        // output = quote! {
-        //     #output
+        let nodejs_wrapper = generate_nodejs_wrapper(&func, &config)?;
+        let mod_name = quote::format_ident!("__js_{}", func_name.to_string().to_case(Case::Snake));
+        output = quote! {
+            #output
 
-        //     #[cfg(feature = "nodejs-bindings")]
-        //     pub mod #mod_name {  // ← Just make module public
-        //         use super::*;
-        //         use crate::bindings_prelude::*;
-        //         #nodejs_wrapper
-        //     }
-        // };
+            #[cfg(feature = "nodejs-bindings")]
+            pub mod #mod_name {
+                use super::*;
+                #nodejs_wrapper
+            }
+        };
     }
 
     Ok(output)
@@ -148,8 +146,6 @@ pub fn process_struct(attrs: TokenStream, item: TokenStream) -> Result<TokenStre
 
     if !config.skip_python {
         let python_wrapper = python::generate_python_struct_wrapper(&struct_def, &config)?;
-        // let mod_name =
-        //     quote::format_ident!("__py_{}", struct_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
             #[cfg(feature = "python-bindings")]
@@ -158,19 +154,18 @@ pub fn process_struct(attrs: TokenStream, item: TokenStream) -> Result<TokenStre
     }
 
     if !config.skip_nodejs {
-        // let nodejs_wrapper = nodejs::generate_nodejs_struct_wrapper(&struct_def, &config)?;
-        // let mod_name =
-        //     quote::format_ident!("__js_{}", struct_name.to_string().to_case(Case::Snake));
-        // output = quote! {
-        //     #output
+        let nodejs_wrapper = nodejs::generate_nodejs_struct_wrapper(&struct_def, &config)?;
+        let mod_name =
+            quote::format_ident!("__js_{}", struct_name.to_string().to_case(Case::Snake));
+        output = quote! {
+            #output
 
-        //     #[cfg(feature = "nodejs-bindings")]
-        //     pub mod #mod_name {  // ← Just make module public
-        //         use super::*;
-        //         use crate::bindings_prelude::*;
-        //         #nodejs_wrapper
-        //     }
-        // };
+            #[cfg(feature = "nodejs-bindings")]
+            pub mod #mod_name {
+                use super::*;
+                #nodejs_wrapper
+            }
+        };
     }
 
     Ok(output)
@@ -195,8 +190,6 @@ pub fn process_impl(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
 
     if !config.skip_python {
         let python_methods = python::generate_python_impl_wrapper(&impl_block, &config)?;
-        // let mod_name =
-        //     quote::format_ident!("__py_impl_{}", type_ident.to_string().to_case(Case::Snake));
         output = quote! {
             #output
             #[cfg(feature = "python-bindings")]
@@ -205,19 +198,18 @@ pub fn process_impl(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
     }
 
     if !config.skip_nodejs {
-        // let nodejs_methods = nodejs::generate_nodejs_impl_wrapper(&impl_block, &config)?;
-        // let mod_name =
-        //     quote::format_ident!("__js_impl_{}", type_ident.to_string().to_case(Case::Snake));
-        // output = quote! {
-        //     #output
+        let nodejs_methods = nodejs::generate_nodejs_impl_wrapper(&impl_block, &config)?;
+        let mod_name =
+            quote::format_ident!("__js_impl_{}", type_ident.to_string().to_case(Case::Snake));
+        output = quote! {
+            #output
 
-        //     #[cfg(feature = "nodejs-bindings")]
-        //     mod #mod_name {
-        //         #[allow(unused_imports)]
-        //         use crate::bindings_prelude::*;
-        //         #nodejs_methods
-        //     }
-        // };
+            #[cfg(feature = "nodejs-bindings")]
+            pub mod #mod_name {
+                use super::*;
+                #nodejs_methods
+            }
+        };
     }
 
     Ok(output)
@@ -232,7 +224,6 @@ pub fn process_enum(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
 
     if !config.skip_python {
         let python_wrapper = python::generate_python_enum_wrapper(&enum_def, &config)?;
-        // let mod_name = quote::format_ident!("__py_{}", enum_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
             #[cfg(feature = "python-bindings")]
@@ -241,18 +232,17 @@ pub fn process_enum(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
     }
 
     if !config.skip_nodejs {
-        // let nodejs_wrapper = nodejs::generate_nodejs_enum_wrapper(&enum_def, &config)?;
-        // let mod_name = quote::format_ident!("__js_{}", enum_name.to_string().to_case(Case::Snake));
-        // output = quote! {
-        //     #output
+        let nodejs_wrapper = nodejs::generate_nodejs_enum_wrapper(&enum_def, &config)?;
+        let mod_name = quote::format_ident!("__js_{}", enum_name.to_string().to_case(Case::Snake));
+        output = quote! {
+            #output
 
-        //     #[cfg(feature = "nodejs-bindings")]
-        //     pub mod #mod_name {  // ← Just make module public
-        //         use super::*;
-        //         use crate::bindings_prelude::*;
-        //         #nodejs_wrapper
-        //     }
-        // };
+            #[cfg(feature = "nodejs-bindings")]
+            pub mod #mod_name {
+                use super::*;
+                #nodejs_wrapper
+            }
+        };
     }
 
     Ok(output)
