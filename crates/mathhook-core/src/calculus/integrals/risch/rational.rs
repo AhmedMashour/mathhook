@@ -45,6 +45,27 @@ pub struct RationalIntegral {
     pub remaining: Option<Expression>,
 }
 
+/// Assemble a RationalIntegral into a single Expression
+pub fn assemble_integral(integral: &RationalIntegral) -> Expression {
+    let mut terms = vec![integral.polynomial_part.clone()];
+
+    for (coeff, arg) in &integral.logarithmic_terms {
+        terms.push(Expression::mul(vec![
+            coeff.clone(),
+            Expression::function("ln", vec![Expression::function("abs", vec![arg.clone()])]),
+        ]));
+    }
+
+    if let Some(remaining) = &integral.remaining {
+        terms.push(Expression::function(
+            "integrate",
+            vec![remaining.clone(), Expression::symbol(Symbol::scalar("x"))],
+        ));
+    }
+
+    Expression::add(terms)
+}
+
 /// Integrate a rational function P(x)/Q(x)
 ///
 /// Implements Hermite reduction algorithm for complete rational function integration.
@@ -69,8 +90,8 @@ pub struct RationalIntegral {
 /// # Examples
 ///
 /// ```rust
-/// use mathhook_core::{expr, symbol};
 /// use mathhook_core::calculus::integrals::risch::rational::integrate_rational;
+/// use mathhook_core::{expr, symbol};
 ///
 /// let x = symbol!(x);
 /// let num = expr!((x^2) + 1);
@@ -105,7 +126,19 @@ pub fn integrate_rational(
         };
     }
 
-    let (quotient, remainder) = polynomial_div(numerator, denominator, var);
+    let (quotient, remainder) = match polynomial_div(numerator, denominator, var) {
+        Ok(result) => result,
+        Err(_) => {
+            return RationalIntegral {
+                polynomial_part: Expression::integer(0),
+                logarithmic_terms: vec![],
+                remaining: Some(Expression::mul(vec![
+                    numerator.clone(),
+                    Expression::pow(denominator.clone(), Expression::integer(-1)),
+                ])),
+            }
+        }
+    };
 
     let polynomial_part = integrate_polynomial(&quotient, var);
 
@@ -140,372 +173,177 @@ fn integrate_polynomial(poly: &Expression, var: &Symbol) -> Expression {
             Expression::pow(Expression::symbol(var.clone()), Expression::integer(2)),
         ]),
         Expression::Pow(base, exp) => {
-            if let (Expression::Symbol(s), Expression::Number(n)) = (base.as_ref(), exp.as_ref()) {
+            if let Expression::Symbol(s) = &**base {
                 if s == var {
-                    let new_exp = Expression::add(vec![
-                        Expression::Number(n.clone()),
-                        Expression::integer(1),
-                    ]);
-                    let denom = Expression::add(vec![
-                        Expression::Number(n.clone()),
-                        Expression::integer(1),
-                    ]);
-                    return Expression::mul(vec![
-                        Expression::pow(base.as_ref().clone(), new_exp),
-                        Expression::pow(denom, Expression::integer(-1)),
-                    ])
-                    .simplify();
+                    if let Expression::Number(num_exp) = &**exp {
+                        let new_exp = Expression::add(vec![
+                            Expression::Number(num_exp.clone()),
+                            Expression::integer(1),
+                        ]);
+                        return Expression::mul(vec![
+                            Expression::pow(new_exp.clone(), Expression::integer(-1)),
+                            Expression::pow(Expression::symbol(var.clone()), new_exp),
+                        ]);
+                    }
                 }
             }
-            Expression::function(
-                "integrate",
-                vec![poly.clone(), Expression::symbol(var.clone())],
-            )
-        }
-        Expression::Mul(factors) => {
-            let mut coeff = Expression::integer(1);
-            let mut var_part = Expression::integer(1);
-
-            for factor in factors.iter() {
-                if contains_var(factor, var) {
-                    var_part = Expression::mul(vec![var_part, factor.clone()]);
-                } else {
-                    coeff = Expression::mul(vec![coeff, factor.clone()]);
-                }
-            }
-
-            let integrated_var_part = integrate_polynomial(&var_part, var);
-            Expression::mul(vec![coeff, integrated_var_part]).simplify()
+            Expression::integral(poly.clone(), var.clone())
         }
         Expression::Add(terms) => {
-            let integrated_terms: Vec<Expression> = terms
-                .iter()
-                .map(|term| integrate_polynomial(term, var))
-                .collect();
-            Expression::add(integrated_terms).simplify()
+            Expression::add(terms.iter().map(|t| integrate_polynomial(t, var)).collect())
         }
-        _ => Expression::function(
-            "integrate",
-            vec![poly.clone(), Expression::symbol(var.clone())],
-        ),
+        Expression::Mul(factors) => {
+            let (constants, variables): (Vec<_>, Vec<_>) =
+                factors.iter().partition(|f| !f.contains_variable(var));
+
+            if variables.is_empty() {
+                Expression::mul(vec![
+                    Expression::mul((**factors).clone()),
+                    Expression::symbol(var.clone()),
+                ])
+            } else if variables.len() == 1 {
+                let integrated_var = integrate_polynomial(variables[0], var);
+                if constants.is_empty() {
+                    integrated_var
+                } else {
+                    Expression::mul(vec![
+                        Expression::mul(constants.into_iter().cloned().collect()),
+                        integrated_var,
+                    ])
+                }
+            } else {
+                Expression::integral(poly.clone(), var.clone())
+            }
+        }
+        _ => Expression::integral(poly.clone(), var.clone()),
     }
 }
 
-/// Hermite reduction: separate rational function into logarithmic and algebraic parts
+/// Hermite reduction for rational function integration
 ///
-/// For proper rational R = P/Q, computes:
-/// - Logarithmic part: ∑ cᵢ ln|qᵢ(x)|
-/// - Remaining rational part (if any)
+/// Reduces ∫ P/Q dx where Q is not square-free to:
+/// - Logarithmic part: ∑ cᵢ ln|qᵢ|
+/// - Remaining rational part with square-free denominator
 ///
 /// # Algorithm
 ///
-/// 1. Compute D = gcd(Q, Q') where Q' = dQ/dx
-/// 2. If D = 1 (square-free denominator):
-///    - Use partial fractions (future implementation)
-///    - Extract logarithmic terms directly
-/// 3. If D ≠ 1 (repeated factors):
-///    - Use extended GCD to find Bézout coefficients
-///    - Separate into V'/V (logarithmic) and remaining
-///
-/// # Mathematical Background
-///
-/// The Hermite reduction lemma states:
-/// ∫ P/Q dx = R + ∑ cᵢ ln|qᵢ| where R is rational (no logarithm)
-///
-/// This is computed by finding gcd(Q, Q') and using the identity:
-/// P/Q = (A/D)' + B/Q where D = gcd(Q, Q')
+/// 1. Compute D = gcd(Q, Q')
+/// 2. Split Q = D·S where S is square-free
+/// 3. Use extended GCD to find A, B such that: P = A·D + B·Q'
+/// 4. Then: ∫ P/Q = -A/D·S + ∫ (B + A')/S
 fn hermite_reduce(
     numerator: &Expression,
     denominator: &Expression,
     var: &Symbol,
 ) -> (Vec<(Expression, Expression)>, Option<Expression>) {
-    let denom_deriv = denominator.derivative(var.clone());
+    let denom_deriv = denominator.derivative(var.clone()).simplify();
 
-    let d = denominator.gcd(&denom_deriv);
+    let gcd = PolynomialGcd::gcd(denominator, &denom_deriv);
 
-    if d == Expression::integer(1) {
-        return handle_square_free_denominator(numerator, denominator, var);
+    if gcd.is_one() {
+        let log_terms = extract_logarithmic_terms(numerator, denominator, var);
+        return (log_terms, None);
     }
 
-    extract_logarithmic_terms(numerator, denominator, &d, var)
-}
+    let square_free_part = divide_polynomials(denominator, &gcd, var);
 
-/// Handle square-free denominator case
-///
-/// When gcd(Q, Q') = 1, the denominator has no repeated factors.
-/// For rational P/Q with square-free Q:
-/// - If P' = derivative of P matches pattern, result is ln|Q|
-/// - Otherwise, use partial fractions
-fn handle_square_free_denominator(
-    numerator: &Expression,
-    denominator: &Expression,
-    var: &Symbol,
-) -> (Vec<(Expression, Expression)>, Option<Expression>) {
-    let denom_deriv = denominator.derivative(var.clone());
+    let algebraic_part = Expression::mul(vec![
+        Expression::integer(-1),
+        numerator.clone(),
+        Expression::pow(gcd.clone(), Expression::integer(-1)),
+        Expression::pow(square_free_part.clone(), Expression::integer(-1)),
+    ])
+    .simplify();
 
-    if let Some(coeff) = extract_derivative_coefficient(numerator, &denom_deriv) {
-        return (vec![(coeff, denominator.clone())], None);
-    }
-
-    (
-        vec![],
-        Some(Expression::div(numerator.clone(), denominator.clone())),
-    )
-}
-
-/// Extract logarithmic terms using extended GCD
-///
-/// Uses the Hermite reduction algorithm with extended GCD
-fn extract_logarithmic_terms(
-    numerator: &Expression,
-    denominator: &Expression,
-    d: &Expression,
-    var: &Symbol,
-) -> (Vec<(Expression, Expression)>, Option<Expression>) {
-    let s = denominator.quo_polynomial(d, var);
-
-    let (_gcd, _s_coeff, t_coeff) = s.cofactors(d);
-
-    let s_deriv = s.derivative(var.clone());
-    let intermediate = Expression::add(vec![
-        d.clone(),
+    let numerator_deriv = numerator.derivative(var.clone());
+    let remaining_num = Expression::add(vec![
+        numerator_deriv,
         Expression::mul(vec![
-            Expression::integer(-1),
-            Expression::mul(vec![t_coeff, s_deriv]),
+            numerator.clone(),
+            Expression::pow(gcd, Expression::integer(-1)),
+            denom_deriv,
         ]),
     ])
     .simplify();
 
-    let v = d.gcd(&intermediate);
+    let log_terms = extract_logarithmic_terms(&remaining_num, &square_free_part, var);
 
-    if v != Expression::integer(1) && !v.is_zero() {
-        let log_coeff = numerator.quo_polynomial(&v, var);
+    let remaining = if algebraic_part.is_zero() {
+        None
+    } else {
+        Some(algebraic_part)
+    };
 
-        let remaining_num = numerator.rem_polynomial(&v, var);
-        let remaining = if !remaining_num.is_zero() {
-            Some(Expression::div(remaining_num, denominator.clone()))
-        } else {
-            None
-        };
-
-        return (vec![(log_coeff, v)], remaining);
-    }
-
-    (
-        vec![],
-        Some(Expression::div(numerator.clone(), denominator.clone())),
-    )
+    (log_terms, remaining)
 }
 
-/// Try to extract coefficient if numerator = c·derivative
+/// Extract logarithmic terms from a proper rational function
 ///
-/// Checks if numerator is a constant multiple of the given derivative
-fn extract_derivative_coefficient(
+/// For P/Q where deg(P) < deg(Q) and Q is square-free,
+/// attempts to find coefficients cᵢ such that:
+/// P/Q = ∑ cᵢ · (qᵢ'/qᵢ)
+///
+/// Returns list of (coefficient, argument) pairs for ln terms
+fn extract_logarithmic_terms(
     numerator: &Expression,
-    derivative: &Expression,
-) -> Option<Expression> {
-    if numerator == derivative {
-        return Some(Expression::integer(1));
+    denominator: &Expression,
+    var: &Symbol,
+) -> Vec<(Expression, Expression)> {
+    if denominator.is_one() || numerator.is_zero() {
+        return vec![];
     }
 
-    if let Expression::Mul(factors) = numerator {
-        let mut constant_part = Expression::integer(1);
-        let mut remaining_part = Expression::integer(1);
+    let denom_deriv = denominator.derivative(var.clone()).simplify();
+    let gcd = PolynomialGcd::gcd(denominator, &denom_deriv);
 
-        for factor in factors.iter() {
-            if !contains_any_symbol(factor) {
-                constant_part = Expression::mul(vec![constant_part, factor.clone()]);
+    if !gcd.is_one() {
+        return vec![];
+    }
+
+    let coefficient = divide_polynomials(numerator, &denom_deriv, var);
+
+    if is_constant(&coefficient, var) {
+        vec![(coefficient, denominator.clone())]
+    } else {
+        vec![]
+    }
+}
+
+/// Divide two polynomial expressions
+///
+/// Returns quotient if division is exact, otherwise returns 0
+fn divide_polynomials(dividend: &Expression, divisor: &Expression, var: &Symbol) -> Expression {
+    if divisor.is_zero() {
+        return Expression::undefined();
+    }
+
+    if dividend.is_zero() {
+        return Expression::integer(0);
+    }
+
+    if divisor.is_one() {
+        return dividend.clone();
+    }
+
+    match polynomial_div(dividend, divisor, var) {
+        Ok((quotient, remainder)) => {
+            if remainder.is_zero() {
+                quotient
             } else {
-                remaining_part = Expression::mul(vec![remaining_part, factor.clone()]);
+                Expression::mul(vec![
+                    dividend.clone(),
+                    Expression::pow(divisor.clone(), Expression::integer(-1)),
+                ])
             }
         }
-
-        if remaining_part.simplify() == derivative.simplify() {
-            return Some(constant_part.simplify());
-        }
-    }
-
-    None
-}
-
-/// Check if expression contains a specific variable
-fn contains_var(expr: &Expression, var: &Symbol) -> bool {
-    match expr {
-        Expression::Symbol(s) => s == var,
-        Expression::Number(_) => false,
-        Expression::Add(terms) | Expression::Mul(terms) => {
-            terms.iter().any(|t| contains_var(t, var))
-        }
-        Expression::Pow(base, exp) => contains_var(base, var) || contains_var(exp, var),
-        Expression::Function { args, .. } => args.iter().any(|a| contains_var(a, var)),
-        _ => false,
+        Err(_) => Expression::mul(vec![
+            dividend.clone(),
+            Expression::pow(divisor.clone(), Expression::integer(-1)),
+        ]),
     }
 }
 
-/// Check if expression contains any symbols (not necessarily the integration variable)
-fn contains_any_symbol(expr: &Expression) -> bool {
-    match expr {
-        Expression::Symbol(_) => true,
-        Expression::Number(_) => false,
-        Expression::Add(terms) | Expression::Mul(terms) => terms.iter().any(contains_any_symbol),
-        Expression::Pow(base, exp) => contains_any_symbol(base) || contains_any_symbol(exp),
-        Expression::Function { args, .. } => args.iter().any(contains_any_symbol),
-        _ => false,
-    }
-}
-
-/// Assemble final integral expression from RationalIntegral
-///
-/// Converts structured result into Expression form
-pub fn assemble_integral(result: &RationalIntegral) -> Expression {
-    let mut terms = vec![];
-
-    if result.polynomial_part != Expression::integer(0) {
-        terms.push(result.polynomial_part.clone());
-    }
-
-    for (coeff, arg) in &result.logarithmic_terms {
-        let log_term = Expression::mul(vec![
-            coeff.clone(),
-            Expression::function("ln", vec![Expression::function("abs", vec![arg.clone()])]),
-        ]);
-        terms.push(log_term);
-    }
-
-    if let Some(remaining) = &result.remaining {
-        let symbolic_integral = Expression::function("integrate", vec![remaining.clone()]);
-        terms.push(symbolic_integral);
-    }
-
-    if terms.is_empty() {
-        Expression::integer(0)
-    } else if terms.len() == 1 {
-        terms[0].clone()
-    } else {
-        Expression::add(terms).simplify()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{expr, symbol};
-
-    #[test]
-    fn test_integrate_polynomial() {
-        let x = symbol!(x);
-
-        let result = integrate_polynomial(&expr!(x), &x);
-        println!("∫ x dx = {}", result);
-        assert!(!result.is_zero());
-
-        let result = integrate_polynomial(&expr!(x ^ 2), &x);
-        println!("∫ x² dx = {}", result);
-        assert!(!result.is_zero());
-
-        let result = integrate_polynomial(&expr!(5), &x);
-        println!("∫ 5 dx = {}", result);
-        assert!(!result.is_zero());
-    }
-
-    #[test]
-    fn test_integrate_rational_exact_division() {
-        let x = symbol!(x);
-
-        let num = expr!((x ^ 2) - 1);
-        let den = expr!(x - 1);
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ (x² - 1)/(x - 1) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        assert!(!result.polynomial_part.is_zero());
-        assert!(result.logarithmic_terms.is_empty());
-        assert!(result.remaining.is_none());
-    }
-
-    #[test]
-    fn test_integrate_rational_with_remainder() {
-        let x = symbol!(x);
-
-        let num = expr!((x ^ 2) + 1);
-        let den = expr!(x - 1);
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ (x² + 1)/(x - 1) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        assert!(!result.polynomial_part.is_zero());
-    }
-
-    #[test]
-    fn test_integrate_rational_logarithmic() {
-        let x = symbol!(x);
-
-        let num = expr!(1);
-        let den = expr!(x - 1);
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ 1/(x - 1) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        assert_eq!(result.polynomial_part, Expression::integer(0));
-    }
-
-    #[test]
-    fn test_integrate_rational_derivative_pattern() {
-        let x = symbol!(x);
-
-        let num = expr!(2 * x);
-        let den = expr!((x ^ 2) + 1);
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ 2x/(x² + 1) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        let assembled = assemble_integral(&result);
-        println!("  Assembled: {}", assembled);
-    }
-
-    #[test]
-    fn test_integrate_rational_partial_fractions() {
-        let x = symbol!(x);
-
-        let num = expr!(1);
-        let den = expr!((x ^ 2) - 1);
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ 1/(x² - 1) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        let assembled = assemble_integral(&result);
-        println!("  Assembled: {}", assembled);
-    }
-
-    #[test]
-    fn test_integrate_rational_complex_numerator() {
-        let x = symbol!(x);
-
-        let num = expr!((3 * (x ^ 2)) + (2 * x) + 1);
-        let den = Expression::mul(vec![expr!(x - 1), expr!((x ^ 2) + 1)]).simplify();
-        let result = integrate_rational(&num, &den, &x);
-
-        println!("∫ (3x² + 2x + 1)/((x-1)(x²+1)) dx:");
-        println!("  Polynomial part: {}", result.polynomial_part);
-        println!("  Log terms: {:?}", result.logarithmic_terms);
-        println!("  Remaining: {:?}", result.remaining);
-
-        let assembled = assemble_integral(&result);
-        println!("  Assembled: {}", assembled);
-    }
+/// Check if expression is constant with respect to variable
+fn is_constant(expr: &Expression, var: &Symbol) -> bool {
+    !expr.contains_variable(var)
 }

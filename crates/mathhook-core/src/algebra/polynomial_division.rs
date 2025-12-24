@@ -15,11 +15,13 @@
 //! use mathhook_core::algebra::polynomial_division::polynomial_div;
 //!
 //! let x = symbol!(x);
-//! let (quotient, remainder) = polynomial_div(&expr!((x^2) - 1), &expr!(x - 1), &x);
+//! let (quotient, remainder) = polynomial_div(&expr!((x^2) - 1), &expr!(x - 1), &x)?;
+//! # Ok::<(), mathhook_core::error::MathError>(())
 //! ```
 
 use crate::core::polynomial::IntPoly;
 use crate::core::{Expression, Number, Symbol};
+use crate::error::MathError;
 use crate::simplify::Simplify;
 
 /// Polynomial long division
@@ -36,6 +38,11 @@ use crate::simplify::Simplify;
 /// * `divisor` - Polynomial to divide by (must be non-zero)
 /// * `var` - Variable to treat as polynomial variable
 ///
+/// # Errors
+///
+/// Returns `MathError::DivisionByZero` if divisor is zero.
+/// Returns `MathError::NotImplemented` for complex symbolic polynomial division.
+///
 /// # Examples
 ///
 /// ```rust
@@ -46,7 +53,8 @@ use crate::simplify::Simplify;
 /// // (x^2 + 3x + 2) / (x + 1) = (x + 2) with remainder 0
 /// let dividend = expr!((x^2) + (3*x) + 2);
 /// let divisor = expr!(x + 1);
-/// let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+/// let (quot, rem) = polynomial_div(&dividend, &divisor, &x)?;
+/// # Ok::<(), mathhook_core::error::MathError>(())
 /// ```
 ///
 /// # Returns
@@ -56,30 +64,30 @@ pub fn polynomial_div(
     dividend: &Expression,
     divisor: &Expression,
     var: &Symbol,
-) -> (Expression, Expression) {
+) -> Result<(Expression, Expression), MathError> {
     if divisor.is_zero() {
-        return (Expression::undefined(), Expression::undefined());
+        return Err(MathError::DivisionByZero);
     }
 
     if dividend.is_zero() {
-        return (Expression::integer(0), Expression::integer(0));
+        return Ok((Expression::integer(0), Expression::integer(0)));
     }
 
     if dividend == divisor {
-        return (Expression::integer(1), Expression::integer(0));
+        return Ok((Expression::integer(1), Expression::integer(0)));
     }
 
     // Fast path: divisor is constant
     if let Some(divisor_const) = extract_constant(divisor) {
         if divisor_const.is_zero() {
-            return (Expression::undefined(), Expression::undefined());
+            return Err(MathError::DivisionByZero);
         }
         let quotient = Expression::mul(vec![
             dividend.clone(),
             Expression::pow(divisor.clone(), Expression::integer(-1)),
         ])
         .simplify();
-        return (quotient, Expression::integer(0));
+        return Ok((quotient, Expression::integer(0)));
     }
 
     // IntPoly fast-path - PRIMARY PATH
@@ -97,16 +105,14 @@ pub fn polynomial_div(
                     IntPoly::try_from_expression(dividend, var),
                     IntPoly::try_from_expression(divisor, var),
                 ) {
-                    // Pure IntPoly division - NO Expression tree involved
                     if let Ok((q, r)) = p1.div_rem(&p2) {
-                        return (q.to_expression(var), r.to_expression(var));
+                        return Ok((q.to_expression(var), r.to_expression(var)));
                     }
                 }
             }
         }
     }
 
-    // Symbolic fallback for rational coefficients (minimal, necessary for some algorithms)
     symbolic_polynomial_div(dividend, divisor, var)
 }
 
@@ -126,15 +132,14 @@ fn symbolic_polynomial_div(
     dividend: &Expression,
     divisor: &Expression,
     var: &Symbol,
-) -> (Expression, Expression) {
+) -> Result<(Expression, Expression), MathError> {
     let dividend_degree = polynomial_degree_in_var(dividend, var);
     let divisor_degree = polynomial_degree_in_var(divisor, var);
 
     if dividend_degree < divisor_degree {
-        return (Expression::integer(0), dividend.clone());
+        return Ok((Expression::integer(0), dividend.clone()));
     }
 
-    // Simple case: single division step
     if dividend_degree == divisor_degree {
         let dividend_lc = polynomial_leading_coefficient(dividend, var);
         let divisor_lc = polynomial_leading_coefficient(divisor, var);
@@ -152,11 +157,15 @@ fn symbolic_polynomial_div(
         ])
         .simplify();
 
-        return (quotient_term, remainder);
+        return Ok((quotient_term, remainder));
     }
 
-    // For more complex cases, return symbolic remainder
-    (Expression::integer(0), dividend.clone())
+    Err(MathError::NotImplemented {
+        feature: format!(
+            "complex symbolic polynomial division (degree {} ÷ degree {})",
+            dividend_degree, divisor_degree
+        ),
+    })
 }
 
 /// Get polynomial degree with respect to a specific variable
@@ -241,6 +250,10 @@ fn polynomial_leading_coefficient(expr: &Expression, var: &Symbol) -> Expression
 /// * `divisor` - Polynomial to divide by
 /// * `var` - Variable to treat as polynomial variable
 ///
+/// # Errors
+///
+/// Returns `MathError::DivisionByZero` if divisor is zero.
+///
 /// # Examples
 ///
 /// ```rust
@@ -250,10 +263,15 @@ fn polynomial_leading_coefficient(expr: &Expression, var: &Symbol) -> Expression
 /// let x = symbol!(x);
 /// let dividend = expr!((x^2) + (3*x) + 2);
 /// let divisor = expr!(x + 1);
-/// let quot = polynomial_quo(&dividend, &divisor, &x);
+/// let quot = polynomial_quo(&dividend, &divisor, &x)?;
+/// # Ok::<(), mathhook_core::error::MathError>(())
 /// ```
-pub fn polynomial_quo(dividend: &Expression, divisor: &Expression, var: &Symbol) -> Expression {
-    polynomial_div(dividend, divisor, var).0
+pub fn polynomial_quo(
+    dividend: &Expression,
+    divisor: &Expression,
+    var: &Symbol,
+) -> Result<Expression, MathError> {
+    polynomial_div(dividend, divisor, var).map(|(q, _)| q)
 }
 
 /// Polynomial remainder
@@ -266,6 +284,10 @@ pub fn polynomial_quo(dividend: &Expression, divisor: &Expression, var: &Symbol)
 /// * `divisor` - Polynomial to divide by
 /// * `var` - Variable to treat as polynomial variable
 ///
+/// # Errors
+///
+/// Returns `MathError::DivisionByZero` if divisor is zero.
+///
 /// # Examples
 ///
 /// ```rust
@@ -275,9 +297,14 @@ pub fn polynomial_quo(dividend: &Expression, divisor: &Expression, var: &Symbol)
 /// let x = symbol!(x);
 /// let dividend = expr!((x^2) + 1);
 /// let divisor = expr!(x - 1);
-/// let rem = polynomial_rem(&dividend, &divisor, &x);
+/// let rem = polynomial_rem(&dividend, &divisor, &x)?;
+/// # Ok::<(), mathhook_core::error::MathError>(())
 /// ```
-pub fn polynomial_rem(dividend: &Expression, divisor: &Expression, var: &Symbol) -> Expression {
+pub fn polynomial_rem(
+    dividend: &Expression,
+    divisor: &Expression,
+    var: &Symbol,
+) -> Result<Expression, MathError> {
     // IntPoly fast-path - dedicated remainder computation
     let vars = dividend.find_variables();
     if vars.len() == 1 {
@@ -294,14 +321,14 @@ pub fn polynomial_rem(dividend: &Expression, divisor: &Expression, var: &Symbol)
                     IntPoly::try_from_expression(divisor, var),
                 ) {
                     if let Ok((_, r)) = p1.div_rem(&p2) {
-                        return r.to_expression(var);
+                        return Ok(r.to_expression(var));
                     }
                 }
             }
         }
     }
 
-    polynomial_div(dividend, divisor, var).1
+    polynomial_div(dividend, divisor, var).map(|(_, r)| r)
 }
 
 #[cfg(test)]
@@ -315,7 +342,7 @@ mod tests {
 
         let dividend = expr!((x ^ 2) - 1);
         let divisor = expr!(x - 1);
-        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x);
+        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
         assert!(rem.is_zero(), "Expected zero remainder");
     }
@@ -326,7 +353,7 @@ mod tests {
 
         let dividend = expr!((x ^ 2) + 1);
         let divisor = expr!(x - 1);
-        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x);
+        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
         assert!(!rem.is_zero(), "Expected non-zero remainder");
     }
@@ -341,7 +368,7 @@ mod tests {
             Expression::integer(1),
         ]);
         let divisor = Expression::integer(2);
-        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x);
+        let (_quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
         assert!(rem.is_zero(), "Expected zero remainder");
     }
@@ -352,7 +379,7 @@ mod tests {
 
         let dividend = expr!(x + 1);
         let divisor = expr!(x + 1);
-        let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+        let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
         assert_eq!(quot, Expression::integer(1));
         assert!(rem.is_zero());
@@ -364,7 +391,7 @@ mod tests {
 
         let dividend = expr!((x ^ 2) - 1);
         let divisor = expr!(x - 1);
-        let quot = polynomial_quo(&dividend, &divisor, &x);
+        let quot = polynomial_quo(&dividend, &divisor, &x).unwrap();
 
         assert!(!quot.is_zero());
     }
@@ -375,7 +402,7 @@ mod tests {
 
         let dividend = expr!((x ^ 2) + 1);
         let divisor = expr!(x - 1);
-        let rem = polynomial_rem(&dividend, &divisor, &x);
+        let rem = polynomial_rem(&dividend, &divisor, &x).unwrap();
 
         assert!(!rem.is_zero());
     }
@@ -386,9 +413,19 @@ mod tests {
 
         let dividend = expr!((x ^ 3) + (2 * (x ^ 2)) + (3 * x) + 4);
         let divisor = expr!((x ^ 2) + 1);
-        let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+        let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
         println!("Quotient: {}, Remainder: {}", quot, rem);
         assert_ne!(quot, Expression::undefined());
+    }
+
+    #[test]
+    fn test_polynomial_div_by_zero() {
+        let x = symbol!(x);
+        let dividend = expr!(x ^ 2);
+        let divisor = Expression::integer(0);
+
+        let result = polynomial_div(&dividend, &divisor, &x);
+        assert!(matches!(result, Err(MathError::DivisionByZero)));
     }
 }

@@ -13,7 +13,7 @@ fn test_division_exact_simple() {
     // (x^2 - 1) / (x - 1) = x + 1, remainder 0
     let dividend = expr!((x ^ 2) - 1);
     let divisor = expr!(x - 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x^2 - 1) / (x - 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -28,7 +28,7 @@ fn test_division_exact_cubic() {
     // (x^3 - 1) / (x - 1) = x^2 + x + 1, remainder 0
     let dividend = expr!((x ^ 3) - 1);
     let divisor = expr!(x - 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x^3 - 1) / (x - 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -43,7 +43,7 @@ fn test_division_with_remainder_linear() {
     // (x^2 + 1) / (x - 1) = x + 1, remainder 2
     let dividend = expr!((x ^ 2) + 1);
     let divisor = expr!(x - 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x^2 + 1) / (x - 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -58,7 +58,7 @@ fn test_division_with_remainder_quadratic() {
     // (x^3 + 2) / (x^2 + 1) = x, remainder -x + 2
     let dividend = expr!((x ^ 3) + 2);
     let divisor = expr!((x ^ 2) + 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x^3 + 2) / (x^2 + 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -73,7 +73,7 @@ fn test_division_by_constant() {
     // (x^2 + 2x + 1) / 2
     let dividend = Expression::add(vec![expr!(x ^ 2), expr!(2 * x), Expression::integer(1)]);
     let divisor = Expression::integer(2);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x^2 + 2x + 1) / 2");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -91,7 +91,7 @@ fn test_division_constant_by_polynomial() {
     // 5 / (x + 1) = 0, remainder 5
     let dividend = Expression::integer(5);
     let divisor = expr!(x + 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: 5 / (x + 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -107,7 +107,7 @@ fn test_division_equal_polynomials() {
     // (x + 1) / (x + 1) = 1, remainder 0
     let dividend = expr!(x + 1);
     let divisor = expr!(x + 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Test: (x + 1) / (x + 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -123,7 +123,7 @@ fn test_division_zero_dividend() {
     // 0 / (x + 1) = 0, remainder 0
     let dividend = Expression::integer(0);
     let divisor = expr!(x + 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     assert_eq!(quot, Expression::integer(0));
     assert_eq!(rem, Expression::integer(0));
@@ -136,7 +136,7 @@ fn test_polynomial_quo_helper() {
     // Test quotient-only function
     let dividend = expr!((x ^ 2) - 1);
     let divisor = expr!(x - 1);
-    let quot = polynomial_quo(&dividend, &divisor, &x);
+    let quot = polynomial_quo(&dividend, &divisor, &x).unwrap();
 
     println!("Test quotient only: (x^2 - 1) / (x - 1)");
     println!("Quotient: {}", quot);
@@ -151,7 +151,7 @@ fn test_polynomial_rem_helper() {
     // Test remainder-only function
     let dividend = expr!((x ^ 2) + 1);
     let divisor = expr!(x - 1);
-    let rem = polynomial_rem(&dividend, &divisor, &x);
+    let rem = polynomial_rem(&dividend, &divisor, &x).unwrap();
 
     println!("Test remainder only: (x^2 + 1) / (x - 1)");
     println!("Remainder: {}", rem);
@@ -351,7 +351,7 @@ fn test_division_verification_property() {
         Expression::integer(5),
     ]);
     let divisor = expr!((x ^ 2) + 1);
-    let (quot, rem) = polynomial_div(&dividend, &divisor, &x);
+    let (quot, rem) = polynomial_div(&dividend, &divisor, &x).unwrap();
 
     println!("Verification test: (x^3 + 2x^2 - x + 5) / (x^2 + 1)");
     println!("Quotient: {}, Remainder: {}", quot, rem);
@@ -375,7 +375,7 @@ fn test_division_coefficients_extraction() {
         Expression::integer(7),
     ]);
 
-    let (quot, rem) = polynomial_div(&poly, &Expression::integer(1), &x);
+    let (quot, rem) = polynomial_div(&poly, &Expression::integer(1), &x).unwrap();
 
     println!("Coefficient test: (3x^2 + 5x + 7) / 1");
     println!("Quotient: {}, Remainder: {}", quot, rem);

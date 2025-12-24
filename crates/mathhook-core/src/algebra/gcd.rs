@@ -228,12 +228,14 @@ impl PolynomialGcd for Expression {
                 }
             }
 
-            // Symbolic fallback for cofactors
-            let (q1, r1) = crate::algebra::polynomial_division::polynomial_div(self, &gcd_val, var);
-            let (q2, r2) =
-                crate::algebra::polynomial_division::polynomial_div(other, &gcd_val, var);
-            if r1.is_zero() && r2.is_zero() {
-                return (gcd_val, q1, q2);
+            // Symbolic fallback for cofactors - unwrap or fallback to original
+            if let (Ok((q1, r1)), Ok((q2, r2))) = (
+                crate::algebra::polynomial_division::polynomial_div(self, &gcd_val, var),
+                crate::algebra::polynomial_division::polynomial_div(other, &gcd_val, var),
+            ) {
+                if r1.is_zero() && r2.is_zero() {
+                    return (gcd_val, q1, q2);
+                }
             }
         }
 
@@ -242,6 +244,7 @@ impl PolynomialGcd for Expression {
 
     fn div_polynomial(&self, divisor: &Expression, var: &Symbol) -> (Expression, Expression) {
         crate::algebra::polynomial_division::polynomial_div(self, divisor, var)
+            .unwrap_or_else(|_| (Expression::undefined(), Expression::undefined()))
     }
 
     fn quo_polynomial(&self, divisor: &Expression, var: &Symbol) -> Expression {
@@ -273,7 +276,8 @@ fn symbolic_gcd_euclidean(p1: &Expression, p2: &Expression, var: &Symbol) -> Exp
             return a;
         }
 
-        let remainder = crate::algebra::polynomial_division::polynomial_rem(&a, &b, var);
+        let remainder =
+            crate::algebra::polynomial_division::polynomial_rem(&a, &b, var).unwrap_or(b.clone());
         a = b;
         b = remainder;
     }

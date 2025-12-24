@@ -5,6 +5,7 @@
 /crates/mathhook-node/examples/node_modules/*
 /crates/mathhook-node/refactor-tool/target
 /tools/*
+!/tools/binding-codegen
 docs/book/*
 docs/target/*
 docs/src/internal/*

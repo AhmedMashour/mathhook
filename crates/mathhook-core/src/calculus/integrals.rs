@@ -35,6 +35,8 @@ pub use substitution::try_substitution;
 pub use trigonometric::try_trigonometric_integration;
 
 use crate::core::{Expression, Symbol};
+use crate::error::MathError;
+use std::collections::HashMap;
 use strategy::integrate_with_strategy;
 
 /// Trait for integration operations
@@ -45,6 +47,8 @@ use strategy::integrate_with_strategy;
 /// to prevent stack overflow in cases where simplification fails.
 pub trait Integration {
     /// Compute indefinite integral with recursion depth tracking
+    ///
+    /// Returns an unevaluated integral if no closed form exists.
     ///
     /// # Arguments
     ///
@@ -62,10 +66,15 @@ pub trait Integration {
     /// let x = symbol!(x);
     /// let expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     /// let result = expr.integrate(x, 0);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     fn integrate(&self, variable: Symbol, depth: usize) -> Expression;
 
     /// Compute definite integral
+    ///
+    /// # Errors
+    ///
+    /// Returns `MathError::DomainError` when evaluation at bounds fails.
     ///
     /// # Examples
     ///
@@ -79,18 +88,18 @@ pub trait Integration {
     /// let lower = Expression::integer(0);
     /// let upper = Expression::integer(1);
     /// let result = expr.definite_integrate(x, lower, upper);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     fn definite_integrate(
         &self,
         variable: Symbol,
         lower: Expression,
         upper: Expression,
-    ) -> Expression;
+    ) -> Result<Expression, MathError>;
 }
 
 impl Integration for Expression {
     fn integrate(&self, variable: Symbol, depth: usize) -> Expression {
-        // Delegate to strategy dispatcher which orchestrates all integration techniques
         integrate_with_strategy(self, variable, depth)
     }
 
@@ -99,9 +108,20 @@ impl Integration for Expression {
         variable: Symbol,
         lower: Expression,
         upper: Expression,
-    ) -> Expression {
-        // Use core Expression::definite_integral constructor
-        Expression::definite_integral(self.clone(), variable, lower, upper)
+    ) -> Result<Expression, MathError> {
+        let antiderivative = self.integrate(variable.clone(), 0);
+
+        let mut substitutions = HashMap::new();
+        substitutions.insert(variable.name().to_string(), upper.clone());
+        let upper_val = antiderivative.clone().substitute(&substitutions);
+
+        substitutions.insert(variable.name().to_string(), lower.clone());
+        let lower_val = antiderivative.substitute(&substitutions);
+
+        Ok(Expression::add(vec![
+            upper_val,
+            Expression::mul(vec![Expression::integer(-1), lower_val]),
+        ]))
     }
 }
 
@@ -112,7 +132,11 @@ impl IntegrationMethods {
     /// Attempt integration by parts
     ///
     /// Uses the IntegrationByParts module to attempt integration by parts.
-    /// Falls back to symbolic representation if unable to integrate.
+    ///
+    /// # Errors
+    ///
+    /// Returns `MathError::NotImplemented` if integration by parts cannot be applied
+    /// or if no antiderivative can be found.
     ///
     /// # Examples
     ///
@@ -127,16 +151,24 @@ impl IntegrationMethods {
     ///     Expression::function("exp", vec![Expression::symbol(x.clone())])
     /// ]);
     /// let result = IntegrationMethods::by_parts(&expr, x);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn by_parts(expr: &Expression, variable: Symbol) -> Expression {
-        IntegrationByParts::integrate(expr, variable.clone(), 0)
-            .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
+    pub fn by_parts(expr: &Expression, variable: Symbol) -> Result<Expression, MathError> {
+        IntegrationByParts::integrate(expr, variable.clone(), 0).ok_or_else(|| {
+            MathError::NotImplemented {
+                feature: format!("integration by parts for {}", expr),
+            }
+        })
     }
 
     /// Attempt integration by substitution
     ///
     /// Uses u-substitution to integrate composite functions f(g(x)) where
     /// the derivative g'(x) appears in the integrand.
+    ///
+    /// # Errors
+    ///
+    /// Returns `MathError::NotImplemented` if no suitable substitution can be found.
     ///
     /// # Examples
     ///
@@ -150,9 +182,11 @@ impl IntegrationMethods {
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2))
     /// ]);
     /// let result = IntegrationMethods::substitution(&expr, x);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
-    pub fn substitution(expr: &Expression, variable: Symbol) -> Expression {
-        try_substitution(expr, &variable, 0)
-            .unwrap_or_else(|| Expression::integral(expr.clone(), variable))
+    pub fn substitution(expr: &Expression, variable: Symbol) -> Result<Expression, MathError> {
+        try_substitution(expr, &variable, 0).ok_or_else(|| MathError::NotImplemented {
+            feature: format!("u-substitution for {}", expr),
+        })
     }
 }

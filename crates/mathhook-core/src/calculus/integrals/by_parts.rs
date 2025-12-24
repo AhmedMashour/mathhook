@@ -40,7 +40,6 @@ impl IntegrationByParts {
     /// let result = IntegrationByParts::integrate(&expr, x, 0);
     /// ```
     pub fn integrate(expr: &Expression, variable: Symbol, depth: usize) -> Option<Expression> {
-        // Backward compatibility: create a default context
         let context = StrategyContext::new();
         Self::integrate_with_context(expr, variable, &context, depth)
     }
@@ -56,10 +55,8 @@ impl IntegrationByParts {
         context: &StrategyContext,
         depth: usize,
     ) -> Option<Expression> {
-        // Try to identify if this is a product suitable for integration by parts
         if let Expression::Mul(factors) = expr {
             if factors.len() == 2 {
-                // Try both orderings: (u=f0, dv=f1) and (u=f1, dv=f0)
                 if let Some(result) = Self::try_by_parts_with_context(
                     &factors[0],
                     &factors[1],
@@ -104,7 +101,6 @@ impl IntegrationByParts {
         variable: Symbol,
         depth: usize,
     ) -> Option<Expression> {
-        // Backward compatibility: create default context
         let context = StrategyContext::new();
         Self::try_by_parts_with_context(u, dv, variable, &context, depth)
     }
@@ -120,46 +116,37 @@ impl IntegrationByParts {
         _context: &StrategyContext,
         depth: usize,
     ) -> Option<Expression> {
-        // Safety: Limit recursion depth to prevent stack overflow
-        // This complements the strategy context tracking
         const MAX_BY_PARTS_DEPTH: usize = 3;
         if depth >= MAX_BY_PARTS_DEPTH {
             return None;
         }
 
-        // Check if this is a good choice based on LIATE
         if !Self::is_good_u_choice(u, &variable) {
             return None;
         }
 
-        // Compute du = derivative of u
         let du = u.derivative(variable.clone());
 
-        // Compute v = integral of dv
         let v = integrate_with_strategy(dv, variable.clone(), depth + 1);
 
-        // Check if v is simpler (not just symbolic integral)
         if Self::is_symbolic_integral(&v) {
             return None;
         }
 
-        // Compute ∫ v du (flatten factors first, then simplify to handle cases like x * (1/x) → 1)
         let v_du = if let Expression::Mul(v_factors) = &v {
-            // Flatten: if v is already a product, extract its factors
             let mut factors = (**v_factors).clone();
             factors.push(du);
             Expression::mul(factors).simplify()
         } else {
             Expression::mul(vec![v.clone(), du]).simplify()
         };
+
         let integral_v_du = integrate_with_strategy(&v_du, variable, depth + 1);
 
-        // Check if integration of v*du failed (returned symbolic integral)
         if Self::is_symbolic_integral(&integral_v_du) {
             return None;
         }
 
-        // Return uv - ∫ v du
         Some(Expression::add(vec![
             Expression::mul(vec![u.clone(), v]),
             Expression::mul(vec![Expression::integer(-1), integral_v_du]),
@@ -180,10 +167,8 @@ impl IntegrationByParts {
     /// ```
     pub fn is_good_u_choice(expr: &Expression, variable: &Symbol) -> bool {
         match expr {
-            // Logarithmic (highest priority)
             Expression::Function { name, .. } if name == "ln" || name == "log" => true,
 
-            // Inverse trigonometric
             Expression::Function { name, .. }
                 if name == "arcsin"
                     || name == "arccos"
@@ -195,7 +180,6 @@ impl IntegrationByParts {
                 true
             }
 
-            // Algebraic (polynomials, powers of x)
             Expression::Symbol(sym) if sym == variable => true,
             Expression::Pow(base, _) => {
                 if let Expression::Symbol(sym) = &**base {
@@ -205,7 +189,6 @@ impl IntegrationByParts {
                 }
             }
 
-            // Don't choose trigonometric or exponential as u (lower priority)
             Expression::Function { name, .. }
                 if name == "sin"
                     || name == "cos"
@@ -251,7 +234,6 @@ impl IntegrationByParts {
 
         for _ in 0..max_iterations {
             if let Some(result) = Self::integrate(&current, variable.clone(), 0) {
-                // Check if the result still contains integrals
                 if Self::contains_integral(&result) {
                     current = result;
                 } else {
@@ -288,7 +270,6 @@ mod tests {
     #[test]
     fn test_by_parts_x_times_exp() {
         let x = symbol!(x);
-        // ∫ x·e^x dx = x·e^x - e^x + C
         let expr = Expression::mul(vec![
             Expression::symbol(x.clone()),
             Expression::function("exp", vec![Expression::symbol(x.clone())]),
@@ -301,7 +282,6 @@ mod tests {
     #[test]
     fn test_by_parts_x_times_sin() {
         let x = symbol!(x);
-        // ∫ x·sin(x) dx = -x·cos(x) + sin(x) + C
         let expr = Expression::mul(vec![
             Expression::symbol(x.clone()),
             Expression::function("sin", vec![Expression::symbol(x.clone())]),
@@ -314,13 +294,6 @@ mod tests {
     #[test]
     #[ignore = "ln(x) integration is already handled directly in function_integrals.rs - this edge case (ln(x)*1) would require additional complexity"]
     fn test_by_parts_ln() {
-        // Note: ∫ ln(x) dx works correctly via direct integration in function_integrals.rs
-        // This test tries to integrate ln(x) via by_parts by treating it as ln(x)·1,
-        // which is an artificial case. The by_parts logic would need special handling
-        // for products where one factor is a constant 1, which adds complexity for
-        // minimal benefit since ln(x) integration already works.
-        //
-        // Test preserved for future implementation if needed.
         let x = symbol!(x);
         let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
         let as_product = Expression::mul(vec![expr, Expression::integer(1)]);
@@ -332,23 +305,18 @@ mod tests {
     fn test_u_choice_priority() {
         let x = symbol!(x);
 
-        // Logarithmic should be chosen
         let ln_expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
         assert!(IntegrationByParts::is_good_u_choice(&ln_expr, &x));
 
-        // Inverse trig should be chosen
         let arcsin_expr = Expression::function("arcsin", vec![Expression::symbol(x.clone())]);
         assert!(IntegrationByParts::is_good_u_choice(&arcsin_expr, &x));
 
-        // Algebraic should be chosen
         let poly_expr = Expression::symbol(x.clone());
         assert!(IntegrationByParts::is_good_u_choice(&poly_expr, &x));
 
-        // Exponential should NOT be chosen as u
         let exp_expr = Expression::function("exp", vec![Expression::symbol(x.clone())]);
         assert!(!IntegrationByParts::is_good_u_choice(&exp_expr, &x));
 
-        // Trigonometric should NOT be chosen as u
         let sin_expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
         assert!(!IntegrationByParts::is_good_u_choice(&sin_expr, &x));
     }

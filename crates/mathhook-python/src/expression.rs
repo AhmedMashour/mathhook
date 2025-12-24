@@ -342,11 +342,11 @@ impl PyExpression {
         upper: &PyExpression,
     ) -> PyResult<PyExpression> {
         let symbol = Symbol::new(&variable);
-        Ok(PyExpression {
-            inner: self
-                .inner
-                .definite_integrate(symbol, lower.inner.clone(), upper.inner.clone()),
-        })
+        let result = self
+            .inner
+            .definite_integrate(symbol, lower.inner.clone(), upper.inner.clone())
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyExpression { inner: result })
     }
     /// Numerical integration using adaptive Simpson's rule
     ///
@@ -1315,7 +1315,8 @@ impl PyExpression {
         variable: String,
     ) -> (PyExpression, PyExpression) {
         let symbol = Symbol::new(&variable);
-        let (quo, rem) = polynomial_div(&p1.inner, &p2.inner, &symbol);
+        let (quo, rem) = polynomial_div(&p1.inner, &p2.inner, &symbol)
+            .unwrap_or_else(|_| (Expression::undefined(), Expression::undefined()));
         (PyExpression { inner: quo }, PyExpression { inner: rem })
     }
     /// Polynomial quotient
@@ -1331,7 +1332,7 @@ impl PyExpression {
     pub fn polynomial_quo(p1: &PyExpression, p2: &PyExpression, variable: String) -> PyExpression {
         let symbol = Symbol::new(&variable);
         PyExpression {
-            inner: polynomial_quo(&p1.inner, &p2.inner, &symbol),
+            inner: polynomial_quo(&p1.inner, &p2.inner, &symbol).unwrap_or(Expression::undefined()),
         }
     }
     /// Polynomial remainder
@@ -1347,7 +1348,7 @@ impl PyExpression {
     pub fn polynomial_rem(p1: &PyExpression, p2: &PyExpression, variable: String) -> PyExpression {
         let symbol = Symbol::new(&variable);
         PyExpression {
-            inner: polynomial_rem(&p1.inner, &p2.inner, &symbol),
+            inner: polynomial_rem(&p1.inner, &p2.inner, &symbol).unwrap_or(Expression::undefined()),
         }
     }
     /// Multivariate GCD
