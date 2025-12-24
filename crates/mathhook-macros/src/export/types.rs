@@ -23,6 +23,24 @@ fn is_mathhook_core_type(name: &str) -> bool {
     MATHHOOK_CORE_TYPES.contains(&name)
 }
 
+fn is_valid_rust_ident(s: &str) -> bool {
+    !s.is_empty()
+        && !s.contains(' ')
+        && !s.contains('[')
+        && !s.contains(']')
+        && !s.contains('<')
+        && !s.contains('>')
+        && !s.contains('(')
+        && !s.contains(')')
+        && !s.contains('&')
+        && !s.contains('*')
+        && !s.contains(';')
+        && s.chars()
+            .next()
+            .map(|c| c.is_alphabetic() || c == '_')
+            .unwrap_or(false)
+}
+
 /// Represents analyzed type information
 #[derive(Debug, Clone)]
 pub struct TypeInfo {
@@ -64,6 +82,29 @@ pub enum TypeCategory {
     Unit,
     /// Unknown/custom type
     Custom(String),
+}
+
+impl TypeCategory {
+    /// Check if this type category can be bound to Python/Node.js
+    pub fn is_bindable(&self) -> bool {
+        match self {
+            TypeCategory::Custom(name) => {
+                is_valid_rust_ident(name)
+                    && !name.starts_with("dyn ")
+                    && !name.starts_with("impl ")
+                    && !name.starts_with('[')
+                    && !name.contains("Fn(")
+                    && !name.contains("FnMut(")
+                    && !name.contains("FnOnce(")
+                    && !name.contains("Box<dyn")
+                    && !name.contains('&')
+                    && !name.contains('*')
+                    && !name.contains("HashMap")
+                    && !name.contains("HashSet")
+            }
+            _ => true,
+        }
+    }
 }
 
 /// Primitive type kinds
@@ -282,11 +323,12 @@ impl TypeMapper {
             TypeCategory::Primitive(kind) => Self::primitive_to_python(kind),
             TypeCategory::String => quote! { &str },
             TypeCategory::Unit => quote! { () },
-            TypeCategory::MathHookCore(name) => {
+            TypeCategory::MathHookCore(name) if is_valid_rust_ident(name) => {
                 let py_name = format!("Py{}", name);
                 let ident = syn::Ident::new(&py_name, proc_macro2::Span::call_site());
                 quote! { #ident }
             }
+            TypeCategory::MathHookCore(_) => quote! { pyo3::PyObject },
             TypeCategory::Option => {
                 if let Some(inner) = info.inner_types.first() {
                     let inner_py = Self::to_python(inner);
@@ -333,9 +375,13 @@ impl TypeMapper {
                 quote! { (#(#inner_types),*) }
             }
             TypeCategory::Custom(name) => {
-                let py_name = format!("Py{}", name);
-                let ident = syn::Ident::new(&py_name, proc_macro2::Span::call_site());
-                quote! { #ident }
+                if !info.category.is_bindable() || !is_valid_rust_ident(name) {
+                    quote! { pyo3::PyObject }
+                } else {
+                    let py_name = format!("Py{}", name);
+                    let ident = syn::Ident::new(&py_name, proc_macro2::Span::call_site());
+                    quote! { #ident }
+                }
             }
         }
     }
@@ -346,11 +392,12 @@ impl TypeMapper {
             TypeCategory::Primitive(kind) => Self::primitive_to_nodejs(kind),
             TypeCategory::String => quote! { String },
             TypeCategory::Unit => quote! { () },
-            TypeCategory::MathHookCore(name) => {
+            TypeCategory::MathHookCore(name) if is_valid_rust_ident(name) => {
                 let js_name = format!("Js{}", name);
                 let ident = syn::Ident::new(&js_name, proc_macro2::Span::call_site());
                 quote! { #ident }
             }
+            TypeCategory::MathHookCore(_) => quote! { napi::JsUnknown },
             TypeCategory::Option => {
                 if let Some(inner) = info.inner_types.first() {
                     let inner_js = Self::to_nodejs(inner);
@@ -397,9 +444,13 @@ impl TypeMapper {
                 quote! { (#(#inner_types),*) }
             }
             TypeCategory::Custom(name) => {
-                let js_name = format!("Js{}", name);
-                let ident = syn::Ident::new(&js_name, proc_macro2::Span::call_site());
-                quote! { #ident }
+                if !info.category.is_bindable() || !is_valid_rust_ident(name) {
+                    quote! { napi::JsUnknown }
+                } else {
+                    let js_name = format!("Js{}", name);
+                    let ident = syn::Ident::new(&js_name, proc_macro2::Span::call_site());
+                    quote! { #ident }
+                }
             }
         }
     }
@@ -490,5 +541,28 @@ mod tests {
             NameConverter::to_javascript_class_name("Expression"),
             "JsExpression"
         );
+    }
+
+    #[test]
+    fn test_is_bindable() {
+        assert!(TypeCategory::Custom("Expression".to_string()).is_bindable());
+        assert!(!TypeCategory::Custom("dyn SimplificationStrategy".to_string()).is_bindable());
+        assert!(!TypeCategory::Custom("[Expression; 9]".to_string()).is_bindable());
+        assert!(!TypeCategory::Custom("impl Trait".to_string()).is_bindable());
+        assert!(!TypeCategory::Custom("Fn() -> i32".to_string()).is_bindable());
+        assert!(!TypeCategory::Custom("Box<dyn Trait>".to_string()).is_bindable());
+    }
+
+    #[test]
+    fn test_is_valid_rust_ident() {
+        assert!(is_valid_rust_ident("Expression"));
+        assert!(is_valid_rust_ident("_private"));
+        assert!(!is_valid_rust_ident("dyn SimplificationStrategy"));
+        assert!(!is_valid_rust_ident("[Expression; 9]"));
+        assert!(!is_valid_rust_ident("Py[Expression; 9]"));
+        assert!(!is_valid_rust_ident("impl Trait"));
+        assert!(!is_valid_rust_ident("Box<dyn Trait>"));
+        assert!(!is_valid_rust_ident("&str"));
+        assert!(!is_valid_rust_ident("*const u8"));
     }
 }

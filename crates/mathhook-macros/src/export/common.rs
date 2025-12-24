@@ -2,6 +2,8 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Field, ItemEnum, ItemStruct, Type};
 
+use crate::export::types::TypeInfo;
+
 /// Check if a field has #[mathhook(skip)] attribute
 pub fn is_field_skipped(field: &Field) -> bool {
     field.attrs.iter().any(|attr| {
@@ -90,4 +92,25 @@ pub fn generate_enum_variant_match_arms(enum_def: &ItemEnum) -> Vec<TokenStream>
             }
         })
         .collect()
+}
+
+pub fn has_unbindable_types(method: &syn::ImplItemFn) -> bool {
+    if let syn::ReturnType::Type(_, ty) = &method.sig.output {
+        let info = TypeInfo::from_type(ty);
+        if !info.category.is_bindable() {
+            return true;
+        }
+    }
+
+    // Check parameters
+    for arg in &method.sig.inputs {
+        if let syn::FnArg::Typed(pat_type) = arg {
+            let info = TypeInfo::from_type(&pat_type.ty);
+            if !info.category.is_bindable() {
+                return true;
+            }
+        }
+    }
+
+    false
 }

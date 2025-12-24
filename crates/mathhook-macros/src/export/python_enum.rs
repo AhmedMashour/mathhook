@@ -21,7 +21,7 @@ pub fn generate_python_enum_wrapper(
     let variant_constructors = generate_python_variant_constructors(enum_def)?;
 
     Ok(quote! {
-        #[pyo3::pyclass(name = #py_name)]
+        #[::pyo3::pyclass(name = #py_name)]
         #[derive(Clone)]
         pub struct #py_enum_ident {
             pub inner: #enum_name,
@@ -35,7 +35,7 @@ pub fn generate_python_enum_wrapper(
             }
         }
 
-        #[pyo3::pymethods]
+        #[::pyo3::pymethods]
         impl #py_enum_ident {
             #[getter]
             fn variant_type(&self) -> String {

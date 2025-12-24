@@ -145,8 +145,8 @@ pub fn generate_nodejs_struct_wrapper(
     let has_default = has_default_derive(struct_def);
     let constructor =
         generate_nodejs_constructor(struct_def, &js_wrapper_name, struct_name, has_default)?;
-    let getters = generate_nodejs_field_getters(struct_def)?;
-    let setters = generate_nodejs_field_setters(struct_def)?;
+    let getters = generate_nodejs_field_getters(struct_def, struct_name)?;
+    let setters = generate_nodejs_field_setters(struct_def, struct_name)?;
     let default_method = if has_default {
         generate_nodejs_default_method(struct_name)
     } else {
@@ -287,7 +287,10 @@ fn generate_nodejs_constructor(
     }
 }
 
-fn generate_nodejs_field_getters(struct_def: &ItemStruct) -> Result<TokenStream> {
+fn generate_nodejs_field_getters(
+    struct_def: &ItemStruct,
+    struct_name: &syn::Ident,
+) -> Result<TokenStream> {
     let getters: Vec<_> = struct_def
         .fields
         .iter()
@@ -298,7 +301,11 @@ fn generate_nodejs_field_getters(struct_def: &ItemStruct) -> Result<TokenStream>
             }
 
             let js_field_name = NameConverter::to_javascript_name(&field_name.to_string());
-            let getter_name = format_ident!("{}", js_field_name);
+            let getter_name = format_ident!(
+                "{}_{}",
+                struct_name.to_string().to_lowercase(),
+                js_field_name
+            );
             let ty = TypeInfo::from_type(&field.ty);
             if let Some(wrapper) = ty.nodejs_wrapper_ident() {
                 Some(quote! {
@@ -322,7 +329,10 @@ fn generate_nodejs_field_getters(struct_def: &ItemStruct) -> Result<TokenStream>
     Ok(quote! { #(#getters)* })
 }
 
-fn generate_nodejs_field_setters(struct_def: &ItemStruct) -> Result<TokenStream> {
+fn generate_nodejs_field_setters(
+    struct_def: &ItemStruct,
+    struct_name: &syn::Ident,
+) -> Result<TokenStream> {
     let setters: Vec<_> = struct_def
         .fields
         .iter()
@@ -333,7 +343,11 @@ fn generate_nodejs_field_setters(struct_def: &ItemStruct) -> Result<TokenStream>
             }
 
             let js_field_name = NameConverter::to_javascript_name(&field_name.to_string());
-            let setter_name = format_ident!("{}", js_field_name);
+            let setter_name = format_ident!(
+                "{}_{}",
+                struct_name.to_string().to_lowercase(),
+                js_field_name
+            );
             let ty = TypeInfo::from_type(&field.ty);
             if let Some(wrapper) = ty.nodejs_wrapper_ident() {
                 Some(quote! {

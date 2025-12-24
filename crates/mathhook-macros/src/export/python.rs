@@ -126,7 +126,7 @@ pub fn generate_python_function_wrapper(
 
     Ok(quote! {
         #docstring
-        #[pyo3::pyfunction(name = #py_display_name)]
+        #[::pyo3::pyfunction(name = #py_display_name)]
         pub fn #py_wrapper_name(#(#params),*) -> pyo3::PyResult<#return_type> {
             #expr_ref_helper
             let result = #func_name(#(#param_names),*);
@@ -175,13 +175,13 @@ pub fn generate_python_struct_wrapper(
 
     Ok(quote! {
         #docstring
-        #[pyo3::pyclass(name = #py_name)]
+        #[::pyo3::pyclass(name = #py_name)]
         #[derive(Clone)]
         pub struct #py_wrapper_name {
             pub inner: #struct_name,
         }
 
-        #[pyo3::pymethods]
+        #[::pyo3::pymethods]
         impl #py_wrapper_name {
             #constructor
             #getters

@@ -26,6 +26,7 @@ pub mod traits;
 mod types;
 
 pub use codegen::{generate_nodejs_wrapper, generate_python_wrapper};
+use convert_case::{Case, Casing};
 
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -106,27 +107,33 @@ impl ExportConfig {
 pub fn process_function(attrs: TokenStream, item: TokenStream) -> Result<TokenStream> {
     let config = ExportConfig::from_attrs(&attrs)?;
     let func: ItemFn = parse2(item.clone())?;
+    let func_name = &func.sig.ident;
 
     let mut output = item;
 
     if !config.skip_python {
         let python_wrapper = generate_python_wrapper(&func, &config)?;
+        // let mod_name = quote::format_ident!("__py_{}", func_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
-
             #[cfg(feature = "python-bindings")]
             #python_wrapper
         };
     }
 
     if !config.skip_nodejs {
-        let nodejs_wrapper = generate_nodejs_wrapper(&func, &config)?;
-        output = quote! {
-            #output
+        // let nodejs_wrapper = generate_nodejs_wrapper(&func, &config)?;
+        // let mod_name = quote::format_ident!("__js_{}", func_name.to_string().to_case(Case::Snake));
+        // output = quote! {
+        //     #output
 
-            #[cfg(feature = "nodejs-bindings")]
-            #nodejs_wrapper
-        };
+        //     #[cfg(feature = "nodejs-bindings")]
+        //     pub mod #mod_name {  // ← Just make module public
+        //         use super::*;
+        //         use crate::bindings_prelude::*;
+        //         #nodejs_wrapper
+        //     }
+        // };
     }
 
     Ok(output)
@@ -135,27 +142,35 @@ pub fn process_function(attrs: TokenStream, item: TokenStream) -> Result<TokenSt
 pub fn process_struct(attrs: TokenStream, item: TokenStream) -> Result<TokenStream> {
     let config = ExportConfig::from_attrs(&attrs)?;
     let struct_def: ItemStruct = parse2(item.clone())?;
+    let struct_name = &struct_def.ident;
 
     let mut output = item;
 
     if !config.skip_python {
         let python_wrapper = python::generate_python_struct_wrapper(&struct_def, &config)?;
+        // let mod_name =
+        //     quote::format_ident!("__py_{}", struct_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
-
             #[cfg(feature = "python-bindings")]
             #python_wrapper
         };
     }
 
     if !config.skip_nodejs {
-        let nodejs_wrapper = nodejs::generate_nodejs_struct_wrapper(&struct_def, &config)?;
-        output = quote! {
-            #output
+        // let nodejs_wrapper = nodejs::generate_nodejs_struct_wrapper(&struct_def, &config)?;
+        // let mod_name =
+        //     quote::format_ident!("__js_{}", struct_name.to_string().to_case(Case::Snake));
+        // output = quote! {
+        //     #output
 
-            #[cfg(feature = "nodejs-bindings")]
-            #nodejs_wrapper
-        };
+        //     #[cfg(feature = "nodejs-bindings")]
+        //     pub mod #mod_name {  // ← Just make module public
+        //         use super::*;
+        //         use crate::bindings_prelude::*;
+        //         #nodejs_wrapper
+        //     }
+        // };
     }
 
     Ok(output)
@@ -165,26 +180,44 @@ pub fn process_impl(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
     let config = ExportConfig::from_attrs(&attrs)?;
     let impl_block: ItemImpl = parse2(item.clone())?;
 
+    let type_name = match &*impl_block.self_ty {
+        syn::Type::Path(tp) => tp
+            .path
+            .segments
+            .last()
+            .map(|s| s.ident.to_string())
+            .unwrap_or_else(|| "impl".to_string()),
+        _ => "impl".to_string(),
+    };
+    let type_ident = quote::format_ident!("{}", type_name.to_string().to_case(Case::Snake));
+
     let mut output = item;
 
     if !config.skip_python {
         let python_methods = python::generate_python_impl_wrapper(&impl_block, &config)?;
+        // let mod_name =
+        //     quote::format_ident!("__py_impl_{}", type_ident.to_string().to_case(Case::Snake));
         output = quote! {
             #output
-
             #[cfg(feature = "python-bindings")]
             #python_methods
         };
     }
 
     if !config.skip_nodejs {
-        let nodejs_methods = nodejs::generate_nodejs_impl_wrapper(&impl_block, &config)?;
-        output = quote! {
-            #output
+        // let nodejs_methods = nodejs::generate_nodejs_impl_wrapper(&impl_block, &config)?;
+        // let mod_name =
+        //     quote::format_ident!("__js_impl_{}", type_ident.to_string().to_case(Case::Snake));
+        // output = quote! {
+        //     #output
 
-            #[cfg(feature = "nodejs-bindings")]
-            #nodejs_methods
-        };
+        //     #[cfg(feature = "nodejs-bindings")]
+        //     mod #mod_name {
+        //         #[allow(unused_imports)]
+        //         use crate::bindings_prelude::*;
+        //         #nodejs_methods
+        //     }
+        // };
     }
 
     Ok(output)
@@ -193,27 +226,33 @@ pub fn process_impl(attrs: TokenStream, item: TokenStream) -> Result<TokenStream
 pub fn process_enum(attrs: TokenStream, item: TokenStream) -> Result<TokenStream> {
     let config = ExportConfig::from_attrs(&attrs)?;
     let enum_def: ItemEnum = parse2(item.clone())?;
+    let enum_name = &enum_def.ident;
 
     let mut output = item;
 
     if !config.skip_python {
         let python_wrapper = python::generate_python_enum_wrapper(&enum_def, &config)?;
+        // let mod_name = quote::format_ident!("__py_{}", enum_name.to_string().to_case(Case::Snake));
         output = quote! {
             #output
-
             #[cfg(feature = "python-bindings")]
             #python_wrapper
         };
     }
 
     if !config.skip_nodejs {
-        let nodejs_wrapper = nodejs::generate_nodejs_enum_wrapper(&enum_def, &config)?;
-        output = quote! {
-            #output
+        // let nodejs_wrapper = nodejs::generate_nodejs_enum_wrapper(&enum_def, &config)?;
+        // let mod_name = quote::format_ident!("__js_{}", enum_name.to_string().to_case(Case::Snake));
+        // output = quote! {
+        //     #output
 
-            #[cfg(feature = "nodejs-bindings")]
-            #nodejs_wrapper
-        };
+        //     #[cfg(feature = "nodejs-bindings")]
+        //     pub mod #mod_name {  // ← Just make module public
+        //         use super::*;
+        //         use crate::bindings_prelude::*;
+        //         #nodejs_wrapper
+        //     }
+        // };
     }
 
     Ok(output)

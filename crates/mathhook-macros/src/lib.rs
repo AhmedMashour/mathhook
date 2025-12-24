@@ -307,7 +307,7 @@ pub fn generate_python_binding(input: TokenStream) -> TokenStream {
     let name_str = name.to_string();
 
     let expanded = quote! {
-        #[pyo3::pyfunction]
+        #[::pyo3::pyfunction]
         pub fn #name(x: &pyo3::Bound<'_, pyo3::PyAny>) -> pyo3::PyResult<crate::PyExpression> {
             use mathhook_core::Expression;
             let expr = crate::helpers::sympify_python(x)?;
@@ -350,7 +350,7 @@ pub fn generate_python_binary_binding(input: TokenStream) -> TokenStream {
     let name_str = name.to_string();
 
     let expanded = quote! {
-        #[pyo3::pyfunction]
+        #[::pyo3::pyfunction]
         pub fn #name(
             x: &pyo3::Bound<'_, pyo3::PyAny>,
             y: &pyo3::Bound<'_, pyo3::PyAny>,
@@ -400,7 +400,7 @@ pub fn generate_python_variadic_binding(input: TokenStream) -> TokenStream {
     let name_str = name.to_string();
 
     let expanded = quote! {
-        #[pyo3::pyfunction]
+        #[::pyo3::pyfunction]
         #[pyo3(signature = (*args))]
         pub fn #name(args: &pyo3::Bound<'_, pyo3::types::PyTuple>) -> pyo3::PyResult<crate::PyExpression> {
             use mathhook_core::Expression;
@@ -444,7 +444,7 @@ pub fn generate_python_constant_binding(input: TokenStream) -> TokenStream {
     let name = parse_macro_input!(input as Ident);
 
     let expanded = quote! {
-        #[pyo3::pyfunction]
+        #[::pyo3::pyfunction]
         pub fn #name() -> crate::PyExpression {
             use mathhook_core::Expression;
             crate::PyExpression {

@@ -1,4 +1,4 @@
-use crate::export::common::extract_type_name;
+use crate::export::common::{extract_type_name, has_unbindable_types};
 use crate::export::types::{NameConverter, TypeInfo, TypeMapper};
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -21,6 +21,15 @@ pub fn generate_nodejs_impl_wrapper(
         .iter()
         .filter_map(|item| {
             if let syn::ImplItem::Fn(method) = item {
+                if !matches!(method.vis, syn::Visibility::Public(_)) {
+                    return None;
+                }
+
+                // Skip methods with unbindable types
+                if has_unbindable_types(method) {
+                    return None;
+                }
+
                 generate_nodejs_method(method, self_ty).ok()
             } else {
                 None
