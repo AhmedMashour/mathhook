@@ -4,22 +4,19 @@
 
 #![deny(clippy::all)]
 
-// Module declarations
-mod eval_context;
-mod expression;
+mod generated;
+
+// Hand-written wrappers and API convenience functions
 mod functions;
 mod functions_generated;
 mod helpers;
 mod polyzp;
-mod solver;
 mod types;
 
 // Public API re-exports
-pub use eval_context::EvalContext;
-pub use expression::PyExpression;
 pub use functions::*;
+pub use generated::PyExpression;
 pub use polyzp::{poly_gcd, poly_mul_fast, poly_zp, PyPolyZp};
-pub use solver::PyMathSolver;
 pub use types::*;
 
 use pyo3::prelude::*;
@@ -27,18 +24,10 @@ use pyo3::prelude::*;
 /// Python module definition
 #[pymodule]
 fn mathhook(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    // Register classes
-    m.add_class::<EvalContext>()?;
-    m.add_class::<PyExpression>()?;
-    m.add_class::<PyMathSolver>()?;
-    m.add_class::<PySolverResult>()?;
-    m.add_class::<PySolveWithStepsResult>()?;
-    m.add_class::<PyStep>()?;
-    m.add_class::<PyStepByStepExplanation>()?;
-    m.add_class::<PyPattern>()?;
-    m.add_class::<PyODESolver>()?;
-    m.add_class::<PyPDESolver>()?;
-    m.add_class::<PyGroebnerBasis>()?;
+    // Register all generated types (37 types from codegen)
+    generated::register_generated_types(m)?;
+
+    // Register hand-written classes (not in generated)
     m.add_class::<PyPolyZp>()?;
 
     // Register functions from functions module

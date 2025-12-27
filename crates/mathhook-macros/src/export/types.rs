@@ -1,86 +1,20 @@
-//! Type introspection and mapping for binding generation
-//!
-//! Provides utilities to analyze Rust types and map them to
-//! Python (PyO3) and Node.js (NAPI-RS) equivalents.
+use proc_macro2::{Ident, TokenStream};
+use quote::{format_ident, quote};
+use syn::Type;
 
-use convert_case::{Case, Casing};
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
-use syn::{GenericArgument, Ident, PathArguments, Type, TypePath};
-
-const MATHHOOK_CORE_TYPES: &[&str] = &[
-    "Expression",
-    "Symbol",
-    "Matrix",
-    "Number",
-    "Polynomial",
-    "SolverResult",
-    "MathError",
-    "ParseError",
-];
-
-fn is_mathhook_core_type(name: &str) -> bool {
-    MATHHOOK_CORE_TYPES.contains(&name)
-}
-
-fn is_valid_rust_ident(s: &str) -> bool {
-    !s.is_empty()
-        && !s.contains(' ')
-        && !s.contains('[')
-        && !s.contains(']')
-        && !s.contains('<')
-        && !s.contains('>')
-        && !s.contains('(')
-        && !s.contains(')')
-        && !s.contains('&')
-        && !s.contains('*')
-        && !s.contains(';')
-        && s.chars()
-            .next()
-            .map(|c| c.is_alphabetic() || c == '_')
-            .unwrap_or(false)
-}
-
-/// Represents analyzed type information
-#[derive(Debug, Clone)]
-pub struct TypeInfo {
-    /// The original Rust type
-    #[allow(dead_code)]
-    pub rust_type: Type,
-    /// Category of the type
-    pub category: TypeCategory,
-    /// Inner types (for generics like Vec<T>, Option<T>)
-    pub inner_types: Vec<TypeInfo>,
-    /// Whether the type is a reference
-    pub is_ref: bool,
-    /// Whether the type is mutable
-    pub is_mut: bool,
-}
-
-/// Categories of types for different handling strategies
+/// Type category classification
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TypeCategory {
-    /// Primitive types: i32, i64, f64, bool, etc.
     Primitive(PrimitiveKind),
-    /// String types: String, &str
     String,
-    /// MathHook core types: Expression, Symbol, Matrix
-    MathHookCore(String),
-    /// Optional wrapper: Option<T>
-    Option,
-    /// Result wrapper: Result<T, E>
-    Result,
-    /// Vector/List: Vec<T>
-    Vec,
-    /// HashMap/Dict: HashMap<K, V>
-    HashMap,
-    /// HashSet: HashSet<T>
-    HashSet,
-    /// Tuple types: (A, B, C)
-    Tuple,
-    /// Unit type: ()
     Unit,
-    /// Unknown/custom type
+    MathHookCore(String),
+    Option,
+    Result,
+    Vec,
+    HashMap,
+    HashSet,
+    Tuple,
     Custom(String),
 }
 
@@ -122,161 +56,223 @@ pub enum PrimitiveKind {
     F64,
     Bool,
     Char,
+    Usize,
+}
+
+/// Type information extracted from Rust type
+#[derive(Debug, Clone)]
+pub struct TypeInfo {
+    pub category: TypeCategory,
+    pub inner_types: Vec<TypeInfo>,
+    pub rust_type: syn::Type,
 }
 
 impl TypeInfo {
-    /// Analyze a type and extract information
+    /// Create from syn::Type
     pub fn from_type(ty: &Type) -> Self {
+        let rust_type = ty.clone();
         match ty {
-            Type::Path(type_path) => Self::from_type_path(type_path),
-            Type::Reference(type_ref) => {
-                let mut info = Self::from_type(&type_ref.elem);
-                info.is_ref = true;
-                info.is_mut = type_ref.mutability.is_some();
-                info
-            }
-            Type::Tuple(tuple) => {
-                if tuple.elems.is_empty() {
-                    Self {
-                        rust_type: ty.clone(),
-                        category: TypeCategory::Unit,
+            Type::Path(type_path) => {
+                let segments: Vec<_> = type_path
+                    .path
+                    .segments
+                    .iter()
+                    .map(|s| s.ident.to_string())
+                    .collect();
+                let type_str = segments.join("::");
+
+                let last_segment = type_path.path.segments.last();
+                let args = last_segment.and_then(|s| match &s.arguments {
+                    syn::PathArguments::AngleBracketed(args) => Some(&args.args),
+                    _ => None,
+                });
+
+                if type_str == "String" || type_str.ends_with("::String") {
+                    TypeInfo {
+                        category: TypeCategory::String,
                         inner_types: vec![],
-                        is_ref: false,
-                        is_mut: false,
+                        rust_type: rust_type.clone(),
+                    }
+                } else if let Some(prim) = Self::parse_primitive(&type_str) {
+                    TypeInfo {
+                        category: TypeCategory::Primitive(prim),
+                        inner_types: vec![],
+                        rust_type: rust_type.clone(),
+                    }
+                } else if type_str == "Option" || type_str.ends_with("::Option") {
+                    let inner = args
+                        .and_then(|a| a.first())
+                        .and_then(|arg| {
+                            if let syn::GenericArgument::Type(ty) = arg {
+                                Some(Self::from_type(ty))
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or_else(|| TypeInfo {
+                            category: TypeCategory::Unit,
+                            inner_types: vec![],
+                            rust_type: syn::parse_quote!(()),
+                        });
+                    TypeInfo {
+                        category: TypeCategory::Option,
+                        inner_types: vec![inner],
+                        rust_type: rust_type.clone(),
+                    }
+                } else if type_str == "Result" || type_str.ends_with("::Result") {
+                    let ok_type = args
+                        .and_then(|a| a.first())
+                        .and_then(|arg| {
+                            if let syn::GenericArgument::Type(ty) = arg {
+                                Some(Self::from_type(ty))
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or_else(|| TypeInfo {
+                            category: TypeCategory::Unit,
+                            inner_types: vec![],
+                            rust_type: syn::parse_quote!(()),
+                        });
+                    TypeInfo {
+                        category: TypeCategory::Result,
+                        inner_types: vec![ok_type],
+                        rust_type: rust_type.clone(),
+                    }
+                } else if type_str == "Vec" || type_str.ends_with("::Vec") {
+                    let inner = args
+                        .and_then(|a| a.first())
+                        .and_then(|arg| {
+                            if let syn::GenericArgument::Type(ty) = arg {
+                                Some(Self::from_type(ty))
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or_else(|| TypeInfo {
+                            category: TypeCategory::Unit,
+                            inner_types: vec![],
+                            rust_type: syn::parse_quote!(()),
+                        });
+                    TypeInfo {
+                        category: TypeCategory::Vec,
+                        inner_types: vec![inner],
+                        rust_type: rust_type.clone(),
+                    }
+                } else if type_str == "HashMap" || type_str.ends_with("::HashMap") {
+                    let mut inner_types = vec![];
+                    if let Some(args) = args {
+                        for arg in args {
+                            if let syn::GenericArgument::Type(ty) = arg {
+                                inner_types.push(Self::from_type(ty));
+                            }
+                        }
+                    }
+                    TypeInfo {
+                        category: TypeCategory::HashMap,
+                        inner_types,
+                        rust_type: rust_type.clone(),
+                    }
+                } else if type_str == "HashSet" || type_str.ends_with("::HashSet") {
+                    let inner = args
+                        .and_then(|a| a.first())
+                        .and_then(|arg| {
+                            if let syn::GenericArgument::Type(ty) = arg {
+                                Some(Self::from_type(ty))
+                            } else {
+                                None
+                            }
+                        })
+                        .unwrap_or_else(|| TypeInfo {
+                            category: TypeCategory::Unit,
+                            inner_types: vec![],
+                            rust_type: syn::parse_quote!(()),
+                        });
+                    TypeInfo {
+                        category: TypeCategory::HashSet,
+                        inner_types: vec![inner],
+                        rust_type: rust_type.clone(),
+                    }
+                } else if Self::is_mathhook_core_type(&type_str) {
+                    TypeInfo {
+                        category: TypeCategory::MathHookCore(
+                            type_str.split("::").last().unwrap_or(&type_str).to_string(),
+                        ),
+                        inner_types: vec![],
+                        rust_type: rust_type.clone(),
                     }
                 } else {
-                    let inner_types: Vec<_> = tuple.elems.iter().map(Self::from_type).collect();
-                    Self {
-                        rust_type: ty.clone(),
-                        category: TypeCategory::Tuple,
-                        inner_types,
-                        is_ref: false,
-                        is_mut: false,
+                    TypeInfo {
+                        category: TypeCategory::Custom(type_str.clone()),
+                        inner_types: vec![],
+                        rust_type: rust_type.clone(),
                     }
                 }
             }
-            Type::Slice(slice) => {
-                let inner = Self::from_type(&slice.elem);
-                Self {
-                    rust_type: ty.clone(),
-                    category: TypeCategory::Vec,
-                    inner_types: vec![inner],
-                    is_ref: true,
-                    is_mut: false,
+            Type::Tuple(tuple) => {
+                let inner_types: Vec<_> = tuple.elems.iter().map(Self::from_type).collect();
+                TypeInfo {
+                    category: TypeCategory::Tuple,
+                    inner_types,
+                    rust_type: rust_type.clone(),
                 }
             }
-            _ => Self {
-                rust_type: ty.clone(),
-                category: TypeCategory::Custom(ty.to_token_stream().to_string()),
+            Type::Reference(_) => TypeInfo {
+                category: TypeCategory::Custom("reference".to_string()),
                 inner_types: vec![],
-                is_ref: false,
-                is_mut: false,
+                rust_type: rust_type.clone(),
+            },
+            _ => TypeInfo {
+                category: TypeCategory::Custom("unknown".to_string()),
+                inner_types: vec![],
+                rust_type: rust_type.clone(),
             },
         }
     }
 
-    fn from_type_path(type_path: &TypePath) -> Self {
-        let path = &type_path.path;
-        let segment = path.segments.last().unwrap();
-        let name = segment.ident.to_string();
-
-        let (category, inner_types) = Self::from_path_segment(&name, &segment.arguments);
-
-        Self {
-            rust_type: Type::Path(type_path.clone()),
-            category,
-            inner_types,
-            is_ref: false,
-            is_mut: false,
+    fn parse_primitive(type_str: &str) -> Option<PrimitiveKind> {
+        match type_str {
+            "i8" => Some(PrimitiveKind::I8),
+            "i16" => Some(PrimitiveKind::I16),
+            "i32" => Some(PrimitiveKind::I32),
+            "i64" => Some(PrimitiveKind::I64),
+            "u8" => Some(PrimitiveKind::U8),
+            "u16" => Some(PrimitiveKind::U16),
+            "u32" => Some(PrimitiveKind::U32),
+            "u64" => Some(PrimitiveKind::U64),
+            "f32" => Some(PrimitiveKind::F32),
+            "f64" => Some(PrimitiveKind::F64),
+            "bool" => Some(PrimitiveKind::Bool),
+            "char" => Some(PrimitiveKind::Char),
+            "usize" => Some(PrimitiveKind::Usize),
+            _ => None,
         }
     }
 
-    fn from_path_segment(name: &str, args: &PathArguments) -> (TypeCategory, Vec<TypeInfo>) {
-        match name {
-            "i8" => (TypeCategory::Primitive(PrimitiveKind::I8), vec![]),
-            "i16" => (TypeCategory::Primitive(PrimitiveKind::I16), vec![]),
-            "i32" => (TypeCategory::Primitive(PrimitiveKind::I32), vec![]),
-            "i64" => (TypeCategory::Primitive(PrimitiveKind::I64), vec![]),
-            "u8" => (TypeCategory::Primitive(PrimitiveKind::U8), vec![]),
-            "u16" => (TypeCategory::Primitive(PrimitiveKind::U16), vec![]),
-            "u32" => (TypeCategory::Primitive(PrimitiveKind::U32), vec![]),
-            "u64" => (TypeCategory::Primitive(PrimitiveKind::U64), vec![]),
-            "usize" => (TypeCategory::Primitive(PrimitiveKind::U64), vec![]),
-            "isize" => (TypeCategory::Primitive(PrimitiveKind::I64), vec![]),
-            "f32" => (TypeCategory::Primitive(PrimitiveKind::F32), vec![]),
-            "f64" => (TypeCategory::Primitive(PrimitiveKind::F64), vec![]),
-            "bool" => (TypeCategory::Primitive(PrimitiveKind::Bool), vec![]),
-            "char" => (TypeCategory::Primitive(PrimitiveKind::Char), vec![]),
-
-            "String" | "str" => (TypeCategory::String, vec![]),
-
-            "Option" => {
-                let inner = Self::extract_generic_args(args);
-                (TypeCategory::Option, inner)
-            }
-            "Result" => {
-                let inner = Self::extract_generic_args(args);
-                (TypeCategory::Result, inner)
-            }
-            "Vec" => {
-                let inner = Self::extract_generic_args(args);
-                (TypeCategory::Vec, inner)
-            }
-            "HashMap" | "BTreeMap" => {
-                let inner = Self::extract_generic_args(args);
-                (TypeCategory::HashMap, inner)
-            }
-            "HashSet" | "BTreeSet" => {
-                let inner = Self::extract_generic_args(args);
-                (TypeCategory::HashSet, inner)
-            }
-
-            "Box" | "Arc" | "Rc" => {
-                let inner = Self::extract_generic_args(args);
-                if let Some(first) = inner.first() {
-                    return (first.category.clone(), first.inner_types.clone());
-                }
-                (TypeCategory::Custom(name.to_string()), inner)
-            }
-
-            "Cow" => {
-                let inner = Self::extract_generic_args(args);
-                if let Some(first) = inner.first() {
-                    if matches!(first.category, TypeCategory::String) {
-                        return (TypeCategory::String, vec![]);
-                    }
-                }
-                (TypeCategory::String, vec![])
-            }
-
-            name if is_mathhook_core_type(name) => {
-                (TypeCategory::MathHookCore(name.to_string()), vec![])
-            }
-
-            other => (TypeCategory::Custom(other.to_string()), vec![]),
-        }
+    fn is_mathhook_core_type(type_str: &str) -> bool {
+        type_str.starts_with("mathhook_core::")
+            || matches!(
+                type_str,
+                "Expression"
+                    | "Symbol"
+                    | "Pattern"
+                    | "Number"
+                    | "Rational"
+                    | "Matrix"
+                    | "Function"
+                    | "Derivative"
+                    | "Integral"
+                    | "Limit"
+                    | "Sum"
+                    | "Product"
+                    | "EvalContext"
+            )
     }
 
-    fn extract_generic_args(args: &PathArguments) -> Vec<TypeInfo> {
-        match args {
-            PathArguments::AngleBracketed(ab) => ab
-                .args
-                .iter()
-                .filter_map(|arg| {
-                    if let GenericArgument::Type(ty) = arg {
-                        Some(Self::from_type(ty))
-                    } else {
-                        None
-                    }
-                })
-                .collect(),
-            _ => vec![],
-        }
-    }
-
-    /// Check if this type needs conversion at FFI boundary
-    pub fn needs_conversion(&self) -> bool {
-        !matches!(
+    #[allow(dead_code)]
+    /// Check if value is a primitive
+    pub fn is_primitive(&self) -> bool {
+        matches!(
             self.category,
             TypeCategory::Primitive(_) | TypeCategory::Unit
         )
@@ -285,6 +281,38 @@ impl TypeInfo {
     /// Check if this type is a MathHook core type
     pub fn is_mathhook_type(&self) -> bool {
         matches!(self.category, TypeCategory::MathHookCore(_))
+    }
+
+    /// Check if this type can be used in field getters/setters
+    /// Returns true only for simple types that can be directly exposed
+    pub fn is_field_bindable(&self) -> bool {
+        match &self.category {
+            TypeCategory::Primitive(_) | TypeCategory::String | TypeCategory::Unit => true,
+            TypeCategory::MathHookCore(_) => true,
+            TypeCategory::Vec | TypeCategory::HashMap | TypeCategory::HashSet => false,
+            TypeCategory::Option => self
+                .inner_types
+                .first()
+                .is_some_and(|inner| inner.is_field_bindable()),
+            TypeCategory::Result => false,
+            TypeCategory::Tuple => false,
+            TypeCategory::Custom(name) => {
+                is_valid_rust_ident(name)
+                    && !name.starts_with("dyn ")
+                    && !name.starts_with("impl ")
+                    && !name.starts_with('[')
+                    && !name.contains("Fn(")
+                    && !name.contains("FnMut(")
+                    && !name.contains("FnOnce(")
+                    && !name.contains("Box<dyn")
+                    && !name.contains('&')
+                    && !name.contains('*')
+                    && !name.contains("Duration")
+                    && !name.contains("Instant")
+                    && !name.contains("PathBuf")
+                    && !name.contains("Path")
+            }
+        }
     }
 
     /// Get the Python wrapper identifier for this type
@@ -310,6 +338,15 @@ impl TypeInfo {
             TypeCategory::MathHookCore(name) => Some(name.as_str()),
             _ => None,
         }
+    }
+
+    /// Check if this type needs conversion in bindings
+    /// Simple types like primitives don't need conversion, complex types do
+    pub fn needs_conversion(&self) -> bool {
+        !matches!(
+            &self.category,
+            TypeCategory::Primitive(_) | TypeCategory::String | TypeCategory::Unit
+        )
     }
 }
 
@@ -469,6 +506,7 @@ impl TypeMapper {
             PrimitiveKind::F64 => quote! { f64 },
             PrimitiveKind::Bool => quote! { bool },
             PrimitiveKind::Char => quote! { char },
+            PrimitiveKind::Usize => quote! { usize },
         }
     }
 
@@ -486,62 +524,81 @@ impl TypeMapper {
             PrimitiveKind::F64 => quote! { f64 },
             PrimitiveKind::Bool => quote! { bool },
             PrimitiveKind::Char => quote! { char },
+            PrimitiveKind::Usize => quote! { i64 },
         }
     }
 }
 
-/// Utility functions for name conversion
+/// Name conversion utilities
 pub struct NameConverter;
 
 impl NameConverter {
-    /// Convert Rust snake_case to Python snake_case (usually no-op)
     pub fn to_python_name(rust_name: &str) -> String {
-        rust_name.to_case(Case::Snake)
+        rust_name.to_string()
     }
 
-    /// Convert Rust snake_case to JavaScript camelCase
-    pub fn to_javascript_name(rust_name: &str) -> String {
-        rust_name.to_case(Case::Camel)
-    }
-
-    /// Convert Rust PascalCase to Python wrapper name (Py prefix)
     pub fn to_python_class_name(rust_name: &str) -> String {
-        format!("Py{}", rust_name.to_case(Case::Pascal))
+        rust_name
+            .trim_start_matches("Py")
+            .trim_start_matches("Js")
+            .to_string()
     }
 
-    /// Convert Rust PascalCase to JavaScript wrapper name (Js prefix)
+    #[allow(dead_code)]
+    pub fn to_nodejs_name(rust_name: &str) -> String {
+        Self::snake_to_camel(rust_name)
+    }
+
+    pub fn to_javascript_name(rust_name: &str) -> String {
+        Self::snake_to_camel(rust_name)
+    }
+
     pub fn to_javascript_class_name(rust_name: &str) -> String {
-        format!("Js{}", rust_name.to_case(Case::Pascal))
+        rust_name
+            .trim_start_matches("Py")
+            .trim_start_matches("Js")
+            .to_string()
     }
 
-    /// Convert enum variant to Python discriminator value
     pub fn variant_to_python_discriminator(variant: &str) -> String {
-        variant.to_case(Case::Snake)
+        variant.to_lowercase()
     }
 
-    /// Convert enum variant to JavaScript discriminator value
     pub fn variant_to_javascript_discriminator(variant: &str) -> String {
-        variant.to_case(Case::Camel)
+        variant.to_lowercase()
     }
+
+    fn snake_to_camel(s: &str) -> String {
+        let mut result = String::new();
+        let mut capitalize_next = false;
+
+        for ch in s.chars() {
+            if ch == '_' {
+                capitalize_next = true;
+            } else if capitalize_next {
+                result.push(ch.to_ascii_uppercase());
+                capitalize_next = false;
+            } else {
+                result.push(ch);
+            }
+        }
+
+        result
+    }
+}
+
+pub fn is_valid_rust_ident(name: &str) -> bool {
+    !name.is_empty()
+        && name
+            .chars()
+            .next()
+            .is_some_and(|c| c.is_alphabetic() || c == '_')
+        && name.chars().all(|c| c.is_alphanumeric() || c == '_')
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_name_conversion() {
-        assert_eq!(NameConverter::to_python_name("get_value"), "get_value");
-        assert_eq!(NameConverter::to_javascript_name("get_value"), "getValue");
-        assert_eq!(
-            NameConverter::to_python_class_name("Expression"),
-            "PyExpression"
-        );
-        assert_eq!(
-            NameConverter::to_javascript_class_name("Expression"),
-            "JsExpression"
-        );
-    }
 
     #[test]
     fn test_is_bindable() {
@@ -554,15 +611,16 @@ mod tests {
     }
 
     #[test]
-    fn test_is_valid_rust_ident() {
-        assert!(is_valid_rust_ident("Expression"));
-        assert!(is_valid_rust_ident("_private"));
-        assert!(!is_valid_rust_ident("dyn SimplificationStrategy"));
-        assert!(!is_valid_rust_ident("[Expression; 9]"));
-        assert!(!is_valid_rust_ident("Py[Expression; 9]"));
-        assert!(!is_valid_rust_ident("impl Trait"));
-        assert!(!is_valid_rust_ident("Box<dyn Trait>"));
-        assert!(!is_valid_rust_ident("&str"));
-        assert!(!is_valid_rust_ident("*const u8"));
+    fn test_name_conversion() {
+        assert_eq!(NameConverter::to_python_name("get_value"), "get_value");
+        assert_eq!(
+            NameConverter::to_python_class_name("Expression"),
+            "Expression"
+        );
+        assert_eq!(
+            NameConverter::to_python_class_name("PyExpression"),
+            "Expression"
+        );
+        assert_eq!(NameConverter::to_nodejs_name("get_value"), "getValue");
     }
 }

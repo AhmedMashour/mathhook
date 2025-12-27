@@ -307,6 +307,12 @@ fn generate_nodejs_field_getters(
                 js_field_name
             );
             let ty = TypeInfo::from_type(&field.ty);
+
+            // Skip fields with unbindable types (Vec<T>, HashMap<K,V>, etc.)
+            if !ty.is_field_bindable() {
+                return None;
+            }
+
             if let Some(wrapper) = ty.nodejs_wrapper_ident() {
                 Some(quote! {
                     #[napi(getter)]
@@ -349,6 +355,12 @@ fn generate_nodejs_field_setters(
                 js_field_name
             );
             let ty = TypeInfo::from_type(&field.ty);
+
+            // Skip fields with unbindable types (Vec<T>, HashMap<K,V>, etc.)
+            if !ty.is_field_bindable() {
+                return None;
+            }
+
             if let Some(wrapper) = ty.nodejs_wrapper_ident() {
                 Some(quote! {
                     #[napi(setter)]

@@ -38,6 +38,7 @@ pub struct PyStepByStepExplanation {
 #[pyclass]
 #[derive(Clone)]
 pub struct PyPattern {
+    #[allow(dead_code)]
     pub(crate) inner: Pattern,
 }
 
@@ -128,7 +129,7 @@ impl PySolverResult {
             let solutions_str = self
                 .solutions
                 .iter()
-                .map(|s| s.to_simple())
+                .map(|s| format!("{}", s.inner))
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("Solutions: [{}]", solutions_str)

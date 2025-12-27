@@ -338,7 +338,7 @@ fn bench_math_solver_interface(c: &mut Criterion) {
     let mut group = c.benchmark_group("math_solver_interface");
 
     let x = symbol!(x);
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
 
     // Linear equation through MathSolver
     let linear = Expression::add(vec![

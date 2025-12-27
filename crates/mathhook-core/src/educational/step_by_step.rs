@@ -25,6 +25,17 @@ impl Step {
             latex: None,
         }
     }
+
+    /// Create a new step from String arguments (FFI-friendly, no generics)
+    pub fn from_strings(title: String, description: String) -> Self {
+        Self {
+            title,
+            description,
+            expression: Expression::integer(0),
+            rule_applied: "Custom".to_owned(),
+            latex: None,
+        }
+    }
 }
 
 /// Complete step-by-step explanation of a mathematical operation

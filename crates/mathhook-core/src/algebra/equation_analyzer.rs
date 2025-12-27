@@ -4,7 +4,6 @@
 use crate::algebra::solvers::matrix_equations::MatrixEquationSolver;
 use crate::algebra::solvers::{EquationSolver, SolverResult};
 use crate::algebra::solvers::{LinearSolver, PolynomialSolver, QuadraticSolver, SystemSolver};
-// Unused imports removed
 use crate::calculus::ode::EducationalODESolver;
 use crate::calculus::pde::EducationalPDESolver;
 use crate::core::symbol::SymbolType;
@@ -14,17 +13,17 @@ use crate::educational::step_by_step::{Step, StepByStepExplanation};
 /// Types of equations our system can handle
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum EquationType {
-    Constant,       // "5 = 0"
-    Linear,         // "2x + 3 = 0"
-    Quadratic,      // "x² + 3x + 2 = 0"
-    Cubic,          // "x³ + 2x² + x + 1 = 0"
-    Quartic,        // "x⁴ + x³ + x² + x + 1 = 0"
-    System,         // "2x + 3y = 5, x - y = 1"
-    Transcendental, // "sin(x) = 0", "e^x = 5"
-    Numerical,      // Equations requiring numerical methods
-    Matrix,         // "A*X = B" (matrix equation)
-    ODE,            // "y' + 2y = x", "y'' + 3y' + 2y = 0"
-    PDE,            // "∂u/∂t = k∂²u/∂x²" (heat equation)
+    Constant,
+    Linear,
+    Quadratic,
+    Cubic,
+    Quartic,
+    System,
+    Transcendental,
+    Numerical,
+    Matrix,
+    ODE,
+    PDE,
     Unknown,
 }
 
@@ -53,7 +52,6 @@ impl EquationAnalyzer {
         let has_transcendental = Self::has_transcendental_functions(equation);
         let variable_count = Self::count_variables(equation);
 
-        // Check if numerical methods are needed
         if Self::is_numerical_equation(equation, variable, degree, has_transcendental) {
             return EquationType::Numerical;
         }
@@ -70,29 +68,20 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Determine if equation requires numerical methods
-    ///
-    /// Numerical methods are needed when:
-    /// - Polynomial degree > 4 (no general algebraic formula)
-    /// - Transcendental functions mixed with polynomials (x = sin(x))
-    /// - Complex transcendental equations (e^x = x^2)
     fn is_numerical_equation(
         expr: &Expression,
         _variable: &Symbol,
         degree: u32,
         has_transcendental: bool,
     ) -> bool {
-        // Polynomial degree > 4 requires numerical methods
         if degree > 4 {
             return true;
         }
 
-        // Mixed transcendental and polynomial requires numerical methods
         if has_transcendental && degree > 0 {
             return true;
         }
 
-        // Complex transcendental equations
         if has_transcendental {
             let func_count = Self::count_transcendental_functions(expr);
             if func_count > 1 {
@@ -103,7 +92,6 @@ impl EquationAnalyzer {
         false
     }
 
-    /// Count transcendental functions in expression
     fn count_transcendental_functions(expr: &Expression) -> usize {
         match expr {
             Expression::Function { name, args } => {
@@ -132,12 +120,10 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Check if equation is a matrix equation (contains noncommutative symbols)
     fn is_matrix_equation(expr: &Expression, _variable: &Symbol) -> bool {
         Self::has_noncommutative_symbols(expr)
     }
 
-    /// Check if expression contains noncommutative symbols (matrix, operator, quaternion)
     fn has_noncommutative_symbols(expr: &Expression) -> bool {
         match expr {
             Expression::Symbol(s) => {
@@ -157,36 +143,29 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Find the highest degree of variable in expression
     fn find_highest_degree(expr: &Expression, variable: &Symbol) -> u32 {
         match expr {
-            // Direct power: x^2, x^3, etc.
             Expression::Pow(base, exp) if **base == Expression::symbol(variable.clone()) => {
                 match exp.as_ref() {
                     Expression::Number(Number::Integer(n)) => *n as u32,
                     _ => 1,
                 }
             }
-            // Multiplication: 3x^2, coefficient * x^power
             Expression::Mul(factors) => factors
                 .iter()
                 .map(|f| Self::find_highest_degree(f, variable))
                 .max()
                 .unwrap_or(0),
-            // Addition: x^2 + 3x + 2
             Expression::Add(terms) => terms
                 .iter()
                 .map(|t| Self::find_highest_degree(t, variable))
                 .max()
                 .unwrap_or(0),
-            // Simple variable: x (degree 1)
             _ if *expr == Expression::symbol(variable.clone()) => 1,
-            // Constant or other variable
             _ => 0,
         }
     }
 
-    /// Check for transcendental functions
     fn has_transcendental_functions(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
@@ -202,14 +181,12 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Count unique variables in expression
     fn count_variables(expr: &Expression) -> usize {
         let mut variables = std::collections::HashSet::new();
         Self::collect_variables(expr, &mut variables);
         variables.len()
     }
 
-    /// Recursively collect all variables
     pub fn collect_variables(expr: &Expression, variables: &mut std::collections::HashSet<String>) {
         match expr {
             Expression::Symbol(s) => {
@@ -238,7 +215,6 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Check if expression contains ordinary derivatives (y', dy/dx, etc.)
     fn has_derivatives(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
@@ -256,7 +232,6 @@ impl EquationAnalyzer {
         }
     }
 
-    /// Check if expression contains partial derivatives (∂u/∂x, ∂²u/∂x², etc.)
     fn has_partial_derivatives(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
@@ -327,7 +302,7 @@ impl SmartEquationSolver {
     /// - The solver result (solutions or error)
     /// - Complete step-by-step explanation starting with equation analysis
     pub fn solve_with_equation(
-        &mut self,
+        &self,
         equation: &Expression,
         variable: &Symbol,
     ) -> (SolverResult, StepByStepExplanation) {
@@ -428,10 +403,6 @@ impl SmartEquationSolver {
         (result, StepByStepExplanation::new(all_steps))
     }
 
-    /// Solve numerical equations using Newton-Raphson method
-    ///
-    /// Provides integration point for numerical solving. Currently provides
-    /// educational explanation about numerical methods requirement.
     fn solve_numerical(
         &self,
         _equation: &Expression,
@@ -455,7 +426,7 @@ impl SmartEquationSolver {
     }
 
     /// Legacy solve method (deprecated, use solve_with_equation instead)
-    pub fn solve(&mut self) -> (SolverResult, StepByStepExplanation) {
+    pub fn solve(&self) -> (SolverResult, StepByStepExplanation) {
         let equation = Expression::integer(0);
         let variables = self.extract_variables(&equation);
         if variables.is_empty() {
@@ -466,7 +437,6 @@ impl SmartEquationSolver {
         self.solve_with_equation(&equation, primary_var)
     }
 
-    /// Extract variables from equation
     fn extract_variables(&self, equation: &Expression) -> Vec<Symbol> {
         let mut variables = std::collections::HashSet::new();
         EquationAnalyzer::collect_variables(equation, &mut variables);
@@ -480,7 +450,7 @@ impl SmartEquationSolver {
     /// Solve system of equations using the integrated system solver
     ///
     /// This method exposes the system solving capability through SmartEquationSolver,
-    /// allowing for solving both linear and polynomial systems (via Gröbner basis).
+    /// allowing for solving both linear and polynomial systems (via Grobner basis).
     ///
     /// # Arguments
     ///
@@ -497,7 +467,7 @@ impl SmartEquationSolver {
     /// use mathhook_core::algebra::equation_analyzer::SmartEquationSolver;
     /// use mathhook_core::{symbol, Expression};
     ///
-    /// let mut solver = SmartEquationSolver::new();
+    /// let solver = SmartEquationSolver::new();
     /// let x = symbol!(x);
     /// let y = symbol!(y);
     ///
@@ -515,7 +485,7 @@ impl SmartEquationSolver {
     ///
     /// let result = solver.solve_system(&[eq1, eq2], &[x, y]);
     /// ```
-    pub fn solve_system(&mut self, equations: &[Expression], variables: &[Symbol]) -> SolverResult {
+    pub fn solve_system(&self, equations: &[Expression], variables: &[Symbol]) -> SolverResult {
         use crate::algebra::solvers::SystemEquationSolver;
         self.system_solver.solve_system(equations, variables)
     }
@@ -530,14 +500,12 @@ mod tests {
     fn test_equation_type_detection() {
         let x = symbol!(x);
 
-        // Linear: 2x + 3
         let linear = Expression::add(vec![
             Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
             Expression::integer(3),
         ]);
         assert_eq!(EquationAnalyzer::analyze(&linear, &x), EquationType::Linear);
 
-        // Quadratic: x^2 + 3x + 2
         let quadratic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             Expression::mul(vec![Expression::integer(3), Expression::symbol(x.clone())]),
@@ -553,7 +521,6 @@ mod tests {
     fn test_numerical_equation_detection() {
         let x = symbol!(x);
 
-        // High-degree polynomial: x^5 - x - 1 (numerical)
         let quintic = Expression::add(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(5)),
             Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
@@ -564,7 +531,6 @@ mod tests {
             EquationType::Numerical
         );
 
-        // Mixed transcendental: cos(x) - x (numerical)
         let transcendental_mixed = Expression::add(vec![
             Expression::function("cos", vec![Expression::symbol(x.clone())]),
             Expression::mul(vec![Expression::integer(-1), Expression::symbol(x.clone())]),
@@ -581,7 +547,6 @@ mod tests {
         let x = symbol!(X; matrix);
         let b = symbol!(B; matrix);
 
-        // A*X - B = 0
         let equation = Expression::add(vec![
             Expression::mul(vec![
                 Expression::symbol(a.clone()),

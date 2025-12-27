@@ -2,18 +2,39 @@
 //!
 //! This module provides methods for solving equations symbolically,
 //! with configurable step-by-step explanations.
+//!
+//! # Auto-Detection vs Fast Path
+//!
+//! - `solve()` / `solve_with_steps()` - Auto-detect equation type via `EquationAnalyzer`
+//! - Fast path methods (in `fast_path_solvers`) - Skip classification for known types
+//!
+//! For users who already know their equation type, see `fast_path_solvers` module for:
+//! - `solve_linear()` - Linear equations (ax + b = 0)
+//! - `solve_quadratic()` - Quadratic equations (ax^2 + bx + c = 0)
+//! - `solve_polynomial()` - Polynomial equations (degree 3+)
+//! - `solve_ode()` - Ordinary differential equations
+//! - `solve_pde()` - Partial differential equations
+//! - `solve_system()` - Systems of equations
 
 use super::super::Expression;
 use crate::algebra::equation_analyzer::SmartEquationSolver;
 use crate::algebra::solvers::SolverResult;
 use crate::core::Symbol;
 use crate::educational::step_by_step::StepByStepExplanation;
+
 impl Expression {
-    /// Solve equation for a variable
+    /// Solve equation for a variable with auto-detection
     ///
     /// Solves the equation `self = 0` for the given variable.
-    /// By default, returns only the solutions without educational explanation for best performance.
-    /// Use `solve_with_steps()` if you need the step-by-step explanation.
+    /// Automatically detects equation type (linear, quadratic, ODE, etc.) and
+    /// routes to the appropriate solver. For performance-critical code where
+    /// you already know the equation type, use the fast path methods instead:
+    /// - `solve_linear()`
+    /// - `solve_quadratic()`
+    /// - `solve_polynomial()`
+    /// - `solve_ode()`
+    /// - `solve_pde()`
+    /// - `solve_system()`
     ///
     /// # Arguments
     ///
@@ -25,7 +46,6 @@ impl Expression {
     ///
     /// # Examples
     ///
-    /// Basic usage (default: no explanation):
     /// ```rust
     /// use mathhook_core::{Expression, symbol};
     /// use mathhook_core::algebra::solvers::SolverResult;
@@ -79,7 +99,7 @@ impl Expression {
     /// // The explanation contains educational content showing how to solve the equation
     /// ```
     pub fn solve_with_steps(&self, variable: &Symbol) -> (SolverResult, StepByStepExplanation) {
-        let mut solver = SmartEquationSolver::new();
+        let solver = SmartEquationSolver::new();
         solver.solve_with_equation(self, variable)
     }
 }

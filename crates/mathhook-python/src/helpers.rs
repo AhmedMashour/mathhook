@@ -2,7 +2,7 @@
 //!
 //! This module was automatically extracted from lib.rs using syn-based refactoring.
 
-use crate::expression::PyExpression;
+use crate::generated::PyExpression;
 use mathhook_core::{Expression, Symbol};
 use pyo3::prelude::*;
 use std::sync::RwLock;

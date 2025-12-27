@@ -6,7 +6,8 @@ members = [
     "crates/mathhook-python",
     "crates/mathhook-node",
     "crates/mathhook",
-    "crates/mathhook-macros"
+    "crates/mathhook-macros",
+    "tools/binding-codegen"
 ]
 
 [workspace.package]

@@ -44,7 +44,7 @@ fn bench_arithmetic_operations(c: &mut Criterion) {
 
 /// Benchmark solver operations
 fn bench_solver_operations(c: &mut Criterion) {
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let equation = Expression::equation(Expression::symbol("x"), Expression::integer(42));
     let variable = symbol!(x);
 

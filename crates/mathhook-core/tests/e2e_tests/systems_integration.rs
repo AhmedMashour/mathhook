@@ -77,7 +77,7 @@ fn test_smart_solver_system_routing() {
         Expression::integer(-1),
     ]);
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let result = solver.solve_system(&[eq1, eq2], &[x, y]);
 
     // Should find unique solution: x = 2, y = 1
@@ -255,7 +255,7 @@ fn test_architecture_no_hardcoded_routing() {
     let y = symbol!(y);
 
     // Use SmartEquationSolver (high-level API)
-    let mut smart_solver = SmartEquationSolver::new();
+    let smart_solver = SmartEquationSolver::new();
 
     let eq1 = Expression::add(vec![
         Expression::symbol(x.clone()),

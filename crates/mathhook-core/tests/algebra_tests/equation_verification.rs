@@ -57,7 +57,7 @@ fn test_solve_simple_linear_x_equals_constant() {
     let x = symbol!(x);
     let equation = Expression::equation(Expression::symbol(x.clone()), Expression::integer(5));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -83,7 +83,7 @@ fn test_solve_linear_with_coefficient() {
     let left = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let equation = Expression::equation(left, Expression::integer(6));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -109,7 +109,7 @@ fn test_solve_linear_with_addition() {
     let left = Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(2)]);
     let equation = Expression::equation(left, Expression::integer(5));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -138,7 +138,7 @@ fn test_solve_general_linear() {
     ]);
     let equation = Expression::equation(left, Expression::integer(11));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -167,7 +167,7 @@ fn test_solve_linear_negative_coefficient() {
     ]);
     let equation = Expression::equation(left, Expression::integer(2));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -193,7 +193,7 @@ fn test_solve_linear_rational_solution() {
     let left = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let equation = Expression::equation(left, Expression::integer(1));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -216,7 +216,7 @@ fn test_solve_simple_quadratic() {
     let left = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
     let equation = Expression::equation(left, Expression::integer(4));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -247,7 +247,7 @@ fn test_solve_factored_quadratic() {
     ]);
     let equation = Expression::equation(left, Expression::integer(0));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -290,7 +290,7 @@ fn test_solve_quadratic_no_real_solutions() {
     ]);
     let equation = Expression::equation(left, Expression::integer(0));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -314,7 +314,7 @@ fn test_solve_contradictory_equation() {
     let right = Expression::symbol(x.clone());
     let equation = Expression::equation(left, right);
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -335,7 +335,7 @@ fn test_solve_identity_equation() {
     let right = Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]);
     let equation = Expression::equation(left, right);
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -358,7 +358,7 @@ fn test_solve_zero_coefficient() {
     ]);
     let equation = Expression::equation(left, Expression::integer(0));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -381,7 +381,7 @@ fn test_solve_zero_both_sides() {
     ]);
     let equation = Expression::equation(left, Expression::integer(0));
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -490,7 +490,7 @@ fn test_complete_solving_workflow() {
         (Expression::equation(expr!(x + 1), expr!(4)), vec![expr!(3)]),
     ];
 
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
 
     for (equation, expected_solutions) in equations_and_expected_solutions {
         let result = solver.solve(&equation, &x);

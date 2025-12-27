@@ -6,12 +6,10 @@
 use crate::algebra::equation_analyzer::SmartEquationSolver;
 use crate::core::{Expression, Symbol};
 use crate::simplify::Simplify;
-use mathhook_macros::{mathhook_enum, mathhook_impl, mathhook_struct};
 use serde::{Deserialize, Serialize};
 
 /// Result of a solving operation
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[mathhook_enum(module = "solvers", skip_python, skip_nodejs)]
 pub enum SolverResult {
     /// Single solution found
     Single(Expression),
@@ -24,8 +22,9 @@ pub enum SolverResult {
 }
 
 /// Configuration for solving operations
+///
+/// @no-binding - internal configuration, use Expression::solve() API
 #[derive(Debug, Clone)]
-#[mathhook_struct(module = "solvers", skip_python, skip_nodejs)]
 pub struct SolverConfig {
     pub max_iterations: u32,
     pub tolerance: f64,
@@ -49,13 +48,15 @@ impl Default for SolverConfig {
 /// This is a separate object from Expression that maintains configuration
 /// and state for complex solving operations.
 ///
+/// @no-binding - use Expression::solve() or Expression::solve_with_steps() instead
+///
 /// # Examples
 ///
 /// ```rust
 /// use mathhook_core::{MathSolver, Expression, symbol, expr};
 /// use mathhook_core::simplify::Simplify;
 ///
-/// let mut solver = MathSolver::new();
+/// let solver = MathSolver::new();
 /// let x = symbol!(x);
 /// let equation = Expression::equation(
 ///     expr!((2*x) + 3),
@@ -65,13 +66,11 @@ impl Default for SolverConfig {
 /// let result = solver.solve(&equation, &x);
 /// // Result: SolverResult::Single for x = 2
 /// ```
-#[mathhook_struct(module = "solvers", skip_python, skip_nodejs)]
 pub struct MathSolver {
     config: SolverConfig,
     smart_solver: SmartEquationSolver,
 }
 
-#[mathhook_impl(skip_python, skip_nodejs)]
 impl MathSolver {
     /// Create a new solver with default configuration
     ///
@@ -118,17 +117,16 @@ impl MathSolver {
     /// ```rust
     /// use mathhook_core::{MathSolver, Expression};
     /// use mathhook_core::{symbol, expr};
-    /// let mut solver = MathSolver::new();
+    /// let solver = MathSolver::new();
     /// let equation = Expression::equation(
     ///     expr!(x),
     ///     expr!(5),
     /// );
     /// let result = solver.solve(&equation, &symbol!(x));
     /// ```
-    pub fn solve(&mut self, equation: &Expression, variable: &Symbol) -> SolverResult {
+    pub fn solve(&self, equation: &Expression, variable: &Symbol) -> SolverResult {
         match equation {
             Expression::Relation(relation_data) => {
-                // Extract left and right sides and convert to standard form (LHS - RHS = 0)
                 let left = &relation_data.left;
                 let right = &relation_data.right;
 
@@ -137,15 +135,12 @@ impl MathSolver {
                     Expression::mul(vec![Expression::integer(-1), right.clone()]),
                 ]);
 
-                // Use the SmartEquationSolver to solve
                 let (algebra_result, _explanation) = self
                     .smart_solver
                     .solve_with_equation(&standard_form, variable);
 
-                // Convert algebra::solvers::SolverResult to solvers::SolverResult
                 let result = self.convert_solver_result(algebra_result);
 
-                // Apply simplification if configured
                 if self.config.simplify_results {
                     match result {
                         SolverResult::Single(expr) => SolverResult::Single(expr.simplify()),
@@ -158,7 +153,6 @@ impl MathSolver {
                     result
                 }
             }
-            // If not a relation, treat expression as "expression = 0"
             _ => {
                 let (algebra_result, _explanation) =
                     self.smart_solver.solve_with_equation(equation, variable);
@@ -188,7 +182,7 @@ impl MathSolver {
     /// use mathhook_core::{MathSolver, Expression};
     /// use mathhook_core::{symbol, expr};
     ///
-    /// let mut solver = MathSolver::new();
+    /// let solver = MathSolver::new();
     /// let equations = vec![
     ///     Expression::equation(expr!(x), expr!(1)),
     ///     Expression::equation(expr!(y), expr!(2)),
@@ -197,14 +191,13 @@ impl MathSolver {
     /// let result = solver.solve_system(&equations, &variables);
     /// ```
     pub fn solve_system(
-        &mut self,
+        &self,
         equations: &[Expression],
         variables: &[Symbol],
     ) -> Vec<SolverResult> {
-        // Basic implementation - solve each equation independently
         equations
             .iter()
-            .map(|eq| self.solve(eq, &variables[0])) // Simplified for now
+            .map(|eq| self.solve(eq, &variables[0]))
             .collect()
     }
 
@@ -226,7 +219,6 @@ impl MathSolver {
         self.config = config;
     }
 
-    // Private helper methods
     fn convert_solver_result(
         &self,
         algebra_result: crate::algebra::solvers::SolverResult,
@@ -239,13 +231,9 @@ impl MathSolver {
                 SolverResult::InfiniteSolutions
             }
             crate::algebra::solvers::SolverResult::Parametric(exprs) => {
-                // Parametric solutions are returned as multiple solutions for simplicity
                 SolverResult::Multiple(exprs)
             }
-            crate::algebra::solvers::SolverResult::Partial(exprs) => {
-                // Partial solutions are returned as multiple solutions
-                SolverResult::Multiple(exprs)
-            }
+            crate::algebra::solvers::SolverResult::Partial(exprs) => SolverResult::Multiple(exprs),
         }
     }
 }

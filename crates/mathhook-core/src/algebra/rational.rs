@@ -366,6 +366,19 @@ impl Expression {
             _ => (BigRational::one(), self.clone()),
         }
     }
+
+    /// Extract rational coefficient as string parts (FFI-friendly, no BigRational)
+    ///
+    /// Returns (numerator, denominator, remainder) where numerator/denominator
+    /// is the rational coefficient and remainder is the non-rational part.
+    pub fn extract_rational_parts(&self) -> (String, String, Expression) {
+        let (rational, remainder) = self.extract_rational_coefficient();
+        (
+            rational.numer().to_string(),
+            rational.denom().to_string(),
+            remainder,
+        )
+    }
 }
 
 #[cfg(test)]

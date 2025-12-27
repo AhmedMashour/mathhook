@@ -23,9 +23,7 @@ pub mod solvers;
 // Curated re-exports (no wildcards for maintainability)
 
 // Macro re-exports (at crate root for backward compatibility)
-pub use mathhook_macros::{
-    expr, function, mathhook_enum, mathhook_fn, mathhook_impl, mathhook_struct, symbol, symbols,
-};
+pub use mathhook_macros::{expr, function, symbol, symbols};
 
 // Core types (most commonly used)
 pub use core::expression::eval_numeric::{EvalContext, EvalNumeric};
@@ -81,9 +79,6 @@ pub use simplify::Simplify;
 pub mod prelude {
     pub use crate::macros::*;
     pub use crate::{expr, function, symbol, symbols};
-
-    // Export macros for language bindings
-    pub use crate::{mathhook_enum, mathhook_fn, mathhook_impl, mathhook_struct};
 
     // Core types
     pub use crate::{
@@ -170,7 +165,7 @@ mod tests {
 
     #[test]
     fn test_solver_object_api() {
-        let mut solver = MathSolver::new();
+        let solver = MathSolver::new();
 
         let equation = Expression::equation(expr!(x), expr!(42));
 

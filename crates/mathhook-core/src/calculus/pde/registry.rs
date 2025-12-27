@@ -8,6 +8,7 @@
 use super::classification::classify_pde;
 use super::types::{PDESolution, Pde, PdeType};
 use std::collections::HashMap;
+use std::fmt;
 use std::sync::Arc;
 
 /// Error type for PDE solving operations
@@ -28,6 +29,36 @@ pub enum PDEError {
     /// Invalid PDE form
     InvalidForm { reason: String },
 }
+
+impl fmt::Display for PDEError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            PDEError::NoSolverAvailable { pde_type } => {
+                write!(f, "No solver available for PDE type: {:?}", pde_type)
+            }
+            PDEError::ClassificationFailed { reason } => {
+                write!(f, "PDE classification failed: {}", reason)
+            }
+            PDEError::SolutionFailed { solver, reason } => {
+                write!(f, "Solver '{}' failed: {}", solver, reason)
+            }
+            PDEError::InvalidBoundaryConditions { reason } => {
+                write!(f, "Invalid boundary conditions: {}", reason)
+            }
+            PDEError::InvalidInitialConditions { reason } => {
+                write!(f, "Invalid initial conditions: {}", reason)
+            }
+            PDEError::NotSeparable { reason } => {
+                write!(f, "PDE is not separable: {}", reason)
+            }
+            PDEError::InvalidForm { reason } => {
+                write!(f, "Invalid PDE form: {}", reason)
+            }
+        }
+    }
+}
+
+impl std::error::Error for PDEError {}
 
 /// Result type for PDE operations
 pub type PDEResult = Result<PDESolution, PDEError>;
@@ -221,5 +252,14 @@ mod tests {
     fn test_registry_default() {
         let registry = PDESolverRegistry::default();
         assert!(registry.solver_count() > 0);
+    }
+
+    #[test]
+    fn test_pde_error_display() {
+        let err = PDEError::NoSolverAvailable {
+            pde_type: PdeType::Parabolic,
+        };
+        let s = format!("{}", err);
+        assert!(s.contains("No solver available"));
     }
 }

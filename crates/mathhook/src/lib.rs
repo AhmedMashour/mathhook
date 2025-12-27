@@ -83,7 +83,7 @@ mod tests {
     }
     #[test]
     fn test_solver_integration() {
-        let mut solver = MathSolver::new();
+        let solver = MathSolver::new();
         let x = symbol!(x);
         let equation = Expression::equation(Expression::symbol("x"), Expression::integer(42));
         let result = solver.solve(&equation, &x);

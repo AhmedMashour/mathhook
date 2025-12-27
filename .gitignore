@@ -28,3 +28,7 @@ CLAUDE.md
 *.benchmark.json
 *.benchmark.csv
 __pycache__
+
+# Generated binding code (regenerate with: cargo run -p binding-codegen -- generate)
+/crates/mathhook-python/src/generated/
+/crates/mathhook-node/src/generated/

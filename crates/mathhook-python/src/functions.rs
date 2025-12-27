@@ -118,7 +118,7 @@ pub fn symbol(name: &str) -> PyExpression {
 #[pyfunction]
 pub fn solve(equation: &PyExpression, variable: &str) -> Vec<PyExpression> {
     use mathhook_core::MathSolver;
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let sym = Symbol::new(variable);
     let result = solver.solve(&equation.inner, &sym);
 
@@ -163,7 +163,15 @@ pub fn solve(equation: &PyExpression, variable: &str) -> Vec<PyExpression> {
 #[doc = " ```"]
 #[pyfunction]
 pub fn parse(input: &str) -> PyResult<PyExpression> {
-    PyExpression::parse(input)
+    use mathhook_core::{Parser, ParserConfig};
+    let parser = Parser::new(&ParserConfig::default());
+    match parser.parse(input) {
+        Ok(expr) => Ok(PyExpression { inner: expr }),
+        Err(e) => Err(pyo3::exceptions::PyValueError::new_err(format!(
+            "Parse error: {}",
+            e
+        ))),
+    }
 }
 
 mathhook_macros::generate_python_binding!(sin);

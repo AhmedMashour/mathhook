@@ -75,7 +75,7 @@ fn test_smart_solver_pde_routing() {
 
     let equation = Expression::symbol(partial_u);
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let (_result, explanation) = solver.solve_with_equation(&equation, &u);
 
     // Verify routing happened (explanation should mention PDE)
@@ -157,7 +157,7 @@ fn test_no_stub_implementations_in_pde_routing() {
     // Verify SmartEquationSolver actually has a PDE solver field
     // and doesn't just return NotImplemented
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
 
     // We can't directly inspect the private pde_solver field,
     // but we can verify behavior via public API

@@ -5,7 +5,7 @@ fn test_solve_simple_linear() {
     // SymPy: solve(x - 5, x) = [5]
     let x = symbol!(x);
     let equation = Expression::equation(Expression::symbol(x.clone()), expr!(5));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -21,7 +21,7 @@ fn test_solve_linear_with_coefficient() {
     // SymPy: solve(2*x - 10, x) = [5]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(2 * x), expr!(10));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -39,7 +39,7 @@ fn test_solve_linear_with_constant() {
     let left = expr!(x + 3);
     let right = expr!(8);
     let equation = Expression::equation(left, right);
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -55,7 +55,7 @@ fn test_solve_quadratic_simple() {
     // SymPy: solve(x**2 - 4, x) = [-2, 2]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x ^ 2), expr!(4));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -81,7 +81,7 @@ fn test_solve_quadratic_one_solution() {
         ]),
         expr!(0),
     );
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -100,7 +100,7 @@ fn test_solve_quadratic_formula() {
     // SymPy: solve(x**2 + 3*x + 2, x) = [-2, -1]
     let x = symbol!(x);
     let equation = Expression::equation(expr!((x ^ 2) + (3 * x) + 2), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -119,7 +119,7 @@ fn test_solve_zero_equals_zero() {
     // SymPy: solve(0, x) = all values (infinite solutions)
     let x = symbol!(x);
     let equation = Expression::equation(expr!(0), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -135,7 +135,7 @@ fn test_solve_no_solution() {
     // SymPy: solve(1, x) = [] (no solution)
     let x = symbol!(x);
     let equation = Expression::equation(expr!(1), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -154,7 +154,7 @@ fn test_solve_negative_coefficient() {
         Expression::mul(vec![Expression::integer(-2), Expression::symbol(x.clone())]),
         expr!((-10)),
     );
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -170,7 +170,7 @@ fn test_solve_fraction_result() {
     // SymPy: solve(2*x - 1, x) = [1/2]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(2 * x), expr!(1));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -186,7 +186,7 @@ fn test_solve_cubic_one_real_root() {
     // SymPy: solve(x**3 - 1, x) = [1, complex roots...]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x ^ 3), expr!(1));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -206,7 +206,7 @@ fn test_solve_higher_order_polynomial() {
     // SymPy: solve(x**4 - 16, x) = [-2, 2, -2i, 2i]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x ^ 4), expr!(16));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -224,7 +224,7 @@ fn test_solve_with_multiple_variables() {
     // SymPy: solve(x + y - 5, x) = [5 - y]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x + y), expr!(5));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -242,7 +242,7 @@ fn test_solve_rational_equation() {
     // SymPy: solve(x/2 - 3, x) = [6]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x / 2), expr!(3));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -258,7 +258,7 @@ fn test_solve_zero_equals_variable() {
     // SymPy: solve(x, x) = [0]
     let x = symbol!(x);
     let equation = Expression::equation(Expression::symbol(x.clone()), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -274,7 +274,7 @@ fn test_solve_negative_square() {
     // SymPy: solve(x**2 + 1, x) = [-i, i] (complex solutions)
     let x = symbol!(x);
     let equation = Expression::equation(expr!((x ^ 2) + 1), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -299,7 +299,7 @@ fn test_solve_linear_system_simple() {
     let y = symbol!(y);
     let eq1 = Expression::equation(expr!(x + y), expr!(3));
     let eq2 = Expression::equation(expr!(x - y), expr!(1));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let results = solver.solve_system(&[eq1, eq2], &[x.clone(), y.clone()]);
 
     // System solver returns Vec<SolverResult>, one per variable
@@ -324,7 +324,7 @@ fn test_solve_quadratic_negative_discriminant() {
     // SymPy: solve(x**2 + x + 1, x) = [(-1 - sqrt(3)*i)/2, (-1 + sqrt(3)*i)/2]
     let x = symbol!(x);
     let equation = Expression::equation(expr!((x ^ 2) + x + 1), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -344,7 +344,7 @@ fn test_solve_exponential_simple() {
     // SymPy: solve(2**x - 8, x) = [3]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(2 ^ x), expr!(8));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -363,7 +363,7 @@ fn test_solve_absolute_value() {
     // SymPy: solve(abs(x) - 5, x) = [-5, 5]
     let x = symbol!(x);
     let equation = Expression::equation(function!(abs, Expression::symbol(x.clone())), expr!(5));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -383,7 +383,7 @@ fn test_solve_sqrt_equation() {
     // SymPy: solve(sqrt(x) - 2, x) = [4]
     let x = symbol!(x);
     let equation = Expression::equation(function!(sqrt, Expression::symbol(x.clone())), expr!(2));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -402,7 +402,7 @@ fn test_solve_factored_form() {
     // SymPy: solve((x-1)*(x-2), x) = [1, 2]
     let x = symbol!(x);
     let equation = Expression::equation(expr!((x - 1) * (x - 2)), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -428,7 +428,7 @@ fn test_solve_cubic_all_real_roots() {
         ]),
         expr!(0),
     );
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -450,7 +450,7 @@ fn test_solve_variable_on_both_sides() {
     // SymPy: solve(2*x + 3 - (x + 8), x) = [5]
     let x = symbol!(x);
     let equation = Expression::equation(expr!((2 * x) + 3), expr!(x + 8));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -473,7 +473,7 @@ fn test_solve_multiple_occurrences() {
         ]),
         expr!(0),
     );
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {
@@ -491,7 +491,7 @@ fn test_solve_negative_result() {
     // SymPy: solve(x + 10, x) = [-10]
     let x = symbol!(x);
     let equation = Expression::equation(expr!(x + 10), expr!(0));
-    let mut solver = MathSolver::new();
+    let solver = MathSolver::new();
     let result = solver.solve(&equation, &x);
 
     match result {

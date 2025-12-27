@@ -75,7 +75,7 @@ fn test_numerical_solver_routing() {
         Expression::integer(-1),
     ]);
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let (_result, explanation) = solver.solve_with_equation(&quintic, &x);
 
     // Verify solver routing
@@ -171,7 +171,7 @@ fn test_numerical_solver_educational_output() {
         Expression::integer(-32),
     ]);
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let (_result, explanation) = solver.solve_with_equation(&equation, &x);
 
     // Verify comprehensive educational output

@@ -219,7 +219,7 @@ mod solver_workflows {
         let x = symbol!(x);
         let equation = Expression::equation(Expression::symbol(x.clone()), Expression::integer(5));
 
-        let mut solver = MathSolver::new();
+        let solver = MathSolver::new();
         let result = solver.solve(&equation, &x);
 
         if let SolverResult::Single(solution) = result {
@@ -230,7 +230,7 @@ mod solver_workflows {
     #[test]
     fn test_solver_handles_multiple_equations() {
         let x = symbol!(x);
-        let mut solver = MathSolver::new();
+        let solver = MathSolver::new();
 
         let equations = vec![
             Expression::equation(Expression::symbol(x.clone()), Expression::integer(3)),

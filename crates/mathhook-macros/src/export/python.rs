@@ -308,6 +308,12 @@ fn generate_python_field_getters(struct_def: &ItemStruct) -> Result<TokenStream>
             }
 
             let ty = TypeInfo::from_type(&field.ty);
+
+            // Skip fields with unbindable types (Vec<T>, HashMap<K,V>, etc.)
+            if !ty.is_field_bindable() {
+                return None;
+            }
+
             if let Some(wrapper) = ty.python_wrapper_ident() {
                 Some(quote! {
                     #[getter]
@@ -341,6 +347,12 @@ fn generate_python_field_setters(struct_def: &ItemStruct) -> Result<TokenStream>
             }
 
             let ty = TypeInfo::from_type(&field.ty);
+
+            // Skip fields with unbindable types (Vec<T>, HashMap<K,V>, etc.)
+            if !ty.is_field_bindable() {
+                return None;
+            }
+
             if let Some(wrapper) = ty.python_wrapper_ident() {
                 Some(quote! {
                     #[setter]

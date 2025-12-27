@@ -6,7 +6,7 @@ use crate::JsExpression;
 use mathhook_core::calculus::pde::standard::heat::HeatEquationSolver;
 use mathhook_core::calculus::pde::standard::laplace::LaplaceEquationSolver;
 use mathhook_core::calculus::pde::standard::wave::WaveEquationSolver;
-use mathhook_core::calculus::pde::types::{InitialCondition, Pde};
+use mathhook_core::calculus::pde::types::{InitialCondition, Pde, SolutionMetadata};
 use mathhook_core::{expr, symbol, Expression, MathSolver, Symbol};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -370,7 +370,7 @@ impl JsPDESolver {
             laplace_solver: LaplaceEquationSolver::new(),
         }
     }
-    #[doc = " Solve the heat equation ∂u/∂t = α∇²u"]
+    #[doc = " Solve the heat equation du/dt = alpha * nabla^2(u)"]
     #[doc = ""]
     #[doc = " For 1D heat equation with Dirichlet boundary conditions and initial temperature distribution."]
     #[doc = ""]
@@ -390,7 +390,6 @@ impl JsPDESolver {
     #[doc = " // Returns heat equation solution with Fourier series"]
     #[doc = " ```"]
     #[napi]
-    #[allow(deprecated)]
     pub fn solve_heat_equation(
         &self,
         _dependent_var: String,
@@ -408,31 +407,32 @@ impl JsPDESolver {
             .heat_solver
             .solve_heat_equation_1d(&pde, &alpha.inner, &[], &ic)
         {
-            Ok(result) => Ok(PDESolution {
-                solution: format!("{}", result.solution),
-                method: "Separation of Variables (Heat Equation)".to_string(),
-                eigenvalues: Some(
-                    result
-                        .eigenvalues
-                        .iter()
-                        .map(|e| format!("{}", e))
-                        .collect(),
-                ),
-                coefficients: Some(
-                    result
-                        .coefficients
-                        .iter()
-                        .map(|c| format!("{}", c))
-                        .collect(),
-                ),
-            }),
+            Ok(result) => {
+                let (eigenvalues, coefficients) = match result.metadata {
+                    SolutionMetadata::Heat {
+                        eigenvalues,
+                        coefficients,
+                        ..
+                    } => (
+                        eigenvalues.iter().map(|e| format!("{}", e)).collect(),
+                        coefficients.iter().map(|c| format!("{}", c)).collect(),
+                    ),
+                    _ => (vec![], vec![]),
+                };
+                Ok(PDESolution {
+                    solution: format!("{}", result.solution),
+                    method: "Separation of Variables (Heat Equation)".to_string(),
+                    eigenvalues: Some(eigenvalues),
+                    coefficients: Some(coefficients),
+                })
+            }
             Err(e) => Err(Error::new(
                 Status::GenericFailure,
                 format!("Failed to solve heat equation: {:?}", e),
             )),
         }
     }
-    #[doc = " Solve the wave equation ∂²u/∂t² = c²∇²u"]
+    #[doc = " Solve the wave equation d^2u/dt^2 = c^2 * nabla^2(u)"]
     #[doc = ""]
     #[doc = " For 1D wave equation with Dirichlet boundary conditions and initial displacement/velocity."]
     #[doc = ""]
@@ -504,7 +504,7 @@ impl JsPDESolver {
             )),
         }
     }
-    #[doc = " Solve the Laplace equation ∇²u = 0"]
+    #[doc = " Solve the Laplace equation nabla^2(u) = 0"]
     #[doc = ""]
     #[doc = " For 2D Laplace equation on rectangular domain with Dirichlet boundary conditions."]
     #[doc = ""]

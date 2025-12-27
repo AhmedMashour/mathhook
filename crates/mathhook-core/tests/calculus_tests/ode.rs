@@ -76,7 +76,7 @@ fn test_smart_solver_ode_routing() {
         Expression::mul(vec![Expression::integer(2), Expression::symbol(y.clone())]),
     ]);
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let (_result, explanation) = solver.solve_with_equation(&equation, &y);
 
     // Verify routing happened (explanation should mention ODE)
@@ -146,7 +146,7 @@ fn test_no_stub_implementations_in_routing() {
     // Verify SmartEquationSolver actually has an ODE solver field
     // and doesn't just return NotImplemented
 
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
 
     // We can't directly inspect the private ode_solver field,
     // but we can verify behavior via public API

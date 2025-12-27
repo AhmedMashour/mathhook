@@ -6,7 +6,7 @@ use mathhook_core::{symbol, Expression};
 
 #[test]
 fn test_left_division_through_smart_solver() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let a = symbol!(A; matrix);
     let x = symbol!(X; matrix);
     let b = symbol!(B; matrix);
@@ -34,7 +34,7 @@ fn test_left_division_through_smart_solver() {
 
 #[test]
 fn test_right_division_through_smart_solver() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let a = symbol!(A; matrix);
     let x = symbol!(X; matrix);
     let b = symbol!(B; matrix);
@@ -62,7 +62,7 @@ fn test_right_division_through_smart_solver() {
 
 #[test]
 fn test_operator_equation_through_smart_solver() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let h = symbol!(H; operator);
     let psi = symbol!(psi; operator);
     let e = symbol!(E; operator);
@@ -96,7 +96,7 @@ fn test_operator_equation_through_smart_solver() {
 
 #[test]
 fn test_scalar_equations_still_work() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let x = symbol!(x);
 
     // 2x + 3 = 0
@@ -119,7 +119,7 @@ fn test_scalar_equations_still_work() {
 
 #[test]
 fn test_matrix_equation_with_explanation() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let a = symbol!(A; matrix);
     let x = symbol!(X; matrix);
     let b = symbol!(B; matrix);
@@ -148,7 +148,7 @@ fn test_matrix_equation_with_explanation() {
 
 #[test]
 fn test_mixed_matrix_scalar_equation() {
-    let mut solver = SmartEquationSolver::new();
+    let solver = SmartEquationSolver::new();
     let a = symbol!(A; matrix);
     let x = symbol!(x);
 
