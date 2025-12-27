@@ -70,13 +70,21 @@ $$= \frac{2}{L} \left[\frac{4L^3}{n^3\pi^3}[1 - (-1)^n]\right] = \frac{8L^2}{n^3
 
 ### Current Implementation
 
-MathHook solvers return:
+MathHook solvers return a unified `PDESolution`:
 
 ```rust
-pub struct HeatSolution {
+pub struct PDESolution {
     pub solution: Expression,     // Σ A_n sin(λₙx) exp(-λₙαt)
-    pub eigenvalues: Vec<Expression>,  // [λ₁, λ₂, λ₃, ...] ✅ COMPUTED
-    pub coefficients: Vec<Expression>, // [A_1, A_2, A_3, ...] ⚠️ SYMBOLIC
+    pub metadata: SolutionMetadata,
+}
+
+pub enum SolutionMetadata {
+    Heat {
+        alpha: Expression,
+        eigenvalues: Vec<Expression>,    // [λ₁, λ₂, λ₃, ...] ✅ COMPUTED
+        coefficients: Vec<Expression>,   // [A_1, A_2, A_3, ...] ⚠️ SYMBOLIC
+    },
+    // ... Wave, Laplace variants
 }
 ```
 
@@ -132,22 +140,25 @@ This is **symbolic integration** of a **user-provided function** $f(x)$.
 For simple initial conditions, manually compute coefficients:
 
 ```rust
-use mathhook_core::pde::standard::heat::HeatEquationSolver;
+use mathhook_core::calculus::pde::standard::heat::HeatEquationSolver;
+use mathhook_core::calculus::pde::types::SolutionMetadata;
 use mathhook_core::{symbol, expr};
 
 // ... (setup PDE, BCs, IC as before)
 
 let result = solver.solve_heat_equation_1d(&pde, &alpha, &bcs, &ic)?;
 
-// ⚠️ Coefficients are symbolic
-println!("Symbolic: {:?}", result.coefficients);  // [A_1, A_2, A_3, ...]
+// ⚠️ Coefficients are symbolic - extract from metadata
+if let SolutionMetadata::Heat { coefficients, .. } = &result.metadata {
+    println!("Symbolic: {:?}", coefficients);  // [A_1, A_2, A_3, ...]
+}
 
 // ✅ Manually compute for f(x) = 100 (constant)
 let mut numerical_coeffs = Vec::new();
 for n in 1..=10 {
     let a_n = if n % 2 == 1 {
         // Odd n: A_n = 400/(nπ)
-        expr!(mul: (400.0 / ((n as f64) * std::f64::consts::PI)))
+        Expression::from(400.0 / ((n as f64) * std::f64::consts::PI))
     } else {
         // Even n: A_n = 0
         expr!(0)

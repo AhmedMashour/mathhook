@@ -8,7 +8,6 @@ mod generated;
 
 // Hand-written wrappers and API convenience functions
 mod functions;
-mod types;
 
 // Public API re-exports
 pub use functions::*;
