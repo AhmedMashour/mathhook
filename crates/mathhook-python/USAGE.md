@@ -1,21 +1,26 @@
 # MathHook Python Usage Guide
 
-Comprehensive guide for using MathHook in Python.
+Updated: 2025-12-27T23:30
+
+Comprehensive guide for using MathHook Python bindings.
 
 ## Table of Contents
 
 1. [Installation](#installation)
 2. [Quick Start](#quick-start)
-3. [Expression Creation](#expression-creation)
-4. [Algebraic Operations](#algebraic-operations)
-5. [Calculus](#calculus)
-6. [Solving Equations](#solving-equations)
-7. [Matrix Operations](#matrix-operations)
-8. [Parsing and Formatting](#parsing-and-formatting)
-9. [Educational Features](#educational-features)
-10. [Performance Tips](#performance-tips)
-11. [Integration with NumPy/SciPy](#integration-with-numpy-scipy)
-12. [Jupyter Notebook Support](#jupyter-notebook-support)
+3. [Symbol Creation](#symbol-creation)
+4. [Expression Creation](#expression-creation)
+5. [Operators](#operators)
+6. [Mathematical Functions](#mathematical-functions)
+7. [Algebraic Operations](#algebraic-operations)
+8. [Calculus](#calculus)
+9. [Equation Solving](#equation-solving)
+10. [ODE Solving](#ode-solving)
+11. [PDE Solving](#pde-solving)
+12. [Parsing](#parsing)
+13. [Display and Formatting](#display-and-formatting)
+14. [Advanced Features](#advanced-features)
+15. [Performance Tips](#performance-tips)
 
 ## Installation
 
@@ -38,56 +43,95 @@ maturin develop
 ## Quick Start
 
 ```python
-from mathhook import symbol, sin, cos, solve
+from mathhook import symbol, symbols, parse, solve, sin, cos, exp
 
 # Create symbols
 x = symbol('x')
+y = symbol('y')
 
-# Build and simplify expressions
-expr = (x + 1)**2
-expanded = expr.expand()  # x^2 + 2*x + 1
+# Build expressions using Python operators
+expr = x**2 + 2*x + 1
 
-# Calculus
-derivative = expr.diff(x)  # 2*x + 2
-integral = expr.integrate(x)  # x^3/3 + x^2 + x
+# Simplify
+simplified = expr.simplify()
+
+# Differentiate
+derivative = expr.derivative(symbol('x'))
 
 # Solve equations
-solutions = solve(x**2 - 4, x)  # [2, -2]
+solutions = solve(x**2 - 4, 'x')  # Returns [2, -2]
+```
+
+## Symbol Creation
+
+### Single Symbol
+
+```python
+from mathhook import symbol
+
+x = symbol('x')
+y = symbol('y')
+theta = symbol('theta')
+```
+
+### Multiple Symbols
+
+```python
+from mathhook import symbols
+
+# Space-separated
+x, y, z = symbols('x y z')
+
+# Comma-separated
+a, b, c = symbols('a,b,c')
+
+# Range syntax (creates x0, x1, x2)
+x0, x1, x2 = symbols('x0:3')
 ```
 
 ## Expression Creation
 
-### Basic Types
+### Using Expression Class
 
 ```python
 from mathhook import Expression
 
-# Numbers
-integer = Expression.integer(42)
-rational = Expression.rational(3, 4)  # 3/4
-floating = Expression.float(3.14159)
+# Integers
+two = Expression.integer(2)
+forty_two = Expression.integer(42)
 
-# Complex numbers
-from mathhook import I
-complex_num = 3 + 4*I
+# Floats
+pi_approx = Expression.float(3.14159)
+
+# Rationals
+half = Expression.rational(1, 2)
+three_quarters = Expression.rational(3, 4)
+
+# Constants
+pi = Expression.pi()
+phi = Expression.golden_ratio()
+
+# Square root
+sqrt_2 = Expression.sqrt(Expression.integer(2))
+
+# Factorial
+fact_5 = Expression.factorial(Expression.integer(5))
+
+# Sets
+s = Expression.set([Expression.integer(1), Expression.integer(2), Expression.integer(3)])
+
+# Intervals
+interval = Expression.interval(
+    Expression.integer(0),
+    Expression.integer(10),
+    True,   # start inclusive
+    False   # end exclusive
+)
 ```
 
-### Symbols
+## Operators
 
-```python
-from mathhook import symbol, symbols
-
-# Single symbol
-x = symbol('x')
-
-# Multiple symbols
-x, y, z = symbols('x y z')
-
-# With assumptions (future feature)
-# n = symbol('n', integer=True, positive=True)
-```
-
-### Using Operators
+MathHook supports Python operator overloading:
 
 ```python
 from mathhook import symbol
@@ -95,78 +139,147 @@ from mathhook import symbol
 x = symbol('x')
 y = symbol('y')
 
-# Arithmetic
-addition = x + y
-subtraction = x - y
-multiplication = x * y
-division = x / y
-power = x ** 2
+# Addition
+sum_expr = x + y
+
+# Subtraction
+diff_expr = x - y
+
+# Multiplication
+product = x * y
+
+# Division
+quotient = x / y
+
+# Power/Exponentiation
+squared = x ** 2
+cubed = x ** 3
+
+# Negation
+negative = -x
 
 # Compound expressions
-poly = x**2 + 2*x + 1
+polynomial = x**2 + 2*x + 1
 rational = (x + 1) / (x - 1)
 nested = ((x + y) ** 2) / (x - y)
 ```
 
-### Mathematical Functions
+## Mathematical Functions
+
+### Trigonometric Functions
 
 ```python
-from mathhook import (
-    # Trigonometric
-    sin, cos, tan, cot, sec, csc,
-    asin, acos, atan, atan2,
-
-    # Hyperbolic
-    sinh, cosh, tanh,
-    asinh, acosh, atanh,
-
-    # Exponential and logarithmic
-    exp, log, ln, log10,
-
-    # Roots and powers
-    sqrt, cbrt, root,
-
-    # Special functions
-    factorial, gamma, beta,
-    erf, erfc,
-)
+from mathhook import symbol, sin, cos, tan, asin, acos, atan
 
 x = symbol('x')
 
-# Trigonometric
-trig = sin(x)**2 + cos(x)**2  # = 1
+# Basic trig
+sine = sin(x)
+cosine = cos(x)
+tangent = tan(x)
+
+# Inverse trig
+arcsine = asin(x)
+arccosine = acos(x)
+arctangent = atan(x)
+
+# Pythagorean identity
+identity = sin(x)**2 + cos(x)**2  # Simplifies to 1
+```
+
+### Hyperbolic Functions
+
+```python
+from mathhook import symbol, sinh, cosh, tanh
+
+x = symbol('x')
+
+hyperbolic_sine = sinh(x)
+hyperbolic_cosine = cosh(x)
+hyperbolic_tangent = tanh(x)
+```
+
+### Exponential and Logarithmic
+
+```python
+from mathhook import symbol, exp, log, ln, sqrt
+
+x = symbol('x')
 
 # Exponential
 exponential = exp(x)
-logarithm = log(x, 10)  # log base 10
-natural_log = ln(x)      # natural log
 
-# Special
-fact = factorial(5)  # 120
+# Natural logarithm
+natural_log = ln(x)
+
+# Logarithm with base
+log_base_10 = log(x, 10)
+log_base_2 = log(x, 2)
+
+# Square root
+square_root = sqrt(x)
 ```
 
-### Constants
+### Special Functions
 
 ```python
-from mathhook import pi, e, I, oo, zoo, nan
+from mathhook import symbol, gamma, factorial, erf, erfc, zeta, digamma
+from mathhook import bessel_j, bessel_y, beta, polygamma
 
-# Pi
-circle_area = pi * r**2
+x = symbol('x')
+n = symbol('n')
 
-# Euler's number
-growth = e**t
+# Gamma and factorial
+gamma_x = gamma(x)
+fact_n = factorial(n)
 
-# Imaginary unit
-complex_num = 3 + 4*I
+# Error functions
+error_func = erf(x)
+complementary_erf = erfc(x)
 
-# Infinity
-limit_result = 1 / oo  # 0
+# Zeta function
+riemann_zeta = zeta(x)
 
-# Complex infinity
-complex_inf = zoo
+# Digamma function
+psi = digamma(x)
 
-# Not a number
-undefined = nan
+# Polygamma
+polygamma_1 = polygamma(1, x)
+
+# Bessel functions
+bessel_first = bessel_j(n, x)
+bessel_second = bessel_y(n, x)
+
+# Beta function
+beta_func = beta(x, n)
+```
+
+### Utility Functions
+
+```python
+from mathhook import symbol, abs_expr, sign, floor, ceil, round
+from mathhook import gcd, lcm, modulo, isprime
+
+x = symbol('x')
+a = symbol('a')
+b = symbol('b')
+
+# Absolute value (note: abs_expr to avoid conflict with built-in abs)
+absolute = abs_expr(x)
+
+# Sign function
+sign_x = sign(x)
+
+# Rounding functions
+floor_x = floor(x)
+ceil_x = ceil(x)
+round_x = round(x)
+
+# Number theory
+gcd_ab = gcd(a, b)
+lcm_ab = lcm(a, b)
+mod_ab = modulo(a, b)
+is_prime = isprime(a)
 ```
 
 ## Algebraic Operations
@@ -174,103 +287,125 @@ undefined = nan
 ### Simplification
 
 ```python
-from mathhook import symbol, sin, cos, simplify
+from mathhook import symbol
 
 x = symbol('x')
 
-# Automatic simplification
+# Basic simplification
 expr = x + x + x
-print(expr)  # 3*x
-
-# Explicit simplification
-expr = (x**2 - 1) / (x - 1)
-simplified = simplify(expr)  # x + 1
+simplified = expr.simplify()  # 3*x
 
 # Trigonometric simplification
-expr = sin(x)**2 + cos(x)**2
-simplified = simplify(expr)  # 1
+trig = (sin(x)**2 + cos(x)**2)
+trig_simplified = trig.simplify_trigonometric()  # 1
 
 # Rational simplification
-from mathhook import cancel
-expr = (x**2 + 2*x + 1) / (x + 1)
-simplified = cancel(expr)  # x + 1
+rational = (x**2 - 1) / (x - 1)
+rational_simplified = rational.simplify_rational()  # x + 1
+
+# Logarithm simplification
+log_expr = ln(exp(x))
+log_simplified = log_expr.simplify_logarithms()  # x
+
+# Complex simplification
+from mathhook import Expression
+complex_expr = Expression.simplify_complex(expr)
+
+# Factorial simplification
+fact_expr = factorial(n + 1) / factorial(n)
+fact_simplified = fact_expr.simplify_factorial()  # n + 1
+
+# Matrix simplification
+matrix_simplified = matrix_expr.simplify_matrix()
 ```
 
 ### Expansion
 
 ```python
-from mathhook import symbol, expand
+from mathhook import symbol
 
-x, y = symbols('x y')
+x = symbol('x')
+y = symbol('y')
 
 # Expand products
 expr = (x + 1) * (x + 2)
-expanded = expand(expr)  # x^2 + 3*x + 2
+expanded = expr.expand()  # x^2 + 3*x + 2
 
 # Expand powers
-expr = (x + y)**3
-expanded = expand(expr)  # x^3 + 3*x^2*y + 3*x*y^2 + y^3
-
-# Expand complex expressions
-expr = (x + 1)**2 * (x - 1)
-expanded = expand(expr)  # x^3 + x^2 - x - 1
+power_expr = (x + y) ** 3
+expanded_power = power_expr.expand()
 ```
 
 ### Factorization
 
 ```python
-from mathhook import symbol, factor
+from mathhook import symbol
 
 x = symbol('x')
 
 # Factor polynomials
 expr = x**2 - 1
-factored = factor(expr)  # (x - 1)(x + 1)
+factored = expr.factor()  # (x - 1)(x + 1)
 
-expr = x**2 + 5*x + 6
-factored = factor(expr)  # (x + 2)(x + 3)
+# Factor out GCD
+expr2 = 2*x**2 + 4*x
+factored_gcd = expr2.factor_gcd()
 
-# Factor over different domains
-expr = x**2 + 1
-factored = factor(expr)  # x^2 + 1 (irreducible over reals)
-factored_complex = factor(expr, domain='complex')  # (x - I)(x + I)
-```
-
-### Collecting Terms
-
-```python
-from mathhook import symbol, collect
-
-x, y = symbols('x y')
-
-# Collect coefficients
-expr = x*y + x*y**2 + y**2 + y
-collected = collect(expr, x)  # x*(y + y^2) + y^2 + y
-collected = collect(expr, y)  # y*(x + 1) + y^2*(x + 1)
+# Factor common terms
+expr3 = x*y + x*z
+factored_common = expr3.factor_common()
 ```
 
 ### Substitution
 
 ```python
-from mathhook import symbol
+from mathhook import symbol, Expression
 
-x, y, z = symbols('x y z')
+x = symbol('x')
+y = symbol('y')
 
 expr = x**2 + 2*x + 1
 
-# Substitute single value
-result = expr.subs(x, 3)  # 16
+# Single substitution
+result = expr.subs(x, Expression.integer(3))
 
-# Substitute expression
-result = expr.subs(x, y + 1)  # (y + 1)^2 + 2*(y + 1) + 1
+# Multiple substitutions using dictionary
+substitutions = {'x': Expression.integer(2), 'y': Expression.integer(3)}
+result_multi = (x + y).substitute(substitutions)
 
-# Multiple substitutions
-expr = x + y + z
-result = expr.subs({x: 1, y: 2, z: 3})  # 6
+# Substitute and simplify
+result_simplified = (x + y).substitute_and_simplify(substitutions)
+```
 
-# Simultaneous substitution
-expr = x + y
-result = expr.subs({x: y, y: x})  # Swaps x and y
+### Polynomial Operations
+
+```python
+from mathhook import symbol, degree, roots
+
+x = symbol('x')
+
+poly = x**3 + 2*x**2 + x + 1
+
+# Get degree
+deg = poly.degree(symbol('x'))  # 3
+
+# Or use the function
+deg = degree(poly, 'x')  # 3
+
+# Find roots
+poly_roots = roots(poly, 'x')
+
+# Polynomial division
+quotient = poly.polynomial_quotient(x - 1)
+remainder = poly.polynomial_remainder(x - 1)
+
+# GCD of polynomials
+poly2 = x**2 - 1
+gcd_poly = poly.polynomial_gcd(poly2)
+
+# Primitive part and content
+primitive = poly.primitive_part()
+content = poly.polynomial_content()
 ```
 
 ## Calculus
@@ -278,115 +413,115 @@ result = expr.subs({x: y, y: x})  # Swaps x and y
 ### Derivatives
 
 ```python
-from mathhook import symbol, sin, cos, exp, diff
+from mathhook import symbol, sin, cos
 
 x = symbol('x')
 
 # First derivative
 expr = x**3
-derivative = diff(expr, x)  # 3*x^2
+derivative = expr.derivative(symbol('x'))  # 3*x^2
 
 # Higher-order derivatives
-second_deriv = diff(expr, x, 2)  # 6*x
-third_deriv = diff(expr, x, 3)  # 6
+second_deriv = expr.nth_derivative(symbol('x'), 2)  # 6*x
+third_deriv = expr.nth_derivative(symbol('x'), 3)   # 6
 
-# Using method
-derivative = expr.diff(x)
-second_deriv = expr.diff(x, 2)
+# Using static method
+from mathhook import Expression
+deriv = Expression.derivative_with_expression_variable_order(expr, symbol('x'), 2)
 
-# Partial derivatives
-from mathhook import symbols
-x, y, z = symbols('x y z')
-expr = x**2 * y + y**2 * z
-
-dx = diff(expr, x)  # 2*x*y
-dy = diff(expr, y)  # x^2 + 2*y*z
-dz = diff(expr, z)  # y^2
-
-# Mixed partials
-d2xy = diff(expr, x, y)  # 2*x
+# Step-by-step derivative explanation
+steps = expr.derivative_with_steps(symbol('x'), 1)
+for step in steps.steps:
+    print(f"{step.title}: {step.description}")
+    print(f"  Before: {step.before}")
+    print(f"  After: {step.after}")
 ```
 
-### Integrals
+### Integration
 
 ```python
-from mathhook import symbol, sin, cos, integrate
+from mathhook import symbol
 
 x = symbol('x')
 
-# Indefinite integrals
+# Indefinite integral
 expr = x**2
-integral = integrate(expr, x)  # x^3/3
+integral = expr.integrate(symbol('x'), 0)  # x^3/3
 
-# Definite integrals
-result = integrate(expr, (x, 0, 1))  # 1/3
-
-# Multiple integrals
-from mathhook import symbols
-x, y = symbols('x y')
-expr = x * y
-double_integral = integrate(integrate(expr, x), y)  # x^2*y^2/4
-
-# Limits of integration
-result = integrate(expr, (x, 0, 1), (y, 0, 2))
-
-# Trigonometric integrals
-integral = integrate(sin(x), x)  # -cos(x)
+# With depth parameter for complex integrals
+complex_integral = sin(x).integrate(symbol('x'), 5)
 ```
 
 ### Limits
 
 ```python
-from mathhook import symbol, sin, limit, oo
+from mathhook import symbol, Expression
 
 x = symbol('x')
 
-# Finite limits
-expr = sin(x) / x
-lim = limit(expr, x, 0)  # 1
+# Limit at a point
+expr = (x**2 - 1) / (x - 1)
+lim = expr.limit(symbol('x'), Expression.integer(1))  # 2
 
-# Limits at infinity
-expr = 1 / x
-lim = limit(expr, x, oo)  # 0
+# Limit at infinity
+expr2 = 1 / x
+lim_inf = expr2.limit_at_infinity(symbol('x'))  # 0
 
-# One-sided limits
-expr = 1 / x
-lim_right = limit(expr, x, 0, '+')  # oo
-lim_left = limit(expr, x, 0, '-')   # -oo
+# Limit at negative infinity
+lim_neg_inf = expr2.limit_at_negative_infinity(symbol('x'))  # 0
 
-# Complex limits
-from mathhook import sqrt
-expr = sqrt(x) / x
-lim = limit(expr, x, oo)  # 0
+# Directed limit (left or right)
+from mathhook import LimitDirection
+lim_right = expr.limit_directed(symbol('x'), Expression.integer(0), LimitDirection.Right)
 ```
 
-### Series Expansions
+### Series Expansion
 
 ```python
-from mathhook import symbol, sin, cos, exp, series
+from mathhook import symbol
 
 x = symbol('x')
 
-# Taylor series around 0
-series_sin = series(sin(x), x, 0, 6)
-# x - x^3/6 + x^5/120 + O(x^6)
+# Taylor series
+expr = sin(x)
+series = expr.taylor_series(symbol('x'), Expression.integer(0), 5)
 
-# Series around different point
-series_exp = series(exp(x), x, 1, 4)
-# e + e*(x-1) + e*(x-1)^2/2 + e*(x-1)^3/6 + O((x-1)^4)
+# Maclaurin series (Taylor at 0)
+maclaurin = expr.maclaurin_series(symbol('x'), 5)
 
-# Laurent series (for functions with poles)
-expr = 1 / x
-laurent = series(expr, x, 0, 3)
-# 1/x + O(x^2)
+# Laurent series
+laurent = expr.laurent_series(symbol('x'), Expression.integer(0), 5, 5)
 
-# Remove order term
-series_pure = series_sin.removeO()
+# Puiseux series
+puiseux = expr.puiseux_series(symbol('x'), Expression.integer(0), 5)
+
+# Asymptotic series
+asymptotic = expr.asymptotic_series(symbol('x'), 5)
 ```
 
-## Solving Equations
+### Summation
 
-### Algebraic Equations
+```python
+from mathhook import symbol, Expression
+
+n = symbol('n')
+k = symbol('k')
+
+# Finite sum
+expr = k**2
+finite_sum = expr.finite_sum(symbol('k'), Expression.integer(1), Expression.integer(10))
+
+# Infinite sum
+geometric = (Expression.rational(1, 2))**k
+infinite_sum = geometric.infinite_sum(symbol('k'))
+
+# Partial sum
+partial = expr.partial_sum(symbol('k'), Expression.integer(5))
+```
+
+## Equation Solving
+
+### Basic Equation Solving
 
 ```python
 from mathhook import symbol, solve
@@ -394,554 +529,483 @@ from mathhook import symbol, solve
 x = symbol('x')
 
 # Linear equations
-solutions = solve(2*x + 3 - 7, x)  # [2]
+solutions = solve(2*x + 3 - 7, 'x')  # [2]
 
 # Quadratic equations
-solutions = solve(x**2 - 5*x + 6, x)  # [2, 3]
+solutions = solve(x**2 - 5*x + 6, 'x')  # [2, 3]
 
 # Complex solutions
-solutions = solve(x**2 + 1, x)  # [I, -I]
+solutions = solve(x**2 + 1, 'x')  # [i, -i]
 
-# Cubic and higher
-solutions = solve(x**3 - 8, x)  # [2, -1 - sqrt(3)*I, -1 + sqrt(3)*I]
-
-# Multiple solutions
-from mathhook import Eq
-eq = Eq(x**2, 4)
-solutions = solve(eq, x)  # [2, -2]
+# Higher degree polynomials
+solutions = solve(x**3 - 8, 'x')
 ```
 
-### Systems of Equations
+### Fast Path Solvers
 
 ```python
-from mathhook import symbols, solve
+from mathhook import symbol
 
-x, y = symbols('x y')
+x = symbol('x')
 
-# Linear system
-solutions = solve([
-    x + y - 5,
-    x - y - 1
-], [x, y])
-# {x: 3, y: 2}
+# Direct linear solver (skips classification)
+expr = 2*x + 3
+result = expr.solve_linear(symbol('x'))
 
-# Nonlinear system
-solutions = solve([
-    x**2 + y**2 - 25,
-    x - y - 1
-], [x, y])
+# Direct quadratic solver
+expr2 = x**2 - 4
+result2 = expr2.solve_quadratic(symbol('x'))
 
-# Underdetermined system
-x, y, z = symbols('x y z')
-solutions = solve([
-    x + y + z - 6,
-    2*x - y + z - 3
-], [x, y, z])
-# Parametric solution in terms of z
+# Direct polynomial solver
+expr3 = x**4 - 1
+result3 = expr3.solve_polynomial(symbol('x'))
+
+# Matrix equation solver
+A = symbol('A')  # Matrix symbol
+result_matrix = matrix_eq.solve_matrix_equation(symbol('X'))
 ```
 
-### Differential Equations
-
-```python
-from mathhook import symbols, Function, dsolve, Eq
-
-x = symbols('x')
-f = Function('f')
-
-# First-order ODE: dy/dx = y
-eq = Eq(f(x).diff(x), f(x))
-solution = dsolve(eq, f(x))
-# f(x) = C1*exp(x)
-
-# Second-order ODE: d²y/dx² + y = 0
-eq = Eq(f(x).diff(x, 2) + f(x), 0)
-solution = dsolve(eq, f(x))
-# f(x) = C1*sin(x) + C2*cos(x)
-
-# With initial conditions
-eq = Eq(f(x).diff(x), f(x))
-solution = dsolve(eq, f(x), ics={f(0): 1})
-# f(x) = exp(x)
-```
-
-### Inequality Solving
+### Solver Results
 
 ```python
 from mathhook import symbol, solve
 
 x = symbol('x')
+result = solve(x**2 - 4, 'x')
 
-# Solve inequalities
-solutions = solve(x**2 - 4 < 0, x)
-# (-2, 2)
+# Result is a list of expressions
+for solution in result:
+    print(solution)
 
-# Multiple inequalities
-solutions = solve([x > 0, x < 5], x)
-# (0, 5)
+# Check number of solutions
+print(f"Found {len(result)} solutions")
 ```
 
-## Matrix Operations
+## ODE Solving
 
-### Creating Matrices
+### Numerical ODE Methods
 
 ```python
-from mathhook import Matrix, symbols
+from mathhook import PyODESolver, symbol, Expression
 
-# From nested lists
-A = Matrix([[1, 2], [3, 4]])
-
-# From symbolic expressions
+solver = PyODESolver()
 x = symbol('x')
-B = Matrix([[x, x**2], [1, x]])
+y = symbol('y')
 
-# Special matrices
-I = Matrix.eye(3)      # 3x3 identity
-Z = Matrix.zeros(2, 3)  # 2x3 zero matrix
-O = Matrix.ones(2, 2)   # 2x2 ones matrix
-D = Matrix.diag([1, 2, 3])  # Diagonal matrix
+# Define ODE: dy/dx = f(x, y)
+ode = x * y  # dy/dx = x*y
 
-# Random matrices
-R = Matrix.random(3, 3)  # Random integer matrix
+# Euler method
+solution_euler = solver.euler(
+    ode,
+    'x',        # independent variable name
+    'y',        # dependent variable name
+    0.0,        # x0 (initial x)
+    1.0,        # y0 (initial y)
+    1.0,        # x_end (final x)
+    0.1         # step size
+)
+
+# Returns list of (x, y) tuples
+for x_val, y_val in solution_euler:
+    print(f"x = {x_val:.2f}, y = {y_val:.4f}")
+
+# Runge-Kutta 4th order (RK4)
+solution_rk4 = solver.runge_kutta_4(
+    ode, 'x', 'y', 0.0, 1.0, 1.0, 0.1
+)
+
+# Adaptive Runge-Kutta-Fehlberg (RKF45)
+solution_rkf45 = solver.runge_kutta_45(
+    ode, 'x', 'y', 0.0, 1.0, 1.0,
+    tolerance=1e-6,      # error tolerance
+    initial_step=0.1     # initial step size
+)
 ```
 
-### Basic Operations
+## PDE Solving
+
+### PDE Solver
 
 ```python
-from mathhook import Matrix
+from mathhook import PyPDESolver, symbol, Expression
 
-A = Matrix([[1, 2], [3, 4]])
-B = Matrix([[5, 6], [7, 8]])
+solver = PyPDESolver()
 
-# Addition and subtraction
-C = A + B
-D = A - B
+# Heat equation: du/dt = alpha * d²u/dx²
+alpha = Expression.float(0.01)
+solution_heat = solver.solve_heat_equation(
+    alpha,
+    'x',                        # spatial variable
+    't',                        # time variable
+    Expression.integer(10)      # domain length
+)
 
-# Scalar multiplication
-E = 2 * A
+# Wave equation: d²u/dt² = c² * d²u/dx²
+c = Expression.integer(1)  # wave speed
+solution_wave = solver.solve_wave_equation(
+    c,
+    'x',
+    't',
+    Expression.integer(10)
+)
 
-# Matrix multiplication
-F = A * B
+# Laplace equation: d²u/dx² + d²u/dy² = 0
+solution_laplace = solver.solve_laplace_equation(['x', 'y'])
 
-# Element-wise operations
-G = A.multiply_elementwise(B)
-
-# Transpose
-AT = A.T
-# or
-AT = A.transpose()
-
-# Conjugate transpose
-AH = A.H
+# General PDE solving
+u = symbol('u')
+x = symbol('x')
+t = symbol('t')
+equation = u  # Your PDE equation (= 0)
+solution = solver.solve(equation, 'u', ['x', 't'])
 ```
 
-### Matrix Properties
+## Parsing
 
-```python
-from mathhook import Matrix
-
-A = Matrix([[1, 2], [3, 4]])
-
-# Determinant
-det = A.det()  # -2
-
-# Trace
-tr = A.trace()  # 5
-
-# Rank
-rank = A.rank()  # 2
-
-# Inverse
-A_inv = A.inv()
-
-# Adjugate
-adj = A.adjugate()
-
-# Condition number
-cond = A.condition_number()
-```
-
-### Matrix Decomposition
-
-```python
-from mathhook import Matrix
-
-A = Matrix([[4, 2], [2, 3]])
-
-# Eigenvalues and eigenvectors
-eigenvals = A.eigenvals()
-# {5.0: 1, 2.0: 1}
-
-eigenvects = A.eigenvects()
-# [(5.0, 1, [Matrix([[...]])]), (2.0, 1, [Matrix([[...]])])]
-
-# LU decomposition
-L, U, P = A.LUdecomposition()
-
-# QR decomposition
-Q, R = A.QRdecomposition()
-
-# Cholesky decomposition (for positive definite)
-L = A.cholesky()
-
-# Singular Value Decomposition
-U, S, V = A.singular_value_decomposition()
-
-# Diagonalization
-P, D = A.diagonalize()
-```
-
-### Solving Linear Systems
-
-```python
-from mathhook import Matrix
-
-A = Matrix([[2, 1], [1, 3]])
-b = Matrix([5, 6])
-
-# Solve Ax = b
-x = A.solve(b)
-# Matrix([[1], [3]])
-
-# Least squares solution
-x = A.solve_least_squares(b)
-
-# Using LU decomposition
-x = A.LUsolve(b)
-```
-
-## Parsing and Formatting
-
-### Parsing Expressions
+### Parse Mathematical Expressions
 
 ```python
 from mathhook import parse
 
 # Standard notation
-expr = parse("2*x + sin(y)")
+expr = parse('x^2 + 2*x + 1')
 
-# LaTeX
-expr = parse(r"\frac{x^2}{2} + \sqrt{y}")
-expr = parse(r"\int_{0}^{1} x^2 \, dx")
+# Implicit multiplication
+expr = parse('2x')        # Parsed as 2*x
+expr = parse('xy')        # Parsed as x*y
+expr = parse('3xy^2')     # Parsed as 3*x*y^2
 
-# Wolfram Language
-expr = parse("Sin[x] + Cos[y]")
-expr = parse("D[x^2, x]")
+# Function calls
+expr = parse('sin(x) + cos(x)')
+expr = parse('exp(x) * log(y)')
 
-# With explicit format
-from mathhook import parse_latex, parse_wolfram
-expr = parse_latex(r"\frac{dy}{dx}")
-expr = parse_wolfram("D[y, x]")
+# LaTeX notation
+expr = parse(r'\frac{x^2}{2}')
+expr = parse(r'\sqrt{x + 1}')
+
+# Complex expressions
+expr = parse('sin(x)^2 + cos(x)^2')
+expr = parse('(x + 1) / (x - 1)')
 ```
 
-### Output Formatting
+## Display and Formatting
+
+### Pretty Printing
 
 ```python
-from mathhook import symbol
-
-x = symbol('x')
-expr = x**2 / 2
-
-# String representation
-print(str(expr))  # x^2/2
-print(repr(expr))  # Expression(...)
-
-# LaTeX
-latex = expr.to_latex()
-print(latex)  # \frac{x^{2}}{2}
-
-# Pretty printing
-from mathhook import pprint
-pprint(expr)
-#  2
-# x
-# ──
-# 2
-
-# Unicode
-unicode_str = expr.to_unicode()
-
-# Wolfram
-wolfram = expr.to_wolfram()
-print(wolfram)  # Divide[Power[x, 2], 2]
-
-# Code generation
-from mathhook import ccode, pycode
-c_code = ccode(expr)  # C code
-py_code = pycode(expr)  # Python code
-```
-
-### LaTeX Rendering
-
-```python
-# In Jupyter
-from mathhook import init_printing, symbol
-init_printing()
+from mathhook import pprint, symbol
 
 x = symbol('x')
 expr = x**2 + 2*x + 1
-# Displays as LaTeX in Jupyter
-display(expr)
+
+# Pretty print with Unicode (default)
+pprint(expr)  # Shows: x² + 2·x + 1
+
+# Pretty print without Unicode
+pprint(expr, use_unicode=False)  # Shows: x^2 + 2*x + 1
 ```
 
-## Educational Features
-
-### Step-by-Step Solutions
+### Initialize Printing
 
 ```python
-from mathhook import symbol, solve
+from mathhook import init_printing
 
-x = symbol('x')
-equation = x**2 - 5*x + 6
+# Enable LaTeX rendering (for Jupyter)
+init_printing()
 
-# Get step-by-step solution
-steps = solve(equation, x, steps=True)
+# Disable LaTeX
+init_printing(use_latex=False)
 
-for i, step in enumerate(steps):
-    print(f"Step {i+1}: {step.description}")
-    print(f"  Expression: {step.expression}")
-    print()
+# Use PNG rendering
+init_printing(latex_mode='png')
 
-# Output:
-# Step 1: Original equation
-#   Expression: x^2 - 5*x + 6 = 0
-#
-# Step 2: Factor the quadratic
-#   Expression: (x - 2)(x - 3) = 0
-#
-# Step 3: Set each factor to zero
-#   Expression: x - 2 = 0 or x - 3 = 0
-#
-# Step 4: Solve for x
-#   Expression: x = 2 or x = 3
+# Use SVG rendering
+init_printing(latex_mode='svg')
+
+# Configure Unicode output
+init_printing(unicode=True)
 ```
 
-### Derivative Steps
+### String Representation
 
 ```python
-from mathhook import symbol, sin
-
-x = symbol('x')
-expr = sin(x**2)
-
-# Get derivative explanation
-explanation = expr.diff(x, show_steps=True)
-
-print(explanation)
-# Step 1: Apply chain rule to sin(x^2)
-# Step 2: Derivative of sin(u) is cos(u)
-# Step 3: Derivative of x^2 is 2*x
-# Step 4: Result: 2*x*cos(x^2)
-```
-
-## Performance Tips
-
-### Configuration
-
-```python
-from mathhook import configure
-
-# Use Python-optimized settings
-configure(binding='python')
-
-# Custom configuration
-configure(
-    simd_enabled=True,
-    simd_threshold=100,
-    cache_size=50000,
-    parallel_enabled=False
-)
-```
-
-### Caching
-
-```python
-from mathhook import symbol, cache
-
-x = symbol('x')
-
-# Cache expensive computations
-@cache
-def expensive_simplification(expr):
-    return expr.simplify()
-
-result = expensive_simplification(x**100 + x**99 + 1)
-```
-
-### Bulk Operations
-
-```python
-from mathhook import simplify_many
-
-# Process many expressions at once
-expressions = [x**2 + 2*x + 1 for x in symbols('x1:100')]
-simplified = simplify_many(expressions)
-```
-
-### Numerical Evaluation
-
-```python
-from mathhook import symbol, N
+from mathhook import symbol
 
 x = symbol('x')
 expr = x**2 + 1
 
-# Symbolic evaluation
-result = expr.subs(x, 2)  # 5 (exact)
+# String representation
+print(str(expr))   # x^2 + 1
 
-# Numerical evaluation
-result = N(expr.subs(x, 2.5))  # 7.25 (float)
-
-# Control precision
-from decimal import Decimal
-result = N(expr.subs(x, Decimal('2.5')), prec=50)
+# Debug representation
+print(repr(expr))  # PyExpression(x^2 + 1)
 ```
 
-## Integration with NumPy/SciPy
+## Advanced Features
 
-### Converting to NumPy
+### Groebner Basis
 
 ```python
-from mathhook import symbol, lambdify
-import numpy as np
+from mathhook import PyGroebnerBasis, parse
 
-x = symbol('x')
-expr = x**2 + 2*x + 1
+# Create polynomials
+f1 = parse('x^2 + y^2 - 1')
+f2 = parse('x - y')
 
-# Create numpy function
-f = lambdify(x, expr, 'numpy')
+# Create Groebner basis
+gb = PyGroebnerBasis(
+    [f1, f2],           # polynomials
+    ['x', 'y'],         # variables
+    'lex'               # monomial ordering: 'lex', 'grlex', 'grevlex'
+)
 
-# Evaluate on arrays
-x_vals = np.linspace(0, 10, 100)
-y_vals = f(x_vals)
+# Compute the basis
+gb.compute()
 
-# Plot
-import matplotlib.pyplot as plt
-plt.plot(x_vals, y_vals)
-plt.show()
+# Get basis polynomials
+basis = gb.get_basis()
+for poly in basis:
+    print(poly)
+
+# Test ideal membership
+test_poly = parse('x^2 - 1')
+is_member = gb.contains(test_poly)
+
+# Reduce to minimal form
+gb.reduce()
+
+# Check if reduced
+is_reduced = gb.is_reduced()
 ```
 
-### Solving with SciPy
+### Pattern Matching
+
+```python
+from mathhook import PyPattern, symbol
+
+x = symbol('x')
+
+# Wildcard pattern (matches any expression)
+pattern = PyPattern.wildcard('x')
+
+# Exact pattern (matches specific expression)
+pattern = PyPattern.exact(x**2)
+```
+
+### Fast Polynomial Operations (PolyZp)
+
+```python
+from mathhook import poly_zp, poly_gcd, poly_mul_fast
+
+# Create polynomial over Z/pZ (integers mod p)
+coeffs = [1, 2, 3]  # 1 + 2x + 3x^2
+modulus = 7
+poly = poly_zp(coeffs, modulus)
+
+# Fast GCD of polynomials
+gcd_result = poly_gcd(poly1, poly2, modulus)
+
+# Fast multiplication
+product = poly_mul_fast(poly1, poly2, modulus)
+```
+
+### Expression Analysis
 
 ```python
 from mathhook import symbol
-import scipy.optimize
 
 x = symbol('x')
-expr = x**2 - 2
+y = symbol('y')
 
-# Convert to numerical function
-f = lambdify(x, expr)
+expr = x**2 + y**2 + x*y
 
-# Solve numerically
-root = scipy.optimize.fsolve(f, 1.0)
-print(root)  # ~1.414
+# Find all variables
+variables = expr.find_variables()
+for var in variables:
+    print(var)
+
+# Get degree with respect to variable
+deg_x = expr.degree(symbol('x'))  # 2
+
+# Get total degree
+total_deg = expr.total_degree()  # 2
+
+# Find poles
+poles = expr.find_poles(symbol('x'))
 ```
 
-## Jupyter Notebook Support
-
-### Setup
+### Matrix Operations
 
 ```python
-from mathhook import init_printing
-init_printing(use_latex=True)
+from mathhook import symbol, Expression
+
+# Matrix operations (when using matrix expressions)
+A = symbol('A')  # Matrix symbol
+
+# Matrix transpose
+A_T = A.matrix_transpose()
+
+# Matrix addition
+B = symbol('B')
+sum_matrix = A.matrix_add(B)
+
+# Matrix multiplication
+product = A.matrix_multiply(B)
+
+# Matrix determinant
+det = A.matrix_determinant()
+
+# Matrix inverse
+inv = A.matrix_inverse()
+
+# Eigenvalues
+eigenvalues = A.matrix_eigenvalues()
 ```
 
-### Display
+### Residue Calculus
+
+```python
+from mathhook import symbol, Expression
+
+z = symbol('z')
+
+expr = 1 / (z * (z - 1))
+
+# Calculate residue at a pole
+residue = expr.residue(symbol('z'), Expression.integer(0))
+
+# Find all poles
+poles = expr.find_poles(symbol('z'))
+```
+
+## Performance Tips
+
+### 1. Reuse Symbols
 
 ```python
 from mathhook import symbol
-from IPython.display import display, Latex
 
+# Create symbols once
 x = symbol('x')
-expr = x**2 + 2*x + 1
+y = symbol('y')
 
-# Automatic LaTeX rendering
-display(expr)
-
-# Manual LaTeX
-display(Latex(expr.to_latex()))
+# Reuse them
+expr1 = x**2 + y
+expr2 = x + y**2
 ```
 
-### Interactive Widgets
+### 2. Use Fast Path Solvers
 
 ```python
 from mathhook import symbol
-from ipywidgets import interact
+
+x = symbol('x')
+expr = x**2 - 4
+
+# Use fast path when you know the equation type
+result = expr.solve_quadratic(symbol('x'))  # Faster than solve()
+```
+
+### 3. Simplify Incrementally
+
+```python
+from mathhook import symbol
 
 x = symbol('x')
 
-@interact(n=(0, 10))
-def plot_polynomial(n):
-    expr = sum(x**i for i in range(n+1))
-    display(expr)
+# Simplify at key stages, not on every operation
+step1 = (x + 1) ** 10
+step2 = step1.expand()
+result = step2.simplify()  # Simplify once at the end
 ```
 
-## Best Practices
+### 4. Use Appropriate Precision
 
-1. **Use symbols consistently**: Define symbols once at the top
-2. **Cache expensive operations**: Use `@cache` for repeated computations
-3. **Simplify incrementally**: Simplify at appropriate stages, not everything at once
-4. **Use lambdify for numerical work**: Convert to NumPy for performance
-5. **Check assumptions**: Be explicit about variable domains when needed
-6. **Profile before optimizing**: Use `%timeit` in Jupyter
+```python
+from mathhook import Expression
+
+# Use integers when possible (exact)
+two = Expression.integer(2)
+
+# Use rationals for fractions (exact)
+half = Expression.rational(1, 2)
+
+# Use floats only when necessary (approximate)
+pi_approx = Expression.float(3.14159)
+```
+
+### 5. Batch Operations
+
+```python
+from mathhook import symbols, parse
+
+# Parse once
+exprs = [parse(f'x^{i}') for i in range(10)]
+
+# Process in batch
+simplified = [e.simplify() for e in exprs]
+```
 
 ## Common Patterns
 
-### Polynomial Manipulation
+### Quadratic Formula
 
 ```python
-from mathhook import symbol, Poly
+from mathhook import symbol, solve, sqrt
 
 x = symbol('x')
+a, b, c = symbol('a'), symbol('b'), symbol('c')
 
-# Create polynomial
-p = Poly(x**3 + 2*x**2 + x + 1, x)
-
-# Get coefficients
-coeffs = p.all_coeffs()  # [1, 2, 1, 1]
-
-# Evaluate
-value = p.eval(2)  # 15
-
-# Roots
-roots = p.real_roots()
+# Solve ax^2 + bx + c = 0
+quadratic = a*x**2 + b*x + c
+solutions = solve(quadratic, 'x')
 ```
 
-### Trigonometric Simplification
+### Taylor Series Approximation
 
 ```python
-from mathhook import symbol, sin, cos, trigsimp
+from mathhook import symbol, sin, Expression
 
 x = symbol('x')
 
-# Simplify trig expressions
-expr = sin(x)**2 + cos(x)**2
-simplified = trigsimp(expr)  # 1
-
-# Expand trig
-from mathhook import expand_trig
-expr = sin(x + y)
-expanded = expand_trig(expr)  # sin(x)*cos(y) + cos(x)*sin(y)
+# Get Taylor series of sin(x) around 0
+sin_approx = sin(x).taylor_series(symbol('x'), Expression.integer(0), 5)
+print(sin_approx)  # x - x^3/6 + x^5/120
 ```
 
-## Troubleshooting
-
-### Common Errors
+### Numerical Integration via ODE
 
 ```python
-# TypeError: unsupported operand
-# Solution: Ensure both operands are Expression objects
-x = symbol('x')
-# Wrong: expr = 2 + x  (might work due to __radd__)
-# Right: expr = Expression.integer(2) + x
+from mathhook import PyODESolver, symbol, Expression
 
-# NameError: symbol not defined
-# Solution: Import and define symbols
-from mathhook import symbol
-x = symbol('x')
+# Integrate f(x) = x^2 from 0 to 1
+# Use dy/dx = x^2, y(0) = 0
+solver = PyODESolver()
+ode = symbol('x') ** 2
 
-# AttributeError: method not found
-# Solution: Check API documentation for correct method name
+result = solver.runge_kutta_4(
+    ode, 'x', 'y', 0.0, 0.0, 1.0, 0.01
+)
+# Last y value is the integral
+print(f"Integral: {result[-1][1]}")  # ~0.333
+```
+
+## Error Handling
+
+```python
+from mathhook import parse, symbol
+
+# Parse errors
+try:
+    expr = parse('x +* y')  # Invalid syntax
+except ValueError as e:
+    print(f"Parse error: {e}")
+
+# Symbol operations are safe
+x = symbol('x')
+y = symbol('y')
+expr = x / y  # Works even when y might be 0 symbolically
 ```
 
 ## Further Reading

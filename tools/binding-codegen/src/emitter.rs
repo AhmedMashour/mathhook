@@ -9,7 +9,7 @@ pub mod node;
 pub mod python;
 
 pub use node::NodeEmitter;
-pub use python::PythonEmitter;
+pub use python::{PythonEmitter, StubGenConfig};
 
 pub trait Emitter {
     fn emit_type_file(&self, type_info: &TypeInfo, methods: &[AnalyzedMethod]) -> String;

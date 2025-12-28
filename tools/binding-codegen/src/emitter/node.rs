@@ -12,6 +12,33 @@ const SKIPPED_FUNCTIONS: &[&str] = &[
     "get_cache_stats",
 ];
 
+/// Convert Rust struct name to JavaScript class name (strip "Js" prefix)
+fn to_js_class_name(rust_name: &str) -> String {
+    rust_name
+        .strip_prefix("Js")
+        .unwrap_or(rust_name)
+        .to_string()
+}
+
+/// Convert snake_case to camelCase for JavaScript method names
+fn to_camel_case(snake: &str) -> String {
+    let mut result = String::new();
+    let mut capitalize_next = false;
+
+    for c in snake.chars() {
+        if c == '_' {
+            capitalize_next = true;
+        } else if capitalize_next {
+            result.push(c.to_ascii_uppercase());
+            capitalize_next = false;
+        } else {
+            result.push(c);
+        }
+    }
+
+    result
+}
+
 pub struct NodeEmitter {
     simple_enum_types: HashSet<String>,
 }
@@ -196,7 +223,8 @@ impl NodeEmitter {
 
         output.push('\n');
 
-        output.push_str("#[napi]\n");
+        let js_class_name = to_js_class_name(&struct_name);
+        output.push_str(&format!("#[napi(js_name = \"{}\")]\n", js_class_name));
         if type_has_clone {
             output.push_str("#[derive(Clone)]\n");
         }
@@ -249,7 +277,7 @@ impl NodeEmitter {
 
         let has_clone_method = methods.iter().any(|m| m.name == "clone");
         if type_has_clone && !has_clone_method {
-            output.push_str("    #[napi]\n");
+            output.push_str("    #[napi(js_name = \"cloneValue\")]\n");
             output.push_str(&format!(
                 "    pub fn clone_value(&self) -> {} {{\n",
                 struct_name
@@ -318,8 +346,12 @@ impl NodeEmitter {
             }
         }
 
+        let js_method_name = to_camel_case(&method.name);
         if is_constructor {
             output.push_str("    #[napi(constructor)]\n");
+        } else if js_method_name != method.name {
+            // Use js_name when camelCase differs from snake_case
+            output.push_str(&format!("    #[napi(js_name = \"{}\")]\n", js_method_name));
         } else {
             output.push_str("    #[napi]\n");
         }
@@ -1144,7 +1176,12 @@ impl NodeEmitter {
                 }
             }
 
-            output.push_str("#[napi]\n");
+            let js_func_name = to_camel_case(&func.name);
+            if js_func_name != func.name {
+                output.push_str(&format!("#[napi(js_name = \"{}\")]\n", js_func_name));
+            } else {
+                output.push_str("#[napi]\n");
+            }
             let params = self.method_params(func);
             let return_type = Self::method_return_type(&func.output);
             let return_annotation = if return_type.is_empty() || return_type == "()" {

@@ -27,22 +27,36 @@
   },
   "license": "MIT OR Apache-2.0",
   "devDependencies": {
-    "@napi-rs/cli": "^3.2.0",
-    "ava": "^6.4.1"
+    "@ava/typescript": "^6.0.0",
+    "@napi-rs/cli": "^3.5.0",
+    "@types/node": "^25.0.3",
+    "ava": "^6.4.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   },
   "ava": {
-    "timeout": "3m"
+    "timeout": "3m",
+    "extensions": [
+      "ts"
+    ],
+    "files": [
+      "tests/**/*.ts"
+    ],
+    "require": [
+      "tsx"
+    ]
   },
   "engines": {
     "node": ">= 10"
   },
   "scripts": {
     "artifacts": "napi artifacts",
-    "build": "napi build --platform --release && npm run postbuild",
-    "build:debug": "napi build --platform && npm run postbuild",
-    "postbuild": "node -e \"const fs=require('fs'); const c='\\n// === Custom aliases for API compatibility ===\\n// Expression is an alias for JsExpression (matches README documentation)\\nmodule.exports.Expression = module.exports.JsExpression;\\n'; if(!fs.readFileSync('index.js','utf8').includes('Expression = module.exports.JsExpression')){fs.appendFileSync('index.js',c);console.log('Added Expression alias');}\"",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
     "prepublishOnly": "napi prepublish -t npm",
     "test": "ava",
+    "bench": "tsx bench_bindings.ts",
+    "typecheck": "tsc --noEmit",
     "universal": "napi universal",
     "version": "napi version"
   },

@@ -10,14 +10,20 @@ publish = false  # Published to PyPI via maturin, not crates.io
 
 [lib]
 name = "mathhook_python"
-crate-type = ["cdylib"]
+# cdylib for Python extension, rlib for stub_gen binary to link against
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 mathhook-core = { path = "../mathhook-core", features = ["python-bindings"] }
 mathhook-macros = { path = "../mathhook-macros", features = ["python-bindings"] }
 pyo3 = { workspace = true, features = ["extension-module"] }
+pyo3-stub-gen = "0.7"
 serde.workspace = true
 serde_json.workspace = true
+
+[[bin]]
+name = "stub_gen"
+path = "src/bin/stub_gen.rs"
 
 [features]
 default = ["python-bindings"]

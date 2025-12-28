@@ -10,7 +10,7 @@ pub mod types;
 
 pub use classifier::{classify_all, classify_type, ClassifiedApi, TypeClassification};
 pub use config::{BindingConfig, CustomMapping};
-pub use emitter::{Emitter, NodeEmitter, PythonEmitter};
+pub use emitter::{Emitter, NodeEmitter, PythonEmitter, StubGenConfig};
 pub use manifest::{BindingManifest, Target, TypeBindingInfo};
 pub use scanner::{
     FieldInfo, FunctionInfo, ImplInfo, MethodInfo, MethodSignature, ScannedApi, TypeInfo,

@@ -35,3 +35,7 @@ Documentation = "https://docs.rs/mathhook"
 [tool.maturin]
 module-name = "mathhook"
 strip = true
+
+[tool.pyo3-stub-gen]
+# Generate stubs in python/mathhook directory
+stub_dir = "python/mathhook"

@@ -48,43 +48,58 @@ Pre-built binaries are available for:
 ### JavaScript
 
 ```javascript
-const { JsExpression, symbol, symbols, parse, JsMathSolver } = require('mathhook-node');
+const { Expression, symbols, parse, SmartEquationSolver, sin, cos } = require('mathhook-node');
 
 // Create symbols
-const x = symbol('x');
+const [x, y] = symbols('x y');
 
-// Build expressions
-const expr = x.pow(2).add(x.multiply(2)).add(1);
+// Build expressions using static methods
+const expr = Expression.add([
+  Expression.pow(x, Expression.integer(2)),
+  Expression.mul([x, Expression.integer(2)]),
+  Expression.integer(1)
+]);
 
-// Simplify
-const simplified = expr.simplify();
-console.log(simplified.toSimple());  // x^2 + 2*x + 1
+// Simplify and format
+console.log(expr.simplify().format());  // x^2 + 2*x + 1
 
 // Solve equations
-const solver = new JsMathSolver();
-const result = solver.solve(x.pow(2).subtract(4), 'x');
-console.log(result.solutions);  // ['2', '-2']
+const solver = new SmartEquationSolver();
+const equation = Expression.equation(
+  Expression.add([Expression.pow(x, Expression.integer(2)), Expression.integer(-4)]),
+  Expression.integer(0)
+);
+const [solution, explanation] = solver.solveWithEquation(equation, x.asSymbol());
+console.log(`Valid: ${solution.isValidSolution()}, Count: ${solution.solutionCount()}`);
 
 // Calculus
-const derivative = expr.diff('x');
-console.log(derivative.toSimple());  // 2*x + 2
+const derivative = expr.diff(x.asSymbol());
+console.log(derivative.format());  // 2*x + 2
 ```
 
 ### TypeScript
 
 ```typescript
-import { JsExpression, symbol, symbols, JsMathSolver, JsSolverResult } from 'mathhook-node';
+import { Expression, symbols, SmartEquationSolver, sin, cos } from 'mathhook-node';
 
 // Full type safety
-const x: JsExpression = symbol('x');
-const expr: JsExpression = x.pow(2).add(x.multiply(2)).add(1);
+const [x, y] = symbols('x y');
+
+// Build expressions with static methods
+const expr = Expression.add([
+  Expression.pow(x, Expression.integer(2)),
+  Expression.mul([x, Expression.integer(2)]),
+  Expression.integer(1)
+]);
 
 // Type-safe operations
-const simplified: JsExpression = expr.simplify();
+const simplified = expr.simplify();
+console.log(simplified.format());
 
 // Solve equations
-const solver = new JsMathSolver();
-const result: JsSolverResult = solver.solve(x.pow(2).subtract(4), 'x');
+const solver = new SmartEquationSolver();
+const equation = Expression.equation(x, Expression.integer(5));
+const [solution, explanation] = solver.solveWithEquation(equation, x.asSymbol()!);
 ```
 
 ## Expression Creation
@@ -92,88 +107,91 @@ const result: JsSolverResult = solver.solve(x.pow(2).subtract(4), 'x');
 ### Basic Types
 
 ```typescript
-import { JsExpression } from 'mathhook-node';
+import { Expression, symbols } from 'mathhook-node';
 
-// Numbers
-const integer = JsExpression.integer(42);
-const rational = JsExpression.rational(3, 4);  // 3/4
-const floating = JsExpression.float(3.14159);
+// Integers
+const num = Expression.integer(42);
 
-// Complex numbers
-const complex = JsExpression.complex(JsExpression.integer(3), JsExpression.integer(4));  // 3 + 4i
-```
+// Floats
+const pi_approx = Expression.float(3.14159);
 
-### Symbols
+// Rationals (exact fractions)
+const half = Expression.rational(1, 2);
 
-```typescript
-import { symbol, symbols } from 'mathhook-node';
+// Symbols
+const [x, y, z] = symbols('x y z');
 
 // Single symbol
-const x = symbol('x');
-
-// Multiple symbols (space-separated string)
-const [a, b, c] = symbols('a b c');
-
-// Comma-separated also works
-const [p, q, r] = symbols('p, q, r');
-
-// Range syntax
-const [x0, x1, x2] = symbols('x0:3');
+const a = symbols('a')[0];
 ```
 
-### Method Chaining
+### Static Expression Methods
 
 ```typescript
-import { symbol } from 'mathhook-node';
+import { Expression, symbols } from 'mathhook-node';
 
-const x = symbol('x');
-const y = symbol('y');
+const [x, y] = symbols('x y');
 
-// Fluent API
-const expr = x.pow(2)
-              .add(x.multiply(2))
-              .add(1);
+// Addition - takes array of expressions
+const sum = Expression.add([x, Expression.integer(2)]);
 
-// Complex expressions
-const poly = x.add(1)
-              .multiply(x.subtract(1))
-              .simplify();  // x^2 - 1
+// Multiplication - takes array of expressions
+const product = Expression.mul([x, Expression.integer(3)]);
+
+// Power - takes base and exponent
+const power = Expression.pow(x, Expression.integer(2));
+
+// Division - takes numerator and denominator
+const quotient = Expression.div(x, Expression.integer(2));
+
+// Complex expression: 2x + 3
+const linear = Expression.add([
+  Expression.mul([Expression.integer(2), x]),
+  Expression.integer(3)
+]);
 ```
 
 ### Mathematical Functions
 
 ```typescript
-import { sin, cos, tan, exp, ln, sqrt, symbol } from 'mathhook-node';
+import { sin, cos, tan, exp, ln, sqrt, abs, symbols, Expression } from 'mathhook-node';
 
-const x = symbol('x');
+const [x] = symbols('x');
 
 // Trigonometric
-const trig = sin(x).pow(2).add(cos(x).pow(2));  // = 1
+const trig = Expression.add([
+  Expression.pow(sin(x), Expression.integer(2)),
+  Expression.pow(cos(x), Expression.integer(2))
+]);  // = 1
 
 // Exponential and logarithmic
 const exponential = exp(x);
 const logarithm = ln(x);
 
 // Square root
-const root = sqrt(x.pow(2).add(1));
+const root = sqrt(Expression.add([
+  Expression.pow(x, Expression.integer(2)),
+  Expression.integer(1)
+]));
+
+// Nested functions
+const nested = sin(cos(x));
 ```
 
 ### Constants
 
 ```typescript
-import { JsExpression, symbol } from 'mathhook-node';
+import { Expression, symbols } from 'mathhook-node';
 
-const r = symbol('r');
+const [r] = symbols('r');
 
-// Mathematical constants (as methods)
-const pi = JsExpression.pi();
-const e = JsExpression.e();
-const i = JsExpression.i();  // imaginary unit
-const phi = JsExpression.goldenRatio();
-const gamma = JsExpression.eulerGamma();
+// Mathematical constants (as static methods)
+const pi = Expression.pi();
+const e = Expression.e();
+const i = Expression.i();  // imaginary unit
 
 // Use in expressions
-const circleArea = pi.multiply(r.pow(2));
+const circleArea = Expression.mul([pi, Expression.pow(r, Expression.integer(2))]);
 ```
 
 ## Algebraic Operations
@@ -181,73 +199,42 @@ const circleArea = pi.multiply(r.pow(2));
 ### Simplification
 
 ```typescript
-import { symbol, sin, cos } from 'mathhook-node';
+import { Expression, symbols, sin, cos } from 'mathhook-node';
 
-const x = symbol('x');
+const [x] = symbols('x');
 
 // Algebraic simplification
-const expr = x.add(x).add(x);
-console.log(expr.simplify().toSimple());  // 3*x
+const expr = Expression.add([x, x, x]);
+console.log(expr.simplify().format());  // 3*x
 
 // Trigonometric identities
-const trig = sin(x).pow(2).add(cos(x).pow(2));
-console.log(trig.simplify().toSimple());  // 1
-
-// Rational expressions
-const rational = x.pow(2).subtract(1)
-                  .divide(x.subtract(1));
-console.log(rational.simplify().toSimple());  // x + 1
+const trig = Expression.add([
+  Expression.pow(sin(x), Expression.integer(2)),
+  Expression.pow(cos(x), Expression.integer(2))
+]);
+console.log(trig.simplify().format());  // 1
 ```
 
-### Expansion
+### Expression Methods
 
 ```typescript
-import { symbol } from 'mathhook-node';
+import { Expression, symbols } from 'mathhook-node';
 
-const x = symbol('x');
-const y = symbol('y');
+const [x] = symbols('x');
 
-// Expand products
-const expr = x.add(1).multiply(x.add(2));
-console.log(expr.expand().toSimple());  // x^2 + 3*x + 2
+const expr = Expression.pow(x, Expression.integer(2));
 
-// Expand powers
-const power = x.add(y).pow(2);
-console.log(power.expand().toSimple());  // x^2 + 2*x*y + y^2
-```
+// Simplify
+const simplified = expr.simplify();
 
-### Factorization
+// Negate
+const negated = expr.negate();
 
-```typescript
-import { symbol } from 'mathhook-node';
+// Format to string
+console.log(expr.format());
 
-const x = symbol('x');
-
-// Factor polynomials
-const expr = x.pow(2).subtract(1);
-console.log(expr.factor().toSimple());  // (x - 1)*(x + 1)
-
-const poly = x.pow(2).add(x.multiply(5)).add(6);
-console.log(poly.factor().toSimple());  // (x + 2)*(x + 3)
-```
-
-### Substitution
-
-```typescript
-import { JsExpression, symbol } from 'mathhook-node';
-
-const x = symbol('x');
-const y = symbol('y');
-
-const expr = x.pow(2).add(x.multiply(2)).add(1);
-
-// Substitute with object syntax
-const result = expr.substitute({ x: JsExpression.integer(3) });
-console.log(result.toSimple());  // 16
-
-// Substitute expression
-const substituted = expr.substitute({ x: y.add(1) });
-console.log(substituted.toSimple());  // (y + 1)^2 + 2*(y + 1) + 1
+// Get symbol if expression is a symbol
+const sym = x.asSymbol();
 ```
 
 ## Calculus
@@ -255,201 +242,61 @@ console.log(substituted.toSimple());  // (y + 1)^2 + 2*(y + 1) + 1
 ### Derivatives
 
 ```typescript
-import { symbol, sin, cos } from 'mathhook-node';
+import { Expression, symbols, sin } from 'mathhook-node';
 
-const x = symbol('x');
+const [x] = symbols('x');
 
-// First derivative (using string variable name)
-const expr = x.pow(3);
-console.log(expr.diff('x').toSimple());  // 3*x^2
-
-// Or using symbol expression
-console.log(expr.diff(x).toSimple());  // 3*x^2
-
-// Higher-order derivatives
-console.log(expr.nthDerivative('x', 2).toSimple());  // 6*x
-console.log(expr.nthDerivative('x', 3).toSimple());  // 6
+// First derivative
+const expr = Expression.pow(x, Expression.integer(3));
+const derivative = expr.diff(x.asSymbol()!);
+console.log(derivative.format());  // 3*x^2
 
 // Chain rule
-const chain = sin(x.pow(2));
-console.log(chain.diff('x').toSimple());  // 2*x*cos(x^2)
-```
-
-### Integrals
-
-```typescript
-import { JsExpression, symbol, sin } from 'mathhook-node';
-
-const x = symbol('x');
-
-// Indefinite integrals
-const expr = x.pow(2);
-console.log(expr.integrate('x').toSimple());  // x^3/3
-
-// Definite integrals
-const lower = JsExpression.integer(0);
-const upper = JsExpression.integer(1);
-const definite = expr.integrateDefinite('x', lower, upper);
-console.log(definite.toSimple());  // 1/3
-
-// Trigonometric integrals
-const trig = sin(x);
-console.log(trig.integrate('x').toSimple());  // -cos(x)
-```
-
-### Limits
-
-```typescript
-import { JsExpression, symbol, sin } from 'mathhook-node';
-
-const x = symbol('x');
-
-// Finite limits
-const expr = sin(x).divide(x);
-const lim = expr.limit('x', JsExpression.integer(0));
-console.log(lim.toSimple());  // 1
-
-// Limits at infinity
-const expr2 = JsExpression.integer(1).divide(x);
-console.log(expr2.limitInfinity('x').toSimple());  // 0
-```
-
-### Series Expansions
-
-```typescript
-import { JsExpression, symbol, sin } from 'mathhook-node';
-
-const x = symbol('x');
-
-// Taylor series around x=0
-const series = sin(x).series('x', JsExpression.integer(0), 5);
-console.log(series.toSimple());
-// x - x^3/6 + x^5/120 + O(x^6)
+const chain = sin(Expression.pow(x, Expression.integer(2)));
+console.log(chain.diff(x.asSymbol()!).format());  // 2*x*cos(x^2)
 ```
 
 ## Equation Solving
 
-### Algebraic Equations
+### Using SmartEquationSolver
 
 ```typescript
-import { JsExpression, symbol, JsMathSolver } from 'mathhook-node';
+import { Expression, symbols, SmartEquationSolver } from 'mathhook-node';
 
-const x = symbol('x');
-const solver = new JsMathSolver();
+const [x] = symbols('x');
+const solver = new SmartEquationSolver();
 
-// Linear equations (solve for expression = 0)
-let result = solver.solve(
-  x.multiply(2).add(3).subtract(7),  // 2x + 3 - 7 = 0
-  'x'
+// Create equation: expression = value
+const equation = Expression.equation(
+  Expression.add([Expression.mul([Expression.integer(2), x]), Expression.integer(3)]),
+  Expression.integer(7)  // 2x + 3 = 7
 );
-console.log(result.solutions);  // ['2']
 
-// Quadratic equations
-result = solver.solve(
-  x.pow(2).subtract(x.multiply(5)).add(6),  // x² - 5x + 6 = 0
-  'x'
-);
-console.log(result.solutions);  // ['2', '3']
+// Solve and get solution with explanation
+const [solution, explanation] = solver.solveWithEquation(equation, x.asSymbol()!);
 
-// Complex solutions
-result = solver.solve(x.pow(2).add(1), 'x');  // x² + 1 = 0
-console.log(result.solutions);  // ['i', '-i']
-
-// Using explicit equation
-const equation = JsExpression.equation(x, JsExpression.integer(5));  // x = 5
-result = solver.solve(equation, 'x');
-console.log(result.solutions);  // ['5']
+console.log(`Valid solution: ${solution.isValidSolution()}`);
+console.log(`Solution count: ${solution.solutionCount()}`);
 ```
 
-### Solver Result Structure
+### Quadratic Equations
 
 ```typescript
-interface JsSolverResult {
-  resultType: string;      // "single", "multiple", "no_solution", "infinite_solutions"
-  solutions: string[];     // Solution expressions as strings
-  count: number;           // Number of solutions
-  metadata?: string;       // Optional info about the solution
-}
-```
+import { Expression, symbols, SmartEquationSolver } from 'mathhook-node';
 
-## Matrix Operations
+const [x] = symbols('x');
+const solver = new SmartEquationSolver();
 
-### Creating Matrices
-
-```typescript
-import { JsExpression } from 'mathhook-node';
-
-// From arrays of expressions
-const a = JsExpression.integer(1);
-const b = JsExpression.integer(2);
-const c = JsExpression.integer(3);
-const d = JsExpression.integer(4);
-
-const A = JsExpression.matrix([[a, b], [c, d]]);
-
-// Identity matrix
-const I = JsExpression.identityMatrix(3);
-
-// Zero matrix
-const Z = JsExpression.zeroMatrix(2, 3);
-```
-
-### Matrix Operations
-
-```typescript
-import { JsExpression } from 'mathhook-node';
-
-const one = JsExpression.integer(1);
-const two = JsExpression.integer(2);
-const three = JsExpression.integer(3);
-const four = JsExpression.integer(4);
-
-const A = JsExpression.matrix([[one, two], [three, four]]);
-
-// Transpose
-const AT = A.transpose();
-
-// Determinant
-const det = A.determinant();
-console.log(det.toSimple());  // -2
-
-// Inverse
-const Ainv = A.inverse();
-
-// Matrix arithmetic uses standard methods
-// A.add(B), A.multiply(B), etc.
-```
-
-### Matrix Decomposition
-
-```typescript
-import { JsExpression } from 'mathhook-node';
-
-// Create a matrix
-const matrix = JsExpression.matrix([
-  [JsExpression.integer(4), JsExpression.integer(2)],
-  [JsExpression.integer(2), JsExpression.integer(3)]
+// x² - 5x + 6 = 0
+const quadratic = Expression.add([
+  Expression.pow(x, Expression.integer(2)),
+  Expression.mul([Expression.integer(-5), x]),
+  Expression.integer(6)
 ]);
+const equation = Expression.equation(quadratic, Expression.integer(0));
 
-// LU decomposition
-const lu = matrix.luDecomposition();
-console.log(lu.l);  // Lower triangular
-console.log(lu.u);  // Upper triangular
-console.log(lu.p);  // Permutation matrix (if pivoting)
-
-// QR decomposition
-const qr = matrix.qrDecomposition();
-console.log(qr.q);  // Orthogonal matrix
-console.log(qr.r);  // Upper triangular
-
-// SVD decomposition
-const svd = matrix.svdDecomposition();
-console.log(svd.u);      // Left singular vectors
-console.log(svd.sigma);  // Singular values
-console.log(svd.vt);     // Right singular vectors (transposed)
-
-// Cholesky decomposition (for positive definite matrices)
-const L = matrix.choleskyDecomposition();
+const [solution, explanation] = solver.solveWithEquation(equation, x.asSymbol()!);
+// Solutions: x = 2 and x = 3
 ```
 
 ## Parsing
@@ -460,203 +307,51 @@ const L = matrix.choleskyDecomposition();
 import { parse } from 'mathhook-node';
 
 // Standard notation
-let expr = parse("2*x + sin(y)");
-
-// LaTeX (auto-detected)
-expr = parse("\\frac{x^2}{2} + \\sqrt{y}");
-expr = parse("\\sin(x) + \\cos(y)");
-
-// Wolfram Language (auto-detected)
-expr = parse("Sin[x] + Cos[y]");
+const expr1 = parse('2*x + sin(y)');
+console.log(expr1.format());
 
 // Implicit multiplication
-expr = parse("2x + 3y");  // Same as 2*x + 3*y
+const expr2 = parse('2x + 3y');
+console.log(expr2.format());
+
+// Functions
+const expr3 = parse('sin(x) + cos(y)');
+console.log(expr3.format());
+
+// Greek letters
+const expr4 = parse('alpha + beta + gamma');
+console.log(expr4.format());
+
+// Constants
+const expr5 = parse('pi + e + i');
+console.log(expr5.format());
+
+// Complex expressions
+const expr6 = parse('sin(2*pi*x) + exp(-x^2/2)');
+console.log(expr6.format());
+
+// LaTeX (auto-detected)
+const latex = parse('\\frac{x^2}{2}');
+console.log(latex.format());
+
+// Wolfram (auto-detected)
+const wolfram = parse('Sin[x] + Cos[y]');
+console.log(wolfram.format());
 ```
 
-### Format Conversion
+### Mixing Parsed and Constructed Expressions
 
 ```typescript
-import { symbol } from 'mathhook-node';
+import { parse, Expression, symbols } from 'mathhook-node';
 
-const x = symbol('x');
-const expr = x.pow(2).divide(2);
+const [x] = symbols('x');
 
-// Convert to LaTeX
-const latex = expr.toLatex();
-console.log(latex);  // \frac{x^{2}}{2}
-
-// Convert to Wolfram
-const wolfram = expr.toWolfram();
-console.log(wolfram);  // Divide[Power[x, 2], 2]
-
-// Simple string representation
-console.log(expr.toSimple());  // x^2/2
-
-// toString() also works
-console.log(expr.toString());  // x^2/2
-```
-
-## Educational Features
-
-### Step-by-Step Explanations
-
-```typescript
-import { JsExpression, symbol, JsMathSolver, parse } from 'mathhook-node';
-
-const x = symbol('x');
-const expr = JsExpression.integer(2).add(JsExpression.integer(3));
-
-// Get simplification steps
-const explanation = expr.explainSimplification();
-
-explanation.steps.forEach((step, i) => {
-  console.log(`Step ${i + 1}: ${step.title}`);
-  console.log(`  ${step.description}`);
-  console.log(`  Before: ${step.before}`);
-  console.log(`  After: ${step.after}`);
-  console.log();
-});
-
-// Derivative with steps
-const poly = x.pow(2);
-const derivExplanation = poly.derivativeWithSteps('x');
-```
-
-### Solve with Steps
-
-Get step-by-step explanations when solving equations:
-
-```typescript
-import { JsMathSolver, parse } from 'mathhook-node';
-
-const solver = new JsMathSolver();
-const equation = parse('x^2 - 4');
-
-// Solve with educational steps
-const result = solver.solveWithSteps(equation, 'x');
-
-console.log('Result type:', result.resultType);  // 'multiple'
-console.log('Solutions:', result.solutions.map(s => s.toSimple()));  // ['2', '-2']
-
-// Display solving steps
-for (const step of result.steps) {
-  console.log(`${step.title}: ${step.description}`);
-  console.log(`  Before: ${step.before}`);
-  console.log(`  After: ${step.after}`);
-}
-```
-
-Result structure:
-```typescript
-interface JsSolveWithStepsResult {
-  resultType: string;        // "single", "multiple", "no_solution", "infinite", etc.
-  solutions: JsExpression[]; // Actual expression objects (not strings)
-  steps: JsStep[];           // Step-by-step explanation
-}
-```
-
-## Evaluation
-
-### Basic Evaluation
-
-```typescript
-import { JsExpression } from 'mathhook-node';
-
-const expr = JsExpression.integer(2).add(JsExpression.integer(3));
-const result = expr.evaluate();
-console.log(result.toSimple());  // 5
-```
-
-### Evaluation with Context
-
-```typescript
-import { JsExpression, symbol, EvalContext } from 'mathhook-node';
-
-const x = symbol('x');
-const expr = x.pow(2).add(1);
-
-// Symbolic evaluation (no numerical conversion)
-const symbolicCtx = EvalContext.symbolic();
-const symbolicResult = expr.evaluateWithContext(symbolicCtx);
-// Result stays symbolic: x^2 + 1
-
-// Numerical evaluation with substitutions
-const numericCtx = EvalContext.numeric([['x', JsExpression.integer(3)]]);
-const numericResult = expr.evaluateWithContext(numericCtx);
-console.log(numericResult.toSimple());  // 10
-
-// Custom configuration
-const customCtx = new EvalContext({
-  numeric: true,
-  precision: 128,
-  simplifyFirst: true
-});
-```
-
-## Polynomial Operations
-
-```typescript
-import { JsExpression, symbol, degree, roots, groebnerBasis } from 'mathhook-node';
-
-const x = symbol('x');
-const poly = x.pow(3).add(x.pow(2).multiply(2)).add(x).add(1);
-
-// Get degree
-const deg = degree(poly, 'x');
-console.log(deg.toSimple());  // 3
-
-// Or use method
-const degMethod = poly.polynomialDegree('x');
-console.log(degMethod);  // 3
-
-// Leading coefficient
-const lc = poly.polynomialLeadingCoefficient('x');
-
-// Content (GCD of coefficients)
-const content = poly.polynomialContent();
-
-// Primitive part
-const primitive = poly.polynomialPrimitivePart();
-
-// Find roots
-const r = roots(poly, 'x');
-
-// Resultant of two polynomials
-const p1 = x.pow(2).subtract(1);
-const p2 = x.subtract(1);
-const res = JsExpression.resultant(p1, p2, 'x');
-
-// Discriminant
-const disc = JsExpression.discriminant(poly, 'x');
-
-// Gröbner basis
-const y = symbol('y');
-const polys = [
-  x.pow(2).add(y.pow(2)).subtract(1),
-  x.subtract(y)
-];
-const basis = groebnerBasis(polys, ['x', 'y'], 'lex');
-```
-
-## PDE Solver
-
-```typescript
-import { JsExpression, JsPDESolver } from 'mathhook-node';
-
-const solver = new JsPDESolver();
-
-// Heat equation: ∂u/∂t = α∇²u
-const alpha = JsExpression.integer(1);
-const heatSolution = solver.solveHeatEquation('u', 'x', 't', alpha);
-console.log(heatSolution.solution);
-console.log(heatSolution.method);
-
-// Wave equation: ∂²u/∂t² = c²∇²u
-const c = JsExpression.integer(1);
-const waveSolution = solver.solveWaveEquation('u', 'x', 't', c);
-
-// Laplace equation: ∇²u = 0
-const laplaceSolution = solver.solveLaplaceEquation('u', 'x', 'y');
+const parsed = parse('x^2 + 1');
+const combined = Expression.add([
+  Expression.mul([parsed, x]),
+  Expression.integer(5)
+]);
+console.log(combined.format());
 ```
 
 ## Special Functions
@@ -666,54 +361,129 @@ import {
   sin, cos, tan, asin, acos, atan,
   sinh, cosh, tanh,
   exp, ln, log10, sqrt,
-  gamma, beta, factorial,
+  gamma, factorial,
   erf, erfc,
   besselJ, besselY,
   zeta, digamma, polygamma,
   gcd, lcm, isprime,
   abs, sign, floor, ceil, round,
-  symbol
+  symbols, Expression
 } from 'mathhook-node';
 
-const x = symbol('x');
+const [x] = symbols('x');
 
 // Trigonometric
-const trig = sin(x).add(cos(x));
+const trig = sin(x);
 
 // Hyperbolic
-const hyp = sinh(x).add(cosh(x));
+const hyp = sinh(x);
 
 // Special functions
-const g = gamma(5);           // 24 (4!)
-const b = beta(2, 3);         // Beta function
-const f = factorial(5);       // 120
-const e = erf(x);             // Error function
-const j = besselJ(0, x);      // Bessel function of first kind
-const z = zeta(2);            // Riemann zeta: π²/6
+const g = gamma(Expression.integer(5));  // 24 (4!)
+const f = factorial(5);                   // 120
+const e = erf(x);                         // Error function
+const j = besselJ(Expression.integer(0), x);  // Bessel function of first kind
+const z = zeta(Expression.integer(2));    // Riemann zeta: π²/6
 
 // Number theory
-const g2 = gcd(12, 18);       // 6
-const l = lcm(4, 6);          // 12
-const p = isprime(17);        // true
+const g2 = gcd(Expression.integer(12), Expression.integer(18));  // 6
+const l = lcm(Expression.integer(4), Expression.integer(6));     // 12
+const p = isprime(Expression.integer(17));                        // true
+
+// Rounding functions
+const s = sign(Expression.integer(-5));   // -1
+const fl = floor(Expression.float(3.7));  // 3
+const cl = ceil(Expression.float(3.2));   // 4
+const rn = round(Expression.float(3.5));  // 4
+```
+
+## Real-World Examples
+
+### Quadratic Formula
+
+```typescript
+import { Expression, symbols, sqrt } from 'mathhook-node';
+
+const [a, b, c] = symbols('a b c');
+
+// Discriminant: b² - 4ac
+const discriminant = Expression.add([
+  Expression.pow(b, Expression.integer(2)),
+  Expression.mul([Expression.integer(-4), a, c])
+]);
+
+// Solutions: (-b ± √discriminant) / 2a
+const sqrtDisc = sqrt(discriminant);
+const denom = Expression.mul([a, Expression.integer(2)]);
+
+const solution1 = Expression.div(
+  Expression.add([b.negate(), sqrtDisc]),
+  denom
+);
+const solution2 = Expression.div(
+  Expression.add([b.negate(), Expression.mul([Expression.integer(-1), sqrtDisc])]),
+  denom
+);
+
+console.log(`x₁ = ${solution1.format()}`);
+console.log(`x₂ = ${solution2.format()}`);
+```
+
+### Taylor Series Approximation
+
+```typescript
+import { Expression, symbols, factorial } from 'mathhook-node';
+
+const [x] = symbols('x');
+
+// sin(x) ≈ x - x³/3! + x⁵/5!
+const fact3 = factorial(3);
+const fact5 = factorial(5);
+
+const term1 = x;
+const term2 = Expression.div(
+  Expression.pow(x, Expression.integer(3)),
+  fact3
+);
+const term3 = Expression.div(
+  Expression.pow(x, Expression.integer(5)),
+  fact5
+);
+
+const sinTaylor = Expression.add([
+  term1,
+  Expression.mul([Expression.integer(-1), term2]),
+  term3
+]);
+
+console.log(`sin(x) ≈ ${sinTaylor.format()}`);
+```
+
+### Pythagorean Distance
+
+```typescript
+import { Expression, symbols, sqrt } from 'mathhook-node';
+
+const [x, y] = symbols('x y');
+
+// distance = √(x² + y²)
+const distance = sqrt(Expression.add([
+  Expression.pow(x, Expression.integer(2)),
+  Expression.pow(y, Expression.integer(2))
+]));
+
+console.log(`Distance: ${distance.format()}`);
 ```
 
 ## TypeScript Types
 
 ```typescript
 import {
-  JsExpression,
-  JsMathSolver,
-  JsSolverResult,
-  JsSolveWithStepsResult,
-  JsStep,
-  JsStepByStepExplanation,
-  EvalContext,
-  EvalContextOptions,
-  LUDecompositionResult,
-  QRDecompositionResult,
-  SVDDecompositionResult,
-  PdeSolution,
-  JsPDESolver
+  Expression,
+  Symbol,
+  SmartEquationSolver,
+  SolverResult,
+  EvalContext
 } from 'mathhook-node';
 
 // Type-safe function
@@ -721,19 +491,13 @@ function quadratic(
   a: number,
   b: number,
   c: number,
-  x: JsExpression
-): JsExpression {
-  return JsExpression.integer(a)
-    .multiply(x.pow(2))
-    .add(JsExpression.integer(b).multiply(x))
-    .add(JsExpression.integer(c));
-}
-
-// Type-safe solving
-function findRoots(expr: JsExpression, varName: string): string[] {
-  const solver = new JsMathSolver();
-  const result: JsSolverResult = solver.solve(expr, varName);
-  return result.solutions;
+  x: Expression
+): Expression {
+  return Expression.add([
+    Expression.mul([Expression.integer(a), Expression.pow(x, Expression.integer(2))]),
+    Expression.mul([Expression.integer(b), x]),
+    Expression.integer(c)
+  ]);
 }
 ```
 
@@ -743,20 +507,35 @@ function findRoots(expr: JsExpression, varName: string): string[] {
 
 | Export | Purpose |
 |--------|---------|
-| `JsExpression` | Core symbolic expression class |
-| `symbol(name)` | Create a single symbol |
-| `symbols(names)` | Create multiple symbols from string |
-| `parse(str)` | Parse expression from string |
-| `JsMathSolver` | Equation solver class |
+| `Expression` | Core symbolic expression class |
+| `symbols(names)` | Create multiple symbols from space-separated string |
+| `parse(str)` | Parse expression from string (auto-detects format) |
+| `SmartEquationSolver` | Equation solver class |
 | `EvalContext` | Evaluation context for controlled evaluation |
-| `JsPDESolver` | PDE solver class |
 
-### JsMathSolver Methods
+### Expression Static Methods
 
 | Method | Description |
 |--------|-------------|
-| `.solve(expr, var)` | Solve equation, returns result with solutions as strings |
-| `.solveWithSteps(expr, var)` | Solve with step-by-step explanation, returns JsExpression solutions |
+| `.integer(n)` | Create integer expression |
+| `.float(x)` | Create float expression |
+| `.rational(num, den)` | Create rational expression |
+| `.add(exprs[])` | Add array of expressions |
+| `.mul(exprs[])` | Multiply array of expressions |
+| `.pow(base, exp)` | Raise base to exponent |
+| `.div(num, den)` | Divide numerator by denominator |
+| `.equation(left, right)` | Create equation |
+| `.pi()`, `.e()`, `.i()` | Mathematical constants |
+
+### Expression Instance Methods
+
+| Method | Description |
+|--------|-------------|
+| `.simplify()` | Simplify expression |
+| `.diff(symbol)` | Differentiate with respect to symbol |
+| `.negate()` | Negate expression |
+| `.format()` | Format as string |
+| `.asSymbol()` | Get Symbol if expression is a symbol |
 
 ### Mathematical Functions
 
@@ -766,78 +545,47 @@ function findRoots(expr: JsExpression, varName: string): string[] {
 | `asin`, `acos`, `atan` | Inverse trigonometric |
 | `sinh`, `cosh`, `tanh` | Hyperbolic |
 | `exp`, `ln`, `log10` | Exponential/logarithmic |
-| `sqrt` | Square root |
-| `gamma`, `beta`, `factorial` | Special functions |
+| `sqrt`, `abs` | Square root, absolute value |
+| `gamma`, `factorial` | Special functions |
 | `erf`, `erfc` | Error functions |
 | `besselJ`, `besselY` | Bessel functions |
 | `zeta`, `digamma`, `polygamma` | Zeta and related |
 | `gcd`, `lcm`, `isprime` | Number theory |
-| `abs`, `sign`, `floor`, `ceil`, `round` | Numeric |
-| `degree`, `roots`, `groebnerBasis` | Polynomial |
-
-### JsExpression Methods
-
-| Method | Description |
-|--------|-------------|
-| `.add(x)`, `.subtract(x)`, `.multiply(x)`, `.divide(x)` | Arithmetic |
-| `.pow(n)`, `.negate()` | Power and negation |
-| `.simplify()`, `.expand()`, `.factor()`, `.collect(var)` | Algebraic |
-| `.substitute({var: expr})` | Substitution |
-| `.diff(var)`, `.nthDerivative(var, n)` | Derivatives |
-| `.integrate(var)`, `.integrateDefinite(var, lo, hi)` | Integrals |
-| `.limit(var, val)`, `.limitInfinity(var)` | Limits |
-| `.series(var, point, order)` | Series expansion |
-| `.evaluate()`, `.evaluateWithContext(ctx)` | Evaluation |
-| `.toSimple()`, `.toLatex()`, `.toWolfram()`, `.toString()` | Output formats |
-| `.determinant()`, `.inverse()`, `.transpose()` | Matrix operations |
-| `.luDecomposition()`, `.qrDecomposition()`, `.svdDecomposition()` | Decompositions |
-
-### Static JsExpression Methods
-
-| Method | Description |
-|--------|-------------|
-| `.integer(n)`, `.rational(num, den)`, `.float(x)` | Create numbers |
-| `.symbol(name)` | Create symbol |
-| `.complex(re, im)` | Create complex number |
-| `.pi()`, `.e()`, `.i()`, `.goldenRatio()`, `.eulerGamma()` | Constants |
-| `.function(name, args)` | Create function call |
-| `.equation(left, right)` | Create equation |
-| `.matrix(rows)`, `.identityMatrix(n)`, `.zeroMatrix(r, c)` | Create matrices |
-| `.resultant(p1, p2, var)`, `.discriminant(p, var)` | Polynomial operations |
-| `.parse(str)` | Parse expression |
+| `sign`, `floor`, `ceil`, `round` | Numeric |
 
 ## Common Issues
 
 ### Import Names
 
 ```typescript
-// ✅ Correct - use JsExpression
-import { JsExpression, symbol } from 'mathhook-node';
+// ✅ Correct - use Expression
+import { Expression, symbols } from 'mathhook-node';
 
-// ❌ Incorrect - Expression doesn't exist
-import { Expression } from 'mathhook-node';
+// ❌ Incorrect - JsExpression is an alias
+import { JsExpression } from 'mathhook-node';  // Works but prefer Expression
 ```
 
 ### Symbols Function
 
 ```typescript
-// ✅ Correct - string input
+// ✅ Correct - destructure from array
 const [x, y, z] = symbols('x y z');
-const [a, b] = symbols('a, b');
 
-// ❌ Incorrect - not array input
-const [x, y] = symbols(['x', 'y']);
+// ✅ Also correct - space-separated
+const [a, b] = symbols('a b');
 ```
 
-### Solving Equations
+### Expression Creation
 
 ```typescript
-// ✅ Correct - use JsMathSolver class
-const solver = new JsMathSolver();
-const result = solver.solve(expr, 'x');
+// ✅ Correct - use static methods
+const sum = Expression.add([x, Expression.integer(2)]);
 
-// ❌ Incorrect - no standalone solve function
-const result = solve(expr, x);
+// ✅ Correct - use Expression.integer() for numbers
+const five = Expression.integer(5);
+
+// ❌ Incorrect - don't pass raw numbers
+const wrong = Expression.add([x, 2]);  // Won't work
 ```
 
 ### Platform-Specific Binaries

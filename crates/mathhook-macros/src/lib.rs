@@ -471,22 +471,14 @@ pub fn generate_python_constant_binding(input: TokenStream) -> TokenStream {
 ///
 /// ```rust,ignore
 /// #[napi]
-/// pub fn sin(x: napi::Either<&JsExpression, f64>) -> JsExpression {
-///     let expr = match x {
-///         napi::Either::A(e) => e.inner.clone(),
-///         napi::Either::B(num) => {
-///             if num.fract() == 0.0 && num.is_finite() {
-///                 Expression::integer(num as i64)
-///             } else {
-///                 Expression::float(num)
-///             }
-///         }
-///     };
+/// pub fn sin(x: ExpressionOrNumber) -> JsExpression {
 ///     JsExpression {
-///         inner: Expression::function("sin", vec![expr]),
+///         inner: Expression::function("sin", vec![x.0]),
 ///     }
 /// }
 /// ```
+///
+/// This accepts both Expression objects and numbers: `sin(x)` or `sin(1.5)`
 #[proc_macro]
 pub fn generate_nodejs_binding(input: TokenStream) -> TokenStream {
     let name = parse_macro_input!(input as Ident);
@@ -494,22 +486,11 @@ pub fn generate_nodejs_binding(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         #[napi_derive::napi]
-        pub fn #name(x: napi::bindgen_prelude::Either<&crate::JsExpression, f64>) -> crate::JsExpression {
+        pub fn #name(x: crate::functions::ExpressionOrNumber) -> crate::JsExpression {
             use mathhook_core::Expression;
 
-            let expr = match x {
-                napi::bindgen_prelude::Either::A(e) => e.inner.clone(),
-                napi::bindgen_prelude::Either::B(num) => {
-                    if num.fract() == 0.0 && num.is_finite() {
-                        Expression::integer(num as i64)
-                    } else {
-                        Expression::float(num)
-                    }
-                }
-            };
-
             crate::JsExpression {
-                inner: Expression::function(#name_str, vec![expr]),
+                inner: Expression::function(#name_str, vec![x.0]),
             }
         }
     };
@@ -533,17 +514,14 @@ pub fn generate_nodejs_binding(input: TokenStream) -> TokenStream {
 ///
 /// ```rust,ignore
 /// #[napi]
-/// pub fn pow(
-///     x: napi::Either<&JsExpression, f64>,
-///     y: napi::Either<&JsExpression, f64>
-/// ) -> JsExpression {
-///     let expr1 = match x { /* ... */ };
-///     let expr2 = match y { /* ... */ };
+/// pub fn pow(x: ExpressionOrNumber, y: ExpressionOrNumber) -> JsExpression {
 ///     JsExpression {
-///         inner: Expression::function("pow", vec![expr1, expr2]),
+///         inner: Expression::function("pow", vec![x.0, y.0]),
 ///     }
 /// }
 /// ```
+///
+/// This accepts both Expression objects and numbers: `pow(x, 2)` or `pow(2, 3)`
 #[proc_macro]
 pub fn generate_nodejs_binary_binding(input: TokenStream) -> TokenStream {
     let name = parse_macro_input!(input as Ident);
@@ -552,35 +530,13 @@ pub fn generate_nodejs_binary_binding(input: TokenStream) -> TokenStream {
     let expanded = quote! {
         #[napi_derive::napi]
         pub fn #name(
-            x: napi::bindgen_prelude::Either<&crate::JsExpression, f64>,
-            y: napi::bindgen_prelude::Either<&crate::JsExpression, f64>,
+            x: crate::functions::ExpressionOrNumber,
+            y: crate::functions::ExpressionOrNumber,
         ) -> crate::JsExpression {
             use mathhook_core::Expression;
 
-            let expr1 = match x {
-                napi::bindgen_prelude::Either::A(e) => e.inner.clone(),
-                napi::bindgen_prelude::Either::B(num) => {
-                    if num.fract() == 0.0 && num.is_finite() {
-                        Expression::integer(num as i64)
-                    } else {
-                        Expression::float(num)
-                    }
-                }
-            };
-
-            let expr2 = match y {
-                napi::bindgen_prelude::Either::A(e) => e.inner.clone(),
-                napi::bindgen_prelude::Either::B(num) => {
-                    if num.fract() == 0.0 && num.is_finite() {
-                        Expression::integer(num as i64)
-                    } else {
-                        Expression::float(num)
-                    }
-                }
-            };
-
             crate::JsExpression {
-                inner: Expression::function(#name_str, vec![expr1, expr2]),
+                inner: Expression::function(#name_str, vec![x.0, y.0]),
             }
         }
     };

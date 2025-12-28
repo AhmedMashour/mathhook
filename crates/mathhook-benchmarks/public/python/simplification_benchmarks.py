@@ -3,6 +3,8 @@ Simplification Benchmarks
 
 Mirrors: benches/simplification_benchmarks.rs
 Tests: Polynomial, trigonometric, logarithmic, rational simplification
+
+Last Updated: 2025-12-28T1200
 """
 
 import time
@@ -10,7 +12,7 @@ import statistics
 from typing import Dict, List
 
 try:
-    from mathhook import Expression, Symbol
+    from mathhook import symbol, symbols, parse, sin, cos, log
 except ImportError:
     print("ERROR: mathhook Python bindings not found. Install with: pip install mathhook")
     exit(1)
@@ -55,73 +57,60 @@ def benchmark(func, samples: int = 100, warmup: int = 10) -> BenchmarkResult:
 
 def bench_collect_like_terms_direct():
     """Benchmark collect like terms (direct API): 3x + 2x + x."""
-    x = Symbol("x")
-    expr = Expression.add([
-        Expression.multiply([Expression.integer(3), Expression.symbol(x)]),
-        Expression.multiply([Expression.integer(2), Expression.symbol(x)]),
-        Expression.symbol(x)
-    ])
+    x = symbol('x')
+    expr = 3*x + 2*x + x
     result = expr.simplify()
     return result
 
 
 def bench_collect_like_terms_with_parsing():
     """Benchmark collect like terms (with parsing): 3x + 2x + x."""
-    expr = Expression.parse("3*x + 2*x + x")
+    expr = parse("3*x + 2*x + x")
     result = expr.simplify()
     return result
 
 
 def bench_expand_product_direct():
     """Benchmark expand product (direct API): (x + 1)(x + 2)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.add([Expression.symbol(x), Expression.integer(1)]),
-        Expression.add([Expression.symbol(x), Expression.integer(2)])
-    ])
+    x = symbol('x')
+    expr = (x + 1) * (x + 2)
     result = expr.simplify()
     return result
 
 
 def bench_expand_product_with_parsing():
     """Benchmark expand product (with parsing): (x + 1)(x + 2)."""
-    expr = Expression.parse("(x + 1) * (x + 2)")
+    expr = parse("(x + 1) * (x + 2)")
     result = expr.simplify()
     return result
 
 
 def bench_combine_powers_direct():
     """Benchmark combine powers (direct API): x^2 * x^3."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.pow(Expression.symbol(x), Expression.integer(3))
-    ])
+    x = symbol('x')
+    expr = x**2 * x**3
     result = expr.simplify()
     return result
 
 
 def bench_combine_powers_with_parsing():
     """Benchmark combine powers (with parsing): x^2 * x^3."""
-    expr = Expression.parse("x^2 * x^3")
+    expr = parse("x^2 * x^3")
     result = expr.simplify()
     return result
 
 
 def bench_binomial_expansion_direct():
     """Benchmark binomial expansion (direct API): (x + 1)^5."""
-    x = Symbol("x")
-    expr = Expression.pow(
-        Expression.add([Expression.symbol(x), Expression.integer(1)]),
-        Expression.integer(5)
-    )
+    x = symbol('x')
+    expr = (x + 1) ** 5
     result = expr.simplify()
     return result
 
 
 def bench_binomial_expansion_with_parsing():
     """Benchmark binomial expansion (with parsing): (x + 1)^5."""
-    expr = Expression.parse("(x + 1)^5")
+    expr = parse("(x + 1)^5")
     result = expr.simplify()
     return result
 
@@ -132,64 +121,45 @@ def bench_binomial_expansion_with_parsing():
 
 def bench_pythagorean_identity_direct():
     """Benchmark Pythagorean identity (direct API): sin^2(x) + cos^2(x)."""
-    x = Symbol("x")
-    expr = Expression.add([
-        Expression.pow(
-            Expression.function("sin", [Expression.symbol(x)]),
-            Expression.integer(2)
-        ),
-        Expression.pow(
-            Expression.function("cos", [Expression.symbol(x)]),
-            Expression.integer(2)
-        )
-    ])
+    x = symbol('x')
+    expr = sin(x)**2 + cos(x)**2
     result = expr.simplify()
     return result
 
 
 def bench_pythagorean_identity_with_parsing():
     """Benchmark Pythagorean identity (with parsing): sin^2(x) + cos^2(x)."""
-    expr = Expression.parse("sin(x)^2 + cos(x)^2")
+    expr = parse("sin(x)^2 + cos(x)^2")
     result = expr.simplify()
     return result
 
 
 def bench_double_angle_direct():
     """Benchmark double angle (direct API): 2*sin(x)*cos(x)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.integer(2),
-        Expression.function("sin", [Expression.symbol(x)]),
-        Expression.function("cos", [Expression.symbol(x)])
-    ])
+    x = symbol('x')
+    expr = 2 * sin(x) * cos(x)
     result = expr.simplify()
     return result
 
 
 def bench_double_angle_with_parsing():
     """Benchmark double angle (with parsing): 2*sin(x)*cos(x)."""
-    expr = Expression.parse("2 * sin(x) * cos(x)")
+    expr = parse("2 * sin(x) * cos(x)")
     result = expr.simplify()
     return result
 
 
 def bench_trig_quotient_direct():
     """Benchmark trig quotient (direct API): sin(x)/cos(x)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.function("sin", [Expression.symbol(x)]),
-        Expression.pow(
-            Expression.function("cos", [Expression.symbol(x)]),
-            Expression.integer(-1)
-        )
-    ])
+    x = symbol('x')
+    expr = sin(x) / cos(x)
     result = expr.simplify()
     return result
 
 
 def bench_trig_quotient_with_parsing():
     """Benchmark trig quotient (with parsing): sin(x)/cos(x)."""
-    expr = Expression.parse("sin(x) / cos(x)")
+    expr = parse("sin(x) / cos(x)")
     result = expr.simplify()
     return result
 
@@ -200,59 +170,45 @@ def bench_trig_quotient_with_parsing():
 
 def bench_log_product_rule_direct():
     """Benchmark log product rule (direct API): log(x) + log(y)."""
-    x = Symbol("x")
-    y = Symbol("y")
-    expr = Expression.add([
-        Expression.function("log", [Expression.symbol(x)]),
-        Expression.function("log", [Expression.symbol(y)])
-    ])
+    x, y = symbols('x y')
+    expr = log(x) + log(y)
     result = expr.simplify()
     return result
 
 
 def bench_log_product_rule_with_parsing():
     """Benchmark log product rule (with parsing): log(x) + log(y)."""
-    expr = Expression.parse("log(x) + log(y)")
+    expr = parse("log(x) + log(y)")
     result = expr.simplify()
     return result
 
 
 def bench_log_quotient_rule_direct():
     """Benchmark log quotient rule (direct API): log(x) - log(y)."""
-    x = Symbol("x")
-    y = Symbol("y")
-    expr = Expression.add([
-        Expression.function("log", [Expression.symbol(x)]),
-        Expression.multiply([
-            Expression.integer(-1),
-            Expression.function("log", [Expression.symbol(y)])
-        ])
-    ])
+    x, y = symbols('x y')
+    expr = log(x) - log(y)
     result = expr.simplify()
     return result
 
 
 def bench_log_quotient_rule_with_parsing():
     """Benchmark log quotient rule (with parsing): log(x) - log(y)."""
-    expr = Expression.parse("log(x) - log(y)")
+    expr = parse("log(x) - log(y)")
     result = expr.simplify()
     return result
 
 
 def bench_log_power_rule_direct():
     """Benchmark log power rule (direct API): 3*log(x)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.integer(3),
-        Expression.function("log", [Expression.symbol(x)])
-    ])
+    x = symbol('x')
+    expr = 3 * log(x)
     result = expr.simplify()
     return result
 
 
 def bench_log_power_rule_with_parsing():
     """Benchmark log power rule (with parsing): 3*log(x)."""
-    expr = Expression.parse("3 * log(x)")
+    expr = parse("3 * log(x)")
     result = expr.simplify()
     return result
 
@@ -263,48 +219,30 @@ def bench_log_power_rule_with_parsing():
 
 def bench_simple_rational_direct():
     """Benchmark simple rational (direct API): (x^2 - 1)/(x - 1)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.add([
-            Expression.pow(Expression.symbol(x), Expression.integer(2)),
-            Expression.integer(-1)
-        ]),
-        Expression.pow(
-            Expression.add([Expression.symbol(x), Expression.integer(-1)]),
-            Expression.integer(-1)
-        )
-    ])
+    x = symbol('x')
+    expr = (x**2 - 1) / (x - 1)
     result = expr.simplify()
     return result
 
 
 def bench_simple_rational_with_parsing():
     """Benchmark simple rational (with parsing): (x^2 - 1)/(x - 1)."""
-    expr = Expression.parse("(x^2 - 1) / (x - 1)")
+    expr = parse("(x^2 - 1) / (x - 1)")
     result = expr.simplify()
     return result
 
 
 def bench_complex_rational_direct():
     """Benchmark complex rational (direct API): (x^3 - 8)/(x - 2)."""
-    x = Symbol("x")
-    expr = Expression.multiply([
-        Expression.add([
-            Expression.pow(Expression.symbol(x), Expression.integer(3)),
-            Expression.integer(-8)
-        ]),
-        Expression.pow(
-            Expression.add([Expression.symbol(x), Expression.integer(-2)]),
-            Expression.integer(-1)
-        )
-    ])
+    x = symbol('x')
+    expr = (x**3 - 8) / (x - 2)
     result = expr.simplify()
     return result
 
 
 def bench_complex_rational_with_parsing():
     """Benchmark complex rational (with parsing): (x^3 - 8)/(x - 2)."""
-    expr = Expression.parse("(x^3 - 8) / (x - 2)")
+    expr = parse("(x^3 - 8) / (x - 2)")
     result = expr.simplify()
     return result
 
@@ -315,48 +253,45 @@ def bench_complex_rational_with_parsing():
 
 def bench_obvious_zero_direct():
     """Benchmark obvious zero (direct API): x - x."""
-    x = Symbol("x")
-    expr = Expression.add([
-        Expression.symbol(x),
-        Expression.multiply([Expression.integer(-1), Expression.symbol(x)])
-    ])
+    x = symbol('x')
+    expr = x - x
     result = expr.simplify()
     return result
 
 
 def bench_obvious_zero_with_parsing():
     """Benchmark obvious zero (with parsing): x - x."""
-    expr = Expression.parse("x - x")
+    expr = parse("x - x")
     result = expr.simplify()
     return result
 
 
 def bench_identity_simplification_direct():
     """Benchmark identity simplification (direct API): x * 1."""
-    x = Symbol("x")
-    expr = Expression.multiply([Expression.symbol(x), Expression.integer(1)])
+    x = symbol('x')
+    expr = x * 1
     result = expr.simplify()
     return result
 
 
 def bench_identity_simplification_with_parsing():
     """Benchmark identity simplification (with parsing): x * 1."""
-    expr = Expression.parse("x * 1")
+    expr = parse("x * 1")
     result = expr.simplify()
     return result
 
 
 def bench_additive_identity_direct():
     """Benchmark additive identity (direct API): x + 0."""
-    x = Symbol("x")
-    expr = Expression.add([Expression.symbol(x), Expression.integer(0)])
+    x = symbol('x')
+    expr = x + 0
     result = expr.simplify()
     return result
 
 
 def bench_additive_identity_with_parsing():
     """Benchmark additive identity (with parsing): x + 0."""
-    expr = Expression.parse("x + 0")
+    expr = parse("x + 0")
     result = expr.simplify()
     return result
 

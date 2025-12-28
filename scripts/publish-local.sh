@@ -16,6 +16,10 @@
 #   ./scripts/publish-local.sh --crates                 # Publish only to crates.io
 #   ./scripts/publish-local.sh --dry-run --all          # Dry run all
 #   ./scripts/publish-local.sh --skip-validation --all  # Skip validation checks
+#
+# Notes:
+#   - PyPI publishing automatically generates Python type stubs (.pyi files)
+#     using pyo3-stub-gen if available (via bin/stub_gen.rs or pyo3-stubgen CLI)
 
 set -euo pipefail
 
@@ -206,6 +210,50 @@ if $PUBLISH_PYPI; then
 
     # Clean old wheels
     rm -rf "$PROJECT_ROOT/target/wheels/"*.whl 2>/dev/null || true
+
+    # -------------------------------------------------------------------------
+    # Generate Python type stubs (.pyi files)
+    # -------------------------------------------------------------------------
+    log_info "Generating Python type stubs..."
+
+    # Build the stub generator binary if it exists
+    if [ -f "$PROJECT_ROOT/crates/mathhook-python/src/bin/stub_gen.rs" ]; then
+        log_info "Building stub generator..."
+        cargo build --release --bin stub_gen -p mathhook-python 2>/dev/null || {
+            log_warn "Stub generator binary not found or failed to build"
+            log_warn "Type stubs will not be generated (continuing...)"
+        }
+
+        # Run stub generator if build succeeded
+        if [ -f "$PROJECT_ROOT/target/release/stub_gen" ]; then
+            log_info "Running stub generator..."
+            "$PROJECT_ROOT/target/release/stub_gen" || {
+                log_warn "Stub generation failed (continuing without stubs...)"
+            }
+
+            # Check if stubs were generated
+            if ls "$PROJECT_ROOT/crates/mathhook-python/"*.pyi 1> /dev/null 2>&1; then
+                log_success "Type stubs generated successfully!"
+                ls -la "$PROJECT_ROOT/crates/mathhook-python/"*.pyi
+            else
+                log_warn "No .pyi files found after stub generation"
+            fi
+        fi
+    else
+        # Alternative: use pyo3-stubgen CLI if installed
+        if command -v pyo3-stubgen &> /dev/null; then
+            log_info "Using pyo3-stubgen CLI..."
+            pyo3-stubgen mathhook -o . || {
+                log_warn "pyo3-stubgen failed (continuing without stubs...)"
+            }
+        else
+            log_warn "No stub generator found. Skipping type stub generation."
+            log_warn "To enable stubs, either:"
+            log_warn "  1. Add bin/stub_gen.rs to mathhook-python"
+            log_warn "  2. Install pyo3-stubgen: pip install pyo3-stubgen"
+        fi
+    fi
+    echo ""
 
     # Define targets
     PYPI_TARGETS=()

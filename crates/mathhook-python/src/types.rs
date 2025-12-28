@@ -12,7 +12,9 @@ use mathhook_core::calculus::pde::{self, Pde};
 use mathhook_core::prelude::*;
 use mathhook_core::{Expression, Symbol};
 use pyo3::prelude::*;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone)]
 pub struct PyStep {
@@ -28,6 +30,7 @@ pub struct PyStep {
     pub expression: Option<PyExpression>,
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone)]
 pub struct PyStepByStepExplanation {
@@ -35,6 +38,7 @@ pub struct PyStepByStepExplanation {
     pub steps: Vec<PyStep>,
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone)]
 pub struct PyPattern {
@@ -42,6 +46,7 @@ pub struct PyPattern {
     pub(crate) inner: Pattern,
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone)]
 pub struct PySolverResult {
@@ -54,6 +59,7 @@ pub struct PySolverResult {
 }
 
 /// Result from solve_with_steps containing both solutions and educational steps
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone)]
 pub struct PySolveWithStepsResult {
@@ -68,19 +74,23 @@ pub struct PySolveWithStepsResult {
     pub result_type: String,
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Clone, Default)]
 pub struct PyODESolver {}
 
+#[gen_stub_pyclass]
 #[pyclass]
 #[derive(Default)]
 pub struct PyPDESolver {}
 
+#[gen_stub_pyclass]
 #[pyclass]
 pub struct PyGroebnerBasis {
     inner: GroebnerBasis,
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyPattern {
     #[doc = " Create a wildcard pattern that matches any expression"]
@@ -112,6 +122,7 @@ impl PyPattern {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl PySolverResult {
     #[doc = " String representation"]
@@ -175,6 +186,7 @@ impl PySolverResult {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyODESolver {
     #[doc = " Create a new ODE solver"]
@@ -367,6 +379,7 @@ impl PyODESolver {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyPDESolver {
     #[doc = " Create a new PDE solver"]
@@ -580,6 +593,7 @@ impl PyPDESolver {
     }
 }
 
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyGroebnerBasis {
     #[doc = " Create a new Gröbner basis from polynomials"]

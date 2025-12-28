@@ -4,6 +4,15 @@ use crate::trait_analyzer::{SupportedTrait, TraitAnalysis};
 use crate::types::{AnalyzedMethod, BindabilityRegistry, MappedType};
 use std::collections::{HashMap, HashSet};
 
+/// Configuration for pyo3-stub-gen integration
+#[derive(Debug, Clone, Default)]
+pub struct StubGenConfig {
+    /// Whether to generate pyo3-stub-gen annotations
+    pub enabled: bool,
+    /// Module name for the Python package (used in stub_info gatherer)
+    pub module_name: Option<String>,
+}
+
 const SKIPPED_FUNCTIONS: &[&str] = &[
     "get_universal_registry",
     "get_simplification_registry",
@@ -21,6 +30,7 @@ fn is_skipped_function(name: &str) -> bool {
 pub struct PythonEmitter {
     simple_enum_types: HashSet<String>,
     bindability_registry: BindabilityRegistry,
+    stub_gen_config: StubGenConfig,
 }
 
 impl Default for PythonEmitter {
@@ -34,6 +44,7 @@ impl PythonEmitter {
         Self {
             simple_enum_types: HashSet::new(),
             bindability_registry: BindabilityRegistry::new(),
+            stub_gen_config: StubGenConfig::default(),
         }
     }
 
@@ -41,6 +52,7 @@ impl PythonEmitter {
         Self {
             simple_enum_types: HashSet::new(),
             bindability_registry: registry,
+            stub_gen_config: StubGenConfig::default(),
         }
     }
 
@@ -50,12 +62,36 @@ impl PythonEmitter {
         emitter
     }
 
+    /// Enable pyo3-stub-gen annotations in generated code
+    pub fn with_stub_gen(mut self, module_name: impl Into<String>) -> Self {
+        self.stub_gen_config = StubGenConfig {
+            enabled: true,
+            module_name: Some(module_name.into()),
+        };
+        self
+    }
+
+    /// Enable pyo3-stub-gen with default settings
+    pub fn enable_stub_gen(&mut self) {
+        self.stub_gen_config.enabled = true;
+    }
+
+    /// Set the module name for stub generation
+    pub fn set_stub_gen_module(&mut self, module_name: impl Into<String>) {
+        self.stub_gen_config.module_name = Some(module_name.into());
+    }
+
     pub fn add_simple_enum_type(&mut self, type_name: String) {
         self.simple_enum_types.insert(type_name);
     }
 
     pub fn set_bindability_registry(&mut self, registry: BindabilityRegistry) {
         self.bindability_registry = registry;
+    }
+
+    /// Check if stub generation is enabled
+    pub fn stub_gen_enabled(&self) -> bool {
+        self.stub_gen_config.enabled
     }
 
     fn is_simple_enum_type(&self, type_name: &str) -> bool {
@@ -1183,14 +1219,27 @@ impl PythonEmitter {
             "use super::*;".to_string(),
             "use pyo3::prelude::*;".to_string(),
             "use pyo3::exceptions::PyValueError;".to_string(),
-            import_path,
         ];
+
+        // Add pyo3-stub-gen imports if enabled
+        if self.stub_gen_config.enabled {
+            lines.push(
+                "use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};".to_string(),
+            );
+        }
+
+        lines.push(import_path);
 
         for trait_import in trait_imports {
             lines.push(trait_import);
         }
 
         lines.push(String::new());
+
+        // Add gen_stub_pyclass before pyclass if stub generation is enabled
+        if self.stub_gen_config.enabled {
+            lines.push("#[gen_stub_pyclass]".to_string());
+        }
         lines.push(format!("#[pyclass(name = \"{}\")]", core_type));
 
         if !skip_clone {
@@ -1202,9 +1251,14 @@ impl PythonEmitter {
             format!("    pub(crate) inner: {},", core_type),
             "}".to_string(),
             String::new(),
-            "#[pymethods]".to_string(),
-            format!("impl {} {{", wrapper_name),
         ]);
+
+        // Add gen_stub_pymethods before pymethods if stub generation is enabled
+        if self.stub_gen_config.enabled {
+            lines.push("#[gen_stub_pymethods]".to_string());
+        }
+        lines.push("#[pymethods]".to_string());
+        lines.push(format!("impl {} {{", wrapper_name));
 
         let mut reserved_names: HashSet<String> = HashSet::new();
 
@@ -1304,10 +1358,18 @@ impl PythonEmitter {
             "use super::*;".to_string(),
             "use pyo3::prelude::*;".to_string(),
             "use pyo3::exceptions::PyValueError;".to_string(),
-            String::new(),
-            "#[pymodule]".to_string(),
-            "pub fn functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {".to_string(),
         ];
+
+        // Add pyo3-stub-gen imports if enabled
+        if self.stub_gen_config.enabled {
+            lines.push("use pyo3_stub_gen::derive::gen_stub_pyfunction;".to_string());
+        }
+
+        lines.push(String::new());
+        lines.push("#[pymodule]".to_string());
+        lines.push(
+            "pub fn functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {".to_string(),
+        );
 
         let reserved_names: HashSet<String> = HashSet::new();
 
@@ -1396,6 +1458,10 @@ impl PythonEmitter {
                 let return_type = Self::method_return_type(&func.output);
                 let body = self.method_body(func, false);
 
+                // Add gen_stub_pyfunction before pyfn if stub generation is enabled
+                if self.stub_gen_config.enabled {
+                    lines.push("    #[gen_stub_pyfunction]".to_string());
+                }
                 lines.push("    #[pyfn(m)]".to_string());
                 lines.push(format!(
                     "    fn {}({}) -> {} {{",
@@ -1409,6 +1475,13 @@ impl PythonEmitter {
 
         lines.push("    Ok(())".to_string());
         lines.push("}".to_string());
+
+        // Add define_stub_info_gatherer macro if stub generation is enabled
+        if self.stub_gen_config.enabled {
+            lines.push(String::new());
+            lines.push("// Stub info gatherer for pyo3-stub-gen".to_string());
+            lines.push("pyo3_stub_gen::define_stub_info_gatherer!(stub_info);".to_string());
+        }
 
         lines.join("\n")
     }
@@ -1572,6 +1645,90 @@ impl PythonEmitter {
     fn generate_hash() -> String {
         "    pub fn __hash__(&self) -> u64 {\n        use std::hash::{Hash, Hasher};\n        let mut hasher = std::collections::hash_map::DefaultHasher::new();\n        self.inner.hash(&mut hasher);\n        hasher.finish()\n    }\n".to_string()
     }
+
+    /// Generate stub generator binary source code for build integration.
+    ///
+    /// This generates a `src/bin/stub_gen.rs` file that can be run to generate
+    /// Python type stub (.pyi) files. Run with: `cargo run --bin stub_gen`
+    ///
+    /// The generated stubs will be placed in the package directory.
+    pub fn emit_stub_generator_bin(&self, crate_name: &str, output_dir: &str) -> String {
+        if !self.stub_gen_config.enabled {
+            return String::new();
+        }
+
+        format!(
+            r#"//! Stub generator for Python type hints
+//!
+//! Run with: `cargo run --bin stub_gen`
+//! This will generate .pyi files in the specified output directory.
+//!
+//! AUTO-GENERATED by binding-codegen - DO NOT EDIT
+
+use pyo3_stub_gen::Result;
+
+fn main() -> Result<()> {{
+    // Collect stub information from annotated items
+    let stub = {crate_name}::stub_info()?;
+
+    // Generate stub files in the output directory
+    stub.generate_at("{output_dir}")?;
+
+    println!("✓ Generated Python type stubs in {output_dir}/");
+    Ok(())
+}}
+"#,
+            crate_name = crate_name,
+            output_dir = output_dir
+        )
+    }
+
+    /// Generate build.rs content for automatic stub generation during build.
+    ///
+    /// This integrates stub generation into the maturin build process.
+    pub fn emit_build_rs_stub_gen(&self) -> String {
+        if !self.stub_gen_config.enabled {
+            return String::new();
+        }
+
+        r#"//! Build script for pyo3-stub-gen integration
+//!
+//! This generates Python type stubs during the build process.
+//!
+//! AUTO-GENERATED by binding-codegen - DO NOT EDIT
+
+fn main() {
+    // Re-run if source files change
+    println!("cargo:rerun-if-changed=src/");
+
+    // pyo3-stub-gen handles stub generation via derive macros
+    // Stubs are generated when running: cargo run --bin stub_gen
+
+    // For maturin integration, add to pyproject.toml:
+    // [tool.maturin]
+    // python-source = "python"
+
+    pyo3_build_config::add_extension_module_link_args();
+}
+"#
+        .to_string()
+    }
+
+    /// Generate the mod.rs additions needed for stub_info export.
+    ///
+    /// This should be added to the lib.rs or main module file.
+    pub fn emit_stub_info_export(&self) -> String {
+        if !self.stub_gen_config.enabled {
+            return String::new();
+        }
+
+        r#"
+// Re-export stub_info for the stub generator binary
+#[cfg(feature = "stub-gen")]
+pub use generated::stub_info;
+"#
+        .to_string()
+    }
 }
 
 impl crate::emitter::Emitter for PythonEmitter {
@@ -1671,5 +1828,74 @@ mod tests {
 
         assert!(emitter.is_type_bindable("Expression"));
         assert!(!emitter.is_type_bindable("InternalCache"));
+    }
+
+    #[test]
+    fn test_stub_gen_config_default_disabled() {
+        let emitter = PythonEmitter::new();
+        assert!(!emitter.stub_gen_enabled());
+    }
+
+    #[test]
+    fn test_stub_gen_config_enabled() {
+        let emitter = PythonEmitter::new().with_stub_gen("mathhook");
+        assert!(emitter.stub_gen_enabled());
+    }
+
+    #[test]
+    fn test_stub_gen_enable_method() {
+        let mut emitter = PythonEmitter::new();
+        emitter.enable_stub_gen();
+        assert!(emitter.stub_gen_enabled());
+    }
+
+    #[test]
+    fn test_emit_stub_generator_bin_disabled() {
+        let emitter = PythonEmitter::new();
+        let result = emitter.emit_stub_generator_bin("mathhook_python", "python/mathhook");
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_emit_stub_generator_bin_enabled() {
+        let emitter = PythonEmitter::new().with_stub_gen("mathhook");
+        let result = emitter.emit_stub_generator_bin("mathhook_python", "python/mathhook");
+
+        assert!(result.contains("use pyo3_stub_gen::Result;"));
+        assert!(result.contains("mathhook_python::stub_info()"));
+        assert!(result.contains("python/mathhook"));
+        assert!(result.contains("fn main() -> Result<()>"));
+    }
+
+    #[test]
+    fn test_emit_build_rs_stub_gen_disabled() {
+        let emitter = PythonEmitter::new();
+        let result = emitter.emit_build_rs_stub_gen();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_emit_build_rs_stub_gen_enabled() {
+        let emitter = PythonEmitter::new().with_stub_gen("mathhook");
+        let result = emitter.emit_build_rs_stub_gen();
+
+        assert!(result.contains("pyo3_build_config::add_extension_module_link_args()"));
+        assert!(result.contains("cargo:rerun-if-changed=src/"));
+    }
+
+    #[test]
+    fn test_emit_stub_info_export_disabled() {
+        let emitter = PythonEmitter::new();
+        let result = emitter.emit_stub_info_export();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_emit_stub_info_export_enabled() {
+        let emitter = PythonEmitter::new().with_stub_gen("mathhook");
+        let result = emitter.emit_stub_info_export();
+
+        assert!(result.contains("pub use generated::stub_info"));
+        assert!(result.contains("#[cfg(feature = \"stub-gen\")]"));
     }
 }

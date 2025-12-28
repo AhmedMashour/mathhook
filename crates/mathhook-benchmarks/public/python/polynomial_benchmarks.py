@@ -2,7 +2,9 @@
 Polynomial Benchmarks
 
 Mirrors: benches/polynomial_benchmarks.rs
-Tests: GCD, division, factorization, special polynomials, finite field operations
+Tests: GCD, division, factorization, special polynomials
+
+Last Updated: 2025-12-28T1200
 """
 
 import time
@@ -10,7 +12,7 @@ import statistics
 from typing import Dict, List
 
 try:
-    from mathhook import Expression, Symbol
+    from mathhook import symbol, symbols, parse, gcd
 except ImportError:
     print("ERROR: mathhook Python bindings not found. Install with: pip install mathhook")
     exit(1)
@@ -30,7 +32,7 @@ class BenchmarkResult:
         self.samples = len(times_ns)
 
     def __repr__(self):
-        return (f"{self.name}: {self.mean_ns:.2f}ns ± {self.std_dev_ns:.2f}ns "
+        return (f"{self.name}: {self.mean_ns:.2f}ns +/- {self.std_dev_ns:.2f}ns "
                 f"(median: {self.median_ns:.2f}ns)")
 
 
@@ -55,68 +57,53 @@ def benchmark(func, samples: int = 100, warmup: int = 10) -> BenchmarkResult:
 
 def bench_gcd_univariate_simple_direct():
     """Benchmark univariate GCD simple (direct API): gcd(x^2-1, x-1)."""
-    x = Symbol("x")
-    f = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    g = Expression.add([Expression.symbol(x), Expression.integer(-1)])
-    result = Expression.gcd(f, g)
+    x = symbol('x')
+    f = x**2 - 1
+    g = x - 1
+    result = gcd(f, g)
     return result
 
 
 def bench_gcd_univariate_simple_with_parsing():
     """Benchmark univariate GCD simple (with parsing): gcd(x^2-1, x-1)."""
-    f = Expression.parse("x^2 - 1")
-    g = Expression.parse("x - 1")
-    result = Expression.gcd(f, g)
+    f = parse("x^2 - 1")
+    g = parse("x - 1")
+    result = gcd(f, g)
     return result
 
 
 def bench_gcd_univariate_degree_10_direct():
     """Benchmark univariate GCD degree 10 (direct API)."""
-    x = Symbol("x")
-    f_terms = [Expression.integer(-1)]
-    for i in range(1, 11):
-        f_terms.append(Expression.multiply([
-            Expression.integer(i),
-            Expression.pow(Expression.symbol(x), Expression.integer(i))
-        ]))
-    f = Expression.add(f_terms)
-    g = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(5)),
-        Expression.integer(-1)
-    ])
-    result = Expression.gcd(f, g)
+    x = symbol('x')
+    f = (x**10 + 10*x**9 + 9*x**8 + 8*x**7 + 7*x**6 +
+         6*x**5 + 5*x**4 + 4*x**3 + 3*x**2 + 2*x - 1)
+    g = x**5 - 1
+    result = gcd(f, g)
     return result
 
 
 def bench_gcd_univariate_degree_10_with_parsing():
     """Benchmark univariate GCD degree 10 (with parsing)."""
-    f = Expression.parse("x^10 + 10*x^9 + 9*x^8 + 8*x^7 + 7*x^6 + 6*x^5 + 5*x^4 + 4*x^3 + 3*x^2 + 2*x - 1")
-    g = Expression.parse("x^5 - 1")
-    result = Expression.gcd(f, g)
+    f = parse("x^10 + 10*x^9 + 9*x^8 + 8*x^7 + 7*x^6 + 6*x^5 + 5*x^4 + 4*x^3 + 3*x^2 + 2*x - 1")
+    g = parse("x^5 - 1")
+    result = gcd(f, g)
     return result
 
 
 def bench_gcd_bivariate_simple_direct():
     """Benchmark bivariate GCD simple (direct API): gcd(x*y, x*(y+1))."""
-    x = Symbol("x")
-    y = Symbol("y")
-    f = Expression.multiply([Expression.symbol(x), Expression.symbol(y)])
-    g = Expression.multiply([
-        Expression.symbol(x),
-        Expression.add([Expression.symbol(y), Expression.integer(1)])
-    ])
-    result = Expression.gcd(f, g)
+    x, y = symbols('x y')
+    f = x * y
+    g = x * (y + 1)
+    result = gcd(f, g)
     return result
 
 
 def bench_gcd_bivariate_simple_with_parsing():
     """Benchmark bivariate GCD simple (with parsing): gcd(x*y, x*(y+1))."""
-    f = Expression.parse("x * y")
-    g = Expression.parse("x * (y + 1)")
-    result = Expression.gcd(f, g)
+    f = parse("x * y")
+    g = parse("x * (y + 1)")
+    result = gcd(f, g)
     return result
 
 
@@ -126,41 +113,32 @@ def bench_gcd_bivariate_simple_with_parsing():
 
 def bench_division_simple_direct():
     """Benchmark simple division (direct API): (x^2-1)/(x-1)."""
-    x = Symbol("x")
-    dividend = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    divisor = Expression.add([Expression.symbol(x), Expression.integer(-1)])
-    result = Expression.divide(dividend, divisor)
+    x = symbol('x')
+    dividend = x**2 - 1
+    divisor = x - 1
+    result = dividend / divisor
     return result
 
 
 def bench_division_simple_with_parsing():
     """Benchmark simple division (with parsing): (x^2-1)/(x-1)."""
-    expr = Expression.parse("(x^2 - 1) / (x - 1)")
+    expr = parse("(x^2 - 1) / (x - 1)")
     result = expr.simplify()
     return result
 
 
 def bench_division_degree_8_direct():
     """Benchmark higher degree division (direct API): (x^8-1)/(x^2-1)."""
-    x = Symbol("x")
-    dividend = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(8)),
-        Expression.integer(-1)
-    ])
-    divisor = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    result = Expression.divide(dividend, divisor)
+    x = symbol('x')
+    dividend = x**8 - 1
+    divisor = x**2 - 1
+    result = dividend / divisor
     return result
 
 
 def bench_division_degree_8_with_parsing():
     """Benchmark higher degree division (with parsing): (x^8-1)/(x^2-1)."""
-    expr = Expression.parse("(x^8 - 1) / (x^2 - 1)")
+    expr = parse("(x^8 - 1) / (x^2 - 1)")
     result = expr.simplify()
     return result
 
@@ -171,59 +149,46 @@ def bench_division_degree_8_with_parsing():
 
 def bench_factor_quadratic_direct():
     """Benchmark factor quadratic (direct API): factor(x^2-1)."""
-    x = Symbol("x")
-    poly = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    result = Expression.factor(poly)
+    x = symbol('x')
+    poly = x**2 - 1
+    result = poly.factor()
     return result
 
 
 def bench_factor_quadratic_with_parsing():
     """Benchmark factor quadratic (with parsing): factor(x^2-1)."""
-    poly = Expression.parse("x^2 - 1")
-    result = Expression.factor(poly)
+    poly = parse("x^2 - 1")
+    result = poly.factor()
     return result
 
 
 def bench_factor_cubic_direct():
     """Benchmark factor cubic (direct API): factor(x^3-1)."""
-    x = Symbol("x")
-    poly = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(3)),
-        Expression.integer(-1)
-    ])
-    result = Expression.factor(poly)
+    x = symbol('x')
+    poly = x**3 - 1
+    result = poly.factor()
     return result
 
 
 def bench_factor_cubic_with_parsing():
     """Benchmark factor cubic (with parsing): factor(x^3-1)."""
-    poly = Expression.parse("x^3 - 1")
-    result = Expression.factor(poly)
+    poly = parse("x^3 - 1")
+    result = poly.factor()
     return result
 
 
 def bench_common_factor_extraction_direct():
     """Benchmark common factor extraction (direct API): 6x^2 + 12x + 18."""
-    x = Symbol("x")
-    poly = Expression.add([
-        Expression.multiply([
-            Expression.integer(6),
-            Expression.pow(Expression.symbol(x), Expression.integer(2))
-        ]),
-        Expression.multiply([Expression.integer(12), Expression.symbol(x)]),
-        Expression.integer(18)
-    ])
-    result = Expression.factor(poly)
+    x = symbol('x')
+    poly = 6*x**2 + 12*x + 18
+    result = poly.factor()
     return result
 
 
 def bench_common_factor_extraction_with_parsing():
     """Benchmark common factor extraction (with parsing): 6x^2 + 12x + 18."""
-    poly = Expression.parse("6*x^2 + 12*x + 18")
-    result = Expression.factor(poly)
+    poly = parse("6*x^2 + 12*x + 18")
+    result = poly.factor()
     return result
 
 
@@ -233,116 +198,83 @@ def bench_common_factor_extraction_with_parsing():
 
 def bench_poly_multiply_small_direct():
     """Benchmark small polynomial multiplication (direct API): (x+1)*(x+2)."""
-    x = Symbol("x")
-    f = Expression.add([Expression.symbol(x), Expression.integer(1)])
-    g = Expression.add([Expression.symbol(x), Expression.integer(2)])
-    result = Expression.multiply([f, g])
-    result = result.simplify()
+    x = symbol('x')
+    f = x + 1
+    g = x + 2
+    result = (f * g).simplify()
     return result
 
 
 def bench_poly_multiply_small_with_parsing():
     """Benchmark small polynomial multiplication (with parsing): (x+1)*(x+2)."""
-    expr = Expression.parse("(x + 1) * (x + 2)")
+    expr = parse("(x + 1) * (x + 2)")
     result = expr.simplify()
     return result
 
 
 def bench_poly_multiply_medium_direct():
     """Benchmark medium polynomial multiplication (direct API)."""
-    x = Symbol("x")
-    f = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.symbol(x),
-        Expression.integer(1)
-    ])
-    g = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    result = Expression.multiply([f, g])
-    result = result.simplify()
+    x = symbol('x')
+    f = x**2 + x + 1
+    g = x**2 - 1
+    result = (f * g).simplify()
     return result
 
 
 def bench_poly_multiply_medium_with_parsing():
     """Benchmark medium polynomial multiplication (with parsing)."""
-    expr = Expression.parse("(x^2 + x + 1) * (x^2 - 1)")
+    expr = parse("(x^2 + x + 1) * (x^2 - 1)")
+    result = expr.simplify()
+    return result
+
+
+def bench_poly_multiply_large_direct():
+    """Benchmark large polynomial multiplication (direct API)."""
+    x = symbol('x')
+    f = x**4 + x**3 + x**2 + x + 1
+    g = x**4 - x**3 + x**2 - x + 1
+    result = (f * g).simplify()
+    return result
+
+
+def bench_poly_multiply_large_with_parsing():
+    """Benchmark large polynomial multiplication (with parsing)."""
+    expr = parse("(x^4 + x^3 + x^2 + x + 1) * (x^4 - x^3 + x^2 - x + 1)")
     result = expr.simplify()
     return result
 
 
 # ============================================================================
-# Special Polynomial Family Benchmarks
+# Polynomial Expansion Benchmarks
 # ============================================================================
 
-def bench_legendre_degree_5_direct():
-    """Benchmark Legendre polynomial degree 5 (direct API)."""
-    expr = Expression.function("legendre", [Expression.integer(5)])
-    result = expr.simplify()
+def bench_binomial_expansion_degree_3_direct():
+    """Benchmark binomial expansion (direct API): (x+1)^3."""
+    x = symbol('x')
+    expr = (x + 1) ** 3
+    result = expr.expand()
     return result
 
 
-def bench_legendre_degree_5_with_parsing():
-    """Benchmark Legendre polynomial degree 5 (with parsing)."""
-    expr = Expression.parse("legendre(5)")
-    result = expr.simplify()
+def bench_binomial_expansion_degree_3_with_parsing():
+    """Benchmark binomial expansion (with parsing): (x+1)^3."""
+    expr = parse("(x + 1)^3")
+    result = expr.expand()
     return result
 
 
-def bench_chebyshev_degree_5_direct():
-    """Benchmark Chebyshev polynomial degree 5 (direct API)."""
-    expr = Expression.function("chebyshev_t", [Expression.integer(5)])
-    result = expr.simplify()
+def bench_binomial_expansion_degree_5_direct():
+    """Benchmark binomial expansion (direct API): (x+1)^5."""
+    x = symbol('x')
+    expr = (x + 1) ** 5
+    result = expr.expand()
     return result
 
 
-def bench_chebyshev_degree_5_with_parsing():
-    """Benchmark Chebyshev polynomial degree 5 (with parsing)."""
-    expr = Expression.parse("chebyshev_t(5)")
-    result = expr.simplify()
-    return result
-
-
-def bench_hermite_degree_5_direct():
-    """Benchmark Hermite polynomial degree 5 (direct API)."""
-    expr = Expression.function("hermite", [Expression.integer(5)])
-    result = expr.simplify()
-    return result
-
-
-def bench_hermite_degree_5_with_parsing():
-    """Benchmark Hermite polynomial degree 5 (with parsing)."""
-    expr = Expression.parse("hermite(5)")
-    result = expr.simplify()
-    return result
-
-
-# ============================================================================
-# Resultant Benchmarks
-# ============================================================================
-
-def bench_resultant_quadratic_direct():
-    """Benchmark resultant of quadratics (direct API)."""
-    x = Symbol("x")
-    f = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.symbol(x),
-        Expression.integer(1)
-    ])
-    g = Expression.add([
-        Expression.pow(Expression.symbol(x), Expression.integer(2)),
-        Expression.integer(-1)
-    ])
-    result = Expression.resultant(f, g)
-    return result
-
-
-def bench_resultant_quadratic_with_parsing():
-    """Benchmark resultant of quadratics (with parsing)."""
-    f = Expression.parse("x^2 + x + 1")
-    g = Expression.parse("x^2 - 1")
-    result = Expression.resultant(f, g)
+def bench_binomial_expansion_degree_5_with_parsing():
+    """Benchmark binomial expansion (with parsing): (x+1)^5."""
+    expr = parse("(x + 1)^5")
+    result = expr.expand()
     return result
 
 
@@ -382,18 +314,14 @@ def run_all_benchmarks(samples: int = 50) -> Dict[str, BenchmarkResult]:
         bench_poly_multiply_small_with_parsing,
         bench_poly_multiply_medium_direct,
         bench_poly_multiply_medium_with_parsing,
+        bench_poly_multiply_large_direct,
+        bench_poly_multiply_large_with_parsing,
 
-        # Special polynomials
-        bench_legendre_degree_5_direct,
-        bench_legendre_degree_5_with_parsing,
-        bench_chebyshev_degree_5_direct,
-        bench_chebyshev_degree_5_with_parsing,
-        bench_hermite_degree_5_direct,
-        bench_hermite_degree_5_with_parsing,
-
-        # Resultant
-        bench_resultant_quadratic_direct,
-        bench_resultant_quadratic_with_parsing,
+        # Expansion
+        bench_binomial_expansion_degree_3_direct,
+        bench_binomial_expansion_degree_3_with_parsing,
+        bench_binomial_expansion_degree_5_direct,
+        bench_binomial_expansion_degree_5_with_parsing,
     ]
 
     print("=" * 80)

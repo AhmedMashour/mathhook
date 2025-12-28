@@ -8,6 +8,63 @@ use mathhook_core::parser::Parser;
 use mathhook_core::{Expression, Symbol};
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
+
+/// A wrapper type that accepts Expression, number, or string from JavaScript.
+/// This follows a Pattern for automatic type conversion.
+///
+/// Accepts:
+/// - `Expression` object → use directly
+/// - `number` (integer or float) → convert to Expression::integer/float
+/// - `string` → convert to Expression::symbol (creates symbol on the fly)
+///
+/// # Examples (JavaScript)
+/// ```javascript
+/// sin(x)      // Expression object
+/// sin(1)      // integer → Expression::integer(1)
+/// sin(3.14)   // float → Expression::float(3.14)
+/// sin('y')    // string → Expression::symbol('y')
+/// ```
+pub struct ExpressionOrNumber(pub Expression);
+
+impl FromNapiValue for ExpressionOrNumber {
+    unsafe fn from_napi_value(
+        env: napi::sys::napi_env,
+        value: napi::sys::napi_value,
+    ) -> Result<Self> {
+        // Get the type of the value
+        let mut value_type = 0;
+        napi::sys::napi_typeof(env, value, &mut value_type);
+
+        if value_type == napi::sys::ValueType::napi_number {
+            // Number: convert to integer or float
+            let num: f64 = f64::from_napi_value(env, value)?;
+            let expr = if num.fract() == 0.0 && num.is_finite() && num.abs() < i64::MAX as f64 {
+                Expression::integer(num as i64)
+            } else {
+                Expression::float(num)
+            };
+            Ok(ExpressionOrNumber(expr))
+        } else if value_type == napi::sys::ValueType::napi_string {
+            // String: convert to symbol (like SymPy's sympify)
+            let s: String = String::from_napi_value(env, value)?;
+            Ok(ExpressionOrNumber(Expression::symbol(Symbol::new(&s))))
+        } else if value_type == napi::sys::ValueType::napi_object {
+            // Object: try to unwrap as JsExpression
+            match ClassInstance::<JsExpression>::from_napi_value(env, value) {
+                Ok(instance) => Ok(ExpressionOrNumber(instance.inner.clone())),
+                Err(_) => Err(Error::new(
+                    Status::InvalidArg,
+                    "Expected Expression object, number, or string".to_string(),
+                )),
+            }
+        } else {
+            Err(Error::new(
+                Status::InvalidArg,
+                "Expected Expression, number, or string".to_string(),
+            ))
+        }
+    }
+}
 /// Compute Gröbner basis for a system of polynomials
 ///
 /// A Gröbner basis is a special generating set for a polynomial ideal that
@@ -72,7 +129,7 @@ pub fn groebner_basis(
 ///
 /// A JsExpression representing the symbol
 ///
-/// # Examples
+/// # Example
 ///
 /// ```javascript
 /// const { symbol } = require('mathhook-node');
@@ -205,22 +262,12 @@ mathhook_macros::generate_nodejs_binding!(log10);
 /// const { sqrt, symbol } = require('mathhook');
 /// const x = symbol('x');
 /// const expr = sqrt(x);  // √x (represented as x^(1/2))
-/// const value = sqrt(4);  // Evaluates to 2
+/// const num = sqrt(4);   // √4
 /// ```
 #[napi]
-pub fn sqrt(x: Either<&JsExpression, f64>) -> JsExpression {
-    let expr = match x {
-        Either::A(e) => e.inner.clone(),
-        Either::B(num) => {
-            if num.fract() == 0.0 {
-                Expression::integer(num as i64)
-            } else {
-                Expression::float(num)
-            }
-        }
-    };
+pub fn sqrt(x: ExpressionOrNumber) -> JsExpression {
     JsExpression {
-        inner: Expression::function("sqrt", vec![expr]),
+        inner: Expression::function("sqrt", vec![x.0]),
     }
 }
 mathhook_macros::generate_nodejs_binding!(abs);

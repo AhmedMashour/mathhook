@@ -6,6 +6,9 @@
 
 mod generated;
 
+// Stub generation support for type hints (.pyi files)
+pyo3_stub_gen::define_stub_info_gatherer!(stub_info);
+
 // Hand-written wrappers and API convenience functions
 mod functions;
 mod functions_generated;

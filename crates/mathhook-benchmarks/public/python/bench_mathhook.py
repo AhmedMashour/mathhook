@@ -9,7 +9,7 @@ Usage:
 
 Output: JSON for baseline comparison or human-readable report.
 
-Last Updated: 2025-11-30T0300
+Last Updated: 2025-12-28T1200
 """
 
 import json
@@ -20,7 +20,7 @@ import argparse
 from typing import Dict, Any, Callable
 
 try:
-    from mathhook import parse, symbols, gcd, PyExpression
+    from mathhook import parse, symbol, symbols, gcd
 except ImportError:
     print("Error: MathHook Python bindings not installed", file=sys.stderr)
     print("Install with: pip install mathhook", file=sys.stderr)
@@ -58,7 +58,7 @@ def benchmark(func: Callable, iterations: int = 100, warmup: int = 10) -> Dict[s
     }
 
 
-# GCD expressions
+# GCD expressions (pre-parsed for fair benchmarking)
 _gcd_simple_f = parse("x^2 - 1")
 _gcd_simple_g = parse("x - 1")
 
