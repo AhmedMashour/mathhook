@@ -41,7 +41,7 @@ regex = "1.10"
 dirs = "6.0.0"
 
 # Testing and benchmarking
-criterion = { version = "0.7.0", features = ["html_reports"] }
+criterion = { version = "0.8.1", features = ["html_reports"] }
 proptest = "1.5"
 
 # Binding dependencies
