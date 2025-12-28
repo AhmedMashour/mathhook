@@ -314,7 +314,7 @@ mod tests {
     #[test]
     fn test_substitution_in_function() {
         let x = symbol!(x);
-        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
+        let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
 
         let result = expr.subs(&Expression::symbol(x.clone()), &Expression::integer(0));
 

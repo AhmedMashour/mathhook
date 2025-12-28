@@ -2,8 +2,8 @@
 //! Provides detailed explanations of simplification and algebraic operations
 
 use crate::core::Expression;
-use std::sync::Arc;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 /// Represents a single step in a mathematical operation
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

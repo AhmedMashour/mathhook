@@ -12,7 +12,6 @@ use crate::core::polynomial::sparse_polynomial::{
 use crate::core::{Expression, Symbol};
 use crate::error::{MathError, MathResult};
 use std::collections::VecDeque;
-use std::sync::Arc;
 
 /// Compute Gröbner basis using efficient sparse polynomial representation
 ///
@@ -248,6 +247,7 @@ fn are_relatively_prime_sparse(mono1: &Monomial, mono2: &Monomial) -> bool {
 mod tests {
     use super::*;
     use crate::symbol;
+    use std::sync::Arc;
 
     #[test]
     fn test_efficient_buchberger_simple() {

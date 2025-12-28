@@ -1,5 +1,5 @@
 [package]
-name = "binding-codegen"
+name = "mathhook-binding-codegen"
 version = "0.1.0"
 edition = "2021"
 description = "Code generator for MathHook Python/Node.js bindings"

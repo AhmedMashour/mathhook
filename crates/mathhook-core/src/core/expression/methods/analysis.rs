@@ -6,14 +6,13 @@
 use super::super::Expression;
 use crate::core::commutativity::Commutativity;
 use crate::core::Symbol;
-use std::sync::Arc;
 
 impl Expression {
     /// Compute commutativity of this expression
     ///
     /// Commutativity is inferred from the symbols and operations:
     /// - Numbers, constants: Commutative
-    /// - Symbols: Depends on symbol type (Scalar → Commutative, Matrix/Operator/Quaternion → Noncommutative)
+    /// - Symbols: Depends on symbol type (Scalar -> Commutative, Matrix/Operator/Quaternion -> Noncommutative)
     /// - Mul: Noncommutative if ANY factor is noncommutative
     /// - Add, Pow, Function: Depends on subexpressions
     ///
@@ -255,8 +254,7 @@ impl Expression {
                 .sum(),
 
             Expression::Pow(base, exp) => {
-                base.count_variable_occurrences(variable)
-                    + exp.count_variable_occurrences(variable)
+                base.count_variable_occurrences(variable) + exp.count_variable_occurrences(variable)
             }
 
             Expression::Function { args, .. } => args
@@ -442,6 +440,7 @@ mod tests {
     use crate::expr;
     use crate::matrices::unified::Matrix;
     use crate::symbol;
+    use std::sync::Arc;
 
     #[test]
     fn test_commutativity_scalar_multiplication() {

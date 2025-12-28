@@ -1,209 +1,206 @@
 # MathHook Release Workflow
-# Triggered by pushing a semver tag: v0.1.0, v1.2.3, etc.
 # Publishes to: crates.io, PyPI, npm
-#
-# Required secrets (configure in GitHub repo settings):
-#   CARGO_REGISTRY_TOKEN  - crates.io API token
-#   PYPI_API_TOKEN        - PyPI API token (or trusted publisher)
-#   NPM_TOKEN             - npm automation token
 
 name: Release
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'       # v0.1.0, v1.2.3
-      - 'v[0-9]+.[0-9]+.[0-9]+-*'     # v0.1.0-alpha.1, v1.0.0-rc.1
+    tags: ['v[0-9]+.[0-9]+.[0-9]+', 'v[0-9]+.[0-9]+.[0-9]+-*']
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run (skip actual publishing)'
+        description: 'Dry run (skip publishing)'
         required: false
         default: false
         type: boolean
 
-permissions:
-  contents: write
-  id-token: write  # For PyPI trusted publishing
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: 1
 
 jobs:
-  # ============================================================================
-  # Validation: Ensure tests pass before releasing
-  # ============================================================================
   validate:
     name: Validate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
         with:
-          components: rustfmt, clippy
+          components: rustfmt,clippy
 
-      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --all-features -- -D warnings
+      - run: cargo test --all-features --workspace
 
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-
-      - name: Clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-
-      - name: Run tests
-        run: cargo test --all-features --workspace
-
-      - name: Verify version matches tag
+      - name: Validate versions
+        id: version
         if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
-          # Handle pre-release versions (v0.1.0-alpha.1 -> 0.1.0-alpha.1)
-          CARGO_VERSION=$(grep -A5 '\[workspace.package\]' Cargo.toml | grep '^version' | head -1 | sed 's/.*"\(.*\)".*/\1/')
-          if [ "$TAG_VERSION" != "$CARGO_VERSION" ]; then
-            echo "::error::Tag version ($TAG_VERSION) doesn't match Cargo.toml version ($CARGO_VERSION)"
-            exit 1
-          fi
-          echo "Version validated: $TAG_VERSION"
+        run: ./scripts/ci/validate-versions.sh "${GITHUB_REF#refs/tags/v}"
 
-  # ============================================================================
-  # Rust: Publish to crates.io
-  # Order: mathhook-macros -> mathhook-core -> mathhook
-  # ============================================================================
   publish-crates:
     name: Publish to crates.io
     needs: validate
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
 
       - name: Publish mathhook-macros
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          cd crates/mathhook-macros
-          cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || echo "Already published or error"
-        continue-on-error: true
+        if: inputs.dry_run != true
+        id: macros
+        run: ./scripts/ci/publish-crate.sh crates/mathhook-macros
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-      - name: Wait for crates.io index update
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: sleep 30
+      - name: Wait for index
+        if: steps.macros.outputs.status == 'success'
+        run: |
+          VERSION=$("./scripts/ci/get-version.sh" cargo crates/mathhook-macros)
+          ./scripts/ci/wait-for-crate.sh mathhook-macros "$VERSION"
 
       - name: Publish mathhook-core
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          cd crates/mathhook-core
-          cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || echo "Already published or error"
-        continue-on-error: true
+        if: inputs.dry_run != true
+        id: core
+        run: ./scripts/ci/publish-crate.sh crates/mathhook-core
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-      - name: Wait for crates.io index update
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: sleep 30
+      - name: Wait for index
+        if: steps.core.outputs.status == 'success'
+        run: |
+          VERSION=$("./scripts/ci/get-version.sh" cargo crates/mathhook-core)
+          ./scripts/ci/wait-for-crate.sh mathhook-core "$VERSION"
 
       - name: Publish mathhook
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          cd crates/mathhook
-          cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }} || echo "Already published or error"
-        continue-on-error: true
+        if: inputs.dry_run != true
+        run: ./scripts/ci/publish-crate.sh crates/mathhook
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-      - name: Dry run check
-        if: ${{ github.event.inputs.dry_run == true }}
+      - name: Dry run
+        if: inputs.dry_run == true
         run: |
-          echo "DRY RUN: Would publish to crates.io"
-          cargo publish --dry-run -p mathhook-macros
-          cargo publish --dry-run -p mathhook-core
-          cargo publish --dry-run -p mathhook
+          DRY_RUN=true ./scripts/ci/publish-crate.sh crates/mathhook-macros
+          DRY_RUN=true ./scripts/ci/publish-crate.sh crates/mathhook-core
+          DRY_RUN=true ./scripts/ci/publish-crate.sh crates/mathhook
 
-  # ============================================================================
-  # Python: Build wheels and publish to PyPI
-  # Cross-platform builds for Linux, macOS, Windows
-  # ============================================================================
-  build-python-wheels:
-    name: Build Python Wheels (${{ matrix.os }})
+  # Generate binding code (must run before building bindings)
+  generate-bindings:
+    name: Generate Bindings
     needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Generate all bindings
+        run: ./scripts/ci/generate-bindings.sh all
+
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
+        with:
+          name: generated-bindings
+          path: |
+            crates/mathhook-python/src/generated/
+            crates/mathhook-node/src/generated/
+          retention-days: 1
+
+  build-python-wheels:
+    name: Build Python (${{ matrix.target }})
+    needs: [validate, generate-bindings]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         include:
-          # Linux x86_64
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            manylinux: auto
-          # Linux aarch64
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            manylinux: auto
-          # macOS x86_64
-          - os: macos-13
-            target: x86_64-apple-darwin
-            manylinux: off
-          # macOS ARM64
-          - os: macos-14
-            target: aarch64-apple-darwin
-            manylinux: off
-          # Windows x86_64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            manylinux: off
-    steps:
-      - uses: actions/checkout@v4
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu, manylinux: auto }
+          - { os: ubuntu-latest, target: aarch64-unknown-linux-gnu, manylinux: auto }
+          - { os: macos-13, target: x86_64-apple-darwin, manylinux: off }
+          - { os: macos-14, target: aarch64-apple-darwin, manylinux: off }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, manylinux: off }
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: generated-bindings
+          path: crates/
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
         with:
           python-version: '3.11'
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7  # stable
         with:
           targets: ${{ matrix.target }}
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6  # v2.7.8
         with:
           key: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools (Linux ARM64)
+      - name: Install cross tools
         if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
+      - uses: PyO3/maturin-action@cda1ae060fba1d9ce3d78743ae534dbd4d88a487  # v1.45.0
         with:
           target: ${{ matrix.target }}
           manylinux: ${{ matrix.manylinux }}
           args: --release --out dist -m crates/mathhook-python/Cargo.toml
 
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: wheels-${{ matrix.target }}
           path: dist/*.whl
 
   build-python-sdist:
-    name: Build Python Source Distribution
-    needs: validate
+    name: Build Python sdist
+    needs: [validate, generate-bindings]
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    timeout-minutes: 10
+    permissions:
+      contents: read
 
-      - name: Build sdist
-        uses: PyO3/maturin-action@v1
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: generated-bindings
+          path: crates/
+
+      - uses: PyO3/maturin-action@cda1ae060fba1d9ce3d78743ae534dbd4d88a487  # v1.45.0
         with:
           command: sdist
           args: --out dist -m crates/mathhook-python/Cargo.toml
 
-      - name: Upload sdist
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: wheels-sdist
           path: dist/*.tar.gz
@@ -212,128 +209,79 @@ jobs:
     name: Publish to PyPI
     needs: [build-python-wheels, build-python-sdist]
     runs-on: ubuntu-latest
-    environment: pypi
+    timeout-minutes: 10
     permissions:
-      id-token: write  # Required for Trusted Publishing
+      contents: read
+      id-token: write
+
     steps:
-      - name: Download all wheels
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
         with:
           pattern: wheels-*
           path: dist
           merge-multiple: true
 
-      - name: List artifacts
-        run: ls -la dist/
+      - run: ls -la dist/
 
-      - name: Publish to PyPI
-        if: ${{ github.event.inputs.dry_run != true }}
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@106e0b0b7c337fa67ed433972f777c6357f78598  # v1.13.0
+        if: inputs.dry_run != true
         with:
-          # Option 1: Use Trusted Publishing (recommended, no token needed)
-          # Configure at: https://pypi.org/manage/project/mathhook/settings/publishing/
-          # Option 2: Use API token (fallback)
           password: ${{ secrets.PYPI_API_TOKEN }}
 
-      - name: Dry run check
-        if: ${{ github.event.inputs.dry_run == true }}
-        run: |
-          echo "DRY RUN: Would publish to PyPI"
-          ls -la dist/
+      - name: Dry run
+        if: inputs.dry_run == true
+        run: echo "DRY RUN - would publish to PyPI" && ls -la dist/
 
-  # ============================================================================
-  # Node.js: Build native bindings and publish to npm
-  # Cross-platform builds using napi-rs
-  # ============================================================================
   build-node:
     name: Build Node.js (${{ matrix.settings.target }})
-    needs: validate
+    needs: [validate, generate-bindings]
     runs-on: ${{ matrix.settings.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         settings:
-          # Linux x86_64 GNU
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target x86_64-unknown-linux-gnu
-          # Linux x86_64 musl
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target x86_64-unknown-linux-musl
-          # Linux ARM64 GNU
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target aarch64-unknown-linux-gnu
-          # macOS x86_64
-          - os: macos-13
-            target: x86_64-apple-darwin
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target x86_64-apple-darwin
-          # macOS ARM64
-          - os: macos-14
-            target: aarch64-apple-darwin
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target aarch64-apple-darwin
-          # Windows x86_64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target x86_64-pc-windows-msvc
-          # Windows ARM64
-          - os: windows-latest
-            target: aarch64-pc-windows-msvc
-            build: |
-              cd crates/mathhook-node
-              npm run build -- --target aarch64-pc-windows-msvc
-    steps:
-      - uses: actions/checkout@v4
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
+          - { os: ubuntu-latest, target: aarch64-unknown-linux-gnu }
+          - { os: macos-13, target: x86_64-apple-darwin }
+          - { os: macos-14, target: aarch64-apple-darwin }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc }
+          - { os: windows-latest, target: aarch64-pc-windows-msvc }
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: generated-bindings
+          path: crates/
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'crates/mathhook-node/package-lock.json'
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7  # stable
         with:
           targets: ${{ matrix.settings.target }}
 
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6  # v2.7.8
         with:
           key: ${{ matrix.settings.target }}
 
-      - name: Install dependencies (Linux cross-compile)
+      - name: Install cross tools
         if: matrix.settings.os == 'ubuntu-latest' && matrix.settings.target != 'x86_64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          if [[ "${{ matrix.settings.target }}" == "aarch64-unknown-linux-gnu" ]]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu
-          fi
-          if [[ "${{ matrix.settings.target }}" == *"musl"* ]]; then
-            sudo apt-get install -y musl-tools
-          fi
-
-      - name: Install Node.js dependencies
-        run: |
-          cd crates/mathhook-node
-          npm install
+        run: ./scripts/ci/install-node-deps.sh "${{ matrix.settings.target }}"
 
       - name: Build
-        run: ${{ matrix.settings.build }}
+        run: cd crates/mathhook-node && npm install && npm run build -- --target ${{ matrix.settings.target }}
         shell: bash
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: bindings-${{ matrix.settings.target }}
           path: crates/mathhook-node/*.node
@@ -343,143 +291,95 @@ jobs:
     name: Publish to npm
     needs: build-node
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    timeout-minutes: 15
+    permissions:
+      contents: read
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Download all bindings
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
         with:
           pattern: bindings-*
           path: crates/mathhook-node
           merge-multiple: true
 
-      - name: List bindings
-        run: ls -la crates/mathhook-node/*.node || echo "No .node files found"
+      - run: ls -la crates/mathhook-node/*.node
+      - run: cd crates/mathhook-node && npm install
 
-      - name: Install dependencies
-        run: |
-          cd crates/mathhook-node
-          npm install
-
-      - name: Generate platform packages
-        run: |
-          cd crates/mathhook-node
-          # Create platform-specific package directories with package.json
-          npx napi create-npm-dirs --npm-dir npm
-          # Copy binaries to their directories
-          for node_file in *.node; do
-            if [ -f "$node_file" ]; then
-              platform=$(echo "$node_file" | sed 's/mathhook-node\.\(.*\)\.node/\1/')
-              if [ -d "npm/$platform" ]; then
-                cp "$node_file" "npm/$platform/"
-                echo "Copied $node_file to npm/$platform/"
-              fi
-            fi
-          done
-          echo "Generated platform packages:"
-          ls -la npm/ || echo "No npm/ directory"
-
-      - name: Publish platform packages
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          cd crates/mathhook-node
-          # Publish each platform-specific package
-          for pkg_dir in npm/*/; do
-            if [ -d "$pkg_dir" ]; then
-              pkg_name=$(basename "$pkg_dir")
-              echo "Publishing mathhook-node-$pkg_name..."
-              (
-                cd "$pkg_dir"
-                npm publish --access public || echo "Package may already exist"
-              )
-            fi
-          done
+      - name: Publish
+        if: inputs.dry_run != true
+        run: ./scripts/ci/publish-npm.sh crates/mathhook-node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Wait for npm index
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: sleep 15
-
-      - name: Publish main package
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          cd crates/mathhook-node
-          npm publish --access public
+      - name: Dry run
+        if: inputs.dry_run == true
+        run: DRY_RUN=true ./scripts/ci/publish-npm.sh crates/mathhook-node
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Dry run check
-        if: ${{ github.event.inputs.dry_run == true }}
-        run: |
-          echo "DRY RUN: Would publish to npm"
-          cd crates/mathhook-node
-          echo "Main package:"
-          npm pack --dry-run
-          echo "Platform packages:"
-          for pkg_dir in npm/*/; do
-            if [ -d "$pkg_dir" ]; then
-              echo "  - $(basename "$pkg_dir")"
-            fi
-          done
+  # Post-publish smoke tests
+  smoke-tests:
+    name: Smoke Tests
+    needs: [validate, publish-crates, publish-pypi, publish-npm]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: inputs.dry_run != true
+    permissions:
+      contents: read
 
-  # ============================================================================
-  # GitHub Release: Create release with changelog
-  # ============================================================================
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Setup Python
+        uses: ./.github/actions/python-setup
+
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+
+      - name: Run smoke tests
+        run: ./scripts/ci/smoke-test.sh "${{ needs.validate.outputs.version }}"
+
   create-release:
     name: Create GitHub Release
-    needs: [publish-crates, publish-pypi, publish-npm]
+    needs: [validate, publish-crates, publish-pypi, publish-npm, smoke-tests]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Generate changelog
         id: changelog
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/}"
-          # Get commits since last tag
-          PREV_TAG=$(git tag --sort=-v:refname | head -2 | tail -1 || echo "")
-          if [ -n "$PREV_TAG" ]; then
-            CHANGELOG=$(git log --pretty=format:"* %s (%h)" $PREV_TAG..HEAD)
-          else
-            CHANGELOG=$(git log --pretty=format:"* %s (%h)" HEAD~20..HEAD)
-          fi
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        run: ./scripts/ci/generate-changelog.sh
 
-      - name: Download Python wheels
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
         with:
           pattern: wheels-*
           path: release-artifacts/python
           merge-multiple: true
 
-      - name: Download Node.js bindings
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
         with:
           pattern: bindings-*
           path: release-artifacts/node
           merge-multiple: true
 
-      - name: Get version number
-        id: version
-        run: |
-          # Strip 'v' prefix from tag
-          VERSION="${GITHUB_REF#refs/tags/v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b  # v2.5.0
         with:
           name: MathHook ${{ github.ref_name }}
           body: |
@@ -487,33 +387,37 @@ jobs:
 
             ### Installation
 
-            **Rust:**
-            ```toml
-            [dependencies]
-            mathhook = "${{ steps.version.outputs.version }}"
-            ```
-
-            **Python:**
-            ```bash
-            pip install mathhook==${{ steps.version.outputs.version }}
-            ```
-
-            **Node.js:**
-            ```bash
-            npm install mathhook-node@${{ steps.version.outputs.version }}
-            ```
+            **Rust:** `mathhook = "${{ needs.validate.outputs.version }}"`
+            **Python:** `pip install mathhook==${{ needs.validate.outputs.version }}`
+            **Node.js:** `npm install mathhook-node@${{ needs.validate.outputs.version }}`
 
             ### Changes
 
             ${{ steps.changelog.outputs.changelog }}
-
-            ### Package Links
-
-            - [crates.io](https://crates.io/crates/mathhook/${{ steps.version.outputs.version }})
-            - [PyPI](https://pypi.org/project/mathhook/${{ steps.version.outputs.version }}/)
-            - [npm](https://www.npmjs.com/package/mathhook-node/v/${{ steps.version.outputs.version }})
           files: |
             release-artifacts/python/*
             release-artifacts/node/*
-          draft: false
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+
+  notify-failure:
+    name: Notify on Failure
+    needs: [validate, publish-crates, publish-pypi, publish-npm, create-release]
+    runs-on: ubuntu-latest
+    if: failure()
+    permissions:
+      issues: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        with:
+          script: |
+            const script = require('./scripts/ci/js/create-release-failure-issue.js');
+            await script({
+              github,
+              context,
+              refName: '${{ github.ref_name }}',
+              runId: '${{ github.run_id }}',
+              serverUrl: '${{ github.server_url }}'
+            });

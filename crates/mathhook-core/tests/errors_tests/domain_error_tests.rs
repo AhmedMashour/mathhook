@@ -67,7 +67,7 @@ fn test_zero_to_negative_power_division_by_zero() {
 // Note: In complex domain, sqrt(-1) = i is valid
 #[test]
 fn test_sqrt_negative_real_domain() {
-    let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(-1)]);
+    let expr = Expression::function("sqrt", vec![Expression::integer(-1)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::DomainError { .. })));
@@ -85,7 +85,7 @@ fn test_sqrt_domain_restriction() {
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function("sqrt".to_string(), vec![Expression::integer(value)]);
+        let expr = Expression::function("sqrt", vec![Expression::integer(value)]);
         let result = expr.evaluate();
 
         if should_error {
@@ -100,7 +100,7 @@ fn test_sqrt_domain_restriction() {
 // Mathematical reasoning: log(x) → -∞ as x → 0+, so log(0) is a pole
 #[test]
 fn test_log_zero_pole() {
-    let expr = Expression::function("log".to_string(), vec![Expression::integer(0)]);
+    let expr = Expression::function("log", vec![Expression::integer(0)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "log"));
@@ -118,7 +118,7 @@ fn test_log_domain_restriction() {
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function("log".to_string(), vec![Expression::integer(value)]);
+        let expr = Expression::function("log", vec![Expression::integer(value)]);
         let result = expr.evaluate();
 
         if should_error {
@@ -141,7 +141,7 @@ fn test_ln_domain_restriction() {
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function("ln".to_string(), vec![Expression::integer(value)]);
+        let expr = Expression::function("ln", vec![Expression::integer(value)]);
         let result = expr.evaluate();
 
         if should_error {
@@ -155,7 +155,7 @@ fn test_ln_domain_restriction() {
 // Test that ln(0) produces pole error
 #[test]
 fn test_ln_zero_pole() {
-    let expr = Expression::function("ln".to_string(), vec![Expression::integer(0)]);
+    let expr = Expression::function("ln", vec![Expression::integer(0)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "ln"));
@@ -164,7 +164,7 @@ fn test_ln_zero_pole() {
 // Test that ln of negative numbers produces branch cut error
 #[test]
 fn test_ln_negative_branch_cut() {
-    let expr = Expression::function("ln".to_string(), vec![Expression::integer(-1)]);
+    let expr = Expression::function("ln", vec![Expression::integer(-1)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::BranchCut { .. })));
@@ -173,7 +173,7 @@ fn test_ln_negative_branch_cut() {
 // Test that log of negative numbers produces branch cut error in real domain
 #[test]
 fn test_log_negative_branch_cut() {
-    let expr = Expression::function("log".to_string(), vec![Expression::integer(-1)]);
+    let expr = Expression::function("log", vec![Expression::integer(-1)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::BranchCut { .. })));
@@ -200,10 +200,7 @@ fn test_division_by_zero() {
 fn test_tan_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
-    let expr = Expression::function(
-        "tan".to_string(),
-        vec![Expression::Number(Number::float(PI / 2.0))],
-    );
+    let expr = Expression::function("tan", vec![Expression::Number(Number::float(PI / 2.0))]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { function, .. }) if function == "tan"));
@@ -222,10 +219,7 @@ fn test_tan_multiple_poles() {
     ];
 
     for pole in pole_locations {
-        let expr = Expression::function(
-            "tan".to_string(),
-            vec![Expression::Number(Number::float(pole))],
-        );
+        let expr = Expression::function("tan", vec![Expression::Number(Number::float(pole))]);
         let result = expr.evaluate();
         assert!(
             matches!(result, Err(MathError::Pole { .. })),
@@ -250,10 +244,7 @@ fn test_arcsin_domain_restriction() {
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function(
-            "arcsin".to_string(),
-            vec![Expression::Number(Number::float(value))],
-        );
+        let expr = Expression::function("arcsin", vec![Expression::Number(Number::float(value))]);
         let result = expr.evaluate();
 
         if should_error {
@@ -276,10 +267,7 @@ fn test_arccos_domain_restriction() {
     ];
 
     for (value, should_error) in test_cases {
-        let expr = Expression::function(
-            "arccos".to_string(),
-            vec![Expression::Number(Number::float(value))],
-        );
+        let expr = Expression::function("arccos", vec![Expression::Number(Number::float(value))]);
         let result = expr.evaluate();
 
         if should_error {
@@ -294,7 +282,7 @@ fn test_arccos_domain_restriction() {
 // Mathematical reasoning: csc(x) = 1/sin(x), and sin(0) = 0
 #[test]
 fn test_csc_pole_at_zero() {
-    let expr = Expression::function("csc".to_string(), vec![Expression::integer(0)]);
+    let expr = Expression::function("csc", vec![Expression::integer(0)]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { .. })));
@@ -308,10 +296,7 @@ fn test_csc_multiple_poles() {
     let pole_locations = vec![0.0, PI, -PI, 2.0 * PI, 3.0 * PI];
 
     for pole in pole_locations {
-        let expr = Expression::function(
-            "csc".to_string(),
-            vec![Expression::Number(Number::float(pole))],
-        );
+        let expr = Expression::function("csc", vec![Expression::Number(Number::float(pole))]);
         let result = expr.evaluate();
         assert!(
             matches!(result, Err(MathError::Pole { .. })),
@@ -327,10 +312,7 @@ fn test_csc_multiple_poles() {
 fn test_sec_pole_at_pi_over_2() {
     use std::f64::consts::PI;
 
-    let expr = Expression::function(
-        "sec".to_string(),
-        vec![Expression::Number(Number::float(PI / 2.0))],
-    );
+    let expr = Expression::function("sec", vec![Expression::Number(Number::float(PI / 2.0))]);
 
     let result = expr.evaluate();
     assert!(matches!(result, Err(MathError::Pole { .. })));

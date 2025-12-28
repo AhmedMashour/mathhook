@@ -3,11 +3,11 @@
 //! Tests step-by-step explanations, educational messages, and LaTeX formatting
 //! for integration operations across all strategy layers.
 
-use std::sync::Arc;
 use mathhook_core::calculus::integrals::educational::IntegrationExplanation;
 use mathhook_core::calculus::integrals::strategy::integrate_with_strategy;
 use mathhook_core::core::{Expression, Symbol};
 use mathhook_core::formatter::latex::LaTeXFormatter as _;
+use std::sync::Arc;
 
 fn symbol(name: &str) -> Symbol {
     Symbol::scalar(name)

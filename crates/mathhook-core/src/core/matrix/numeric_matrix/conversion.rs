@@ -1,7 +1,7 @@
 use super::NumericMatrix;
-use std::sync::Arc;
 use crate::core::{Expression, Number};
 use crate::matrices::unified::Matrix;
+use std::sync::Arc;
 
 impl NumericMatrix {
     pub fn try_from_expression(expr: &Expression) -> Option<Self> {

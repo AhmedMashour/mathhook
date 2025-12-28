@@ -163,19 +163,39 @@ impl PythonEmitter {
         false
     }
 
+    fn tuple_has_references(elements: &[MappedType]) -> bool {
+        elements.iter().any(|elem| match elem {
+            MappedType::Reference { .. } => true,
+            MappedType::Direct { python_type, .. } if python_type.starts_with("Py") => true,
+            _ => false,
+        })
+    }
+
     fn has_tuple_of_references(method: &AnalyzedMethod) -> bool {
-        if let MappedType::Tuple { elements } = &method.output {
-            for elem in elements {
-                match elem {
-                    MappedType::Reference { .. } => return true,
-                    MappedType::Direct { python_type, .. } if python_type.starts_with("Py") => {
-                        return true;
-                    }
-                    _ => {}
+        match &method.output {
+            MappedType::Tuple { elements } => Self::tuple_has_references(elements),
+            MappedType::Option { inner_type } => {
+                if let MappedType::Tuple { elements } = &**inner_type {
+                    Self::tuple_has_references(elements)
+                } else {
+                    false
                 }
             }
+            MappedType::Result { ok_type, .. } => {
+                if let MappedType::Tuple { elements } = &**ok_type {
+                    Self::tuple_has_references(elements)
+                } else if let MappedType::Option { inner_type } = &**ok_type {
+                    if let MappedType::Tuple { elements } = &**inner_type {
+                        Self::tuple_has_references(elements)
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            }
+            _ => false,
         }
-        false
     }
 
     fn returns_tuple_needing_wrapping(method: &AnalyzedMethod) -> bool {
@@ -267,6 +287,10 @@ impl PythonEmitter {
 
     fn function_returns_static_ref(&self, func: &AnalyzedMethod) -> bool {
         self.is_static_ref_return(&func.output)
+    }
+
+    fn is_owned_parameter(mapped_type: &MappedType) -> bool {
+        !matches!(mapped_type, MappedType::Reference { .. })
     }
 
     pub fn emit_method(
@@ -450,7 +474,10 @@ impl PythonEmitter {
             .inputs
             .iter()
             .filter(|(name, _)| name != "self")
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect();
 
         let method_name = method.original_name.as_ref().unwrap_or(&method.name);
@@ -477,7 +504,10 @@ impl PythonEmitter {
         let args: Vec<String> = method
             .inputs
             .iter()
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect();
 
         let method_name = method.original_name.as_ref().unwrap_or(&method.name);
@@ -765,11 +795,27 @@ impl PythonEmitter {
                     format!("{}.map(|v| {})", var, inner_wrap)
                 }
             }
+            MappedType::Reference { inner_type, .. } => match &**inner_type {
+                MappedType::Direct {
+                    python_type,
+                    rust_type,
+                    ..
+                } => {
+                    if Self::is_wrapper_type(python_type, rust_type) {
+                        format!("{}.clone().into()", var)
+                    } else if rust_type == "str" {
+                        format!("{}.to_string()", var)
+                    } else {
+                        format!("{}.clone()", var)
+                    }
+                }
+                _ => format!("{}.clone()", var),
+            },
             _ => var.to_string(),
         }
     }
 
-    fn unwrap_single_element(&self, mapped: &MappedType, var: &str) -> String {
+    fn unwrap_single_element(&self, mapped: &MappedType, var: &str, is_owned: bool) -> String {
         match mapped {
             MappedType::Direct {
                 python_type,
@@ -779,6 +825,8 @@ impl PythonEmitter {
                 if Self::is_wrapper_type(python_type, rust_type) || python_type == "Self" {
                     if self.is_simple_enum_type(rust_type) {
                         format!("{}.into()", var)
+                    } else if is_owned {
+                        format!("{}.inner", var)
                     } else {
                         format!("{}.inner.clone()", var)
                     }
@@ -794,7 +842,7 @@ impl PythonEmitter {
         }
     }
 
-    fn generate_tuple_unwrap(&self, elements: &[MappedType]) -> String {
+    fn generate_tuple_unwrap(&self, elements: &[MappedType], is_owned: bool) -> String {
         let len = elements.len();
         let bindings: Vec<String> = (0..len).map(|i| format!("t{}", i)).collect();
         let pattern = format!("({})", bindings.join(", "));
@@ -802,7 +850,7 @@ impl PythonEmitter {
         let unwrapped: Vec<String> = elements
             .iter()
             .enumerate()
-            .map(|(i, e)| self.unwrap_single_element(e, &bindings[i]))
+            .map(|(i, e)| self.unwrap_single_element(e, &bindings[i], is_owned))
             .collect();
 
         format!("{{ let {} = t; ({}) }}", pattern, unwrapped.join(", "))
@@ -865,7 +913,10 @@ impl PythonEmitter {
             .inputs
             .iter()
             .filter(|(name, _)| name != "self")
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -883,7 +934,7 @@ impl PythonEmitter {
         }
     }
 
-    fn unwrap_arg(&self, name: &str, mapped_type: &MappedType) -> String {
+    fn unwrap_arg(&self, name: &str, mapped_type: &MappedType, is_owned: bool) -> String {
         match mapped_type {
             MappedType::Direct {
                 python_type,
@@ -893,6 +944,8 @@ impl PythonEmitter {
                 if Self::is_wrapper_type(python_type, rust_type) || python_type == "Self" {
                     if self.is_simple_enum_type(rust_type) {
                         format!("{}.into()", name)
+                    } else if is_owned {
+                        format!("{}.inner", name)
                     } else {
                         format!("{}.inner.clone()", name)
                     }
@@ -934,6 +987,8 @@ impl PythonEmitter {
                     if Self::is_wrapper_type(python_type, rust_type) || python_type == "Self" {
                         if self.is_simple_enum_type(rust_type) {
                             format!("{}.map(|v| v.into())", name)
+                        } else if is_owned {
+                            format!("{}.map(|v| v.inner)", name)
                         } else {
                             format!("{}.map(|v| v.inner.clone())", name)
                         }
@@ -943,7 +998,7 @@ impl PythonEmitter {
                 }
                 MappedType::Tuple { elements } => {
                     if self.tuple_needs_unwrapping(elements) {
-                        let unwrap_expr = self.generate_tuple_unwrap(elements);
+                        let unwrap_expr = self.generate_tuple_unwrap(elements, is_owned);
                         format!("{}.map(|t| {})", name, unwrap_expr)
                     } else {
                         name.to_string()
@@ -960,6 +1015,8 @@ impl PythonEmitter {
                     if Self::is_wrapper_type(python_type, rust_type) || python_type == "Self" {
                         if self.is_simple_enum_type(rust_type) {
                             format!("{}.into_iter().map(|v| v.into()).collect()", name)
+                        } else if is_owned {
+                            format!("{}.into_iter().map(|v| v.inner).collect()", name)
                         } else {
                             format!("{}.into_iter().map(|v| v.inner.clone()).collect()", name)
                         }
@@ -1073,6 +1130,14 @@ impl PythonEmitter {
                     call.to_string()
                 } else {
                     format!("{}.map(|v| {})", call, inner_wrap)
+                }
+            }
+            MappedType::Tuple { elements } => {
+                if Self::tuple_needs_wrapping(elements) {
+                    let wrap_expr = Self::generate_tuple_wrap(elements, "t", use_self);
+                    format!("{}.map(|t| {})", call, wrap_expr)
+                } else {
+                    call.to_string()
                 }
             }
             _ => call.to_string(),
@@ -2037,5 +2102,145 @@ mod tests {
         assert!(result.contains("Values:"));
         assert!(result.contains("Documented: Has docs."));
         assert!(result.contains("Undocumented"));
+    }
+
+    #[test]
+    fn test_is_owned_parameter() {
+        let owned = MappedType::Direct {
+            rust_type: "Expression".to_string(),
+            python_type: "PyExpression".to_string(),
+            node_type: "JsExpression".to_string(),
+        };
+        assert!(PythonEmitter::is_owned_parameter(&owned));
+
+        let borrowed = MappedType::Reference {
+            inner_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+            is_mut: false,
+        };
+        assert!(!PythonEmitter::is_owned_parameter(&borrowed));
+    }
+
+    #[test]
+    fn test_unwrap_arg_owned_vs_borrowed() {
+        let emitter = PythonEmitter::new();
+
+        let wrapper_type = MappedType::Direct {
+            rust_type: "Expression".to_string(),
+            python_type: "PyExpression".to_string(),
+            node_type: "JsExpression".to_string(),
+        };
+
+        let owned_result = emitter.unwrap_arg("expr", &wrapper_type, true);
+        assert_eq!(owned_result, "expr.inner");
+
+        let borrowed_result = emitter.unwrap_arg("expr", &wrapper_type, false);
+        assert_eq!(borrowed_result, "expr.inner.clone()");
+    }
+
+    #[test]
+    fn test_unwrap_arg_vec_owned_vs_borrowed() {
+        let emitter = PythonEmitter::new();
+
+        let vec_type = MappedType::Collected {
+            item_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+        };
+
+        let owned_result = emitter.unwrap_arg("exprs", &vec_type, true);
+        assert_eq!(owned_result, "exprs.into_iter().map(|v| v.inner).collect()");
+
+        let borrowed_result = emitter.unwrap_arg("exprs", &vec_type, false);
+        assert_eq!(
+            borrowed_result,
+            "exprs.into_iter().map(|v| v.inner.clone()).collect()"
+        );
+    }
+
+    #[test]
+    fn test_unwrap_arg_option_owned_vs_borrowed() {
+        let emitter = PythonEmitter::new();
+
+        let option_type = MappedType::Option {
+            inner_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+        };
+
+        let owned_result = emitter.unwrap_arg("maybe_expr", &option_type, true);
+        assert_eq!(owned_result, "maybe_expr.map(|v| v.inner)");
+
+        let borrowed_result = emitter.unwrap_arg("maybe_expr", &option_type, false);
+        assert_eq!(borrowed_result, "maybe_expr.map(|v| v.inner.clone())");
+    }
+
+    #[test]
+    fn test_has_tuple_of_references_in_option() {
+        let method_with_option_tuple_refs = AnalyzedMethod {
+            name: "as_pow".to_string(),
+            original_name: None,
+            inputs: vec![(
+                "self".to_string(),
+                MappedType::Direct {
+                    rust_type: "Expression".to_string(),
+                    python_type: "PyExpression".to_string(),
+                    node_type: "JsExpression".to_string(),
+                },
+            )],
+            output: MappedType::Option {
+                inner_type: Box::new(MappedType::Tuple {
+                    elements: vec![
+                        MappedType::Reference {
+                            inner_type: Box::new(MappedType::Direct {
+                                rust_type: "Expression".to_string(),
+                                python_type: "PyExpression".to_string(),
+                                node_type: "JsExpression".to_string(),
+                            }),
+                            is_mut: false,
+                        },
+                        MappedType::Reference {
+                            inner_type: Box::new(MappedType::Direct {
+                                rust_type: "Expression".to_string(),
+                                python_type: "PyExpression".to_string(),
+                                node_type: "JsExpression".to_string(),
+                            }),
+                            is_mut: false,
+                        },
+                    ],
+                }),
+            },
+            is_supported: true,
+            impl_type: None,
+            requires_mut_self: false,
+            doc_comment: None,
+            skip_binding: false,
+        };
+
+        assert!(PythonEmitter::has_tuple_of_references(
+            &method_with_option_tuple_refs
+        ));
+    }
+
+    #[test]
+    fn test_wrap_single_element_reference() {
+        let ref_type = MappedType::Reference {
+            inner_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+            is_mut: false,
+        };
+
+        let result = PythonEmitter::wrap_single_element(&ref_type, "v", true);
+        assert_eq!(result, "v.clone().into()");
     }
 }

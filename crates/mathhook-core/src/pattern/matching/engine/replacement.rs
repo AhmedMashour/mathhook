@@ -98,11 +98,11 @@ mod tests {
         let x = symbol!(x);
         let expr = Expression::add(vec![
             Expression::pow(
-                Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]),
+                Expression::function("sin", vec![Expression::symbol(x.clone())]),
                 Expression::integer(2),
             ),
             Expression::pow(
-                Expression::function("cos".to_string(), vec![Expression::symbol(x.clone())]),
+                Expression::function("cos", vec![Expression::symbol(x.clone())]),
                 Expression::integer(2),
             ),
         ]);

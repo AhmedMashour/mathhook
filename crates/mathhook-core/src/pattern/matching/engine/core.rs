@@ -336,7 +336,7 @@ mod tests {
     #[test]
     fn test_function_pattern() {
         let x = symbol!(x);
-        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
+        let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
 
         let pattern = Pattern::Function {
             name: "sin".to_string(),

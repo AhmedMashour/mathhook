@@ -66,12 +66,12 @@ fn compute_core_hash() -> Result<String> {
 }
 
 fn create_manifest(
-    classified: &binding_codegen::ClassifiedApi,
-    scanned_impls: &[binding_codegen::ImplInfo],
+    classified: &mathhook_binding_codegen::ClassifiedApi,
+    scanned_impls: &[mathhook_binding_codegen::ImplInfo],
     files: &std::collections::HashMap<String, String>,
-    _target: binding_codegen::Target,
-) -> Result<binding_codegen::BindingManifest> {
-    let mut manifest = binding_codegen::BindingManifest::new(compute_core_hash()?);
+    _target: mathhook_binding_codegen::Target,
+) -> Result<mathhook_binding_codegen::BindingManifest> {
+    let mut manifest = mathhook_binding_codegen::BindingManifest::new(compute_core_hash()?);
 
     for type_info in &classified.primary_types {
         let method_count = scanned_impls
@@ -81,7 +81,7 @@ fn create_manifest(
             .filter(|m| m.is_public)
             .count();
 
-        manifest.add_type(binding_codegen::TypeBindingInfo {
+        manifest.add_type(mathhook_binding_codegen::TypeBindingInfo {
             core_type: type_info.name.clone(),
             python_wrapper: format!("Py{}", type_info.name),
             node_wrapper: format!("Js{}", type_info.name),
@@ -121,11 +121,11 @@ fn extract_wrapper_name(content: &str, prefix: &str) -> Option<String> {
 
 fn generate_mod_file(
     files: &std::collections::HashMap<String, String>,
-    target: binding_codegen::Target,
+    target: mathhook_binding_codegen::Target,
 ) -> String {
     let prefix = match target {
-        binding_codegen::Target::Python => "Py",
-        binding_codegen::Target::Node => "Js",
+        mathhook_binding_codegen::Target::Python => "Py",
+        mathhook_binding_codegen::Target::Node => "Js",
     };
 
     let mut lines = vec![
@@ -165,7 +165,7 @@ fn generate_mod_file(
         }
     }
 
-    if matches!(target, binding_codegen::Target::Python) {
+    if matches!(target, mathhook_binding_codegen::Target::Python) {
         lines.push(String::new());
         lines.push("use pyo3::prelude::*;".to_string());
         lines.push(String::new());
@@ -184,7 +184,7 @@ fn generate_mod_file(
         lines.push("}".to_string());
     }
 
-    if matches!(target, binding_codegen::Target::Node) {
+    if matches!(target, mathhook_binding_codegen::Target::Node) {
         lines.push(String::new());
         lines.push("/// List of all generated wrapper type names".to_string());
         lines.push(
@@ -225,7 +225,7 @@ fn main() -> Result<()> {
                 .unwrap()
                 .join("crates/mathhook-core");
 
-            let api = binding_codegen::scanner::scan_crate(&mathhook_core_path)?;
+            let api = mathhook_binding_codegen::scanner::scan_crate(&mathhook_core_path)?;
             let stats = api.stats();
 
             println!("\n=== Scan Results ===");
@@ -247,7 +247,7 @@ fn main() -> Result<()> {
         }
         Commands::Analyze => {
             println!("Analyzing API patterns...");
-            binding_codegen::analyzer::analyze()?;
+            mathhook_binding_codegen::analyzer::analyze()?;
             Ok(())
         }
         Commands::Generate {
@@ -255,7 +255,7 @@ fn main() -> Result<()> {
             dry_run,
             no_stub_gen,
         } => {
-            use binding_codegen::{
+            use mathhook_binding_codegen::{
                 classify_all, scanner, BindingConfig, Emitter, NodeEmitter, PythonEmitter, Target,
             };
             use std::fs;
@@ -381,7 +381,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Check => {
-            use binding_codegen::BindingManifest;
+            use mathhook_binding_codegen::BindingManifest;
 
             println!("Checking binding freshness...\n");
 
@@ -447,7 +447,7 @@ fn main() -> Result<()> {
             Ok(())
         }
         Commands::Debug { type_name, method } => {
-            use binding_codegen::analyzer::{analyze_method_with_context, analyze_type};
+            use mathhook_binding_codegen::analyzer::{analyze_method_with_context, analyze_type};
             use quote::ToTokens;
 
             println!("Debugging impl blocks for type: {}\n", type_name);
@@ -459,7 +459,7 @@ fn main() -> Result<()> {
                 .unwrap()
                 .join("crates/mathhook-core");
 
-            let api = binding_codegen::scanner::scan_crate(&mathhook_core_path)?;
+            let api = mathhook_binding_codegen::scanner::scan_crate(&mathhook_core_path)?;
 
             if let Some(method_name) = method {
                 println!(

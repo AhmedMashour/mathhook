@@ -44,17 +44,22 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Zig 0.13.0 (for macOS cross-compilation)
+# Install Zig 0.13.0 (for macOS cross-compilation) with checksum verification
 ARG ZIG_VERSION=0.13.0
+ARG ZIG_SHA256=d45312e61ebcc48032b77bc4cf7fd6915c11fa16e4aad116b66c9468211230ea
 RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
-    | tar -xJ -C /usr/local \
-    && ln -s /usr/local/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig
+    -o /tmp/zig.tar.xz \
+    && echo "${ZIG_SHA256}  /tmp/zig.tar.xz" | sha256sum -c - \
+    && tar -xJf /tmp/zig.tar.xz -C /usr/local \
+    && ln -s /usr/local/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig \
+    && rm /tmp/zig.tar.xz
 
 # Install cargo-zigbuild for zig-based cross-compilation
 RUN cargo install cargo-zigbuild --locked
 
 # Install xwin for Windows MSVC SDK (takes ~5GB, cached in layer)
-RUN cargo install xwin --locked \
+# Pinned to 0.6.5 for Rust 1.83 compatibility (0.6.7+ requires edition2024)
+RUN cargo install xwin@0.6.5 --locked \
     && xwin --accept-license splat --output /opt/xwin
 
 # Configure xwin environment for Windows builds

@@ -3,9 +3,9 @@
 //! These tests validate that limit educational explanations contain correct
 //! mathematical content and follow proper pedagogical structure.
 
-use std::sync::Arc;
 use mathhook_core::calculus::limits::educational::LimitEducation;
 use mathhook_core::{symbol, Expression};
+use std::sync::Arc;
 
 // Helper function to check if any step contains the target text
 fn has_step_containing(

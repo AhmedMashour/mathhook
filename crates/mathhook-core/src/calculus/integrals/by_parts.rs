@@ -167,7 +167,11 @@ impl IntegrationByParts {
     /// ```
     pub fn is_good_u_choice(expr: &Expression, variable: &Symbol) -> bool {
         match expr {
-            Expression::Function { name, .. } if name.as_ref() == "ln" || name.as_ref() == "log" => true,
+            Expression::Function { name, .. }
+                if name.as_ref() == "ln" || name.as_ref() == "log" =>
+            {
+                true
+            }
 
             Expression::Function { name, .. }
                 if name.as_ref() == "arcsin"

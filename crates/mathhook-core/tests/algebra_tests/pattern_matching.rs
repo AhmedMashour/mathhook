@@ -161,8 +161,8 @@ fn test_simple_rewrite() {
 #[test]
 fn test_rewrite_with_transformation() {
     let x = symbol!(x);
-    let sin_x = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
-    let cos_x = Expression::function("cos".to_string(), vec![Expression::symbol(x.clone())]);
+    let sin_x = Expression::function("sin", vec![Expression::symbol(x.clone())]);
+    let cos_x = Expression::function("cos", vec![Expression::symbol(x.clone())]);
     let expr = Expression::add(vec![
         Expression::pow(sin_x.clone(), Expression::integer(2)),
         Expression::pow(cos_x.clone(), Expression::integer(2)),
@@ -224,7 +224,7 @@ fn test_rewrite_log_product() {
     let a = symbol!(a);
     let b = symbol!(b);
     let expr = Expression::function(
-        "log".to_string(),
+        "log",
         vec![Expression::mul(vec![
             Expression::symbol(a.clone()),
             Expression::symbol(b.clone()),
@@ -291,7 +291,7 @@ fn test_match_add_structure() {
 #[test]
 fn test_match_function_structure() {
     let _x = symbol!(x);
-    let expr = Expression::function("sin".to_string(), vec![Expression::symbol(_x)]);
+    let expr = Expression::function("sin", vec![Expression::symbol(_x)]);
     let pattern = Pattern::Function {
         name: "sin".to_string(),
         args: vec![Pattern::wildcard("arg")],
@@ -360,8 +360,8 @@ fn test_substitute_multiple() {
 fn test_substitute_expression() {
     let x = symbol!(x);
     let y = symbol!(y);
-    let sin_x = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
-    let cos_x = Expression::function("cos".to_string(), vec![Expression::symbol(x)]);
+    let sin_x = Expression::function("sin", vec![Expression::symbol(x.clone())]);
+    let cos_x = Expression::function("cos", vec![Expression::symbol(x)]);
     let expr = Expression::add(vec![sin_x.clone(), cos_x]);
     let result = expr.subs(&sin_x, &Expression::symbol(y.clone()));
     assert!(matches!(
@@ -419,7 +419,7 @@ fn test_expression_equality_different() {
 #[test]
 fn test_function_expression_creation() {
     let x = symbol!(x);
-    let sin_x = Expression::function("sin".to_string(), vec![Expression::symbol(x)]);
+    let sin_x = Expression::function("sin", vec![Expression::symbol(x)]);
     match sin_x {
         Expression::Function { name, args } => {
             assert_eq!(name.as_ref(), "sin");

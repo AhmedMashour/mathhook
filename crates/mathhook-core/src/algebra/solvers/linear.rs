@@ -413,7 +413,9 @@ impl LinearSolver {
                 }
             }
             // Handle fractions that should be evaluated
-            Expression::Function { name, args } if name.as_ref() == "fraction" && args.len() == 2 => {
+            Expression::Function { name, args }
+                if name.as_ref() == "fraction" && args.len() == 2 =>
+            {
                 Self::eval_exact_internal(expr)
             }
             _ => expr.clone(),
@@ -472,7 +474,9 @@ impl LinearSolver {
             }
             // Handle fraction functions: fraction(numerator, denominator)
             // BigRational::new() automatically reduces to lowest terms
-            Expression::Function { name, args } if name.as_ref() == "fraction" && args.len() == 2 => {
+            Expression::Function { name, args }
+                if name.as_ref() == "fraction" && args.len() == 2 =>
+            {
                 // First evaluate the numerator and denominator
                 let num_eval = Self::eval_exact_internal(&args[0]);
                 let den_eval = Self::eval_exact_internal(&args[1]);

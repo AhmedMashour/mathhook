@@ -3,11 +3,11 @@
 //! Methods for checking properties and extracting information from expressions.
 
 use super::Expression;
-use std::sync::Arc;
 use crate::core::{Number, Symbol};
 use crate::matrices::unified::CoreMatrixOps;
 use crate::simplify::Simplify;
 use num_traits::Signed;
+use std::sync::Arc;
 
 impl Expression {
     /// Check if the expression is zero (robust version with simplification)

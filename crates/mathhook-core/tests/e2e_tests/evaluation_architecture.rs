@@ -55,13 +55,13 @@ fn test_substitute_multiple_variables() {
 
 #[test]
 fn test_substitute_nested() {
-    let e = Expression::function("sin".to_string(), vec![expr!(x ^ 2)]);
+    let e = Expression::function("sin", vec![expr!(x ^ 2)]);
 
     let mut subs = HashMap::new();
     subs.insert("x".to_string(), expr!(3));
 
     let result = e.substitute(&subs);
-    let expected = Expression::function("sin".to_string(), vec![expr!(3 ^ 2)]);
+    let expected = Expression::function("sin", vec![expr!(3 ^ 2)]);
     assert_eq!(result, expected);
 }
 
@@ -243,7 +243,7 @@ fn test_eval_numeric_pow_zero_base_negative_exp_errors() {
 #[test]
 fn test_eval_numeric_function_sin() {
     let x = symbol!(x);
-    let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x)]);
+    let expr = Expression::function("sin", vec![Expression::symbol(x)]);
     let result = expr.eval_numeric(53).unwrap();
 
     // Function with symbolic argument stays symbolic
@@ -252,7 +252,7 @@ fn test_eval_numeric_function_sin() {
 
 #[test]
 fn test_eval_numeric_function_with_number() {
-    let expr = Expression::function("sin".to_string(), vec![Expression::integer(0)]);
+    let expr = Expression::function("sin", vec![Expression::integer(0)]);
     let result = expr.eval_numeric(53).unwrap();
 
     // sin(0) should evaluate (delegated to function evaluator)

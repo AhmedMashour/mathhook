@@ -1,162 +1,203 @@
-name: Cross-Platform Benchmarks
+# MathHook Cross-Platform Benchmarks
+# Cost-optimized: Only runs on main push, manual dispatch, or PRs with 'perf' label
+
+name: Benchmarks
 
 on:
   pull_request:
-    paths: ['crates/**/*.rs', 'crates/mathhook-benchmarks/**', 'Cargo.toml']
+    types: [opened, synchronize, labeled]
   push:
     branches: [main, master]
   workflow_dispatch:
+    inputs:
+      regression_threshold:
+        description: 'Fail if regression exceeds this percentage'
+        required: false
+        default: '10'
+        type: string
 
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+concurrency:
+  group: benchmark-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   CARGO_TERM_COLOR: always
+  REGRESSION_THRESHOLD: ${{ inputs.regression_threshold || '10' }}
 
-# Rust benchmarks
 jobs:
-  rust:
-    name: Rust
+  # Gate: Only run expensive benchmarks when needed
+  should-run:
+    name: Check if benchmarks should run
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+      reason: ${{ steps.check.outputs.reason }}
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Check conditions
+        id: check
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        with:
+          script: |
+            const script = require('./scripts/ci/js/check-benchmark-conditions.js');
+            await script({ context, core });
+
+  rust:
+    name: Rust Benchmarks
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      regression_detected: ${{ steps.analyze.outputs.regression_detected }}
+      regression_report: ${{ steps.analyze.outputs.report }}
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+        with:
+          cache-key: bench
+
+      - name: Restore Criterion baselines
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb  # v5.0.1
+        with:
+          path: target/criterion
+          key: criterion-${{ runner.os }}-${{ hashFiles('crates/mathhook-benchmarks/**/*.rs') }}
+          restore-keys: |
+            criterion-${{ runner.os }}-
 
       - name: Run benchmarks
-        run: |
-          mkdir -p benchmark-results
-          if [ -f "crates/mathhook-benchmarks/Cargo.toml" ]; then
-            cargo bench -p mathhook-benchmarks --benches 2>&1 | tee benchmark-output.txt
-            echo '{"platform":"rust","status":"success","note":"Criterion HTML reports available"}' > benchmark-results/rust.json
-          else
-            echo '{"platform":"rust","status":"not_found","benchmarks":{}}' > benchmark-results/rust.json
-          fi
+        run: ./scripts/ci/run-rust-benchmarks.sh benchmark-results/rust.json
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Analyze regression
+        id: analyze
+        run: ./scripts/ci/analyze-regression.sh benchmark-results/rust.json
+
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: rust-benchmark-results
           path: benchmark-results/rust.json
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: criterion-reports
           path: target/criterion/
 
-  # Python benchmarks
   python:
-    name: Python
+    name: Python Benchmarks
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Build and run
-        run: |
-          mkdir -p benchmark-results
-          if [ -f "crates/mathhook-python/Cargo.toml" ]; then
-            pip install maturin
-            cd crates/mathhook-python && maturin develop --release && cd ../..
-            if [ -f "crates/mathhook-benchmarks/public/python/bench_mathhook.py" ]; then
-              cd crates/mathhook-benchmarks/public/python
-              # stderr has "Running..." messages, stdout has JSON
-              python3 bench_mathhook.py --json --iterations 50 2>/dev/null > ../../../../benchmark-results/python.json || \
-                echo '{"platform":"python","status":"run_error","benchmarks":{}}' > ../../../../benchmark-results/python.json
-              # Validate JSON
-              if ! python3 -c "import json; json.load(open('../../../../benchmark-results/python.json'))" 2>/dev/null; then
-                echo '{"platform":"python","status":"json_error","benchmarks":{}}' > ../../../../benchmark-results/python.json
-              fi
-            else
-              echo '{"platform":"python","status":"script_not_found","benchmarks":{}}' > benchmark-results/python.json
-            fi
-          else
-            echo '{"platform":"python","status":"not_found","benchmarks":{}}' > benchmark-results/python.json
-          fi
+      - name: Setup Python
+        uses: ./.github/actions/python-setup
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Run benchmarks
+        run: ./scripts/ci/run-python-benchmarks.sh benchmark-results/python.json
+
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: python-benchmark-results
           path: benchmark-results/python.json
 
-  # Node.js benchmarks
   node:
-    name: Node.js
+    name: Node.js Benchmarks
+    needs: should-run
+    if: needs.should-run.outputs.run == 'true'
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '20' }
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Build and run
-        run: |
-          mkdir -p benchmark-results
-          if [ -f "crates/mathhook-node/package.json" ]; then
-            cd crates/mathhook-node && npm install && npm run build && cd ../..
-            if [ -f "crates/mathhook-benchmarks/public/node/bench_mathhook.js" ]; then
-              cd crates/mathhook-benchmarks/public/node
-              # stderr has status messages, stdout has JSON
-              node bench_mathhook.js --json --iterations 50 2>/dev/null > ../../../../benchmark-results/node.json || \
-                echo '{"platform":"node","status":"run_error","benchmarks":{}}' > ../../../../benchmark-results/node.json
-              # Validate JSON
-              if ! python3 -c "import json; json.load(open('../../../../benchmark-results/node.json'))" 2>/dev/null; then
-                echo '{"platform":"node","status":"json_error","benchmarks":{}}' > ../../../../benchmark-results/node.json
-              fi
-            else
-              echo '{"platform":"node","status":"script_not_found","benchmarks":{}}' > benchmark-results/node.json
-            fi
-          else
-            echo '{"platform":"node","status":"not_found","benchmarks":{}}' > benchmark-results/node.json
-          fi
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
 
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Run benchmarks
+        run: ./scripts/ci/run-node-benchmarks.sh benchmark-results/node.json
+
+      - uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882  # v4.4.3
         with:
           name: node-benchmark-results
           path: benchmark-results/node.json
 
-  # Deploy dashboard to GitHub Pages
+  # Regression gate - warns if significant regression detected
+  regression-gate:
+    name: Regression Gate
+    needs: [rust, python, node]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always() && needs.rust.result == 'success'
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          path: artifacts
+
+      - name: Check for regressions
+        id: check
+        run: ./scripts/ci/check-regression-gate.sh "${{ needs.rust.outputs.regression_detected }}" "${{ needs.rust.outputs.regression_report }}"
+
+      - name: Post regression warning
+        if: github.event_name == 'pull_request' && steps.check.outputs.failed == '1'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        with:
+          script: |
+            const script = require('./scripts/ci/js/post-regression-warning.js');
+            await script({ github, context, threshold: process.env.REGRESSION_THRESHOLD });
+
   deploy:
     name: Deploy Dashboard
     needs: [rust, python, node]
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with: { path: artifacts }
-        continue-on-error: true
-      - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
+    permissions:
+      contents: write
+      pages: write
 
-      - name: Prepare Criterion reports
-        run: |
-          # Move Criterion reports to expected location if present
-          if [ -d "artifacts/criterion-reports" ]; then
-            mkdir -p criterion-reports
-            cp -r artifacts/criterion-reports/* criterion-reports/
-            echo "Criterion reports available:"
-            ls -la criterion-reports/
-          else
-            echo "No Criterion reports found in artifacts"
-          fi
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          path: artifacts
+
+      - name: Setup Python
+        uses: ./.github/actions/python-setup
 
       - name: Generate dashboard
-        run: python3 scripts/ci/generate_dashboard.py artifacts gh-pages criterion-reports
+        run: ./scripts/ci/generate-dashboard.sh artifacts gh-pages
 
-      - uses: peaceiris/actions-gh-pages@v4
+      - uses: peaceiris/actions-gh-pages@47f197a2200bb9de68ba5f48fad1c088eb1c4a32  # v4.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./gh-pages
@@ -164,71 +205,48 @@ jobs:
           force_orphan: true
           commit_message: "Update benchmark results [skip ci]"
 
-  # Update baselines on push
-  baselines:
-    name: Update Baselines
-    needs: [rust, python, node]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-        with: { token: '${{ secrets.GITHUB_TOKEN }}' }
-      - uses: actions/download-artifact@v4
-        with: { path: artifacts }
-        continue-on-error: true
-
-      - name: Update baselines
-        run: bash scripts/ci/update_baselines.sh artifacts
-
-      - name: Commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add benchmarks/*_baseline.json 2>/dev/null || true
-          git diff --quiet --cached || git commit -m "Update baselines [skip ci]"
-          git push || true
-        continue-on-error: true
-
-  # PR comment with results
   pr-comment:
     name: PR Comment
     needs: [rust, python, node]
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Post benchmark results
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
         with:
           script: |
-            const body = `## Benchmark Results
-
-            | Platform | Status |
-            |----------|--------|
-            | Rust | ${{ needs.rust.result == 'success' && ':white_check_mark:' || ':warning:' }} |
-            | Python | ${{ needs.python.result == 'success' && ':white_check_mark:' || ':grey_question:' }} |
-            | Node.js | ${{ needs.node.result == 'success' && ':white_check_mark:' || ':grey_question:' }} |
-
-            [View Dashboard](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)`;
-
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
+            const script = require('./scripts/ci/js/pr-benchmark-comment.js');
+            await script({
+              github,
+              context,
+              results: {
+                rust: '${{ needs.rust.result }}',
+                python: '${{ needs.python.result }}',
+                node: '${{ needs.node.result }}'
+              }
             });
 
-            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes('Benchmark Results'));
+  # Skip notification - informs users when benchmarks are skipped
+  skip-notification:
+    name: Benchmark Skip Notice
+    needs: should-run
+    if: needs.should-run.outputs.run == 'false' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      pull-requests: write
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body
-              });
-            }
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Add skip comment
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea  # v7.0.1
+        with:
+          script: |
+            const script = require('./scripts/ci/js/post-benchmark-skip-notice.js');
+            await script({ github, context });

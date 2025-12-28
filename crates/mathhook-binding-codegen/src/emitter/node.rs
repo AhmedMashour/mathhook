@@ -156,6 +156,10 @@ impl NodeEmitter {
         !type_info.is_public || type_info.is_cfg_gated || type_info.skip_binding
     }
 
+    fn is_owned_parameter(mapped_type: &MappedType) -> bool {
+        !matches!(mapped_type, MappedType::Reference { .. })
+    }
+
     fn emit_type_doc_with_variants(type_info: &TypeInfo, indent: usize) -> String {
         let indent_str = " ".repeat(indent);
         let mut doc_lines: Vec<String> = Vec::new();
@@ -434,7 +438,10 @@ impl NodeEmitter {
             .inputs
             .iter()
             .filter(|(name, _)| name != "self" && name != "self_mut")
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -488,7 +495,10 @@ impl NodeEmitter {
             .inputs
             .iter()
             .filter(|(name, _)| name != "self" && name != "self_mut")
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -506,7 +516,7 @@ impl NodeEmitter {
         }
     }
 
-    fn unwrap_arg(&self, name: &str, mapped_type: &MappedType) -> String {
+    fn unwrap_arg(&self, name: &str, mapped_type: &MappedType, is_owned: bool) -> String {
         match mapped_type {
             MappedType::Direct {
                 node_type,
@@ -516,6 +526,8 @@ impl NodeEmitter {
                 if node_type.starts_with("Js") && node_type != "JsObject" {
                     if self.is_simple_enum_type(rust_type) {
                         format!("{}.inner.clone().into()", name)
+                    } else if is_owned {
+                        format!("{}.inner", name)
                     } else {
                         format!("{}.inner.clone()", name)
                     }
@@ -569,6 +581,8 @@ impl NodeEmitter {
                 } if node_type.starts_with("Js") && node_type != "JsObject" => {
                     if self.is_simple_enum_type(rust_type) {
                         format!("{}.map(|v| v.inner.clone().into())", name)
+                    } else if is_owned {
+                        format!("{}.map(|v| v.inner)", name)
                     } else {
                         format!("{}.map(|v| v.inner.clone())", name)
                     }
@@ -588,10 +602,14 @@ impl NodeEmitter {
                     MappedType::Direct { node_type, .. }
                         if node_type.starts_with("Js") && node_type != "JsObject" =>
                     {
-                        format!(
-                            "{}.map(|v| v.into_iter().map(|x| x.inner.clone()).collect())",
-                            name
-                        )
+                        if is_owned {
+                            format!("{}.map(|v| v.into_iter().map(|x| x.inner).collect())", name)
+                        } else {
+                            format!(
+                                "{}.map(|v| v.into_iter().map(|x| x.inner.clone()).collect())",
+                                name
+                            )
+                        }
                     }
                     _ => name.to_string(),
                 },
@@ -606,6 +624,8 @@ impl NodeEmitter {
                     } if node_type.starts_with("Js") && node_type != "JsObject" => {
                         if self.is_simple_enum_type(rust_type) {
                             format!("{}.into_iter().map(|v| v.inner.clone().into()).collect::<Vec<_>>()", name)
+                        } else if is_owned {
+                            format!("{}.into_iter().map(|v| v.inner).collect::<Vec<_>>()", name)
                         } else {
                             format!(
                                 "{}.into_iter().map(|v| v.inner.clone()).collect::<Vec<_>>()",
@@ -641,20 +661,35 @@ impl NodeEmitter {
                 let needs_value_conversion = matches!(&**value_type, MappedType::Direct { node_type, .. } if node_type.starts_with("Js") && node_type != "JsObject");
 
                 if needs_value_conversion && needs_key_conversion {
-                    format!(
-                        "{}.into_iter().map(|(k, v)| (k.inner.clone(), v.inner.clone())).collect()",
-                        name
-                    )
+                    if is_owned {
+                        format!(
+                            "{}.into_iter().map(|(k, v)| (k.inner, v.inner)).collect()",
+                            name
+                        )
+                    } else {
+                        format!(
+                            "{}.into_iter().map(|(k, v)| (k.inner.clone(), v.inner.clone())).collect()",
+                            name
+                        )
+                    }
                 } else if needs_value_conversion {
-                    format!(
-                        "{}.into_iter().map(|(k, v)| (k, v.inner.clone())).collect()",
-                        name
-                    )
+                    if is_owned {
+                        format!("{}.into_iter().map(|(k, v)| (k, v.inner)).collect()", name)
+                    } else {
+                        format!(
+                            "{}.into_iter().map(|(k, v)| (k, v.inner.clone())).collect()",
+                            name
+                        )
+                    }
                 } else if needs_key_conversion {
-                    format!(
-                        "{}.into_iter().map(|(k, v)| (k.inner.clone(), v)).collect()",
-                        name
-                    )
+                    if is_owned {
+                        format!("{}.into_iter().map(|(k, v)| (k.inner, v)).collect()", name)
+                    } else {
+                        format!(
+                            "{}.into_iter().map(|(k, v)| (k.inner.clone(), v)).collect()",
+                            name
+                        )
+                    }
                 } else {
                     name.to_string()
                 }
@@ -1261,7 +1296,10 @@ impl NodeEmitter {
             .inputs
             .iter()
             .filter(|(name, _)| name != "self" && name != "self_mut")
-            .map(|(name, mapped_type)| self.unwrap_arg(name, mapped_type))
+            .map(|(name, mapped_type)| {
+                let is_owned = Self::is_owned_parameter(mapped_type);
+                self.unwrap_arg(name, mapped_type, is_owned)
+            })
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -1408,5 +1446,116 @@ mod tests {
         assert!(result.contains("# Values"));
         assert!(result.contains("`Documented` - Has docs."));
         assert!(result.contains("`Undocumented`"));
+    }
+
+    #[test]
+    fn test_is_owned_parameter() {
+        let owned = MappedType::Direct {
+            rust_type: "Expression".to_string(),
+            python_type: "PyExpression".to_string(),
+            node_type: "JsExpression".to_string(),
+        };
+        assert!(NodeEmitter::is_owned_parameter(&owned));
+
+        let borrowed = MappedType::Reference {
+            inner_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+            is_mut: false,
+        };
+        assert!(!NodeEmitter::is_owned_parameter(&borrowed));
+    }
+
+    #[test]
+    fn test_unwrap_arg_owned_vs_borrowed() {
+        let emitter = NodeEmitter::new();
+
+        let wrapper_type = MappedType::Direct {
+            rust_type: "Expression".to_string(),
+            python_type: "PyExpression".to_string(),
+            node_type: "JsExpression".to_string(),
+        };
+
+        let owned_result = emitter.unwrap_arg("expr", &wrapper_type, true);
+        assert_eq!(owned_result, "expr.inner");
+
+        let borrowed_result = emitter.unwrap_arg("expr", &wrapper_type, false);
+        assert_eq!(borrowed_result, "expr.inner.clone()");
+    }
+
+    #[test]
+    fn test_unwrap_arg_vec_owned_vs_borrowed() {
+        let emitter = NodeEmitter::new();
+
+        let vec_type = MappedType::Collected {
+            item_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+        };
+
+        let owned_result = emitter.unwrap_arg("exprs", &vec_type, true);
+        assert_eq!(
+            owned_result,
+            "exprs.into_iter().map(|v| v.inner).collect::<Vec<_>>()"
+        );
+
+        let borrowed_result = emitter.unwrap_arg("exprs", &vec_type, false);
+        assert_eq!(
+            borrowed_result,
+            "exprs.into_iter().map(|v| v.inner.clone()).collect::<Vec<_>>()"
+        );
+    }
+
+    #[test]
+    fn test_unwrap_arg_option_owned_vs_borrowed() {
+        let emitter = NodeEmitter::new();
+
+        let option_type = MappedType::Option {
+            inner_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+        };
+
+        let owned_result = emitter.unwrap_arg("maybe_expr", &option_type, true);
+        assert_eq!(owned_result, "maybe_expr.map(|v| v.inner)");
+
+        let borrowed_result = emitter.unwrap_arg("maybe_expr", &option_type, false);
+        assert_eq!(borrowed_result, "maybe_expr.map(|v| v.inner.clone())");
+    }
+
+    #[test]
+    fn test_unwrap_arg_hashmap_owned_vs_borrowed() {
+        let emitter = NodeEmitter::new();
+
+        let hashmap_type = MappedType::HashMap {
+            key_type: Box::new(MappedType::Direct {
+                rust_type: "String".to_string(),
+                python_type: "String".to_string(),
+                node_type: "String".to_string(),
+            }),
+            value_type: Box::new(MappedType::Direct {
+                rust_type: "Expression".to_string(),
+                python_type: "PyExpression".to_string(),
+                node_type: "JsExpression".to_string(),
+            }),
+        };
+
+        let owned_result = emitter.unwrap_arg("map", &hashmap_type, true);
+        assert_eq!(
+            owned_result,
+            "map.into_iter().map(|(k, v)| (k, v.inner)).collect()"
+        );
+
+        let borrowed_result = emitter.unwrap_arg("map", &hashmap_type, false);
+        assert_eq!(
+            borrowed_result,
+            "map.into_iter().map(|(k, v)| (k, v.inner.clone())).collect()"
+        );
     }
 }

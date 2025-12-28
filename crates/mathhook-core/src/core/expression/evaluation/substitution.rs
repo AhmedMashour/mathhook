@@ -3,9 +3,9 @@
 //! Contains the `substitute()` method for replacing symbols with expressions.
 
 use super::super::Expression;
-use std::sync::Arc;
 use crate::simplify::Simplify;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 impl Expression {
     /// Substitute variables with expressions

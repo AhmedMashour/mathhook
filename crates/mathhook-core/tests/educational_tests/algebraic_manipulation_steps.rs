@@ -1,9 +1,9 @@
 // Integration tests for algebraic manipulation educational explanations
 // NO FALSE POSITIVES - validates actual mathematical content
 
-use std::sync::Arc;
 use mathhook_core::educational::step_by_step::StepByStep;
 use mathhook_core::{symbol, Expression};
+use std::sync::Arc;
 
 // Helper function to check if any step contains a specific substring
 fn has_step_containing(

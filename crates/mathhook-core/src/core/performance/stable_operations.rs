@@ -11,8 +11,8 @@ use crate::{
 use num_traits::{ToPrimitive, Zero};
 
 use crate::core::constants::EPSILON;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 
 thread_local! {
     static LOCAL_CACHE: std::cell::RefCell<std::collections::HashMap<u64, Expression>> =

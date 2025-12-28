@@ -81,7 +81,9 @@ impl AdvancedSimplify for Expression {
                 self.simplify_log_function(args)
             }
 
-            Expression::Function { name, args } if name.as_ref() == "ln" => self.simplify_ln_function(args),
+            Expression::Function { name, args } if name.as_ref() == "ln" => {
+                self.simplify_ln_function(args)
+            }
 
             Expression::Add(terms) => {
                 let simplified_terms: Vec<Expression> = terms

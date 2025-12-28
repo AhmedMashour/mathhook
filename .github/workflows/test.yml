@@ -1,0 +1,151 @@
+# MathHook Test Workflow
+# Runs on every PR and push to main branches
+# Provides fast feedback on code quality
+
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Shell script linting
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run ShellCheck
+        run: ./scripts/ci/run-shellcheck.sh
+
+  # TypeScript verification
+  typescript-check:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: '20'
+
+      - name: Install TypeScript
+        run: npm install -g typescript
+
+      - name: Verify TypeScript
+        run: ./scripts/ci/verify-typescript.sh
+
+  # Rust tests
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+        with:
+          components: rustfmt,clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run tests
+        run: cargo test --all-features --workspace
+
+      - name: Check documentation
+        run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+  # Verify Python bindings build
+  python-check:
+    name: Python Bindings
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Python
+        uses: ./.github/actions/python-setup
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Generate bindings
+        run: ./scripts/ci/generate-bindings.sh python
+
+      - name: Install maturin
+        run: pip install maturin
+
+      - name: Build Python bindings
+        run: |
+          cd crates/mathhook-python
+          maturin build --release
+
+      - name: Test import
+        run: |
+          pip install target/wheels/*.whl
+          python -c "import mathhook; print('Python bindings OK')"
+
+  # Verify Node.js bindings build
+  node-check:
+    name: Node.js Bindings
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Node.js
+        uses: ./.github/actions/node-setup
+
+      - name: Setup Rust
+        uses: ./.github/actions/rust-setup
+
+      - name: Generate bindings
+        run: ./scripts/ci/generate-bindings.sh node
+
+      - name: Build Node.js bindings
+        run: |
+          cd crates/mathhook-node
+          npm install
+          npm run build
+
+      - name: Test import
+        run: |
+          cd crates/mathhook-node
+          node -e "const m = require('./index.js'); console.log('Node.js bindings OK')"

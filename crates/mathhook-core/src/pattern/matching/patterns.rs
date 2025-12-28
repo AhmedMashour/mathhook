@@ -266,7 +266,7 @@ mod tests {
     #[test]
     fn test_contains_subexpression_in_function() {
         let x = symbol!(x);
-        let expr = Expression::function("sin".to_string(), vec![Expression::symbol(x.clone())]);
+        let expr = Expression::function("sin", vec![Expression::symbol(x.clone())]);
         assert!(contains_subexpression(
             &expr,
             &Expression::symbol(x.clone())

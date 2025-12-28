@@ -1,0 +1,49 @@
+name: 'Rust Setup'
+description: 'Set up Rust toolchain with caching'
+
+inputs:
+  toolchain:
+    description: 'Rust toolchain version'
+    required: false
+    default: 'stable'
+  components:
+    description: 'Additional components (comma-separated)'
+    required: false
+    default: ''
+  targets:
+    description: 'Additional targets (comma-separated)'
+    required: false
+    default: ''
+  cache-key:
+    description: 'Additional cache key suffix'
+    required: false
+    default: ''
+
+outputs:
+  rustc-version:
+    description: 'Installed rustc version'
+    value: ${{ steps.toolchain.outputs.rustc }}
+  cargo-version:
+    description: 'Installed cargo version'
+    value: ${{ steps.toolchain.outputs.cargo }}
+  cache-hit:
+    description: 'Whether cache was hit'
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Rust toolchain
+      id: toolchain
+      uses: dtolnay/rust-toolchain@4be9e76fd7c4901c61fb841f559994984270fce7  # stable
+      with:
+        toolchain: ${{ inputs.toolchain }}
+        components: ${{ inputs.components }}
+        targets: ${{ inputs.targets }}
+
+    - name: Setup Rust cache
+      id: cache
+      uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6  # v2.7.8
+      with:
+        cache-on-failure: true
+        shared-key: mathhook-${{ inputs.cache-key }}

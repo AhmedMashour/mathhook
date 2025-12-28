@@ -268,7 +268,9 @@ mod tests {
             // Check if x-coordinate is zero (handles multiple representations)
             let is_zero = match x_coord {
                 Expression::Number(Number::Integer(0)) => true,
-                Expression::Function { name, args } if name.as_ref() == "fraction" && !args.is_empty() => {
+                Expression::Function { name, args }
+                    if name.as_ref() == "fraction" && !args.is_empty() =>
+                {
                     // fraction(0, denominator) = 0
                     matches!(args[0], Expression::Number(Number::Integer(0)))
                 }
@@ -307,7 +309,9 @@ mod tests {
             // Check if x-coordinate is zero (handles multiple representations)
             let is_zero = match x_coord {
                 Expression::Number(Number::Integer(0)) => true,
-                Expression::Function { name, args } if name.as_ref() == "fraction" && !args.is_empty() => {
+                Expression::Function { name, args }
+                    if name.as_ref() == "fraction" && !args.is_empty() =>
+                {
                     // fraction(0, denominator) = 0
                     matches!(args[0], Expression::Number(Number::Integer(0)))
                 }

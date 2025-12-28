@@ -28,7 +28,7 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
         }
         // 0^(-1) = undefined (division by zero)
         (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(-1))) => {
-            Expression::function("undefined".to_owned(), vec![])
+            Expression::function("undefined", vec![])
         }
         // a^n = a^n for positive integers a and n (compute the power)
         (Expression::Number(Number::Integer(a)), Expression::Number(Number::Integer(n)))
