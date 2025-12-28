@@ -3,6 +3,7 @@
 //! Methods for checking properties and extracting information from expressions.
 
 use super::Expression;
+use std::sync::Arc;
 use crate::core::{Number, Symbol};
 use crate::matrices::unified::CoreMatrixOps;
 use crate::simplify::Simplify;
@@ -221,25 +222,25 @@ impl Expression {
                 let _args = &method_data.args;
 
                 if let Expression::Matrix(matrix) = object {
-                    match method_name.as_str() {
+                    match method_name.as_ref() {
                         "det" | "determinant" => matrix
                             .determinant()
                             .unwrap_or_else(|_| Expression::function("undefined", vec![])),
                         "trace" => matrix.trace(),
-                        "transpose" => Expression::Matrix(Box::new(matrix.transpose())),
-                        "inverse" => Expression::Matrix(Box::new(matrix.inverse())),
+                        "transpose" => Expression::Matrix(Arc::new(matrix.transpose())),
+                        "inverse" => Expression::Matrix(Arc::new(matrix.inverse())),
                         _ => self.clone(),
                     }
                 } else {
                     let evaluated_object = object.evaluate_method_call();
                     if let Expression::Matrix(matrix) = &evaluated_object {
-                        match method_name.as_str() {
+                        match method_name.as_ref() {
                             "det" | "determinant" => matrix
                                 .determinant()
                                 .unwrap_or_else(|_| Expression::function("undefined", vec![])),
                             "trace" => matrix.trace(),
-                            "transpose" => Expression::Matrix(Box::new(matrix.transpose())),
-                            "inverse" => Expression::Matrix(Box::new(matrix.inverse())),
+                            "transpose" => Expression::Matrix(Arc::new(matrix.transpose())),
+                            "inverse" => Expression::Matrix(Arc::new(matrix.inverse())),
                             _ => self.clone(),
                         }
                     } else {

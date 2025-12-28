@@ -312,7 +312,7 @@ mod tests {
         let result = ResidueMethods::simple_pole_residue(&numerator, &denominator, &z, &pole);
 
         // Residue of 1/(z-1) at z=1 should be 1
-        assert!(matches!(result, Expression::Function { name, .. } if name == "limit"));
+        assert!(matches!(result, Expression::Function { name, .. } if name.as_ref() == "limit"));
     }
 
     #[test]

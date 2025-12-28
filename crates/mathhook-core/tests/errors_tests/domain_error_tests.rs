@@ -20,7 +20,7 @@ fn test_zero_to_negative_one_division_by_zero() {
 
     // For now, verify it returns undefined function
     match simplified {
-        Expression::Function { name, .. } if name == "undefined" => {
+        Expression::Function { name, .. } if name.as_ref() == "undefined" => {
             // Expected current behavior
         }
         _ => {
@@ -437,7 +437,7 @@ fn test_sqrt_symbolic_allowed() {
     let expr = Expression::sqrt(Expression::symbol(x.clone()));
 
     // Construction should succeed
-    assert!(matches!(&expr, Expression::Function { name, .. } if name == "sqrt"));
+    assert!(matches!(&expr, Expression::Function { name, .. } if name.as_ref() == "sqrt"));
 
     // Evaluation should succeed for symbolic expressions (no numeric value to check)
     let result = expr.evaluate();
@@ -457,7 +457,7 @@ fn test_log_symbolic_allowed() {
     let expr = Expression::function("log", vec![Expression::symbol(x.clone())]);
 
     // Construction should succeed
-    assert!(matches!(&expr, Expression::Function { name, .. } if name == "log"));
+    assert!(matches!(&expr, Expression::Function { name, .. } if name.as_ref() == "log"));
 
     // Evaluation should succeed for symbolic expressions
     let result = expr.evaluate();
@@ -477,7 +477,7 @@ fn test_ln_symbolic_allowed() {
     let expr = Expression::function("ln", vec![Expression::symbol(x.clone())]);
 
     // Construction should succeed
-    assert!(matches!(&expr, Expression::Function { name, .. } if name == "ln"));
+    assert!(matches!(&expr, Expression::Function { name, .. } if name.as_ref() == "ln"));
 
     // Evaluation should succeed for symbolic expressions
     let result = expr.evaluate();
@@ -545,7 +545,7 @@ fn test_simplification_preserves_error_markers() {
     // Currently returns Expression::function("undefined", vec![])
     // This is a marker for error - not ideal but better than silently wrong result
     match simplified {
-        Expression::Function { name, .. } if name == "undefined" => {
+        Expression::Function { name, .. } if name.as_ref() == "undefined" => {
             // Current behavior - acceptable as error marker
         }
         _ => {

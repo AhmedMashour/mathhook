@@ -230,7 +230,7 @@ pub fn simplify_sqrt(arg: &Expression) -> Expression {
 
         Expression::Mul(terms) => simplify_sqrt_product(terms),
 
-        Expression::Function { name, args } if name == "sqrt" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "sqrt" && args.len() == 1 => {
             Expression::function("sqrt", vec![args[0].clone()])
         }
 

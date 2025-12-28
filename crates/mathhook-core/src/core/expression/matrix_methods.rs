@@ -3,6 +3,8 @@
 //! This module provides matrix operations including transpose and inverse
 //! that respect noncommutativity and implement proper order reversal rules.
 
+use std::sync::Arc;
+
 use super::Expression;
 use crate::core::symbol::SymbolType;
 
@@ -65,7 +67,7 @@ impl Expression {
 
             Expression::Matrix(matrix) => {
                 use crate::matrices::CoreMatrixOps;
-                Expression::Matrix(Box::new(matrix.transpose()))
+                Expression::Matrix(Arc::new(matrix.transpose()))
             }
 
             Expression::Number(_) | Expression::Constant(_) => self.clone(),
@@ -125,7 +127,7 @@ impl Expression {
 
             Expression::Matrix(matrix) => {
                 use crate::matrices::CoreMatrixOps;
-                Expression::Matrix(Box::new(matrix.inverse()))
+                Expression::Matrix(Arc::new(matrix.inverse()))
             }
 
             Expression::Number(_) => Expression::pow(self.clone(), Expression::integer(-1)),
@@ -148,7 +150,7 @@ mod tests {
 
         match transposed {
             Expression::Function { name, args } => {
-                assert_eq!(name, "transpose");
+                assert_eq!(name.as_ref(), "transpose");
                 assert_eq!(args.len(), 1);
                 assert_eq!(args[0], Expression::symbol(a));
             }
@@ -268,7 +270,7 @@ mod tests {
 
         match inverse {
             Expression::Function { name, args } => {
-                assert_eq!(name, "inverse");
+                assert_eq!(name.as_ref(), "inverse");
                 assert_eq!(args.len(), 1);
                 assert_eq!(args[0], Expression::symbol(a));
             }
@@ -406,7 +408,7 @@ mod tests {
 
         match transposed_twice {
             Expression::Function { name, args } => {
-                assert_eq!(name, "transpose");
+                assert_eq!(name.as_ref(), "transpose");
                 assert_eq!(args.len(), 1);
                 assert_eq!(args[0], transposed_once);
             }

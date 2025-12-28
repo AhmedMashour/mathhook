@@ -60,7 +60,7 @@ pub fn integrate_transcendental(
 /// Result: e^(ax)/a
 fn try_simple_exponential(expr: &Expression, var: &Symbol) -> Option<Expression> {
     match expr {
-        Expression::Function { name, args } if name == "exp" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "exp" && args.len() == 1 => {
             let arg = &args[0];
             if let Some(coeff) = extract_linear_coefficient(arg, var) {
                 return Some(Expression::div(expr.clone(), coeff));
@@ -126,7 +126,7 @@ fn check_exp_product(
     var: &Symbol,
 ) -> Option<Expression> {
     if let Expression::Function { name, args } = exp_part {
-        if name == "exp" && args.len() == 1 {
+        if name.as_ref() == "exp" && args.len() == 1 {
             let exp_arg = &args[0];
             if is_just_variable(linear, var) && is_just_variable(exp_arg, var) {
                 return Some(Expression::mul(vec![
@@ -157,7 +157,7 @@ fn is_non_elementary_pattern(expr: &Expression, var: &Symbol) -> bool {
         }
     }
     if let Expression::Function { name, args } = expr {
-        if name == "exp" && args.len() == 1 && is_quadratic(&args[0], var) {
+        if name.as_ref() == "exp" && args.len() == 1 && is_quadratic(&args[0], var) {
             return true;
         }
     }
@@ -243,7 +243,7 @@ fn is_logarithmic_derivative_pattern(
 /// Check if expression is e^x
 fn is_exponential_of_var(expr: &Expression, var: &Symbol) -> bool {
     match expr {
-        Expression::Function { name, args } if name == "exp" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "exp" && args.len() == 1 => {
             is_just_variable(&args[0], var)
         }
         _ => false,
@@ -252,7 +252,7 @@ fn is_exponential_of_var(expr: &Expression, var: &Symbol) -> bool {
 /// Check if expression is sin(x)
 fn is_sine_of_var(expr: &Expression, var: &Symbol) -> bool {
     match expr {
-        Expression::Function { name, args } if name == "sin" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "sin" && args.len() == 1 => {
             is_just_variable(&args[0], var)
         }
         _ => false,
@@ -262,7 +262,7 @@ fn is_sine_of_var(expr: &Expression, var: &Symbol) -> bool {
 fn is_logarithm_of_var(expr: &Expression, var: &Symbol) -> bool {
     match expr {
         Expression::Function { name, args }
-            if (name == "ln" || name == "log") && args.len() == 1 =>
+            if (name.as_ref() == "ln" || name.as_ref() == "log") && args.len() == 1 =>
         {
             is_just_variable(&args[0], var)
         }

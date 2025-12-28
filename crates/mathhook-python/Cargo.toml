@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 mathhook-core = { path = "../mathhook-core", features = ["python-bindings"] }
 mathhook-macros = { path = "../mathhook-macros", features = ["python-bindings"] }
-pyo3 = { workspace = true, features = ["extension-module"] }
+pyo3 = { workspace = true, features = ["extension-module", "abi3-py38"] }
 pyo3-stub-gen = "0.7"
 serde.workspace = true
 serde_json.workspace = true

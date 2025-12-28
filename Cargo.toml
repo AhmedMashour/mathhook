@@ -1,13 +1,13 @@
 [workspace]
 resolver = "2"
 members = [
+    "crates/mathhook-macros",
     "crates/mathhook-core",
     "crates/mathhook-benchmarks",
+    "crates/mathhook-binding-codegen",
     "crates/mathhook-python",
     "crates/mathhook-node",
     "crates/mathhook",
-    "crates/mathhook-macros",
-    "tools/binding-codegen"
 ]
 
 [workspace.package]

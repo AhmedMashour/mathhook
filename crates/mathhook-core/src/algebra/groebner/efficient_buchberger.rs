@@ -12,6 +12,7 @@ use crate::core::polynomial::sparse_polynomial::{
 use crate::core::{Expression, Symbol};
 use crate::error::{MathError, MathResult};
 use std::collections::VecDeque;
+use std::sync::Arc;
 
 /// Compute Gröbner basis using efficient sparse polynomial representation
 ///
@@ -256,7 +257,7 @@ mod tests {
 
         let f1 = Expression::add(vec![
             x.clone().into(),
-            Expression::Mul(Box::new(vec![
+            Expression::Mul(Arc::new(vec![
                 Expression::integer(-1),
                 Expression::symbol(y.clone()),
             ])),
@@ -289,7 +290,7 @@ mod tests {
         // Line: x - y = 0
         let f2 = Expression::add(vec![
             x.clone().into(),
-            Expression::Mul(Box::new(vec![
+            Expression::Mul(Arc::new(vec![
                 Expression::integer(-1),
                 Expression::symbol(y.clone()),
             ])),

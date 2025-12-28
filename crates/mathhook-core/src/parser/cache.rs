@@ -233,7 +233,7 @@ mod tests {
                 name,
                 args: func_args,
             } => {
-                assert_eq!(name, "bessel_j");
+                assert_eq!(name.as_ref(), "bessel_j");
                 assert_eq!(*func_args, args);
             }
             _ => panic!("Expected function expression"),

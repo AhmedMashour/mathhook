@@ -38,7 +38,7 @@ impl AdvancedSimplify for Expression {
     /// Simplify factorial expressions
     fn simplify_factorial(&self) -> Self {
         match self {
-            Expression::Function { name, args } if name == "factorial" => {
+            Expression::Function { name, args } if name.as_ref() == "factorial" => {
                 if args.len() == 1 {
                     self.compute_factorial(&args[0])
                 } else {
@@ -77,11 +77,11 @@ impl AdvancedSimplify for Expression {
     /// Simplify logarithmic expressions
     fn simplify_logarithms(&self) -> Self {
         match self {
-            Expression::Function { name, args } if name == "log" => {
+            Expression::Function { name, args } if name.as_ref() == "log" => {
                 self.simplify_log_function(args)
             }
 
-            Expression::Function { name, args } if name == "ln" => self.simplify_ln_function(args),
+            Expression::Function { name, args } if name.as_ref() == "ln" => self.simplify_ln_function(args),
 
             Expression::Add(terms) => {
                 let simplified_terms: Vec<Expression> = terms
@@ -133,7 +133,7 @@ impl AdvancedSimplify for Expression {
     /// Simplify other special functions
     fn simplify_special_functions(&self) -> Self {
         match self {
-            Expression::Function { name, args } => match name.as_str() {
+            Expression::Function { name, args } => match name.as_ref() {
                 "sqrt" => self.simplify_sqrt(args),
                 "abs" => self.simplify_abs(args),
                 "exp" => self.simplify_exp(args),

@@ -304,7 +304,7 @@ impl BackgroundCompute {
             }
 
             Expression::Function { name, args: _ } => {
-                match name.as_str() {
+                match name.as_ref() {
                     "sin" | "cos" | "tan" => {
                         // Trigonometric functions often get differentiated
                         predictions.push((

@@ -422,7 +422,7 @@ fn test_function_expression_creation() {
     let sin_x = Expression::function("sin".to_string(), vec![Expression::symbol(x)]);
     match sin_x {
         Expression::Function { name, args } => {
-            assert_eq!(name, "sin");
+            assert_eq!(name.as_ref(), "sin");
             assert_eq!(args.len(), 1);
         }
         _ => panic!("Expected Function expression"),

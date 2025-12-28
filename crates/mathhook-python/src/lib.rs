@@ -14,13 +14,11 @@ mod functions;
 mod functions_generated;
 mod helpers;
 mod polyzp;
-mod types;
 
 // Public API re-exports
 pub use functions::*;
 pub use generated::PyExpression;
 pub use polyzp::{poly_gcd, poly_mul_fast, poly_zp, PyPolyZp};
-pub use types::*;
 
 use pyo3::prelude::*;
 

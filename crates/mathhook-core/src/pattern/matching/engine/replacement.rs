@@ -5,6 +5,7 @@
 use super::PatternMatches;
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
+use std::sync::Arc;
 
 /// Apply a replacement pattern with bindings from a match
 pub fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Expression {
@@ -21,7 +22,7 @@ pub fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Ex
                 .iter()
                 .map(|t| apply_replacement(t, bindings))
                 .collect();
-            Expression::Add(Box::new(new_terms))
+            Expression::Add(Arc::new(new_terms))
         }
 
         Pattern::Mul(factors) => {
@@ -29,13 +30,13 @@ pub fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Ex
                 .iter()
                 .map(|f| apply_replacement(f, bindings))
                 .collect();
-            Expression::Mul(Box::new(new_factors))
+            Expression::Mul(Arc::new(new_factors))
         }
 
         Pattern::Pow(base, exp) => {
             let new_base = apply_replacement(base, bindings);
             let new_exp = apply_replacement(exp, bindings);
-            Expression::Pow(Box::new(new_base), Box::new(new_exp))
+            Expression::Pow(Arc::new(new_base), Arc::new(new_exp))
         }
 
         Pattern::Function { name, args } => {
@@ -44,8 +45,8 @@ pub fn apply_replacement(replacement: &Pattern, bindings: &PatternMatches) -> Ex
                 .map(|a| apply_replacement(a, bindings))
                 .collect();
             Expression::Function {
-                name: name.clone(),
-                args: Box::new(new_args),
+                name: Arc::from(name.as_str()),
+                args: Arc::new(new_args),
             }
         }
     }
@@ -73,7 +74,7 @@ mod tests {
     #[test]
     fn test_replacement_in_addition() {
         let x = symbol!(x);
-        let expr = Expression::Add(Box::new(vec![
+        let expr = Expression::Add(Arc::new(vec![
             Expression::symbol(x.clone()),
             Expression::integer(1),
         ]));
@@ -84,7 +85,7 @@ mod tests {
 
         let result = expr.replace(&pattern, &replacement);
 
-        let expected = Expression::Add(Box::new(vec![
+        let expected = Expression::Add(Arc::new(vec![
             Expression::integer(1),
             Expression::symbol(x.clone()),
         ]));

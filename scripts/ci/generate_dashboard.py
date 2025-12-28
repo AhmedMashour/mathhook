@@ -424,7 +424,7 @@ def generate_dashboard(artifacts_dir: str, output_dir: str, criterion_dir: str =
     # Metadata
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     commit = os.environ.get("GITHUB_SHA", "local")[:7]
-    repo = os.environ.get("GITHUB_REPOSITORY", "mathhook/mathhook")
+    repo = os.environ.get("GITHUB_REPOSITORY", "AhmedMashour/mathhook-core")
 
     # Status (auto-detected from data)
     def get_status(benchmarks):

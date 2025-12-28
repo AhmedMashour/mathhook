@@ -68,7 +68,7 @@ pub fn build_extension_tower(expr: &Expression, var: Symbol) -> Option<Vec<Diffe
 /// Looks for patterns like exp(x), exp(ax), exp(ax+b).
 fn detect_exponential_extension(expr: &Expression, var: Symbol) -> Option<DifferentialExtension> {
     match expr {
-        Expression::Function { name, args } if name == "exp" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "exp" && args.len() == 1 => {
             let arg = &args[0];
 
             // Check if argument contains the variable
@@ -103,7 +103,7 @@ fn detect_logarithmic_extension(expr: &Expression, var: Symbol) -> Option<Differ
 
     match expr {
         Expression::Function { name, args }
-            if (name == "ln" || name == "log") && args.len() == 1 =>
+            if (name.as_ref() == "ln" || name.as_ref() == "log") && args.len() == 1 =>
         {
             let arg = &args[0];
 

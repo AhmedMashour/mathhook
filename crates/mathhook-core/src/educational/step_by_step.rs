@@ -2,6 +2,7 @@
 //! Provides detailed explanations of simplification and algebraic operations
 
 use crate::core::Expression;
+use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 
 /// Represents a single step in a mathematical operation
@@ -368,7 +369,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                             symbol_terms
                                 .entry(key)
                                 .or_default()
-                                .push((coeff, Expression::Mul(Box::new(var_part))));
+                                .push((coeff, Expression::Mul(Arc::new(var_part))));
                         } else {
                             constant_sum += coeff;
                         }
@@ -388,7 +389,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                         if total_coeff == 1 {
                             new_terms.push(occurrences[0].1.clone());
                         } else {
-                            new_terms.push(Expression::Mul(Box::new(vec![
+                            new_terms.push(Expression::Mul(Arc::new(vec![
                                 Expression::integer(total_coeff),
                                 occurrences[0].1.clone(),
                             ])));
@@ -399,7 +400,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                     if *coeff == 1 {
                         new_terms.push(var.clone());
                     } else {
-                        new_terms.push(Expression::Mul(Box::new(vec![
+                        new_terms.push(Expression::Mul(Arc::new(vec![
                             Expression::integer(*coeff),
                             var.clone(),
                         ])));
@@ -417,7 +418,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                 let result = if new_terms.len() == 1 {
                     new_terms[0].clone()
                 } else {
-                    Expression::Add(Box::new(new_terms))
+                    Expression::Add(Arc::new(new_terms))
                 };
 
                 let step = Step {
@@ -455,7 +456,7 @@ fn simplify_step_identity_rules(expr: &Expression) -> Option<(Expression, Step)>
                 } else if non_zero_terms.len() == 1 {
                     non_zero_terms[0].clone()
                 } else {
-                    Expression::Add(Box::new(non_zero_terms))
+                    Expression::Add(Arc::new(non_zero_terms))
                 };
 
                 let step = Step {
@@ -497,7 +498,7 @@ fn simplify_step_identity_rules(expr: &Expression) -> Option<(Expression, Step)>
                 } else if non_one_factors.len() == 1 {
                     non_one_factors[0].clone()
                 } else {
-                    Expression::Mul(Box::new(non_one_factors))
+                    Expression::Mul(Arc::new(non_one_factors))
                 };
 
                 let step = Step {
@@ -570,7 +571,7 @@ fn simplify_step_power_rules(expr: &Expression) -> Option<(Expression, Step)> {
                     if let Some((simplified, _)) = simplify_step_power_rules(factor) {
                         let mut new_factors = factors.to_vec();
                         new_factors[i] = simplified;
-                        let result = Expression::Mul(Box::new(new_factors));
+                        let result = Expression::Mul(Arc::new(new_factors));
                         let step = Step {
                             title: "Simplify Power in Product".to_owned(),
                             description: format!(
@@ -618,7 +619,7 @@ fn simplify_step_coefficient_multiplication(expr: &Expression) -> Option<(Expres
                 if non_numeric.len() == 1 {
                     non_numeric[0].clone()
                 } else {
-                    Expression::Mul(Box::new(non_numeric))
+                    Expression::Mul(Arc::new(non_numeric))
                 }
             } else {
                 let mut new_factors = vec![Expression::integer(numeric_product)];
@@ -626,7 +627,7 @@ fn simplify_step_coefficient_multiplication(expr: &Expression) -> Option<(Expres
                 if new_factors.len() == 1 {
                     new_factors[0].clone()
                 } else {
-                    Expression::Mul(Box::new(new_factors))
+                    Expression::Mul(Arc::new(new_factors))
                 }
             };
 
@@ -669,11 +670,11 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                     let mut all_terms = Vec::new();
                     for t1 in terms1.iter() {
                         for t2 in terms2.iter() {
-                            all_terms.push(Expression::Mul(Box::new(vec![t1.clone(), t2.clone()])));
+                            all_terms.push(Expression::Mul(Arc::new(vec![t1.clone(), t2.clone()])));
                         }
                     }
 
-                    let intermediate = Expression::Add(Box::new(all_terms));
+                    let intermediate = Expression::Add(Arc::new(all_terms));
                     steps.push(Step {
                         title: "Apply FOIL".to_owned(),
                         description: format!("Multiply each term: {}", intermediate),
@@ -694,13 +695,13 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
 
                     let mut distributed_terms = Vec::new();
                     for term in terms.iter() {
-                        distributed_terms.push(Expression::Mul(Box::new(vec![
+                        distributed_terms.push(Expression::Mul(Arc::new(vec![
                             term.clone(),
                             factors[1].clone(),
                         ])));
                     }
 
-                    let result = Expression::Add(Box::new(distributed_terms));
+                    let result = Expression::Add(Arc::new(distributed_terms));
                     steps.push(Step {
                         title: "Result of Distribution".to_owned(),
                         description: format!("Expanded form: {}", result),
@@ -721,13 +722,13 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
 
                     let mut distributed_terms = Vec::new();
                     for term in terms.iter() {
-                        distributed_terms.push(Expression::Mul(Box::new(vec![
+                        distributed_terms.push(Expression::Mul(Arc::new(vec![
                             factors[0].clone(),
                             term.clone(),
                         ])));
                     }
 
-                    let result = Expression::Add(Box::new(distributed_terms));
+                    let result = Expression::Add(Arc::new(distributed_terms));
                     steps.push(Step {
                         title: "Result of Distribution".to_owned(),
                         description: format!("Expanded form: {}", result),
@@ -757,7 +758,7 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                         latex: None,
                     });
 
-                    let expanded = Expression::Mul(Box::new(vec![
+                    let expanded = Expression::Mul(Arc::new(vec![
                         base.as_ref().clone(),
                         base.as_ref().clone(),
                     ]));
@@ -833,7 +834,7 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                                 let quotient = n / gcd;
                                 let mut new_factors = vec![Expression::integer(quotient)];
                                 new_factors.extend(factors[1..].to_vec());
-                                factored_terms.push(Expression::Mul(Box::new(new_factors)));
+                                factored_terms.push(Expression::Mul(Arc::new(new_factors)));
                             }
                         }
                         _ => {}
@@ -843,11 +844,11 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                 let inner = if factored_terms.len() == 1 {
                     factored_terms[0].clone()
                 } else {
-                    Expression::Add(Box::new(factored_terms))
+                    Expression::Add(Arc::new(factored_terms))
                 };
 
                 let result =
-                    Expression::Mul(Box::new(vec![Expression::integer(gcd), inner.clone()]));
+                    Expression::Mul(Arc::new(vec![Expression::integer(gcd), inner.clone()]));
 
                 steps.push(Step {
                     title: "Factor Out GCF".to_owned(),
@@ -1370,7 +1371,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                             symbol_terms
                                 .entry(key)
                                 .or_insert_with(Vec::new)
-                                .push((coeff, Expression::Mul(Box::new(var_part))));
+                                .push((coeff, Expression::Mul(Arc::new(var_part))));
                         } else {
                             constant_sum += coeff;
                         }
@@ -1390,7 +1391,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                         if total_coeff == 1 {
                             new_terms.push(occurrences[0].1.clone());
                         } else {
-                            new_terms.push(Expression::Mul(Box::new(vec![
+                            new_terms.push(Expression::Mul(Arc::new(vec![
                                 Expression::integer(total_coeff),
                                 occurrences[0].1.clone(),
                             ])));
@@ -1401,7 +1402,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                     if *coeff == 1 {
                         new_terms.push(var.clone());
                     } else {
-                        new_terms.push(Expression::Mul(Box::new(vec![
+                        new_terms.push(Expression::Mul(Arc::new(vec![
                             Expression::integer(*coeff),
                             var.clone(),
                         ])));
@@ -1419,7 +1420,7 @@ fn simplify_step_combine_like_terms(expr: &Expression) -> Option<(Expression, St
                 let result = if new_terms.len() == 1 {
                     new_terms[0].clone()
                 } else {
-                    Expression::Add(Box::new(new_terms))
+                    Expression::Add(Arc::new(new_terms))
                 };
 
                 let step = Step {
@@ -1460,7 +1461,7 @@ fn simplify_step_identity_rules(expr: &Expression) -> Option<(Expression, Step)>
                 } else if non_zero_terms.len() == 1 {
                     non_zero_terms[0].clone()
                 } else {
-                    Expression::Add(Box::new(non_zero_terms))
+                    Expression::Add(Arc::new(non_zero_terms))
                 };
 
                 let step = Step {
@@ -1499,7 +1500,7 @@ fn simplify_step_identity_rules(expr: &Expression) -> Option<(Expression, Step)>
                 } else if non_one_factors.len() == 1 {
                     non_one_factors[0].clone()
                 } else {
-                    Expression::Mul(Box::new(non_one_factors))
+                    Expression::Mul(Arc::new(non_one_factors))
                 };
 
                 let step = Step {
@@ -1575,7 +1576,7 @@ fn simplify_step_power_rules(expr: &Expression) -> Option<(Expression, Step)> {
                     if let Some((simplified, _)) = simplify_step_power_rules(factor) {
                         let mut new_factors = factors.to_vec();
                         new_factors[i] = simplified.clone();
-                        let result = Expression::Mul(Box::new(new_factors));
+                        let result = Expression::Mul(Arc::new(new_factors));
                         let step = Step {
                             title: "Simplify Power in Product".to_string(),
                             description: format!("Apply power rule in multiplication\nResult: {}", result),
@@ -1621,7 +1622,7 @@ fn simplify_step_coefficient_multiplication(expr: &Expression) -> Option<(Expres
                     if non_numeric.len() == 1 {
                         non_numeric[0].clone()
                     } else {
-                        Expression::Mul(Box::new(non_numeric))
+                        Expression::Mul(Arc::new(non_numeric))
                     }
                 } else {
                     let mut new_factors = vec![Expression::integer(numeric_product)];
@@ -1629,7 +1630,7 @@ fn simplify_step_coefficient_multiplication(expr: &Expression) -> Option<(Expres
                     if new_factors.len() == 1 {
                         new_factors[0].clone()
                     } else {
-                        Expression::Mul(Box::new(new_factors))
+                        Expression::Mul(Arc::new(new_factors))
                     }
                 };
 
@@ -1677,11 +1678,11 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                     let mut all_terms = Vec::new();
                     for t1 in terms1.iter() {
                         for t2 in terms2.iter() {
-                            all_terms.push(Expression::Mul(Box::new(vec![t1.clone(), t2.clone()])));
+                            all_terms.push(Expression::Mul(Arc::new(vec![t1.clone(), t2.clone()])));
                         }
                     }
 
-                    let intermediate = Expression::Add(Box::new(all_terms));
+                    let intermediate = Expression::Add(Arc::new(all_terms));
                     steps.push(Step {
                         title: "Apply FOIL".to_string(),
                         description: format!("Multiply each term: {}", intermediate),
@@ -1705,13 +1706,13 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
 
                     let mut distributed_terms = Vec::new();
                     for term in terms.iter() {
-                        distributed_terms.push(Expression::Mul(Box::new(vec![
+                        distributed_terms.push(Expression::Mul(Arc::new(vec![
                             term.clone(),
                             factors[1].clone(),
                         ])));
                     }
 
-                    let result = Expression::Add(Box::new(distributed_terms));
+                    let result = Expression::Add(Arc::new(distributed_terms));
                     steps.push(Step {
                         title: "Result of Distribution".to_string(),
                         description: format!("Expanded form: {}", result),
@@ -1735,13 +1736,13 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
 
                     let mut distributed_terms = Vec::new();
                     for term in terms.iter() {
-                        distributed_terms.push(Expression::Mul(Box::new(vec![
+                        distributed_terms.push(Expression::Mul(Arc::new(vec![
                             factors[0].clone(),
                             term.clone(),
                         ])));
                     }
 
-                    let result = Expression::Add(Box::new(distributed_terms));
+                    let result = Expression::Add(Arc::new(distributed_terms));
                     steps.push(Step {
                         title: "Result of Distribution".to_string(),
                         description: format!("Expanded form: {}", result),
@@ -1771,7 +1772,7 @@ fn expand_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                         latex: None,
                     });
 
-                    let expanded = Expression::Mul(Box::new(vec![base.as_ref().clone(), base.as_ref().clone()]));
+                    let expanded = Expression::Mul(Arc::new(vec![base.as_ref().clone(), base.as_ref().clone()]));
                     if let Some((result, expand_steps)) = expand_expression(&expanded) {
                         steps.extend(expand_steps);
                         return Some((result, steps));
@@ -1846,7 +1847,7 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                                     let quotient = n / gcd;
                                     let mut new_factors = vec![Expression::integer(quotient)];
                                     new_factors.extend(factors[1..].to_vec());
-                                    factored_terms.push(Expression::Mul(Box::new(new_factors)));
+                                    factored_terms.push(Expression::Mul(Arc::new(new_factors)));
                                 }
                             }
                             _ => {}
@@ -1856,10 +1857,10 @@ fn factor_expression(expr: &Expression) -> Option<(Expression, Vec<Step>)> {
                     let inner = if factored_terms.len() == 1 {
                         factored_terms[0].clone()
                     } else {
-                        Expression::Add(Box::new(factored_terms))
+                        Expression::Add(Arc::new(factored_terms))
                     };
 
-                    let result = Expression::Mul(Box::new(vec![
+                    let result = Expression::Mul(Arc::new(vec![
                         Expression::integer(gcd),
                         inner.clone(),
                     ]));

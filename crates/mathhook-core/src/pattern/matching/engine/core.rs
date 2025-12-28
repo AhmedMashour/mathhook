@@ -6,6 +6,7 @@ use super::{apply_replacement, match_commutative, PatternMatches};
 use crate::core::Expression;
 use crate::pattern::matching::patterns::Pattern;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 /// Trait for types that support pattern matching
 pub trait Matchable {
@@ -125,7 +126,7 @@ impl Matchable for Expression {
                         .iter()
                         .map(|t| t.replace(pattern, replacement))
                         .collect();
-                    Expression::Add(Box::new(new_terms))
+                    Expression::Add(Arc::new(new_terms))
                 }
 
                 Expression::Mul(factors) => {
@@ -133,13 +134,13 @@ impl Matchable for Expression {
                         .iter()
                         .map(|f| f.replace(pattern, replacement))
                         .collect();
-                    Expression::Mul(Box::new(new_factors))
+                    Expression::Mul(Arc::new(new_factors))
                 }
 
                 Expression::Pow(base, exp) => {
                     let new_base = base.replace(pattern, replacement);
                     let new_exp = exp.replace(pattern, replacement);
-                    Expression::Pow(Box::new(new_base), Box::new(new_exp))
+                    Expression::Pow(Arc::new(new_base), Arc::new(new_exp))
                 }
 
                 Expression::Function { name, args } => {
@@ -149,7 +150,7 @@ impl Matchable for Expression {
                         .collect();
                     Expression::Function {
                         name: name.clone(),
-                        args: Box::new(new_args),
+                        args: Arc::new(new_args),
                     }
                 }
 
@@ -217,7 +218,7 @@ pub(super) fn match_recursive(
                 args: expr_args,
             } = expr
             {
-                if expr_name != name {
+                if expr_name.as_ref() != name.as_str() {
                     return false;
                 }
 
@@ -353,7 +354,7 @@ mod tests {
     #[test]
     fn test_wildcard_consistency() {
         let x = symbol!(x);
-        let expr = Expression::Add(Box::new(vec![
+        let expr = Expression::Add(Arc::new(vec![
             Expression::symbol(x.clone()),
             Expression::symbol(x.clone()),
         ]));

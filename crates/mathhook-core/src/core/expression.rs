@@ -20,31 +20,33 @@ pub use data_types::*;
 
 use crate::core::{MathConstant, Number, Symbol};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 /// Memory-optimized Expression enum (target: 32 bytes)
 ///
+/// Uses Arc for O(1) clone performance - cloning is just an atomic increment.
 /// Hot-path variants (frequently used) are kept inline for performance.
-/// Cold-path variants (less common) are boxed to maintain small enum size.
+/// Cold-path variants (less common) use Arc to maintain small enum size.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Expression {
     Number(Number),
     Symbol(Symbol),
-    Add(Box<Vec<Expression>>),
-    Mul(Box<Vec<Expression>>),
-    Pow(Box<Expression>, Box<Expression>),
+    Add(Arc<Vec<Expression>>),
+    Mul(Arc<Vec<Expression>>),
+    Pow(Arc<Expression>, Arc<Expression>),
     Function {
-        name: String,
-        args: Box<Vec<Expression>>,
+        name: Arc<str>,
+        args: Arc<Vec<Expression>>,
     },
     Constant(MathConstant),
-    Set(Box<Vec<Expression>>),
-    Complex(Box<ComplexData>),
-    Matrix(Box<Matrix>),
-    Relation(Box<RelationData>),
-    Piecewise(Box<PiecewiseData>),
-    Interval(Box<IntervalData>),
-    Calculus(Box<CalculusData>),
-    MethodCall(Box<MethodCallData>),
+    Set(Arc<Vec<Expression>>),
+    Complex(Arc<ComplexData>),
+    Matrix(Arc<Matrix>),
+    Relation(Arc<RelationData>),
+    Piecewise(Arc<PiecewiseData>),
+    Interval(Arc<IntervalData>),
+    Calculus(Arc<CalculusData>),
+    MethodCall(Arc<MethodCallData>),
 }
 
 #[cfg(test)]

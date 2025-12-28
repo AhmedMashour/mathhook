@@ -166,7 +166,7 @@ impl LimitMethods {
                     if let (Expression::Function { name, args }, Expression::Pow(base, exp)) =
                         (func_expr, pow_expr)
                     {
-                        name == "sin"
+                        name.as_ref() == "sin"
                             && args.len() == 1
                             && base.as_ref() == &args[0]
                             && **exp == Expression::integer(-1)
@@ -228,7 +228,7 @@ impl LimitMethods {
                 });
                 let has_undefined = substituted
                     .iter()
-                    .any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+                    .any(|f| matches!(f, Expression::Function { name, .. } if name.as_ref() == "undefined"));
 
                 if has_zero && (has_undefined || has_division_by_zero) {
                     Expression::mul(substituted)
@@ -257,7 +257,7 @@ impl LimitMethods {
         let substituted = Self::substitute_and_evaluate(expr, variable, point);
 
         match &substituted {
-            Expression::Function { name, args: _ } if name == "undefined" => true,
+            Expression::Function { name, args: _ } if name.as_ref() == "undefined" => true,
             Expression::Mul(factors) if factors.len() == 2 => {
                 (factors[0].is_zero() && Self::is_infinite(&factors[1]))
                     || (factors[1].is_zero() && Self::is_infinite(&factors[0]))
@@ -268,9 +268,9 @@ impl LimitMethods {
                         && matches!(&factors[0], Expression::Pow(base, exp)
                             if base.as_ref().is_zero() && matches!(exp.as_ref(), Expression::Number(Number::Integer(n)) if *n < 0)))
                     || (factors[0].is_zero()
-                        && matches!(&factors[1], Expression::Function { name, .. } if name == "undefined"))
+                        && matches!(&factors[1], Expression::Function { name, .. } if name.as_ref() == "undefined"))
                     || (factors[1].is_zero()
-                        && matches!(&factors[0], Expression::Function { name, .. } if name == "undefined"))
+                        && matches!(&factors[0], Expression::Function { name, .. } if name.as_ref() == "undefined"))
             }
             Expression::Pow(base, exp)
                 if base.as_ref().is_zero()

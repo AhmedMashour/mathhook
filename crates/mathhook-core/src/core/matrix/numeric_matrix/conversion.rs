@@ -1,4 +1,5 @@
 use super::NumericMatrix;
+use std::sync::Arc;
 use crate::core::{Expression, Number};
 use crate::matrices::unified::Matrix;
 
@@ -49,7 +50,7 @@ impl NumericMatrix {
             rows_vec.push(row);
         }
 
-        Expression::Matrix(Box::new(Matrix::dense(rows_vec)))
+        Expression::Matrix(Arc::new(Matrix::dense(rows_vec)))
     }
 
     pub fn to_matrix(&self) -> Matrix {
@@ -115,7 +116,7 @@ mod tests {
     #[test]
     fn test_try_from_expression_integer() {
         let matrix = Matrix::from_arrays([[1, 2], [3, 4]]);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         let m = NumericMatrix::try_from_expression(&expr).unwrap();
 
@@ -133,7 +134,7 @@ mod tests {
             vec![Expression::rational(1, 2), Expression::integer(4)],
         ];
         let matrix = Matrix::dense(rows);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         let m = NumericMatrix::try_from_expression(&expr).unwrap();
 
@@ -148,7 +149,7 @@ mod tests {
     fn test_try_from_expression_symbolic_fails() {
         let rows = vec![vec![Expression::symbol("x"), Expression::integer(2)]];
         let matrix = Matrix::dense(rows);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         assert!(NumericMatrix::try_from_expression(&expr).is_none());
     }
@@ -248,7 +249,7 @@ mod tests {
             vec![Expression::float(3.0), Expression::rational(1, 2)],
         ];
         let matrix = Matrix::dense(rows);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         assert!(NumericMatrix::can_convert(&expr));
     }
@@ -257,7 +258,7 @@ mod tests {
     fn test_can_convert_symbolic() {
         let rows = vec![vec![Expression::symbol("x"), Expression::integer(2)]];
         let matrix = Matrix::dense(rows);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         assert!(!NumericMatrix::can_convert(&expr));
     }
@@ -271,7 +272,7 @@ mod tests {
     #[test]
     fn test_identity_matrix() {
         let matrix = Matrix::identity(3);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
 
         let m = NumericMatrix::try_from_expression(&expr).unwrap();
 

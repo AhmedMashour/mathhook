@@ -11,12 +11,13 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::{ToPrimitive, Zero};
 use std::collections::VecDeque;
+use std::sync::Arc;
 
 fn extract_trig_squared(expr: &Expression, func: &str) -> Option<Expression> {
     if let Expression::Pow(base, exp) = expr {
         if let Expression::Number(Number::Integer(2)) = exp.as_ref() {
             if let Expression::Function { name, args } = base.as_ref() {
-                if name == func && args.len() == 1 {
+                if name.as_ref() == func && args.len() == 1 {
                     return Some(args[0].clone());
                 }
             }
@@ -72,7 +73,6 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
         return Expression::integer(0);
     }
 
-    // Iteratively flatten nested Add expressions and distribute Mul over Add
     let mut flattened_terms: Vec<Expression> = Vec::new();
     let mut to_process: VecDeque<&Expression> = terms.iter().collect();
 
@@ -83,7 +83,6 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                     to_process.push_front(nested_term);
                 }
             }
-            // c * (a + b) → c*a + c*b (distribute numeric constants over addition)
             Expression::Mul(factors) if factors.len() == 2 => {
                 if let (Expression::Number(coeff), Expression::Add(add_terms)) =
                     (&factors[0], &factors[1])
@@ -113,20 +112,14 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
         }
     }
 
-    // Use flattened terms for the rest of the function
     let terms = &flattened_terms;
 
-    // Matrix fast-path: try direct matrix addition for 2-term case
-    // Note: During simplification, we only apply the fast-path if it succeeds.
-    // If dimensions are incompatible (Some(Err(_))), we fall through to symbolic form.
-    // Domain errors will be caught during evaluation, not simplification.
     if terms.len() == 2 {
         if let Some(Ok(result)) = super::matrix_ops::try_matrix_add(&terms[0], &terms[1]) {
             return result;
         }
     }
 
-    // Ultra-fast path for numeric addition
     let mut int_sum = 0i64;
     let mut float_sum = 0.0;
     let mut has_float = false;
@@ -136,15 +129,10 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
     let mut numeric_result = None;
 
     for term in terms {
-        // Simplify the term, but avoid recursive calls for Add expressions (already flattened)
         let simplified_term = match term {
-            Expression::Add(_) => {
-                // Add expressions should already be flattened, so this shouldn't happen
-                // But if it does, just use the term as-is to avoid recursion
-                term.clone()
-            }
+            Expression::Add(_) => term.clone(),
             Expression::Mul(factors) => simplify_multiplication(factors),
-            Expression::Pow(base, exp) => simplify_power(base, exp),
+            Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
             _ => term.simplify(),
         };
         match simplified_term {
@@ -171,24 +159,18 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
         }
     }
 
-    // Determine numeric result
     if let Some(rational) = rational_sum {
-        // Combine rational with integer and float sums
         let mut final_rational = rational;
         if int_sum != 0 {
             final_rational += BigRational::from(BigInt::from(int_sum));
         }
         if has_float {
-            // Convert to float if we have float terms
             let float_val = final_rational.to_f64().unwrap_or(0.0) + float_sum;
             if float_val.abs() >= EPSILON {
                 numeric_result = Some(Expression::Number(Number::float(float_val)));
             }
-        } else {
-            // Keep as rational if it's not zero
-            if !final_rational.is_zero() {
-                numeric_result = Some(Expression::Number(Number::rational(final_rational)));
-            }
+        } else if !final_rational.is_zero() {
+            numeric_result = Some(Expression::Number(Number::rational(final_rational)));
         }
     } else if has_float {
         let total = int_sum as f64 + float_sum;
@@ -203,25 +185,20 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
         (None, 0) => Expression::integer(0),
         (Some(num), 0) => num.clone(),
         (None, 1) => {
-            // Return the single remaining term (already simplified)
             first_non_numeric.expect("BUG: non_numeric_count is 1 but first_non_numeric is None")
         }
         (Some(num), 1) => {
-            // Use the already simplified non-numeric term
             let simplified_non_numeric = first_non_numeric
                 .expect("BUG: non_numeric_count is 1 but first_non_numeric is None");
-            // If numeric part is zero, just return the non-numeric part
             match num {
                 Expression::Number(Number::Integer(0)) => simplified_non_numeric,
                 Expression::Number(Number::Float(f)) if f.abs() < EPSILON => simplified_non_numeric,
-                _ => Expression::Add(Box::new(vec![num.clone(), simplified_non_numeric])),
+                _ => Expression::Add(Arc::new(vec![num.clone(), simplified_non_numeric])),
             }
         }
         _ => {
-            // Multiple non-numeric terms - collect like terms and build result efficiently
             let mut result_terms = Vec::with_capacity(non_numeric_count + 1);
             if let Some(num) = numeric_result {
-                // Only include numeric result if it's not zero
                 match num {
                     Expression::Number(Number::Integer(0)) => {}
                     Expression::Number(Number::Float(0.0)) => {}
@@ -229,30 +206,25 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                 }
             }
 
-            // Collect like terms using an order-preserving approach
-            // For noncommutative terms, only combine if structurally identical
             let mut like_terms: Vec<(String, Expression, Vec<Expression>)> = Vec::new();
 
             for term in terms {
                 if !matches!(term, Expression::Number(_)) {
-                    // Each non-numeric term - use controlled simplification to avoid recursion
                     let simplified_term = match term {
-                        Expression::Add(_) => term.clone(), // Already flattened
+                        Expression::Add(_) => term.clone(),
                         Expression::Mul(factors) => simplify_multiplication(factors),
-                        Expression::Pow(base, exp) => simplify_power(base, exp),
+                        Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
                         _ => term.simplify(),
                     };
                     match simplified_term {
                         Expression::Number(Number::Integer(0)) => {}
                         Expression::Number(Number::Float(0.0)) => {}
                         _ => {
-                            // Extract coefficient and base term
                             let (coeff, base) =
                                 extract_arithmetic_coefficient_and_base(&simplified_term);
 
                             let base_key = format!("{:?}", base);
 
-                            // Find existing entry or create new one
                             if let Some(entry) =
                                 like_terms.iter_mut().find(|(key, _, _)| key == &base_key)
                             {
@@ -265,38 +237,32 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                 }
             }
 
-            // Combine like terms
             for (_, base, coeffs) in like_terms {
                 if coeffs.len() == 1 {
-                    // Single term, reconstruct if coefficient is not 1
                     let coeff = &coeffs[0];
                     match coeff {
                         Expression::Number(Number::Integer(1)) => {
-                            // Just add the base term (coefficient is 1)
                             result_terms.push(base);
                         }
                         _ => {
-                            result_terms.push(Expression::Mul(Box::new(vec![coeff.clone(), base])));
+                            result_terms.push(Expression::Mul(Arc::new(vec![coeff.clone(), base])));
                         }
                     }
                 } else {
-                    // Multiple coefficients for the same base - sum them
                     let coeff_sum = simplify_addition(&coeffs);
                     match coeff_sum {
                         Expression::Number(Number::Integer(0)) => {}
                         Expression::Number(Number::Float(0.0)) => {}
                         Expression::Number(Number::Integer(1)) => {
-                            // Coefficient sum is 1, just add the base
                             result_terms.push(base);
                         }
                         _ => {
-                            result_terms.push(Expression::Mul(Box::new(vec![coeff_sum, base])));
+                            result_terms.push(Expression::Mul(Arc::new(vec![coeff_sum, base])));
                         }
                     }
                 }
             }
 
-            // sin²(x) + cos²(x) = 1
             if let Some(pythagorean_terms) = check_pythagorean(&result_terms) {
                 return simplify_addition(&pythagorean_terms);
             }
@@ -308,18 +274,14 @@ pub fn simplify_addition(terms: &[Expression]) -> Expression {
                     .next()
                     .expect("BUG: result_terms has length 1 but iterator is empty"),
                 _ => {
-                    // Check commutativity BEFORE sorting
-                    // Only sort if all terms are commutative (safe to reorder)
                     let commutativity =
                         Commutativity::combine(result_terms.iter().map(|t| t.commutativity()));
 
                     if commutativity.can_sort() {
-                        // Safe to sort - all terms commutative
                         result_terms.sort_by(expression_order);
                     }
-                    // Else: preserve order for noncommutative terms
 
-                    Expression::Add(Box::new(result_terms))
+                    Expression::Add(Arc::new(result_terms))
                 }
             }
         }
@@ -334,15 +296,12 @@ mod tests {
 
     #[test]
     fn test_addition_simplification() {
-        // Simple integer addition
         let expr = simplify_addition(&[Expression::integer(2), Expression::integer(3)]);
         assert_eq!(expr, Expression::integer(5));
 
-        // Addition with zero
         let expr = simplify_addition(&[Expression::integer(5), Expression::integer(0)]);
         assert_eq!(expr, Expression::integer(5));
 
-        // Mixed numeric and symbolic
         let x = symbol!(x);
         let expr = simplify_addition(&[Expression::integer(2), Expression::symbol(x.clone())]);
         assert_eq!(
@@ -356,7 +315,6 @@ mod tests {
         let x = symbol!(x);
         let y = symbol!(y);
 
-        // x*y + y*x should combine to 2*x*y (commutative)
         let xy = Expression::mul(vec![
             Expression::symbol(x.clone()),
             Expression::symbol(y.clone()),
@@ -383,7 +341,6 @@ mod tests {
         let mat_a = symbol!(A; matrix);
         let mat_b = symbol!(B; matrix);
 
-        // A*B + B*A should NOT combine (noncommutative)
         let ab = Expression::mul(vec![
             Expression::symbol(mat_a.clone()),
             Expression::symbol(mat_b.clone()),
@@ -409,7 +366,6 @@ mod tests {
         let mat_a = symbol!(A; matrix);
         let mat_b = symbol!(B; matrix);
 
-        // A*B + A*B should combine to 2*A*B (same term)
         let ab1 = Expression::mul(vec![
             Expression::symbol(mat_a.clone()),
             Expression::symbol(mat_b.clone()),
@@ -436,7 +392,6 @@ mod tests {
         let operator_p = symbol!(P; operator);
         let operator_q = symbol!(Q; operator);
 
-        // P*Q + Q*P should NOT combine (noncommutative)
         let pq = Expression::mul(vec![
             Expression::symbol(operator_p.clone()),
             Expression::symbol(operator_q.clone()),
@@ -462,7 +417,6 @@ mod tests {
         let i = symbol!(i; quaternion);
         let j = symbol!(j; quaternion);
 
-        // i*j + j*i should NOT combine (noncommutative)
         let ij = Expression::mul(vec![
             Expression::symbol(i.clone()),
             Expression::symbol(j.clone()),
@@ -591,9 +545,6 @@ mod tests {
         let expr = Expression::add(vec![a.clone(), b.clone()]);
         let simplified = expr.simplify();
 
-        // During simplification, incompatible matrices are NOT simplified
-        // They remain in symbolic Add form
-        // The error will be caught during evaluation, not simplification
         match simplified {
             Expression::Add(terms) => {
                 assert_eq!(terms.len(), 2);
@@ -692,7 +643,6 @@ mod tests {
     fn test_distribute_numeric_over_addition() {
         let x = symbol!(x);
 
-        // -1 * (x + 1) should distribute to -x - 1
         let expr = Expression::add(vec![Expression::mul(vec![
             Expression::integer(-1),
             Expression::add(vec![Expression::symbol(x.clone()), Expression::integer(1)]),
@@ -700,11 +650,9 @@ mod tests {
 
         let simplified = expr.simplify();
 
-        // Should be Add([Mul([-1, x]), -1]) which simplifies to Add([-1, Mul([-1, x])])
         match &simplified {
             Expression::Add(terms) => {
                 assert_eq!(terms.len(), 2);
-                // Check that we have both -1 and -1*x in some form
                 let has_neg_one = terms
                     .iter()
                     .any(|t| matches!(t, Expression::Number(Number::Integer(-1))));

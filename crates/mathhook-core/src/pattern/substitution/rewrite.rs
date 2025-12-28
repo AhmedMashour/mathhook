@@ -2,6 +2,7 @@
 
 use crate::core::Expression;
 use crate::simplify::Simplify;
+use std::sync::Arc;
 
 /// Implementation for multiple simultaneous substitutions
 pub(super) fn subs_multiple_impl(
@@ -26,7 +27,7 @@ pub(super) fn subs_multiple_impl(
                 .iter()
                 .map(|t| subs_multiple_impl(t, substitutions))
                 .collect();
-            Expression::Add(Box::new(new_terms))
+            Expression::Add(Arc::new(new_terms))
         }
 
         Expression::Mul(factors) => {
@@ -34,13 +35,13 @@ pub(super) fn subs_multiple_impl(
                 .iter()
                 .map(|f| subs_multiple_impl(f, substitutions))
                 .collect();
-            Expression::Mul(Box::new(new_factors))
+            Expression::Mul(Arc::new(new_factors))
         }
 
         Expression::Pow(base, exp) => {
             let new_base = subs_multiple_impl(base, substitutions);
             let new_exp = subs_multiple_impl(exp, substitutions);
-            Expression::Pow(Box::new(new_base), Box::new(new_exp))
+            Expression::Pow(Arc::new(new_base), Arc::new(new_exp))
         }
 
         Expression::Function { name, args } => {
@@ -50,7 +51,7 @@ pub(super) fn subs_multiple_impl(
                 .collect();
             Expression::Function {
                 name: name.clone(),
-                args: Box::new(new_args),
+                args: Arc::new(new_args),
             }
         }
 
@@ -59,13 +60,13 @@ pub(super) fn subs_multiple_impl(
                 .iter()
                 .map(|e| subs_multiple_impl(e, substitutions))
                 .collect();
-            Expression::Set(Box::new(new_elements))
+            Expression::Set(Arc::new(new_elements))
         }
 
         Expression::Complex(data) => {
             let new_real = subs_multiple_impl(&data.real, substitutions);
             let new_imag = subs_multiple_impl(&data.imag, substitutions);
-            Expression::Complex(Box::new(crate::core::expression::ComplexData {
+            Expression::Complex(Arc::new(crate::core::expression::ComplexData {
                 real: new_real,
                 imag: new_imag,
             }))
@@ -84,13 +85,13 @@ pub(super) fn subs_multiple_impl(
                 new_data.push(row);
             }
 
-            Expression::Matrix(Box::new(crate::matrices::unified::Matrix::dense(new_data)))
+            Expression::Matrix(Arc::new(crate::matrices::unified::Matrix::dense(new_data)))
         }
 
         Expression::Relation(data) => {
             let new_left = subs_multiple_impl(&data.left, substitutions);
             let new_right = subs_multiple_impl(&data.right, substitutions);
-            Expression::Relation(Box::new(crate::core::expression::RelationData {
+            Expression::Relation(Arc::new(crate::core::expression::RelationData {
                 left: new_left,
                 right: new_right,
                 relation_type: data.relation_type,
@@ -114,7 +115,7 @@ pub(super) fn subs_multiple_impl(
                 .as_ref()
                 .map(|d| subs_multiple_impl(d, substitutions));
 
-            Expression::Piecewise(Box::new(crate::core::expression::PiecewiseData {
+            Expression::Piecewise(Arc::new(crate::core::expression::PiecewiseData {
                 pieces: new_pieces,
                 default: new_default,
             }))
@@ -123,7 +124,7 @@ pub(super) fn subs_multiple_impl(
         Expression::Interval(data) => {
             let new_start = subs_multiple_impl(&data.start, substitutions);
             let new_end = subs_multiple_impl(&data.end, substitutions);
-            Expression::Interval(Box::new(crate::core::expression::IntervalData {
+            Expression::Interval(Arc::new(crate::core::expression::IntervalData {
                 start: new_start,
                 end: new_end,
                 start_inclusive: data.start_inclusive,
@@ -197,7 +198,7 @@ pub(super) fn subs_multiple_impl(
                 },
             };
 
-            Expression::Calculus(Box::new(new_data))
+            Expression::Calculus(Arc::new(new_data))
         }
 
         Expression::MethodCall(data) => {
@@ -208,7 +209,7 @@ pub(super) fn subs_multiple_impl(
                 .map(|a| subs_multiple_impl(a, substitutions))
                 .collect();
 
-            Expression::MethodCall(Box::new(crate::core::expression::MethodCallData {
+            Expression::MethodCall(Arc::new(crate::core::expression::MethodCallData {
                 object: new_object,
                 method_name: data.method_name.clone(),
                 args: new_args,

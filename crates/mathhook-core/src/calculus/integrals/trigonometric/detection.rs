@@ -74,7 +74,7 @@ fn detect_power_pattern(base: &Expression, exp: &Expression, var: &Symbol) -> Op
         (base, exp)
     {
         if args.len() == 1 && is_simple_var(&args[0], var) {
-            return match name.as_str() {
+            return match name.as_ref() {
                 "sin" => Some(TrigPattern::SinCosPower {
                     sin_power: *n,
                     cos_power: 0,
@@ -295,7 +295,7 @@ pub fn extract_trig_function_with_coeff(expr: &Expression, var: &Symbol) -> Opti
     match expr {
         Expression::Function { name, args } if args.len() == 1 => {
             if is_simple_var(&args[0], var) {
-                return Some((name.clone(), 1));
+                return Some((name.to_string(), 1));
             }
 
             if let Expression::Mul(factors) = &args[0] {
@@ -304,14 +304,14 @@ pub fn extract_trig_function_with_coeff(expr: &Expression, var: &Symbol) -> Opti
                         (&factors[0], &factors[1])
                     {
                         if s == var {
-                            return Some((name.clone(), *m));
+                            return Some((name.to_string(), *m));
                         }
                     }
                     if let (Expression::Symbol(s), Expression::Number(Number::Integer(m))) =
                         (&factors[0], &factors[1])
                     {
                         if s == var {
-                            return Some((name.clone(), *m));
+                            return Some((name.to_string(), *m));
                         }
                     }
                 }

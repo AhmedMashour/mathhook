@@ -186,7 +186,7 @@ mod tests {
         let pattern = Pattern::wildcard("x");
         match pattern {
             Pattern::Wildcard { name, constraints } => {
-                assert_eq!(name, "x");
+                assert_eq!(name.as_str(), "x");
                 assert!(constraints.is_none());
             }
             _ => panic!("Expected Wildcard pattern"),
@@ -200,7 +200,7 @@ mod tests {
 
         match pattern {
             Pattern::Wildcard { name, constraints } => {
-                assert_eq!(name, "a");
+                assert_eq!(name.as_str(), "a");
                 assert!(constraints.is_some());
             }
             _ => panic!("Expected Wildcard pattern"),
@@ -217,7 +217,7 @@ mod tests {
 
         match pattern {
             Pattern::Wildcard { name, constraints } => {
-                assert_eq!(name, "n");
+                assert_eq!(name.as_str(), "n");
                 assert!(constraints.is_some());
             }
             _ => panic!("Expected Wildcard pattern"),

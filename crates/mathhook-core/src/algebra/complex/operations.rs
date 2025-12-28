@@ -247,12 +247,12 @@ impl ComplexOperations for Expression {
                 match numerator {
                     Expression::Complex(num_data) => Expression::complex(
                         Expression::mul(vec![
-                            num_data.real,
+                            num_data.real.clone(),
                             Expression::pow(denominator.clone(), expr!(-1)),
                         ])
                         .simplify(),
                         Expression::mul(vec![
-                            num_data.imag,
+                            num_data.imag.clone(),
                             Expression::pow(denominator, expr!(-1)),
                         ])
                         .simplify(),
@@ -289,12 +289,12 @@ impl ComplexOperations for Expression {
                 match numerator {
                     Expression::Complex(num_data) => Expression::complex(
                         Expression::mul(vec![
-                            num_data.real,
+                            num_data.real.clone(),
                             Expression::pow(denominator.clone(), expr!(-1)),
                         ])
                         .simplify(),
                         Expression::mul(vec![
-                            num_data.imag,
+                            num_data.imag.clone(),
                             Expression::pow(denominator, expr!(-1)),
                         ])
                         .simplify(),

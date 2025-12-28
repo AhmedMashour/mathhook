@@ -223,6 +223,7 @@ MathHook is built as a multi-crate workspace:
 
 - **mathhook-core**: Core mathematical engine (Rust)
 - **mathhook-macros**: Useful macros for code generation (Rust)
+- **mathhook-binding-codegen**: Binding code generator, reads code from mathhook-core and create its binding with releavent mathhook-python / mathhook-node crates (Rust)
 - **mathhook**: High-level API with ergonomic macros (Rust)
 - **mathhook-python**: Python bindings via PyO3
 - **mathhook-node**: Node.js bindings via NAPI-RS
@@ -299,6 +300,22 @@ cd crates/mathhook-node
 npm install
 npm run build
 ```
+
+## Docker Build System
+
+MathHook includes a Docker-based build system for cross-platform compilation.
+
+```bash
+make setup            # First-time setup
+make build-all        # Build all platforms (Python wheels, Node addons)
+make test             # Run tests in Docker
+make shell            # Debug shell in container
+```
+
+**Targets built:**
+- Linux x86_64/ARM64 (glibc, musl)
+- macOS x86_64/ARM64 (via Zig cross-compilation)
+- Windows x86_64 (via xwin MSVC SDK)
 
 ## Contributing
 

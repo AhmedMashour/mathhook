@@ -117,7 +117,7 @@ fn test_gradient_magnitude() {
     ]);
     let grad_mag = VectorFieldOperations::gradient_magnitude(&func, vec![x, y]);
     match grad_mag {
-        Expression::Function { name, .. } => assert_eq!(name, "sqrt"),
+        Expression::Function { name, .. } => assert_eq!(name.as_ref(), "sqrt"),
         _ => panic!("Expected sqrt function"),
     }
 }
@@ -226,7 +226,7 @@ fn test_circulation() {
     ];
     let circulation = FluidDynamicsOperations::circulation(&velocity_field, &[x, y]);
     match circulation {
-        Expression::Function { name, .. } => assert_eq!(name, "line_integral"),
+        Expression::Function { name, .. } => assert_eq!(name.as_ref(), "line_integral"),
         _ => panic!("Expected line_integral function"),
     }
 }

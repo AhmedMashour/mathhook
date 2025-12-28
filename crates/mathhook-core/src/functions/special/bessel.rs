@@ -420,7 +420,7 @@ mod tests {
     fn test_bessel_symbolic_fallback() {
         match bessel_j(0, &Expression::symbol(crate::core::Symbol::scalar("x"))) {
             Expression::Function { name, args } => {
-                assert_eq!(name, "bessel_j");
+                assert_eq!(name.as_ref(), "bessel_j");
                 assert_eq!(args.len(), 2);
             }
             _ => panic!("Expected symbolic function"),

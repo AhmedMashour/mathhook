@@ -16,7 +16,7 @@ mkdir -p benchmark-results artifacts
 
 # Set environment variables (like GitHub)
 export GITHUB_SHA=$(git rev-parse HEAD 2>/dev/null || echo "local")
-export GITHUB_REPOSITORY="mathhook/mathhook"
+export GITHUB_REPOSITORY="AhmedMashour/mathhook-core"
 
 echo ""
 echo "[1/5] Checking Rust Criterion reports..."

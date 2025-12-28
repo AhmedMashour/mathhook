@@ -345,11 +345,11 @@ impl Summation for Expression {
             ) {
                 let one_minus_r = Expression::add(vec![
                     expr!(1),
-                    Expression::mul(vec![expr!(-1), *base.clone()]),
+                    Expression::mul(vec![expr!(-1), base.as_ref().clone()]),
                 ]);
 
                 return Expression::mul(vec![
-                    Expression::pow(*base.clone(), start.clone()),
+                    Expression::pow(base.as_ref().clone(), start.clone()),
                     Expression::pow(one_minus_r, expr!(-1)),
                 ])
                 .simplify();

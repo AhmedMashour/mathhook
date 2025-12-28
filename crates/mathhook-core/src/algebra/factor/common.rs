@@ -98,7 +98,7 @@ impl Expression {
             (Expression::Symbol(s1), Expression::Symbol(s2)) if s1 == s2 => Expression::integer(1),
 
             (Expression::Mul(factors), _) => {
-                let mut remaining_factors = factors.clone();
+                let mut remaining_factors = factors.as_ref().clone();
                 if let Some(pos) = remaining_factors.iter().position(|f| f == factor) {
                     remaining_factors.remove(pos);
                     if remaining_factors.is_empty() {
@@ -106,7 +106,7 @@ impl Expression {
                     } else if remaining_factors.len() == 1 {
                         remaining_factors[0].clone()
                     } else {
-                        Expression::mul(remaining_factors.as_ref().clone())
+                        Expression::mul(remaining_factors)
                     }
                 } else {
                     expr.clone()

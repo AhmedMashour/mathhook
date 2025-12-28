@@ -16,6 +16,7 @@ use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::{One, ToPrimitive, Zero};
+use std::sync::Arc;
 
 /// Simplify multiplication with minimal overhead and flattening
 pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
@@ -40,7 +41,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             _ => {
                 let simplified = match factor {
                     Expression::Add(terms) => simplify_addition(terms),
-                    Expression::Pow(base, exp) => simplify_power(base, exp),
+                    Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
                     _ => factor.simplify(),
                 };
                 flattened_factors.push(simplified);
@@ -55,14 +56,10 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
             return result;
         }
 
-        // Matrix fast-path: try direct matrix multiplication
-        // Note: During simplification, we only apply if it succeeds.
-        // Dimension errors will be caught during evaluation, not simplification.
         if let Some(Ok(result)) = super::matrix_ops::try_matrix_multiply(&factors[0], &factors[1]) {
             return result;
         }
 
-        // Handle Add simplification special cases
         match (&factors[0], &factors[1]) {
             (a, Expression::Add(terms)) => {
                 let simplified_add = simplify_addition(terms);
@@ -108,7 +105,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
 
     let has_undefined = factors
         .iter()
-        .any(|f| matches!(f, Expression::Function { name, .. } if name == "undefined"));
+        .any(|f| matches!(f, Expression::Function { name, .. } if name.as_ref() == "undefined"));
 
     for factor in factors {
         match factor {
@@ -187,7 +184,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 .expect("BUG: non_numeric_count is 1 but first_non_numeric is None");
             match factor {
                 Expression::Add(terms) => simplify_addition(terms),
-                Expression::Pow(base, exp) => simplify_power(base, exp),
+                Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
                 _ => factor.simplify(),
             }
         }
@@ -196,7 +193,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 .expect("BUG: non_numeric_count is 1 but first_non_numeric is None");
             let simplified_non_numeric = match factor {
                 Expression::Add(terms) => simplify_addition(terms),
-                Expression::Pow(base, exp) => simplify_power(base, exp),
+                Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
                 _ => factor.simplify(),
             };
             match num {
@@ -204,7 +201,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 Expression::Number(Number::Float(f)) if (f - 1.0).abs() < EPSILON => {
                     simplified_non_numeric
                 }
-                _ => Expression::Mul(Box::new(vec![num.clone(), simplified_non_numeric])),
+                _ => Expression::Mul(Arc::new(vec![num.clone(), simplified_non_numeric])),
             }
         }
         _ => {
@@ -220,7 +217,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                 if !matches!(factor, Expression::Number(_)) {
                     let simplified_factor = match factor {
                         Expression::Add(terms) => simplify_addition(terms),
-                        Expression::Pow(base, exp) => simplify_power(base, exp),
+                        Expression::Pow(base, exp) => simplify_power(base.as_ref(), exp.as_ref()),
                         _ => factor.simplify(),
                     };
                     result_factors.push(simplified_factor);
@@ -244,7 +241,7 @@ pub fn simplify_multiplication(factors: &[Expression]) -> Expression {
                     match result_factors.len() {
                         0 => Expression::integer(1),
                         1 => result_factors.into_iter().next().unwrap(),
-                        _ => Expression::Mul(Box::new(result_factors)),
+                        _ => Expression::Mul(Arc::new(result_factors)),
                     }
                 }
             }

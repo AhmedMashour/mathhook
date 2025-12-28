@@ -173,19 +173,19 @@ impl ComplexAnalysis for Expression {
         // Check for common essential singularity patterns
         match self {
             // exp(1/(z-point)) at z=point is an essential singularity
-            Expression::Function { name, args } if name == "exp" && args.len() == 1 => {
+            Expression::Function { name, args } if name.as_ref() == "exp" && args.len() == 1 => {
                 has_reciprocal_of_shifted_variable(&args[0], variable, point)
             }
             // sin(1/(z-point)) at z=point is an essential singularity
-            Expression::Function { name, args } if name == "sin" && args.len() == 1 => {
+            Expression::Function { name, args } if name.as_ref() == "sin" && args.len() == 1 => {
                 has_reciprocal_of_shifted_variable(&args[0], variable, point)
             }
             // cos(1/(z-point)) at z=point is an essential singularity
-            Expression::Function { name, args } if name == "cos" && args.len() == 1 => {
+            Expression::Function { name, args } if name.as_ref() == "cos" && args.len() == 1 => {
                 has_reciprocal_of_shifted_variable(&args[0], variable, point)
             }
             // log(z-point) at z=point is a logarithmic singularity (branch point)
-            Expression::Function { name, args } if name == "log" && args.len() == 1 => {
+            Expression::Function { name, args } if name.as_ref() == "log" && args.len() == 1 => {
                 is_shifted_variable(&args[0], variable, point)
             }
             _ => false,

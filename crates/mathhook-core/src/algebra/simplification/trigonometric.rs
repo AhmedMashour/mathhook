@@ -134,7 +134,7 @@ mod tests {
         let result = strategy.simplify(&[x.clone().into()]);
 
         if let Expression::Function { name, args } = result {
-            assert_eq!(name, "sin");
+            assert_eq!(name.as_ref(), "sin");
             assert_eq!(args.len(), 1);
             assert_eq!(args[0], x.into());
         } else {
@@ -156,7 +156,7 @@ mod tests {
         let result = strategy.simplify(&[x.clone().into()]);
 
         if let Expression::Function { name, args } = result {
-            assert_eq!(name, "cos");
+            assert_eq!(name.as_ref(), "cos");
             assert_eq!(args.len(), 1);
             assert_eq!(args[0], x.into());
         } else {
@@ -178,7 +178,7 @@ mod tests {
         let result = strategy.simplify(&[x.clone().into()]);
 
         if let Expression::Function { name, args } = result {
-            assert_eq!(name, "tan");
+            assert_eq!(name.as_ref(), "tan");
             assert_eq!(args.len(), 1);
             assert_eq!(args[0], x.into());
         } else {
@@ -193,7 +193,7 @@ mod tests {
         let result = strategy.simplify(&[x.clone().into()]);
 
         if let Expression::Function { name, args } = result {
-            assert_eq!(name, "sinh");
+            assert_eq!(name.as_ref(), "sinh");
             assert_eq!(args.len(), 1);
             assert_eq!(args[0], x.into());
         } else {

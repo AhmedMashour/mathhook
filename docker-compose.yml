@@ -1,0 +1,236 @@
+# MathHook Docker Build System
+# Cross-platform build and publish pipeline
+#
+# Usage:
+#   make build-all      # Build all platforms
+#   make publish-all    # Build and publish to all registries
+#   make shell          # Debug shell in builder container
+#
+# The builder image is published to ghcr.io/ahmedmashour/mathhook-core/builder:latest
+# Set BUILD_LOCAL=1 to build the image locally instead of pulling
+
+services:
+  # Main builder service - all cross-compilation happens here
+  builder:
+    image: ${MATHHOOK_BUILDER_IMAGE:-ghcr.io/ahmedmashour/mathhook-core/builder:latest}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.builder
+    volumes:
+      # Source code (read-write for build artifacts)
+      - .:/build
+      # Persistent caches (survive container restarts)
+      - cargo-registry:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+      - target-cache:/build/target
+    working_dir: /build
+    environment:
+      - CARGO_HOME=/root/.cargo
+      - CARGO_INCREMENTAL=1
+      # Faster linking
+      - RUSTFLAGS=-C link-arg=-fuse-ld=lld
+    # Keep container running for interactive use
+    stdin_open: true
+    tty: true
+
+  # Python wheel builds (all platforms)
+  # Uses abi3 (stable ABI) - one wheel per platform works for Python 3.8+
+  build-python:
+    extends: builder
+    command: >
+      bash -c '
+        set -e
+        cd /build/crates/mathhook-python
+        echo "=== Building Python wheels (abi3) for all platforms ==="
+
+        # Generate Python type stubs (.pyi files)
+        echo ">>> Generating type stubs..."
+        cargo build --release --bin stub_gen -p mathhook-python
+        /build/target/release/stub_gen || echo "Stub generation skipped"
+        ls -la *.pyi 2>/dev/null || echo "No .pyi files generated"
+
+        # Linux x86_64 (manylinux)
+        echo ">>> Linux x86_64..."
+        maturin build --release --target x86_64-unknown-linux-gnu \
+          --compatibility manylinux2014
+
+        # Linux ARM64 (via zig)
+        echo ">>> Linux ARM64..."
+        maturin build --release --target aarch64-unknown-linux-gnu --zig \
+          --compatibility manylinux2014
+
+        # macOS x86_64 (via zig)
+        echo ">>> macOS x86_64..."
+        maturin build --release --target x86_64-apple-darwin --zig
+
+        # macOS ARM64 (via zig)
+        echo ">>> macOS ARM64..."
+        maturin build --release --target aarch64-apple-darwin --zig
+
+        # Windows x86_64 (via xwin/clang-cl)
+        echo ">>> Windows x86_64..."
+        maturin build --release --target x86_64-pc-windows-msvc
+
+        echo "=== Python wheels complete ==="
+        ls -la /build/target/wheels/
+      '
+
+  # Node.js native addon builds (all platforms)
+  build-node:
+    extends: builder
+    command: >
+      bash -c '
+        set -e
+        cd /build/crates/mathhook-node
+        npm install
+        echo "=== Building Node.js addons for all platforms ==="
+
+        # Linux x86_64 (GNU)
+        echo ">>> Linux x86_64 GNU..."
+        npx napi build --platform --release --target x86_64-unknown-linux-gnu
+
+        # Linux x86_64 (musl)
+        echo ">>> Linux x86_64 musl..."
+        npx napi build --platform --release --target x86_64-unknown-linux-musl
+
+        # Linux ARM64 (GNU)
+        echo ">>> Linux ARM64 GNU..."
+        npx napi build --platform --release --target aarch64-unknown-linux-gnu --use-napi-cross
+
+        # macOS x86_64 (via zig)
+        echo ">>> macOS x86_64..."
+        npx napi build --platform --release --target x86_64-apple-darwin --zig
+
+        # macOS ARM64 (via zig)
+        echo ">>> macOS ARM64..."
+        npx napi build --platform --release --target aarch64-apple-darwin --zig
+
+        # Windows x86_64
+        echo ">>> Windows x86_64..."
+        npx napi build --platform --release --target x86_64-pc-windows-msvc
+
+        echo "=== Node.js addons complete ==="
+        ls -la *.node 2>/dev/null || echo "Binaries in platform dirs"
+        ls -la index.js index.d.ts 2>/dev/null || echo "TypeScript bindings generated"
+      '
+
+  # Rust crate builds (build only - use 'make test' for testing)
+  build-rust:
+    extends: builder
+    command: >
+      bash -c '
+        set -e
+        echo "=== Building Rust crates ==="
+        cargo build --release --workspace
+        cargo clippy --release --workspace -- -D warnings
+        echo "=== Rust build complete ==="
+      '
+
+  # Publishing service - requires tokens via environment
+  publish:
+    extends: builder
+    environment:
+      - CARGO_REGISTRY_TOKEN
+      - PYPI_API_TOKEN
+      - NPM_TOKEN
+    profiles:
+      - publish
+    command: >
+      bash -c '
+        set -e
+        echo "=== Publishing to all registries ==="
+
+        # Validate tokens are set
+        if [ -z "$CARGO_REGISTRY_TOKEN" ]; then
+          echo "ERROR: CARGO_REGISTRY_TOKEN not set"
+          exit 1
+        fi
+        if [ -z "$PYPI_API_TOKEN" ]; then
+          echo "ERROR: PYPI_API_TOKEN not set"
+          exit 1
+        fi
+        if [ -z "$NPM_TOKEN" ]; then
+          echo "ERROR: NPM_TOKEN not set"
+          exit 1
+        fi
+
+        # === Rust crates (crates.io) ===
+        echo ">>> Publishing to crates.io..."
+
+        publish_crate() {
+          local crate=$1
+          local output
+          cd /build/crates/$crate
+          # Capture output once to avoid running cargo publish twice
+          if output=$(cargo publish --token "$CARGO_REGISTRY_TOKEN" --allow-dirty 2>&1); then
+            echo "✓ $crate published"
+          elif echo "$output" | grep -q "already exists"; then
+            echo "○ $crate already published (skipping)"
+          else
+            echo "✗ $crate failed to publish"
+            echo "$output"
+            return 1
+          fi
+        }
+
+        publish_crate mathhook-macros
+        echo "Waiting 30s for crates.io index..."
+        sleep 30
+
+        publish_crate mathhook-core
+        echo "Waiting 30s for crates.io index..."
+        sleep 30
+
+        publish_crate mathhook
+
+        # === Python wheels (PyPI) ===
+        echo ">>> Publishing to PyPI..."
+        MATURIN_PYPI_TOKEN="$PYPI_API_TOKEN" maturin upload \
+          --skip-existing /build/target/wheels/*.whl
+
+        # === Node.js packages (npm) ===
+        echo ">>> Publishing to npm..."
+        cd /build/crates/mathhook-node
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
+
+        # Create and publish platform packages
+        npx napi create-npm-dirs --npm-dir npm || true
+        for dir in npm/*/; do
+          if [ -d "$dir" ]; then
+            echo "Publishing $(basename $dir)..."
+            (cd "$dir" && cp ../../.npmrc . && npm publish --access public 2>/dev/null || true)
+          fi
+        done
+
+        # Wait for npm to index platform packages
+        echo "Waiting 15s for npm index..."
+        sleep 15
+
+        # Publish main package
+        npm publish --access public || echo "main package may exist"
+        rm -f .npmrc npm/*/.npmrc
+
+        echo "=== Publishing complete ==="
+      '
+
+  # Test service - validates built artifacts
+  test:
+    extends: builder
+    command: >
+      bash -c '
+        set -e
+        echo "=== Running tests ==="
+        cargo fmt --all -- --check
+        cargo clippy --all-targets --all-features -- -D warnings
+        cargo test --all-features --workspace
+        echo "=== Tests complete ==="
+      '
+
+volumes:
+  # Persistent caches for faster rebuilds
+  cargo-registry:
+    name: mathhook-cargo-registry
+  cargo-git:
+    name: mathhook-cargo-git
+  target-cache:
+    name: mathhook-target-cache

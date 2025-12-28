@@ -352,7 +352,7 @@ mod tests {
 
         match result {
             Expression::Function { name, args } => {
-                assert_eq!(name, "zeta");
+                assert_eq!(name.as_ref(), "zeta");
                 assert_eq!(args.len(), 1);
             }
             _ => panic!("ζ(1) should remain symbolic (pole)"),
@@ -387,7 +387,7 @@ mod tests {
 
         match result {
             Expression::Function { name, args } => {
-                assert_eq!(name, "zeta");
+                assert_eq!(name.as_ref(), "zeta");
                 assert_eq!(args.len(), 1);
             }
             _ => panic!("Expected symbolic function for variable input"),

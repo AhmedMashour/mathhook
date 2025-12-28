@@ -1,6 +1,7 @@
 //! Specialized expression constructors for complex, matrix, set, and advanced types
 
 use crate::core::expression::{ComplexData, Expression, IntervalData, PiecewiseData};
+use std::sync::Arc;
 
 impl Expression {
     /// Create a complex number expression
@@ -16,7 +17,7 @@ impl Expression {
     /// );
     /// ```
     pub fn complex(real: Expression, imag: Expression) -> Self {
-        Self::Complex(Box::new(ComplexData { real, imag }))
+        Self::Complex(Arc::new(ComplexData { real, imag }))
     }
 
     /// Create a set expression
@@ -33,7 +34,7 @@ impl Expression {
     /// ]);
     /// ```
     pub fn set(elements: Vec<Expression>) -> Self {
-        Self::Set(Box::new(elements))
+        Self::Set(Arc::new(elements))
     }
 
     /// Create an interval expression
@@ -56,7 +57,7 @@ impl Expression {
         start_inclusive: bool,
         end_inclusive: bool,
     ) -> Self {
-        Self::Interval(Box::new(IntervalData {
+        Self::Interval(Arc::new(IntervalData {
             start,
             end,
             start_inclusive,
@@ -77,7 +78,7 @@ impl Expression {
     /// );
     /// ```
     pub fn piecewise(pieces: Vec<(Expression, Expression)>, default: Option<Expression>) -> Self {
-        Self::Piecewise(Box::new(PiecewiseData { pieces, default }))
+        Self::Piecewise(Arc::new(PiecewiseData { pieces, default }))
     }
 
     /// Create a matrix expression from rows
@@ -94,7 +95,7 @@ impl Expression {
     /// ```
     pub fn matrix(rows: Vec<Vec<Expression>>) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::dense(rows)))
+        Self::Matrix(Arc::new(Matrix::dense(rows)))
     }
 
     /// Create an identity matrix expression
@@ -110,7 +111,7 @@ impl Expression {
     /// ```
     pub fn identity_matrix(size: usize) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::identity(size)))
+        Self::Matrix(Arc::new(Matrix::identity(size)))
     }
 
     /// Create a method call expression
@@ -134,7 +135,7 @@ impl Expression {
         args: Vec<Expression>,
     ) -> Self {
         use crate::core::expression::MethodCallData;
-        Self::MethodCall(Box::new(MethodCallData {
+        Self::MethodCall(Arc::new(MethodCallData {
             object,
             method_name: method_name.into(),
             args,
@@ -154,7 +155,7 @@ impl Expression {
     /// ```
     pub fn zero_matrix(rows: usize, cols: usize) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::zero(rows, cols)))
+        Self::Matrix(Arc::new(Matrix::zero(rows, cols)))
     }
 
     /// Create a diagonal matrix expression
@@ -172,7 +173,7 @@ impl Expression {
     /// ```
     pub fn diagonal_matrix(diagonal_elements: Vec<Expression>) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::diagonal(diagonal_elements)))
+        Self::Matrix(Arc::new(Matrix::diagonal(diagonal_elements)))
     }
 
     /// Create a scalar matrix expression (c*I)
@@ -187,7 +188,7 @@ impl Expression {
     /// ```
     pub fn scalar_matrix(size: usize, scalar_value: Expression) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::scalar(size, scalar_value)))
+        Self::Matrix(Arc::new(Matrix::scalar(size, scalar_value)))
     }
 
     /// Create matrix from nested arrays (convenience method)
@@ -204,7 +205,7 @@ impl Expression {
     /// ```
     pub fn matrix_from_arrays<const R: usize, const C: usize>(arrays: [[i64; C]; R]) -> Self {
         use crate::matrices::Matrix;
-        Self::Matrix(Box::new(Matrix::from_arrays(arrays)))
+        Self::Matrix(Arc::new(Matrix::from_arrays(arrays)))
     }
 
     /// Create a commutator: [A, B] = AB - BA

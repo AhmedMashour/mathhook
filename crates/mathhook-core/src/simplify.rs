@@ -3,6 +3,8 @@
 //! Uses modular architecture for specialized simplification of different expression types.
 //! Individual modules handle specific aspects following project guidelines.
 
+use std::sync::Arc;
+
 use crate::core::{Expression, Number};
 use crate::matrices::operations::MatrixOperations;
 use num_traits::ToPrimitive;
@@ -148,7 +150,7 @@ impl Simplify for Expression {
                         order,
                     } => {
                         let simplified_expr = expression.simplify();
-                        Expression::Calculus(Box::new(CalculusData::Derivative {
+                        Expression::Calculus(Arc::new(CalculusData::Derivative {
                             expression: simplified_expr,
                             variable: variable.clone(),
                             order: *order,
@@ -163,7 +165,7 @@ impl Simplify for Expression {
                         let simplified_bounds = bounds
                             .as_ref()
                             .map(|(start, end)| (start.simplify(), end.simplify()));
-                        Expression::Calculus(Box::new(CalculusData::Integral {
+                        Expression::Calculus(Arc::new(CalculusData::Integral {
                             integrand: simplified_integrand,
                             variable: variable.clone(),
                             bounds: simplified_bounds,
@@ -177,7 +179,7 @@ impl Simplify for Expression {
                     } => {
                         let simplified_expr = expression.simplify();
                         let simplified_point = point.simplify();
-                        Expression::Calculus(Box::new(CalculusData::Limit {
+                        Expression::Calculus(Arc::new(CalculusData::Limit {
                             expression: simplified_expr,
                             variable: variable.clone(),
                             point: simplified_point,
@@ -193,7 +195,7 @@ impl Simplify for Expression {
                         let simplified_expr = expression.simplify();
                         let simplified_start = start.simplify();
                         let simplified_end = end.simplify();
-                        Expression::Calculus(Box::new(CalculusData::Sum {
+                        Expression::Calculus(Arc::new(CalculusData::Sum {
                             expression: simplified_expr,
                             variable: variable.clone(),
                             start: simplified_start,
@@ -209,7 +211,7 @@ impl Simplify for Expression {
                         let simplified_expr = expression.simplify();
                         let simplified_start = start.simplify();
                         let simplified_end = end.simplify();
-                        Expression::Calculus(Box::new(CalculusData::Product {
+                        Expression::Calculus(Arc::new(CalculusData::Product {
                             expression: simplified_expr,
                             variable: variable.clone(),
                             start: simplified_start,

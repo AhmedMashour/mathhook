@@ -7,6 +7,7 @@ use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::One;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use super::monomial::Monomial;
 use super::polynomial::SparsePolynomial;
@@ -181,7 +182,7 @@ pub fn sparse_polynomial_to_expression(
     if expr_terms.len() == 1 {
         expr_terms[0].clone()
     } else {
-        Expression::Add(Box::new(expr_terms))
+        Expression::Add(Arc::new(expr_terms))
     }
 }
 
@@ -216,7 +217,7 @@ fn monomial_to_expression(
     } else if mono_factors.len() == 1 {
         mono_factors[0].clone()
     } else {
-        Expression::Mul(Box::new(mono_factors))
+        Expression::Mul(Arc::new(mono_factors))
     };
 
     match (coeff_expr, mono_expr) {
@@ -225,9 +226,9 @@ fn monomial_to_expression(
         (Some(c), Expression::Mul(mono_factors)) => {
             let mut all_factors = vec![c];
             all_factors.extend(mono_factors.iter().cloned());
-            Expression::Mul(Box::new(all_factors))
+            Expression::Mul(Arc::new(all_factors))
         }
-        (Some(c), mono) => Expression::Mul(Box::new(vec![c, mono])),
+        (Some(c), mono) => Expression::Mul(Arc::new(vec![c, mono])),
     }
 }
 
@@ -242,12 +243,12 @@ mod tests {
         let y = symbol!(y);
         let vars = vec![x.clone(), y.clone()];
 
-        let two_xy = Expression::Mul(Box::new(vec![
+        let two_xy = Expression::Mul(Arc::new(vec![
             Expression::integer(2),
             Expression::symbol(x.clone()),
             Expression::symbol(y.clone()),
         ]));
-        let expr = Expression::Add(Box::new(vec![
+        let expr = Expression::Add(Arc::new(vec![
             Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             two_xy,
             Expression::pow(Expression::symbol(y.clone()), Expression::integer(2)),

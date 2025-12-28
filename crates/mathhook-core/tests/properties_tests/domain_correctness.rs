@@ -35,7 +35,7 @@ fn test_sqrt_of_non_perfect_squares() {
 
         // Should still be a sqrt expression (not fully reduced to integer)
         match result {
-            Expression::Function { ref name, .. } if name == "sqrt" => {
+            Expression::Function { ref name, .. } if name.as_ref() == "sqrt" => {
                 // Correct - kept as sqrt
             }
             Expression::Number(_) => {

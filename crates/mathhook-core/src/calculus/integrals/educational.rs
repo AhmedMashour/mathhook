@@ -92,7 +92,7 @@ fn analyze_and_explain(expr: &Expression, var: &Symbol) -> (Vec<String>, String)
                     ],
                     "power".to_owned(),
                 )
-            } else if matches!(base.as_ref(), Expression::Function { name, .. } if matches!(name.as_str(), "sin" | "cos" | "tan"))
+            } else if matches!(base.as_ref(), Expression::Function { name, .. } if matches!(name.as_ref(), "sin" | "cos" | "tan"))
             {
                 (
                     vec![
@@ -114,7 +114,7 @@ fn analyze_and_explain(expr: &Expression, var: &Symbol) -> (Vec<String>, String)
             }
         }
         Expression::Function { name, args: _ } => {
-            let strategy = match name.as_str() {
+            let strategy = match name.as_ref() {
                 "sin" | "cos" | "tan" | "sec" | "csc" | "cot" => "trig",
                 "exp" | "ln" | "log" => "table",
                 _ => "function",

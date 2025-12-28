@@ -142,7 +142,7 @@ pub trait IntoVec {
 impl IntoVec for Expression {
     fn into_vec(self) -> Option<Vec<Expression>> {
         match self {
-            Expression::Set(elements) => Some(*elements),
+            Expression::Set(elements) => Some(elements.as_ref().clone()),
             _ => None,
         }
     }

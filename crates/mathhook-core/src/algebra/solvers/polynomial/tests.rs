@@ -128,7 +128,7 @@ fn test_no_fake_roots_in_output() {
         SolverResult::Multiple(roots) | SolverResult::Partial(roots) => {
             for root in &roots {
                 match root {
-                    Expression::Function { name, args } if name == "complex" => {
+                    Expression::Function { name, args } if name.as_ref() == "complex" => {
                         if args.len() == 2 {
                             let is_zero_one = matches!(
                                 (&args[0], &args[1]),

@@ -1,320 +1,329 @@
 #!/usr/bin/env bash
 #
-# MathHook Release Script
-# Usage: ./scripts/release.sh <version|major|minor|patch>
+# MathHook Unified Release Script
 #
-# Examples:
-#   ./scripts/release.sh 0.1.0       # Set explicit version
-#   ./scripts/release.sh patch       # 0.1.0 -> 0.1.1
-#   ./scripts/release.sh minor       # 0.1.0 -> 0.2.0
-#   ./scripts/release.sh major       # 0.1.0 -> 1.0.0
-#   ./scripts/release.sh 0.2.0-alpha.1  # Pre-release version
+# Usage:
+#   ./scripts/release.sh patch              # Auto-detect: Docker if available, else CI
+#   ./scripts/release.sh minor --docker     # Force local Docker build + publish
+#   ./scripts/release.sh 0.2.0 --ci         # Force CI (just bump + push tag)
+#   ./scripts/release.sh patch --dry-run    # Test without publishing
 #
-# This script:
-# 1. Updates versions in all Cargo.toml files
-# 2. Updates pyproject.toml and package.json
-# 3. Runs validation (fmt, clippy, tests)
-# 4. Commits and tags the release
-# 5. Optionally pushes to trigger CI release
+# Modes:
+#   --docker  Build and publish locally via Docker (when CI is blocked)
+#   --ci      Just bump version and push tag (let GitHub Actions build)
+#   (default) Auto-detect based on Docker availability
 #
-# Required: git, cargo, jq (for JSON manipulation)
+# Setup:
+#   cp .env.example .env   # Add tokens for --docker mode
 
 set -euo pipefail
 
-# Colors for output
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+CYAN='\033[0;36m'
+NC='\033[0m'
 
-# Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Log functions
 log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
-log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+log_step() { echo -e "${CYAN}>>>${NC} $1"; }
 
-# Get current version from workspace Cargo.toml
+# ============================================================================
+# Argument parsing
+# ============================================================================
+VERSION_ARG=""
+MODE=""  # "docker", "ci", or "" (auto-detect)
+DRY_RUN=false
+SKIP_BUILD=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --docker|--local)
+            MODE="docker"
+            shift
+            ;;
+        --ci|--push)
+            MODE="ci"
+            shift
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        --skip-build)
+            SKIP_BUILD=true
+            shift
+            ;;
+        -h|--help)
+            cat << 'EOF'
+MathHook Release Script
+
+Usage: ./scripts/release.sh <version> [options]
+
+Version:
+  patch         Bump patch (0.1.0 -> 0.1.1)
+  minor         Bump minor (0.1.0 -> 0.2.0)
+  major         Bump major (0.1.0 -> 1.0.0)
+  0.2.0         Explicit version
+
+Mode:
+  --docker      Build locally via Docker, publish directly
+  --ci          Just bump + push tag, let GitHub Actions build
+  (default)     Auto-detect: Docker if running, else CI
+
+Options:
+  --dry-run     Build but don't publish
+  --skip-build  Skip build step (use existing artifacts)
+
+Examples:
+  ./scripts/release.sh patch                 # Auto-detect mode
+  ./scripts/release.sh minor --docker        # Local Docker build
+  ./scripts/release.sh 0.2.0 --ci            # Push to CI
+  ./scripts/release.sh patch --dry-run       # Test run
+EOF
+            exit 0
+            ;;
+        -*)
+            log_error "Unknown option: $1"
+            exit 1
+            ;;
+        *)
+            VERSION_ARG="$1"
+            shift
+            ;;
+    esac
+done
+
+cd "$PROJECT_ROOT"
+
+# ============================================================================
+# Version calculation
+# ============================================================================
 get_current_version() {
-    # Extract version from [workspace.package] section
-    grep -A10 '\[workspace\.package\]' "$PROJECT_ROOT/Cargo.toml" | grep '^version' | head -1 | sed 's/.*"\(.*\)".*/\1/'
+    grep -A10 '\[workspace\.package\]' "$PROJECT_ROOT/Cargo.toml" | \
+        grep '^version' | head -1 | sed 's/.*"\(.*\)".*/\1/'
 }
 
-# Parse semantic version
-parse_semver() {
-    local version=$1
-    # Handle pre-release versions like 0.1.0-alpha.1
-    local base_version="${version%%-*}"
-    echo "$base_version" | tr '.' ' '
-}
-
-# Bump version based on type
 bump_version() {
-    local current=$1
-    local bump_type=$2
-
-    # Extract base version (before any pre-release suffix)
+    local current=$1 bump_type=$2
     local base="${current%%-*}"
-
-    read -r major minor patch <<< "$(parse_semver "$base")"
+    IFS='.' read -r major minor patch <<< "$base"
 
     case "$bump_type" in
-        major)
-            echo "$((major + 1)).0.0"
-            ;;
-        minor)
-            echo "$major.$((minor + 1)).0"
-            ;;
-        patch)
-            echo "$major.$minor.$((patch + 1))"
-            ;;
-        *)
-            # If it's not a bump type, treat it as an explicit version
-            echo "$bump_type"
-            ;;
+        major) echo "$((major + 1)).0.0" ;;
+        minor) echo "$major.$((minor + 1)).0" ;;
+        patch) echo "$major.$minor.$((patch + 1))" ;;
+        *) echo "$bump_type" ;;
     esac
 }
 
-# Validate semver format
-validate_version() {
-    local version=$1
-    # Match: 0.1.0, 1.0.0, 0.1.0-alpha.1, 1.0.0-rc.1, etc.
-    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?$ ]]; then
-        log_error "Invalid version format: $version"
-        log_info "Expected format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-PRERELEASE"
+if [ -z "$VERSION_ARG" ]; then
+    CURRENT=$(get_current_version)
+    log_error "Version required. Current: v$CURRENT"
+    echo "Usage: $0 <patch|minor|major|x.y.z>"
+    exit 1
+fi
+
+CURRENT_VERSION=$(get_current_version)
+case "$VERSION_ARG" in
+    major|minor|patch) NEW_VERSION=$(bump_version "$CURRENT_VERSION" "$VERSION_ARG") ;;
+    *) NEW_VERSION="$VERSION_ARG" ;;
+esac
+
+# ============================================================================
+# Mode detection
+# ============================================================================
+if [ -z "$MODE" ]; then
+    if docker info &> /dev/null; then
+        log_info "Docker detected - will build locally"
+        MODE="docker"
+    else
+        log_info "Docker not running - will push to CI"
+        MODE="ci"
+    fi
+fi
+
+# ============================================================================
+# Token validation (docker mode only)
+# ============================================================================
+if [ "$MODE" = "docker" ] && ! $DRY_RUN; then
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        set -a; source "$PROJECT_ROOT/.env"; set +a
+    fi
+
+    missing=()
+    [ -z "${CARGO_REGISTRY_TOKEN:-}" ] && missing+=("CARGO_REGISTRY_TOKEN")
+    [ -z "${PYPI_API_TOKEN:-}" ] && missing+=("PYPI_API_TOKEN")
+    [ -z "${NPM_TOKEN:-}" ] && missing+=("NPM_TOKEN")
+
+    if [ ${#missing[@]} -gt 0 ]; then
+        log_error "Missing tokens: ${missing[*]}"
+        echo "Create .env file (see .env.example) or use --ci mode"
         exit 1
     fi
-}
+fi
 
-# Update version in a Cargo.toml file
-update_cargo_version() {
-    local file=$1
-    local version=$2
+# ============================================================================
+# Pre-flight checks
+# ============================================================================
+log_step "Running pre-flight checks..."
 
+# Check for dirty working directory
+if ! git diff --quiet HEAD 2>/dev/null; then
+    log_warn "Working directory has uncommitted changes"
+    git status --short
+    echo ""
+    read -p "Continue anyway? (y/N) " -n 1 -r; echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && exit 1
+fi
+
+# Check if tag already exists
+if git rev-parse "v$NEW_VERSION" >/dev/null 2>&1; then
+    log_error "Tag v$NEW_VERSION already exists!"
+    echo "Use a different version or delete the existing tag first."
+    exit 1
+fi
+
+# Validate version format (basic semver check)
+if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+    log_error "Invalid version format: $NEW_VERSION"
+    echo "Expected: X.Y.Z or X.Y.Z-prerelease"
+    exit 1
+fi
+
+log_success "Pre-flight checks passed"
+
+# ============================================================================
+# Confirmation
+# ============================================================================
+echo ""
+echo "  Version: v$CURRENT_VERSION → v$NEW_VERSION"
+echo "  Mode:    $MODE"
+$DRY_RUN && echo "  (DRY RUN)"
+echo ""
+
+read -p "Proceed? (y/N) " -n 1 -r; echo
+[[ ! $REPLY =~ ^[Yy]$ ]] && exit 0
+
+# ============================================================================
+# Update version files
+# ============================================================================
+log_step "Updating versions..."
+
+sed_inplace() {
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS sed
-        sed -i '' "s/^version = \".*\"/version = \"$version\"/" "$file"
+        sed -i '' "$@"
     else
-        # Linux sed
-        sed -i "s/^version = \".*\"/version = \"$version\"/" "$file"
+        sed -i "$@"
     fi
 }
 
-# Update workspace version
-update_workspace_version() {
-    local version=$1
-    log_info "Updating workspace Cargo.toml to version $version"
+# Cargo.toml
+sed_inplace "/\[workspace\.package\]/,/^\[/ s/^version = \".*\"/version = \"$NEW_VERSION\"/" \
+    "$PROJECT_ROOT/Cargo.toml"
 
-    # Update the workspace version in [workspace.package]
-    local cargo_file="$PROJECT_ROOT/Cargo.toml"
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "/\[workspace\.package\]/,/^\[/ s/^version = \".*\"/version = \"$version\"/" "$cargo_file"
+# pyproject.toml
+[ -f "$PROJECT_ROOT/crates/mathhook-python/pyproject.toml" ] && \
+    sed_inplace "s/^version = \".*\"/version = \"$NEW_VERSION\"/" \
+        "$PROJECT_ROOT/crates/mathhook-python/pyproject.toml"
+
+# package.json (version + optionalDependencies)
+if [ -f "$PROJECT_ROOT/crates/mathhook-node/package.json" ]; then
+    if command -v jq &> /dev/null; then
+        tmp=$(mktemp)
+        # Update main version AND all optionalDependencies versions
+        jq ".version = \"$NEW_VERSION\" | .optionalDependencies |= with_entries(.value = \"$NEW_VERSION\")" \
+            "$PROJECT_ROOT/crates/mathhook-node/package.json" > "$tmp"
+        mv "$tmp" "$PROJECT_ROOT/crates/mathhook-node/package.json"
     else
-        sed -i "/\[workspace\.package\]/,/^\[/ s/^version = \".*\"/version = \"$version\"/" "$cargo_file"
+        # Update main version
+        sed_inplace "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" \
+            "$PROJECT_ROOT/crates/mathhook-node/package.json"
+        # Update optionalDependencies (all mathhook-node-* packages)
+        sed_inplace "s/\"mathhook-node-\([^\"]*\)\": \"[^\"]*\"/\"mathhook-node-\1\": \"$NEW_VERSION\"/g" \
+            "$PROJECT_ROOT/crates/mathhook-node/package.json"
     fi
-}
+fi
 
-# Update pyproject.toml version
-update_pyproject_version() {
-    local version=$1
-    local file="$PROJECT_ROOT/crates/mathhook-python/pyproject.toml"
+log_success "Versions updated"
 
-    if [ -f "$file" ]; then
-        log_info "Updating pyproject.toml to version $version"
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/^version = \".*\"/version = \"$version\"/" "$file"
-        else
-            sed -i "s/^version = \".*\"/version = \"$version\"/" "$file"
-        fi
-    fi
-}
-
-# Update package.json version
-update_package_json_version() {
-    local version=$1
-    local file="$PROJECT_ROOT/crates/mathhook-node/package.json"
-
-    if [ -f "$file" ]; then
-        log_info "Updating package.json to version $version"
-        # Use jq if available, otherwise use sed
-        if command -v jq &> /dev/null; then
-            local tmp=$(mktemp)
-            jq ".version = \"$version\"" "$file" > "$tmp" && mv "$tmp" "$file"
-        else
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "s/\"version\": \".*\"/\"version\": \"$version\"/" "$file"
-            else
-                sed -i "s/\"version\": \".*\"/\"version\": \"$version\"/" "$file"
-            fi
-        fi
-    fi
-}
-
-# Run validation
-run_validation() {
-    log_info "Running validation checks..."
-
-    cd "$PROJECT_ROOT"
-
-    log_info "Checking formatting..."
-    cargo fmt --all -- --check || {
-        log_warn "Formatting issues found. Running cargo fmt..."
-        cargo fmt --all
-    }
-
-    log_info "Running clippy..."
-    cargo clippy --all-targets --all-features -- -D warnings
-
-    log_info "Running tests..."
-    cargo test --all-features --workspace
-
-    log_success "All validations passed!"
-}
-
-# Check git status
-check_git_status() {
-    cd "$PROJECT_ROOT"
-
-    # Check if we're on a clean branch
-    if ! git diff-index --quiet HEAD -- 2>/dev/null; then
-        log_warn "You have uncommitted changes. They will be included in the release commit."
-        read -p "Continue? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
+# ============================================================================
+# Build & Publish (docker mode)
+# ============================================================================
+if [ "$MODE" = "docker" ]; then
+    if ! $SKIP_BUILD; then
+        log_step "Building all platforms..."
+        make -C "$PROJECT_ROOT" build-all
+        log_success "Build complete"
     fi
 
-    # Check current branch
-    local branch=$(git rev-parse --abbrev-ref HEAD)
-    if [[ "$branch" != "master" && "$branch" != "main" ]]; then
-        log_warn "You're not on master/main branch (current: $branch)"
-        read -p "Continue anyway? (y/N) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            exit 1
-        fi
-    fi
-}
-
-# Create git commit and tag
-create_release_commit() {
-    local version=$1
-
-    cd "$PROJECT_ROOT"
-
-    log_info "Creating release commit..."
-    git add -A
-    git commit -m "release: v$version
-
-- Update workspace version to $version
-- Update Python bindings (pyproject.toml)
-- Update Node.js bindings (package.json)
-
-[skip ci]"
-
-    log_info "Creating git tag v$version..."
-    git tag -a "v$version" -m "Release v$version"
-
-    log_success "Release commit and tag created!"
-}
-
-# Push to remote
-push_release() {
-    local version=$1
-
-    log_info "Pushing to remote..."
-    read -p "Push commit and tag to trigger CI release? (y/N) " -n 1 -r
-    echo
-
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        git push
-        git push origin "v$version"
-        log_success "Pushed! CI will now build and publish to:"
-        log_info "  - crates.io (mathhook-macros, mathhook-core, mathhook)"
-        log_info "  - PyPI (mathhook)"
-        log_info "  - npm (mathhook-node)"
+    if ! $DRY_RUN; then
+        log_step "Publishing..."
+        docker compose --profile publish run --rm \
+            -e CARGO_REGISTRY_TOKEN="$CARGO_REGISTRY_TOKEN" \
+            -e PYPI_API_TOKEN="$PYPI_API_TOKEN" \
+            -e NPM_TOKEN="$NPM_TOKEN" \
+            publish
+        log_success "Published to all registries"
     else
-        log_info "To push manually later:"
-        log_info "  git push && git push origin v$version"
+        log_warn "Dry run - skipped publish"
     fi
-}
+fi
 
-# Main function
-main() {
-    if [ $# -lt 1 ]; then
-        echo "Usage: $0 <version|major|minor|patch>"
+# ============================================================================
+# Git commit & tag
+# ============================================================================
+log_step "Creating commit and tag..."
+
+git add -A
+git commit -m "release: v$NEW_VERSION
+
+- Bump version to $NEW_VERSION
+- Mode: $MODE
+
+🤖 Generated with MathHook Release"
+
+git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+
+log_success "Created tag v$NEW_VERSION"
+
+# ============================================================================
+# Push (ci mode) or finish
+# ============================================================================
+if [ "$MODE" = "ci" ]; then
+    if ! $DRY_RUN; then
+        log_step "Pushing to trigger CI..."
+        git push && git push origin "v$NEW_VERSION"
+        log_success "Pushed! CI will build and publish."
         echo ""
-        echo "Examples:"
-        echo "  $0 0.1.0       # Set explicit version"
-        echo "  $0 patch       # Bump patch version (0.1.0 -> 0.1.1)"
-        echo "  $0 minor       # Bump minor version (0.1.0 -> 0.2.0)"
-        echo "  $0 major       # Bump major version (0.1.0 -> 1.0.0)"
-        echo "  $0 0.2.0-alpha.1  # Pre-release version"
-        echo ""
-        echo "Current version: $(get_current_version)"
-        exit 1
+        echo "Monitor: https://github.com/AhmedMashour/mathhook-core/actions"
+    else
+        log_warn "Dry run - not pushing"
     fi
-
-    local input=$1
-    local current_version=$(get_current_version)
-    local new_version
-
-    # Determine new version
-    case "$input" in
-        major|minor|patch)
-            new_version=$(bump_version "$current_version" "$input")
-            ;;
-        *)
-            new_version="$input"
-            ;;
-    esac
-
-    # Validate the version
-    validate_version "$new_version"
-
-    log_info "Current version: $current_version"
-    log_info "New version: $new_version"
+else
     echo ""
+    log_info "To push the tag: git push && git push origin v$NEW_VERSION"
+fi
 
-    # Confirmation
-    read -p "Proceed with release v$new_version? (y/N) " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Release cancelled."
-        exit 0
-    fi
+# ============================================================================
+# Summary
+# ============================================================================
+echo ""
+echo "════════════════════════════════════════"
+log_success "Release v$NEW_VERSION complete!"
+echo "════════════════════════════════════════"
 
-    # Check git status
-    check_git_status
-
-    # Update all version files
-    update_workspace_version "$new_version"
-    update_pyproject_version "$new_version"
-    update_package_json_version "$new_version"
-
-    # Run validation
-    run_validation
-
-    # Create release commit and tag
-    create_release_commit "$new_version"
-
-    # Push to remote
-    push_release "$new_version"
-
+if ! $DRY_RUN && [ "$MODE" = "docker" ]; then
     echo ""
-    log_success "Release v$new_version completed!"
-    echo ""
-    log_info "Next steps:"
-    log_info "1. Monitor CI: https://github.com/AhmedMashour/mathhook/actions"
-    log_info "2. Check packages after CI completes:"
-    log_info "   - https://crates.io/crates/mathhook"
-    log_info "   - https://pypi.org/project/mathhook/"
-    log_info "   - https://www.npmjs.com/package/mathhook-node"
-}
-
-main "$@"
+    echo "Published:"
+    echo "  https://crates.io/crates/mathhook"
+    echo "  https://pypi.org/project/mathhook/"
+    echo "  https://www.npmjs.com/package/mathhook-node"
+fi

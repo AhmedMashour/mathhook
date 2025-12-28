@@ -462,7 +462,7 @@ mod tests {
         // Should be a function call to det(matrix(...))
         match det {
             Expression::Function { name, .. } => {
-                assert_eq!(name, "det");
+                assert_eq!(name.as_ref(), "det");
             }
             _ => panic!("Expected function call for large matrix determinant"),
         }

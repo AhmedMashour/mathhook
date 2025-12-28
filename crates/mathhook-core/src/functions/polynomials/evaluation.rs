@@ -103,7 +103,7 @@ fn eval_func_coeff_internal(expr: &Expression, n: usize) -> f64 {
     match expr {
         Expression::Function { name, .. } => {
             let n_f64 = n as f64;
-            match name.as_str() {
+            match name.as_ref() {
                 "legendre_alpha" => (2.0 * n_f64 + 1.0) / (n_f64 + 1.0),
                 "legendre_gamma" => -n_f64 / (n_f64 + 1.0),
                 "laguerre_alpha" => -(1.0 / (n_f64 + 1.0)),

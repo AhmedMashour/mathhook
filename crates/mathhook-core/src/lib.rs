@@ -242,7 +242,7 @@ mod tests {
     fn test_procedural_function_macro() {
         let gamma_call = function!(gamma);
         if let Expression::Function { name, args } = &gamma_call {
-            assert_eq!(name, "gamma");
+            assert_eq!(name.as_ref(), "gamma");
             assert_eq!(args.len(), 0);
         } else {
             panic!("Expected Function expression");
@@ -251,7 +251,7 @@ mod tests {
         let x = expr!(x);
         let sin_x = function!(sin, x.clone());
         if let Expression::Function { name, args } = &sin_x {
-            assert_eq!(name, "sin");
+            assert_eq!(name.as_ref(), "sin");
             assert_eq!(args.len(), 1);
         } else {
             panic!("Expected Function expression");
@@ -260,7 +260,7 @@ mod tests {
         let y = expr!(y);
         let log_xy = function!(log, x, y);
         if let Expression::Function { name, args } = &log_xy {
-            assert_eq!(name, "log");
+            assert_eq!(name.as_ref(), "log");
             assert_eq!(args.len(), 2);
         } else {
             panic!("Expected Function expression");

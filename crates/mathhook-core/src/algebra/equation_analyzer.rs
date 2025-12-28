@@ -96,7 +96,7 @@ impl EquationAnalyzer {
         match expr {
             Expression::Function { name, args } => {
                 let current =
-                    if matches!(name.as_str(), "sin" | "cos" | "tan" | "exp" | "ln" | "log") {
+                    if matches!(name.as_ref(), "sin" | "cos" | "tan" | "exp" | "ln" | "log") {
                         1
                     } else {
                         0
@@ -169,7 +169,7 @@ impl EquationAnalyzer {
     fn has_transcendental_functions(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
-                matches!(name.as_str(), "sin" | "cos" | "tan" | "exp" | "ln" | "log")
+                matches!(name.as_ref(), "sin" | "cos" | "tan" | "exp" | "ln" | "log")
                     || args.iter().any(Self::has_transcendental_functions)
             }
             Expression::Add(terms) => terms.iter().any(Self::has_transcendental_functions),
@@ -218,7 +218,7 @@ impl EquationAnalyzer {
     fn has_derivatives(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
-                matches!(name.as_str(), "derivative" | "diff" | "D")
+                matches!(name.as_ref(), "derivative" | "diff" | "D")
                     || args.iter().any(Self::has_derivatives)
             }
             Expression::Symbol(s) => {
@@ -235,7 +235,7 @@ impl EquationAnalyzer {
     fn has_partial_derivatives(expr: &Expression) -> bool {
         match expr {
             Expression::Function { name, args } => {
-                matches!(name.as_str(), "partial" | "pdiff" | "Partial")
+                matches!(name.as_ref(), "partial" | "pdiff" | "Partial")
                     || args.iter().any(Self::has_partial_derivatives)
             }
             Expression::Symbol(s) => {

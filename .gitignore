@@ -32,3 +32,23 @@ __pycache__
 # Generated binding code (regenerate with: cargo run -p binding-codegen -- generate)
 /crates/mathhook-python/src/generated/
 /crates/mathhook-node/src/generated/
+
+# Docker build artifacts
+/artifacts/
+
+# Generated binding files (regenerated during build)
+*.node
+/crates/mathhook-python/*.pyi
+/crates/mathhook-node/index.js
+/crates/mathhook-node/index.d.ts
+
+# Node.js platform packages (generated during build)
+/crates/mathhook-node/npm/
+
+# Environment files with secrets
+.env
+.env.local
+.env.*.local
+
+# npm auth tokens (created during publish, contains secrets)
+**/.npmrc

@@ -2,6 +2,7 @@
 
 use crate::core::expression::{CalculusData, Expression};
 use crate::core::Symbol;
+use std::sync::Arc;
 
 impl Expression {
     /// Create a function expression
@@ -13,10 +14,10 @@ impl Expression {
     ///
     /// let expression = Expression::function("sin", vec![expr!(x)]);
     /// ```
-    pub fn function<S: Into<String>>(name: S, args: Vec<Expression>) -> Self {
+    pub fn function<S: AsRef<str>>(name: S, args: Vec<Expression>) -> Self {
         Self::Function {
-            name: name.into(),
-            args: Box::new(args),
+            name: Arc::from(name.as_ref()),
+            args: Arc::new(args),
         }
     }
 
@@ -47,7 +48,7 @@ impl Expression {
     /// );
     /// ```
     pub fn derivative(expression: Expression, variable: Symbol, order: u32) -> Self {
-        Self::Calculus(Box::new(CalculusData::Derivative {
+        Self::Calculus(Arc::new(CalculusData::Derivative {
             expression,
             variable,
             order,
@@ -67,7 +68,7 @@ impl Expression {
     /// );
     /// ```
     pub fn integral(integrand: Expression, variable: Symbol) -> Self {
-        Self::Calculus(Box::new(CalculusData::Integral {
+        Self::Calculus(Arc::new(CalculusData::Integral {
             integrand,
             variable,
             bounds: None,
@@ -94,7 +95,7 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Calculus(Box::new(CalculusData::Integral {
+        Self::Calculus(Arc::new(CalculusData::Integral {
             integrand,
             variable,
             bounds: Some((start, end)),
@@ -116,7 +117,7 @@ impl Expression {
     /// ```
     pub fn limit(expression: Expression, variable: Symbol, point: Expression) -> Self {
         use crate::core::expression::LimitDirection;
-        Self::Calculus(Box::new(CalculusData::Limit {
+        Self::Calculus(Arc::new(CalculusData::Limit {
             expression,
             variable,
             point,
@@ -144,7 +145,7 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Calculus(Box::new(CalculusData::Sum {
+        Self::Calculus(Arc::new(CalculusData::Sum {
             expression,
             variable,
             start,
@@ -172,7 +173,7 @@ impl Expression {
         start: Expression,
         end: Expression,
     ) -> Self {
-        Self::Calculus(Box::new(CalculusData::Product {
+        Self::Calculus(Arc::new(CalculusData::Product {
             expression,
             variable,
             start,

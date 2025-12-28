@@ -66,7 +66,7 @@ fn test_table_reciprocal() {
 
     // Result should be ln|x|
     assert!(
-        matches!(&integrated, Expression::Function { name, .. } if name == "ln"),
+        matches!(&integrated, Expression::Function { name, .. } if name.as_ref() == "ln"),
         "Result should be ln function"
     );
 }
@@ -97,7 +97,7 @@ fn test_table_exponential_simple() {
     let integrated = result.unwrap();
 
     assert!(
-        matches!(&integrated, Expression::Function { name, .. } if name == "exp"),
+        matches!(&integrated, Expression::Function { name, .. } if name.as_ref() == "exp"),
         "Result should be exp function"
     );
 }
@@ -172,7 +172,7 @@ fn test_table_cosine() {
     let integrated = result.unwrap();
 
     assert!(
-        matches!(&integrated, Expression::Function { name, .. } if name == "sin"),
+        matches!(&integrated, Expression::Function { name, .. } if name.as_ref() == "sin"),
         "Result should be sin(x)"
     );
 }
@@ -300,7 +300,7 @@ fn test_table_hyperbolic_sine() {
     let integrated = result.unwrap();
 
     assert!(
-        matches!(&integrated, Expression::Function { name, .. } if name == "cosh"),
+        matches!(&integrated, Expression::Function { name, .. } if name.as_ref() == "cosh"),
         "Result should be cosh(x)"
     );
 }
@@ -316,7 +316,7 @@ fn test_table_hyperbolic_cosine() {
     let integrated = result.unwrap();
 
     assert!(
-        matches!(&integrated, Expression::Function { name, .. } if name == "sinh"),
+        matches!(&integrated, Expression::Function { name, .. } if name.as_ref() == "sinh"),
         "Result should be sinh(x)"
     );
 }

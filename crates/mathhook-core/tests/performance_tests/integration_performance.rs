@@ -3,6 +3,7 @@
 //! Ensures integration operations complete in reasonable time and don't
 //! exhibit exponential complexity for common cases.
 
+use std::sync::Arc;
 use mathhook_core::calculus::integrals::strategy::integrate_with_strategy;
 use mathhook_core::core::{Expression, Symbol};
 use std::time::{Duration, Instant};
@@ -20,15 +21,15 @@ fn integer(n: i64) -> Expression {
 }
 
 fn add(terms: Vec<Expression>) -> Expression {
-    Expression::Add(Box::new(terms))
+    Expression::Add(Arc::new(terms))
 }
 
 fn mul(factors: Vec<Expression>) -> Expression {
-    Expression::Mul(Box::new(factors))
+    Expression::Mul(Arc::new(factors))
 }
 
 fn pow(base: Expression, exp: Expression) -> Expression {
-    Expression::Pow(Box::new(base), Box::new(exp))
+    Expression::Pow(Arc::new(base), Box::new(exp))
 }
 
 fn sin(arg: Expression) -> Expression {

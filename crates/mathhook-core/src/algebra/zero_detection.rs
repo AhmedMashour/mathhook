@@ -281,7 +281,7 @@ impl Expression {
                 Expression::Mul(factors) if factors.len() >= 2 => {
                     if let Some(expanded) = self.try_expand_multiplication(factors) {
                         if let Expression::Add(expanded_terms) = expanded {
-                            simplified_terms.extend(expanded_terms.into_iter());
+                            simplified_terms.extend(expanded_terms.iter().cloned());
                         } else {
                             simplified_terms.push(expanded);
                         }

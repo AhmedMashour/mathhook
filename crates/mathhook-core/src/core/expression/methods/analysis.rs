@@ -6,6 +6,7 @@
 use super::super::Expression;
 use crate::core::commutativity::Commutativity;
 use crate::core::Symbol;
+use std::sync::Arc;
 
 impl Expression {
     /// Compute commutativity of this expression
@@ -191,10 +192,11 @@ impl Expression {
     /// Counting multiple occurrences:
     /// ```
     /// use mathhook_core::{Expression, symbol};
+    /// use std::sync::Arc;
     ///
     /// let x = symbol!(x);
     /// // x^2 + 2*x + 1 has 2 occurrences of x (in x^2 and in 2*x)
-    /// let expr = Expression::Add(Box::new(vec![
+    /// let expr = Expression::Add(Arc::new(vec![
     ///     Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
     ///     Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
     ///     Expression::integer(1),
@@ -253,7 +255,8 @@ impl Expression {
                 .sum(),
 
             Expression::Pow(base, exp) => {
-                base.count_variable_occurrences(variable) + exp.count_variable_occurrences(variable)
+                base.count_variable_occurrences(variable)
+                    + exp.count_variable_occurrences(variable)
             }
 
             Expression::Function { args, .. } => args
@@ -404,6 +407,30 @@ impl Expression {
     pub fn is_symbol_matching(&self, symbol: &Symbol) -> bool {
         matches!(self, Expression::Symbol(s) if s == symbol)
     }
+
+    /// Extract the base and exponent from a Pow expression
+    ///
+    /// Returns Some((base, exp)) if this is a Pow expression, None otherwise.
+    /// This is a helper method for pattern matching with the Arc-based structure.
+    #[inline]
+    pub fn as_pow(&self) -> Option<(&Expression, &Expression)> {
+        match self {
+            Expression::Pow(base, exp) => Some((base.as_ref(), exp.as_ref())),
+            _ => None,
+        }
+    }
+
+    /// Extract the name and args from a Function expression
+    ///
+    /// Returns Some((name, args)) if this is a Function expression, None otherwise.
+    /// This is a helper method for pattern matching with the Arc-based structure.
+    #[inline]
+    pub fn as_function(&self) -> Option<(&str, &[Expression])> {
+        match self {
+            Expression::Function { name, args } => Some((name.as_ref(), args.as_slice())),
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -415,6 +442,7 @@ mod tests {
     use crate::expr;
     use crate::matrices::unified::Matrix;
     use crate::symbol;
+
     #[test]
     fn test_commutativity_scalar_multiplication() {
         let x = Symbol::scalar("x");
@@ -451,7 +479,7 @@ mod tests {
     fn test_count_in_add() {
         let x = symbol!(x);
         let y = symbol!(y);
-        let raw_expr = Expression::Add(Box::new(vec![
+        let raw_expr = Expression::Add(Arc::new(vec![
             Expression::symbol(x.clone()),
             Expression::symbol(x.clone()),
             Expression::symbol(y.clone()),
@@ -495,7 +523,7 @@ mod tests {
             vec![Expression::symbol(x.clone()), Expression::symbol(y.clone())],
             vec![Expression::symbol(x.clone()), Expression::integer(1)],
         ]);
-        let expr = Expression::Matrix(Box::new(matrix));
+        let expr = Expression::Matrix(Arc::new(matrix));
         assert_eq!(expr.count_variable_occurrences(&x), 2);
         assert_eq!(expr.count_variable_occurrences(&y), 1);
     }
@@ -503,7 +531,7 @@ mod tests {
     #[test]
     fn test_count_in_complex() {
         let x = symbol!(x);
-        let expr = Expression::Complex(Box::new(ComplexData {
+        let expr = Expression::Complex(Arc::new(ComplexData {
             real: Expression::symbol(x.clone()),
             imag: Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
         }));
@@ -513,7 +541,7 @@ mod tests {
     #[test]
     fn test_count_in_relation() {
         let x = symbol!(x);
-        let expr = Expression::Relation(Box::new(RelationData {
+        let expr = Expression::Relation(Arc::new(RelationData {
             left: Expression::symbol(x.clone()),
             right: Expression::mul(vec![Expression::integer(2), Expression::symbol(x.clone())]),
             relation_type: RelationType::Equal,
@@ -524,7 +552,7 @@ mod tests {
     #[test]
     fn test_count_in_piecewise() {
         let x = symbol!(x);
-        let expr = Expression::Piecewise(Box::new(PiecewiseData {
+        let expr = Expression::Piecewise(Arc::new(PiecewiseData {
             pieces: vec![
                 (Expression::symbol(x.clone()), Expression::symbol(x.clone())),
                 (Expression::integer(0), Expression::symbol(x.clone())),
@@ -537,7 +565,7 @@ mod tests {
     #[test]
     fn test_count_in_integral() {
         let x = symbol!(x);
-        let expr = Expression::Calculus(Box::new(CalculusData::Integral {
+        let expr = Expression::Calculus(Arc::new(CalculusData::Integral {
             integrand: Expression::pow(Expression::symbol(x.clone()), Expression::integer(2)),
             variable: x.clone(),
             bounds: Some((Expression::integer(0), Expression::symbol(x.clone()))),
@@ -555,5 +583,32 @@ mod tests {
         assert!(expr_x.is_symbol_matching(&x));
         assert!(!expr_x.is_symbol_matching(&y));
         assert!(!expr_num.is_symbol_matching(&x));
+    }
+
+    #[test]
+    fn test_as_pow() {
+        let x = symbol!(x);
+        let pow_expr = Expression::pow(Expression::symbol(x.clone()), Expression::integer(2));
+
+        let (base, exp) = pow_expr.as_pow().expect("should be a Pow");
+        assert_eq!(*base, Expression::symbol(x.clone()));
+        assert_eq!(*exp, Expression::integer(2));
+
+        let not_pow = Expression::integer(42);
+        assert!(not_pow.as_pow().is_none());
+    }
+
+    #[test]
+    fn test_as_function() {
+        let x = symbol!(x);
+        let func = Expression::function("sin", vec![Expression::symbol(x.clone())]);
+
+        let (name, args) = func.as_function().expect("should be a Function");
+        assert_eq!(name, "sin");
+        assert_eq!(args.len(), 1);
+        assert_eq!(args[0], Expression::symbol(x.clone()));
+
+        let not_func = Expression::integer(42);
+        assert!(not_func.as_function().is_none());
     }
 }

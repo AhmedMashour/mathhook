@@ -76,7 +76,7 @@ impl SimplificationStrategy for NaturalLogSimplificationStrategy {
                 Expression::Function {
                     name,
                     args: inner_args,
-                } if name == "exp" && inner_args.len() == 1 => inner_args[0].clone(),
+                } if name.as_ref() == "exp" && inner_args.len() == 1 => inner_args[0].clone(),
 
                 Expression::Pow(base, exp) => Expression::mul(vec![
                     exp.as_ref().clone(),

@@ -11,6 +11,7 @@ use crate::{
 use num_traits::{ToPrimitive, Zero};
 
 use crate::core::constants::EPSILON;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 thread_local! {
@@ -108,7 +109,7 @@ fn stable_add_two(a: &Expression, b: &Expression) -> Expression {
         }
         _ => {
             // Fallback: create minimal addition expression
-            Expression::Add(Box::new(vec![a.clone(), b.clone()]))
+            Expression::Add(Arc::new(vec![a.clone(), b.clone()]))
         }
     }
 }
@@ -146,7 +147,7 @@ fn stable_mixed_addition(
             .into_iter()
             .next()
             .expect("BUG: result_terms has length 1 but iterator is empty"),
-        _ => Expression::Add(Box::new(result_terms)),
+        _ => Expression::Add(Arc::new(result_terms)),
     }
 }
 
@@ -241,7 +242,7 @@ fn stable_multiply_two(a: &Expression, b: &Expression) -> Expression {
         }
         _ => {
             // Fallback: create minimal multiplication expression
-            Expression::Mul(Box::new(vec![a.clone(), b.clone()]))
+            Expression::Mul(Arc::new(vec![a.clone(), b.clone()]))
         }
     }
 }
@@ -279,7 +280,7 @@ fn stable_mixed_multiplication(
             .into_iter()
             .next()
             .expect("BUG: result_factors has length 1 but iterator is empty"),
-        _ => Expression::Mul(Box::new(result_factors)),
+        _ => Expression::Mul(Arc::new(result_factors)),
     }
 }
 
@@ -441,7 +442,7 @@ impl StableMatrix {
         }
 
         if !needs_simplification {
-            return Expression::Matrix(Box::new(Matrix::Dense(matrix.clone())));
+            return Expression::Matrix(Arc::new(Matrix::Dense(matrix.clone())));
         }
 
         let mut simplified_rows = Vec::with_capacity(rows.len());

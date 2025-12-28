@@ -153,7 +153,7 @@ impl Expression {
             }
 
             Expression::Function { name, args } => {
-                if name == "undefined" {
+                if name.as_ref() == "undefined" {
                     return Err(MathError::DivisionByZero);
                 }
 
@@ -161,7 +161,7 @@ impl Expression {
                     args.iter().map(|arg| arg.evaluate()).collect();
                 let evaluated_args = evaluated_args?;
 
-                match name.as_str() {
+                match name.as_ref() {
                     "sqrt" => {
                         if let Some(arg) = evaluated_args.first() {
                             if let Some(value) = Self::try_extract_numeric_value(arg) {
@@ -181,12 +181,12 @@ impl Expression {
                             if let Some(value) = Self::try_extract_numeric_value(arg) {
                                 if value.abs() < EPSILON {
                                     return Err(MathError::Pole {
-                                        function: name.clone(),
+                                        function: name.to_string(),
                                         at: arg.clone(),
                                     });
                                 } else if value < 0.0 {
                                     return Err(MathError::BranchCut {
-                                        function: name.clone(),
+                                        function: name.to_string(),
                                         value: arg.clone(),
                                     });
                                 }

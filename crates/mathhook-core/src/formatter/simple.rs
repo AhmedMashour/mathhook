@@ -205,7 +205,7 @@ impl SimpleFormatter for Expression {
             }
             Expression::Function { name, args } => {
                 if args.is_empty() {
-                    Ok(name.clone())
+                    Ok(name.to_string())
                 } else {
                     if args.len() > MAX_TERMS_PER_OPERATION {
                         return Err(FormattingError::TooManyTerms {

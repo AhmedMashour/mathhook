@@ -89,7 +89,7 @@ pub fn is_expression_zero(expr: &Expression) -> bool {
 /// `true` if the expression represents infinity (positive or negative), `false` otherwise
 pub fn is_infinity(expr: &Expression) -> bool {
     match expr {
-        Expression::Function { name, .. } if name == "infinity" || name == "oo" => true,
+        Expression::Function { name, .. } if name.as_ref() == "infinity" || name.as_ref() == "oo" => true,
         // Check for negative infinity: -1 * infinity
         Expression::Mul(factors) if factors.len() == 2 => {
             matches!(&factors[0], Expression::Number(n) if *n == crate::core::Number::Integer(-1))
@@ -109,7 +109,7 @@ pub fn is_infinity(expr: &Expression) -> bool {
 ///
 /// `true` if the expression represents an undefined value, `false` otherwise
 pub fn is_undefined(expr: &Expression) -> bool {
-    matches!(expr, Expression::Function { name, .. } if name == "undefined" || name == "nan")
+    matches!(expr, Expression::Function { name, .. } if name.as_ref() == "undefined" || name.as_ref() == "nan")
 }
 
 /// Check if an expression is finite (not infinity, not undefined)

@@ -6,10 +6,10 @@ use crate::core::commutativity::Commutativity;
 use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
+use std::sync::Arc;
 
 /// Power simplification
 pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
-    // First, simplify both base and exponent for better pattern matching
     let simplified_base = base.simplify();
     let simplified_exp = exp.simplify();
 
@@ -83,32 +83,30 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
         }
         // sqrt(x)^2 = x (inverse function)
         (Expression::Function { name, args }, Expression::Number(Number::Integer(2)))
-            if name == "sqrt" && args.len() == 1 =>
+            if name.as_ref() == "sqrt" && args.len() == 1 =>
         {
             args[0].clone()
         }
         // (a^b)^c = a^(b*c)
         (Expression::Pow(b, e), c) => {
-            let new_exp = simplify_multiplication(&[(**e).clone(), c.clone()]);
-            Expression::Pow(Box::new((**b).clone()), Box::new(new_exp))
+            let new_exp = simplify_multiplication(&[e.as_ref().clone(), c.clone()]);
+            Expression::Pow(Arc::new(b.as_ref().clone()), Arc::new(new_exp))
         }
         // (a*b)^n = a^n * b^n ONLY if commutative
         (Expression::Mul(factors), Expression::Number(Number::Integer(n))) if *n > 0 => {
             let commutativity = Commutativity::combine(factors.iter().map(|f| f.commutativity()));
 
             if commutativity.can_sort() {
-                // Safe to distribute - all factors commutative
                 let powered_factors: Vec<Expression> = factors
                     .iter()
                     .map(|f| Expression::pow(f.clone(), simplified_exp.clone()))
                     .collect();
                 simplify_multiplication(&powered_factors)
             } else {
-                // Noncommutative - keep as (a*b)^n
-                Expression::Pow(Box::new(simplified_base), Box::new(simplified_exp))
+                Expression::Pow(Arc::new(simplified_base), Arc::new(simplified_exp))
             }
         }
-        _ => Expression::Pow(Box::new(simplified_base), Box::new(simplified_exp)),
+        _ => Expression::Pow(Arc::new(simplified_base), Arc::new(simplified_exp)),
     }
 }
 
@@ -149,13 +147,13 @@ mod tests {
                 assert_eq!(factors.len(), 2);
                 let has_x_squared = factors.iter().any(|f| {
                     matches!(f, Expression::Pow(base, exp) if
-                        **base == Expression::symbol(symbol!(x)) &&
-                        **exp == Expression::integer(2))
+                        base.as_ref() == &Expression::symbol(symbol!(x)) &&
+                        exp.as_ref() == &Expression::integer(2))
                 });
                 let has_y_squared = factors.iter().any(|f| {
                     matches!(f, Expression::Pow(base, exp) if
-                        **base == Expression::symbol(symbol!(y)) &&
-                        **exp == Expression::integer(2))
+                        base.as_ref() == &Expression::symbol(symbol!(y)) &&
+                        exp.as_ref() == &Expression::integer(2))
                 });
                 assert!(has_x_squared, "Expected x^2 in factors");
                 assert!(has_y_squared, "Expected y^2 in factors");
@@ -178,8 +176,8 @@ mod tests {
 
         match simplified {
             Expression::Pow(base, exp) => {
-                assert_eq!(*exp, Expression::integer(2));
-                match *base {
+                assert_eq!(exp.as_ref(), &Expression::integer(2));
+                match base.as_ref() {
                     Expression::Mul(factors) => {
                         assert_eq!(factors.len(), 2);
                         assert!(factors.iter().all(|f| matches!(f, Expression::Symbol(s) if s.symbol_type() == crate::core::symbol::SymbolType::Matrix)));
@@ -205,8 +203,8 @@ mod tests {
 
         match simplified {
             Expression::Pow(base, exp) => {
-                assert_eq!(*exp, Expression::integer(2));
-                match *base {
+                assert_eq!(exp.as_ref(), &Expression::integer(2));
+                match base.as_ref() {
                     Expression::Mul(factors) => {
                         assert_eq!(factors.len(), 2);
                     }
@@ -231,7 +229,7 @@ mod tests {
 
         match simplified {
             Expression::Pow(_, exp) => {
-                assert_eq!(*exp, Expression::integer(2));
+                assert_eq!(exp.as_ref(), &Expression::integer(2));
             }
             _ => panic!("Expected Pow, got {:?}", simplified),
         }
@@ -273,7 +271,7 @@ mod tests {
 
         match simplified {
             Expression::Pow(_, exp) => {
-                assert_eq!(*exp, Expression::integer(2));
+                assert_eq!(exp.as_ref(), &Expression::integer(2));
             }
             _ => panic!("Expected Pow, got {:?}", simplified),
         }

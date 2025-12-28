@@ -213,7 +213,7 @@ fn match_pattern(expr: &Expression, var: &Symbol) -> Option<PatternKey> {
                 return None;
             };
 
-            match name.as_str() {
+            match name.as_ref() {
                 "exp" => Some(PatternKey::Exponential { coefficient: coeff }),
                 "ln" => {
                     if coeff == 1 {
@@ -314,7 +314,7 @@ fn match_pattern(expr: &Expression, var: &Symbol) -> Option<PatternKey> {
                         }
                         // Check for 1/sqrt(a^2 - x^2) pattern
                         if let Expression::Function { name, args } = &**denom {
-                            if name == "sqrt" && args.len() == 1 {
+                            if name.as_ref() == "sqrt" && args.len() == 1 {
                                 if let Expression::Add(terms) = &args[0] {
                                     if terms.len() == 2 {
                                         // Handle a^2 - x^2 (represented as a^2 + (-1)*x^2)

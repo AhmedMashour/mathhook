@@ -3,6 +3,8 @@
 //! Provides optimized direct matrix computation paths to avoid unnecessary
 //! expression tree construction during simplification.
 
+use std::sync::Arc;
+
 use crate::core::Expression;
 use crate::error::MathError;
 use crate::matrices::CoreMatrixOps;
@@ -16,7 +18,7 @@ pub fn try_matrix_add(a: &Expression, b: &Expression) -> Option<Result<Expressio
     match (a, b) {
         (Expression::Matrix(ma), Expression::Matrix(mb)) => Some(
             ma.add(mb)
-                .map(|result| Expression::Matrix(Box::new(result))),
+                .map(|result| Expression::Matrix(Arc::new(result))),
         ),
         _ => None,
     }
@@ -34,7 +36,7 @@ pub fn try_matrix_multiply(
     match (a, b) {
         (Expression::Matrix(ma), Expression::Matrix(mb)) => Some(
             ma.multiply(mb)
-                .map(|result| Expression::Matrix(Box::new(result))),
+                .map(|result| Expression::Matrix(Arc::new(result))),
         ),
         _ => None,
     }

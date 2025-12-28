@@ -3,6 +3,7 @@
 //! Contains the `substitute()` method for replacing symbols with expressions.
 
 use super::super::Expression;
+use std::sync::Arc;
 use crate::simplify::Simplify;
 use std::collections::HashMap;
 
@@ -174,7 +175,7 @@ impl Expression {
                         end: end.substitute(substitutions),
                     },
                 };
-                Expression::Calculus(Box::new(new_data))
+                Expression::Calculus(Arc::new(new_data))
             }
 
             Expression::MethodCall(data) => {

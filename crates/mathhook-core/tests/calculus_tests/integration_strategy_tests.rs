@@ -55,7 +55,7 @@ fn test_strategy_routes_to_registry_cos() {
     // Should route to Layer 3 (function registry)
     // Result should be sin(x)
     if let Expression::Function { name, .. } = result {
-        assert_eq!(name, "sin");
+        assert_eq!(name.as_ref(), "sin");
     } else {
         panic!("Expected sin function for cos integration");
     }
@@ -70,7 +70,7 @@ fn test_strategy_routes_to_registry_exp() {
     // Should route to Layer 3 (function registry)
     // Result should be exp(x)
     if let Expression::Function { name, .. } = result {
-        assert_eq!(name, "exp");
+        assert_eq!(name.as_ref(), "exp");
     } else {
         panic!("Expected exp function for exp integration");
     }

@@ -35,6 +35,9 @@ Documentation = "https://docs.rs/mathhook"
 [tool.maturin]
 module-name = "mathhook"
 strip = true
+# Use Python stable ABI for forward-compatible wheels (one wheel works 3.8+)
+python-source = "python"
+features = ["pyo3/abi3-py38"]
 
 [tool.pyo3-stub-gen]
 # Generate stubs in python/mathhook directory

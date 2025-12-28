@@ -174,7 +174,7 @@ fn test_expression_function_constructor() {
     // Verify function was created correctly
     match sin_x {
         Expression::Function { name, args } => {
-            assert_eq!(name, "sin");
+            assert_eq!(name.as_ref(), "sin");
             assert_eq!(args.len(), 1);
         }
         _ => panic!("Expected Function expression"),

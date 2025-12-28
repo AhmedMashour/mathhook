@@ -235,7 +235,7 @@ pub fn simplify_abs(arg: &Expression) -> Expression {
 
         Expression::Mul(terms) => simplify_abs_product(terms),
 
-        Expression::Function { name, args } if name == "abs" && args.len() == 1 => {
+        Expression::Function { name, args } if name.as_ref() == "abs" && args.len() == 1 => {
             Expression::function("abs", vec![args[0].clone()])
         }
 

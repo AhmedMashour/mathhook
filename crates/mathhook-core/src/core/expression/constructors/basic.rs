@@ -5,6 +5,7 @@ use crate::core::{MathConstant, Number, Symbol};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use num_traits::ToPrimitive;
+use std::sync::Arc;
 
 impl Expression {
     /// Create a number expression
@@ -355,7 +356,7 @@ impl Expression {
     #[inline]
     pub fn equation(left: Expression, right: Expression) -> Self {
         use crate::core::expression::{RelationData, RelationType};
-        Self::Relation(Box::new(RelationData {
+        Self::Relation(Arc::new(RelationData {
             left,
             right,
             relation_type: RelationType::Equal,
@@ -383,7 +384,7 @@ impl Expression {
         relation_type: crate::core::expression::RelationType,
     ) -> Self {
         use crate::core::expression::RelationData;
-        Self::Relation(Box::new(RelationData {
+        Self::Relation(Arc::new(RelationData {
             left,
             right,
             relation_type,

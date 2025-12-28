@@ -3,6 +3,8 @@
 //! This module provides the bridge between the Expression system and the
 //! unified matrix system, offering user-friendly matrix operations.
 
+use std::sync::Arc;
+
 use super::{CoreMatrixOps, Matrix};
 use crate::core::Expression;
 use crate::core::Number;
@@ -107,7 +109,7 @@ impl MatrixOperations for Expression {
     fn matrix_add(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Matrix(a), Expression::Matrix(b)) => match a.add(b) {
-                Ok(result_matrix) => Expression::Matrix(Box::new(result_matrix)),
+                Ok(result_matrix) => Expression::Matrix(Arc::new(result_matrix)),
                 Err(_) => Expression::function("undefined", vec![]),
             },
             _ => Expression::function("undefined", vec![]),
@@ -119,7 +121,7 @@ impl MatrixOperations for Expression {
             (Expression::Matrix(a), Expression::Matrix(b)) => {
                 let neg_b = b.scalar_multiply(&Expression::integer(-1));
                 match a.add(&neg_b) {
-                    Ok(result_matrix) => Expression::Matrix(Box::new(result_matrix)),
+                    Ok(result_matrix) => Expression::Matrix(Arc::new(result_matrix)),
                     Err(_) => Expression::function("undefined", vec![]),
                 }
             }
@@ -130,7 +132,7 @@ impl MatrixOperations for Expression {
     fn matrix_multiply(&self, other: &Expression) -> Expression {
         match (self, other) {
             (Expression::Matrix(a), Expression::Matrix(b)) => match a.multiply(b) {
-                Ok(result_matrix) => Expression::Matrix(Box::new(result_matrix)),
+                Ok(result_matrix) => Expression::Matrix(Arc::new(result_matrix)),
                 Err(_) => Expression::function("undefined", vec![]),
             },
             _ => Expression::function("undefined", vec![]),
@@ -141,7 +143,7 @@ impl MatrixOperations for Expression {
         match self {
             Expression::Matrix(matrix) => {
                 let result_matrix = matrix.scalar_multiply(scalar);
-                let result = Expression::Matrix(Box::new(result_matrix));
+                let result = Expression::Matrix(Arc::new(result_matrix));
                 result.simplify()
             }
             _ => Expression::function("undefined", vec![]),
@@ -161,7 +163,7 @@ impl MatrixOperations for Expression {
         match self {
             Expression::Matrix(matrix) => {
                 let transposed = matrix.transpose();
-                Expression::Matrix(Box::new(transposed))
+                Expression::Matrix(Arc::new(transposed))
             }
             _ => Expression::function("undefined", vec![]),
         }
@@ -171,7 +173,7 @@ impl MatrixOperations for Expression {
         match self {
             Expression::Matrix(matrix) => {
                 let inverse = matrix.inverse();
-                Expression::Matrix(Box::new(inverse))
+                Expression::Matrix(Arc::new(inverse))
             }
             _ => Expression::function("undefined", vec![]),
         }
@@ -248,7 +250,7 @@ impl MatrixOperations for Expression {
         match self {
             Expression::Matrix(matrix) => {
                 let optimized = matrix.as_ref().clone().optimize();
-                Expression::Matrix(Box::new(optimized))
+                Expression::Matrix(Arc::new(optimized))
             }
             _ => self.clone(),
         }

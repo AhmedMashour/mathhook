@@ -2,6 +2,7 @@
 
 use crate::core::Expression;
 use crate::simplify::Simplify;
+use std::sync::Arc;
 
 /// Trait for types that support substitution operations
 pub trait Substitutable {
@@ -88,7 +89,7 @@ impl Substitutable for Expression {
 
             Expression::Add(terms) => {
                 let new_terms: Vec<Expression> = terms.iter().map(|t| t.subs(old, new)).collect();
-                Expression::Add(Box::new(new_terms))
+                Expression::Add(Arc::new(new_terms))
             }
 
             Expression::Mul(factors) => {
@@ -100,27 +101,27 @@ impl Substitutable for Expression {
             Expression::Pow(base, exp) => {
                 let new_base = base.subs(old, new);
                 let new_exp = exp.subs(old, new);
-                Expression::Pow(Box::new(new_base), Box::new(new_exp))
+                Expression::Pow(Arc::new(new_base), Arc::new(new_exp))
             }
 
             Expression::Function { name, args } => {
                 let new_args: Vec<Expression> = args.iter().map(|a| a.subs(old, new)).collect();
                 Expression::Function {
                     name: name.clone(),
-                    args: Box::new(new_args),
+                    args: Arc::new(new_args),
                 }
             }
 
             Expression::Set(elements) => {
                 let new_elements: Vec<Expression> =
                     elements.iter().map(|e| e.subs(old, new)).collect();
-                Expression::Set(Box::new(new_elements))
+                Expression::Set(Arc::new(new_elements))
             }
 
             Expression::Complex(data) => {
                 let new_real = data.real.subs(old, new);
                 let new_imag = data.imag.subs(old, new);
-                Expression::Complex(Box::new(crate::core::expression::ComplexData {
+                Expression::Complex(Arc::new(crate::core::expression::ComplexData {
                     real: new_real,
                     imag: new_imag,
                 }))
@@ -139,13 +140,13 @@ impl Substitutable for Expression {
                     new_data.push(row);
                 }
 
-                Expression::Matrix(Box::new(crate::matrices::unified::Matrix::dense(new_data)))
+                Expression::Matrix(Arc::new(crate::matrices::unified::Matrix::dense(new_data)))
             }
 
             Expression::Relation(data) => {
                 let new_left = data.left.subs(old, new);
                 let new_right = data.right.subs(old, new);
-                Expression::Relation(Box::new(crate::core::expression::RelationData {
+                Expression::Relation(Arc::new(crate::core::expression::RelationData {
                     left: new_left,
                     right: new_right,
                     relation_type: data.relation_type,
@@ -161,7 +162,7 @@ impl Substitutable for Expression {
 
                 let new_default = data.default.as_ref().map(|d| d.subs(old, new));
 
-                Expression::Piecewise(Box::new(crate::core::expression::PiecewiseData {
+                Expression::Piecewise(Arc::new(crate::core::expression::PiecewiseData {
                     pieces: new_pieces,
                     default: new_default,
                 }))
@@ -170,7 +171,7 @@ impl Substitutable for Expression {
             Expression::Interval(data) => {
                 let new_start = data.start.subs(old, new);
                 let new_end = data.end.subs(old, new);
-                Expression::Interval(Box::new(crate::core::expression::IntervalData {
+                Expression::Interval(Arc::new(crate::core::expression::IntervalData {
                     start: new_start,
                     end: new_end,
                     start_inclusive: data.start_inclusive,
@@ -241,7 +242,7 @@ impl Substitutable for Expression {
                     },
                 };
 
-                Expression::Calculus(Box::new(new_data))
+                Expression::Calculus(Arc::new(new_data))
             }
 
             Expression::MethodCall(data) => {
@@ -249,7 +250,7 @@ impl Substitutable for Expression {
                 let new_args: Vec<Expression> =
                     data.args.iter().map(|a| a.subs(old, new)).collect();
 
-                Expression::MethodCall(Box::new(crate::core::expression::MethodCallData {
+                Expression::MethodCall(Arc::new(crate::core::expression::MethodCallData {
                     object: new_object,
                     method_name: data.method_name.clone(),
                     args: new_args,

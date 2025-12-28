@@ -167,15 +167,15 @@ impl IntegrationByParts {
     /// ```
     pub fn is_good_u_choice(expr: &Expression, variable: &Symbol) -> bool {
         match expr {
-            Expression::Function { name, .. } if name == "ln" || name == "log" => true,
+            Expression::Function { name, .. } if name.as_ref() == "ln" || name.as_ref() == "log" => true,
 
             Expression::Function { name, .. }
-                if name == "arcsin"
-                    || name == "arccos"
-                    || name == "arctan"
-                    || name == "arcsec"
-                    || name == "arccsc"
-                    || name == "arccot" =>
+                if name.as_ref() == "arcsin"
+                    || name.as_ref() == "arccos"
+                    || name.as_ref() == "arctan"
+                    || name.as_ref() == "arcsec"
+                    || name.as_ref() == "arccsc"
+                    || name.as_ref() == "arccot" =>
             {
                 true
             }
@@ -190,12 +190,12 @@ impl IntegrationByParts {
             }
 
             Expression::Function { name, .. }
-                if name == "sin"
-                    || name == "cos"
-                    || name == "tan"
-                    || name == "exp"
-                    || name == "sinh"
-                    || name == "cosh" =>
+                if name.as_ref() == "sin"
+                    || name.as_ref() == "cos"
+                    || name.as_ref() == "tan"
+                    || name.as_ref() == "exp"
+                    || name.as_ref() == "sinh"
+                    || name.as_ref() == "cosh" =>
             {
                 false
             }

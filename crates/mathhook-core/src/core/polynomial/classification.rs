@@ -335,7 +335,7 @@ fn contains_transcendental(expr: &Expression) -> bool {
                 "sin", "cos", "tan", "cot", "sec", "csc", "sinh", "cosh", "tanh", "exp", "log",
                 "ln", "arcsin", "arccos", "arctan",
             ];
-            transcendental_fns.contains(&name.as_str())
+            transcendental_fns.contains(&name.as_ref())
         }
         Expression::Add(terms) | Expression::Mul(terms) => {
             terms.iter().any(contains_transcendental)

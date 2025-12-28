@@ -43,7 +43,9 @@ pub fn simplify_function(name: &str, args: &[Expression]) -> Expression {
             args: inner_args,
         } = &simplified_args[0]
         {
-            if (inner_name == "log" || inner_name == "ln") && inner_args.len() == 1 {
+            if (inner_name.as_ref() == "log" || inner_name.as_ref() == "ln")
+                && inner_args.len() == 1
+            {
                 return inner_args[0].clone();
             }
         }
@@ -56,7 +58,7 @@ pub fn simplify_function(name: &str, args: &[Expression]) -> Expression {
             args: inner_args,
         } = &simplified_args[0]
         {
-            if inner_name == "exp" && inner_args.len() == 1 {
+            if inner_name.as_ref() == "exp" && inner_args.len() == 1 {
                 return inner_args[0].clone();
             }
         }
@@ -243,7 +245,7 @@ mod tests {
         // Should be sin(1) (symbolic), not a float
         match result {
             Expression::Function { name, args } => {
-                assert_eq!(name, "sin");
+                assert_eq!(name.as_ref(), "sin");
                 assert_eq!(args.len(), 1);
                 assert_eq!(args[0], expr!(1));
             }

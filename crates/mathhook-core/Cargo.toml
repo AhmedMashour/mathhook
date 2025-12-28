@@ -29,7 +29,7 @@ num-traits.workspace = true
 num-integer.workspace = true
 
 # Utilities
-serde.workspace = true
+serde = { workspace = true, features = ["rc"] }
 serde_json.workspace = true
 once_cell.workspace = true
 tempfile.workspace = true

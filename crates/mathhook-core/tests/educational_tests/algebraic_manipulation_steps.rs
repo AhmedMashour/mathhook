@@ -1,6 +1,7 @@
 // Integration tests for algebraic manipulation educational explanations
 // NO FALSE POSITIVES - validates actual mathematical content
 
+use std::sync::Arc;
 use mathhook_core::educational::step_by_step::StepByStep;
 use mathhook_core::{symbol, Expression};
 
@@ -21,12 +22,12 @@ fn has_step_containing(
 #[test]
 fn test_simplify_combine_like_terms() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(2),
             Expression::Symbol(x.clone()),
         ])),
-        Expression::Mul(Box::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(3),
             Expression::Symbol(x.clone()),
         ])),
@@ -60,8 +61,8 @@ fn test_simplify_combine_like_terms() {
 fn test_simplify_power_rules() {
     let x = symbol!(x);
     let expr = Expression::Pow(
-        Box::new(Expression::Symbol(x.clone())),
-        Box::new(Expression::integer(1)),
+        Arc::new(Expression::Symbol(x.clone())),
+        Arc::new(Expression::integer(1)),
     );
 
     let explanation = expr.explain_simplification();
@@ -75,7 +76,7 @@ fn test_simplify_power_rules() {
 #[test]
 fn test_simplify_coefficient_multiplication() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
         Expression::integer(2),
         Expression::integer(3),
         Expression::Symbol(x.clone()),
@@ -93,7 +94,7 @@ fn test_simplify_coefficient_multiplication() {
 #[test]
 fn test_simplify_identity_rules_additive() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
         Expression::Symbol(x.clone()),
         Expression::integer(0),
     ]));
@@ -109,7 +110,7 @@ fn test_simplify_identity_rules_additive() {
 #[test]
 fn test_simplify_identity_rules_multiplicative() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
         Expression::Symbol(x.clone()),
         Expression::integer(1),
     ]));
@@ -125,7 +126,7 @@ fn test_simplify_identity_rules_multiplicative() {
 #[test]
 fn test_simplify_zero_property() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
         Expression::Symbol(x.clone()),
         Expression::integer(0),
     ]));
@@ -141,12 +142,12 @@ fn test_simplify_zero_property() {
 #[test]
 fn test_expand_binomial_foil() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(2),
         ])),
-        Expression::Add(Box::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(3),
         ])),
@@ -163,9 +164,9 @@ fn test_expand_binomial_foil() {
 #[test]
 fn test_expand_distributive_property() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
         Expression::integer(2),
-        Expression::Add(Box::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(3),
         ])),
@@ -184,11 +185,11 @@ fn test_expand_distributive_property() {
 fn test_expand_binomial_square() {
     let x = symbol!(x);
     let expr = Expression::Pow(
-        Box::new(Expression::Add(Box::new(vec![
+        Arc::new(Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(1),
         ]))),
-        Box::new(Expression::integer(2)),
+        Arc::new(Expression::integer(2)),
     );
 
     let explanation = expr.explain_expansion();
@@ -203,12 +204,12 @@ fn test_expand_binomial_square() {
 #[test]
 fn test_expand_combine_like_terms_after() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(1),
         ])),
-        Expression::Add(Box::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(1),
         ])),
@@ -222,8 +223,8 @@ fn test_expand_combine_like_terms_after() {
 #[test]
 fn test_factor_gcf_extraction() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(6),
             Expression::Symbol(x.clone()),
         ])),
@@ -250,12 +251,12 @@ fn test_factor_gcf_extraction() {
 #[test]
 fn test_factor_gcf_with_multiple_terms() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(12),
             Expression::Symbol(x.clone()),
         ])),
-        Expression::Mul(Box::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(18),
             Expression::Symbol(x.clone()),
         ])),
@@ -280,8 +281,8 @@ fn test_factor_gcf_with_multiple_terms() {
 #[test]
 fn test_factor_verification_step() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(2),
             Expression::Symbol(x.clone()),
         ])),
@@ -299,12 +300,12 @@ fn test_factor_verification_step() {
 #[test]
 fn test_simplification_produces_multiple_steps() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(2),
             Expression::Symbol(x.clone()),
         ])),
-        Expression::Mul(Box::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(3),
             Expression::Symbol(x.clone()),
         ])),
@@ -323,12 +324,12 @@ fn test_simplification_produces_multiple_steps() {
 #[test]
 fn test_expansion_produces_multiple_steps() {
     let x = symbol!(x);
-    let expr = Expression::Mul(Box::new(vec![
-        Expression::Add(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(2),
         ])),
-        Expression::Add(Box::new(vec![
+        Expression::Add(Arc::new(vec![
             Expression::Symbol(x.clone()),
             Expression::integer(3),
         ])),
@@ -345,8 +346,8 @@ fn test_expansion_produces_multiple_steps() {
 #[test]
 fn test_factorization_produces_multiple_steps() {
     let x = symbol!(x);
-    let expr = Expression::Add(Box::new(vec![
-        Expression::Mul(Box::new(vec![
+    let expr = Expression::Add(Arc::new(vec![
+        Expression::Mul(Arc::new(vec![
             Expression::integer(6),
             Expression::Symbol(x.clone()),
         ])),

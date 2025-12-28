@@ -190,7 +190,7 @@ impl Limits for Expression {
 
             Expression::Function { name, args } => {
                 // ln(x), log(x) → infinity
-                if (name == "ln" || name == "log") && args.len() == 1 {
+                if (name.as_ref() == "ln" || name.as_ref() == "log") && args.len() == 1 {
                     if let Expression::Symbol(s) = &args[0] {
                         if s == variable {
                             return Expression::infinity();

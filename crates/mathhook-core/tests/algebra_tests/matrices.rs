@@ -50,7 +50,7 @@ fn assert_is_zero_or_undefined(expr: &Expression) {
             let val = number_to_f64(n);
             assert!(val.abs() < EPSILON, "Expected zero, got {}", val);
         }
-        Expression::Function { name, args } if name == "undefined" && args.is_empty() => {
+        Expression::Function { name, args } if name.as_ref() == "undefined" && args.is_empty() => {
             // undefined is acceptable for singular matrix determinant
         }
         _ => panic!("Expected zero or undefined, got {:?}", expr),

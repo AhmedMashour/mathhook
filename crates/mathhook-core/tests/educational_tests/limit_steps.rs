@@ -3,6 +3,7 @@
 //! These tests validate that limit educational explanations contain correct
 //! mathematical content and follow proper pedagogical structure.
 
+use std::sync::Arc;
 use mathhook_core::calculus::limits::educational::LimitEducation;
 use mathhook_core::{symbol, Expression};
 
@@ -118,9 +119,9 @@ fn test_indeterminate_form_components_evaluated() {
     let denominator = Expression::symbol(x.clone());
     // Use raw Mul constructor to bypass simplification (x/x = 1)
     // This preserves the fraction structure for educational analysis
-    let expr = Expression::Mul(Box::new(vec![
+    let expr = Expression::Mul(Arc::new(vec![
         numerator,
-        Expression::Pow(Box::new(denominator), Box::new(Expression::integer(-1))),
+        Expression::Pow(Arc::new(denominator), Arc::new(Expression::integer(-1))),
     ]));
     let point = Expression::integer(0);
 

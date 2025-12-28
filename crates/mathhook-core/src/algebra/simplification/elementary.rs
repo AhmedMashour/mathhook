@@ -108,7 +108,7 @@ impl SimplificationStrategy for ExpSimplificationStrategy {
                 Expression::Function {
                     name,
                     args: inner_args,
-                } if name == "ln" && inner_args.len() == 1 => inner_args[0].clone(),
+                } if name.as_ref() == "ln" && inner_args.len() == 1 => inner_args[0].clone(),
 
                 _ => Expression::function("exp", args.to_vec()),
             }

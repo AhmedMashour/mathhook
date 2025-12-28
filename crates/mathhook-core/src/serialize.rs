@@ -165,7 +165,7 @@ impl MathSerializer {
             },
 
             Expression::Function { name, args } => ExpressionData::Function {
-                name: name.clone(),
+                name: name.to_string(),
                 args: args.iter().map(Self::expression_to_data).collect(),
             },
 
