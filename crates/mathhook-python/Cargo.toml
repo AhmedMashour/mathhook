@@ -30,4 +30,4 @@ default = ["python-bindings"]
 python-bindings = []
 
 [build-dependencies]
-pyo3-build-config = "0.26"
+pyo3-build-config = "0.27"
