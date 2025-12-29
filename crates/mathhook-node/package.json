@@ -83,11 +83,11 @@
     "url": "https://github.com/AhmedMashour/mathhook/issues"
   },
   "optionalDependencies": {
-    "mathhook-node-linux-x64-gnu": "0.1.2",
+    "mathhook-node-linux-x64-gnu": "0.2.0",
     "mathhook-node-linux-x64-musl": "0.1.2",
     "mathhook-node-linux-arm64-gnu": "0.1.2",
     "mathhook-node-linux-arm64-musl": "0.1.2",
-    "mathhook-node-darwin-arm64": "0.1.2",
+    "mathhook-node-darwin-arm64": "0.2.0",
     "mathhook-node-darwin-universal": "0.1.2",
     "mathhook-node-linux-arm-gnueabihf": "0.1.2",
     "mathhook-node-win32-ia32-msvc": "0.1.2",
