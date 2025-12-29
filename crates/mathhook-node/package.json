@@ -91,7 +91,7 @@
     "mathhook-node-darwin-universal": "0.1.2",
     "mathhook-node-linux-arm-gnueabihf": "0.1.2",
     "mathhook-node-win32-ia32-msvc": "0.1.2",
-    "mathhook-node-win32-x64-msvc": "0.1.2",
+    "mathhook-node-win32-x64-msvc": "0.2.0",
     "mathhook-node-win32-arm64-msvc": "0.1.2"
   }
 }
