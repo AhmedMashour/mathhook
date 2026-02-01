@@ -6,7 +6,7 @@
 #   macOS:   x86_64, aarch64 (via zig)
 #   Windows: x86_64-msvc (via xwin)
 
-FROM rust:1.83-slim-bookworm AS builder
+FROM rust:1.93-slim-bookworm AS builder
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
