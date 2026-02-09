@@ -24,4 +24,4 @@ default = ["nodejs-bindings"]
 nodejs-bindings = []
 
 [build-dependencies]
-napi-build = "2.2"
+napi-build = "2.3"
