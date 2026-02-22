@@ -7,6 +7,7 @@ use crate::core::{Expression, Number};
 use num_bigint::BigInt;
 use num_rational::BigRational;
 use std::sync::Arc;
+use num_traits::Pow;
 
 /// Power simplification
 pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
@@ -25,6 +26,15 @@ pub fn simplify_power(base: &Expression, exp: &Expression) -> Expression {
             if *n > 0 =>
         {
             Expression::integer(0)
+        }
+        // x^n
+        (Expression::Number(Number::Float(base)), Expression::Number(Number::Integer(n)))
+        if *n > 0 && (*base).is_finite() && !(*base).is_nan() => {
+            if let Some(exp) = i32::try_from(*n).ok() {
+                Expression::float((*base).powi(exp))
+            }else {
+                Expression::float((*base).powf(*n as f64))
+            }
         }
         // 0^(-1) = undefined (division by zero)
         (Expression::Number(Number::Integer(0)), Expression::Number(Number::Integer(-1))) => {
