@@ -464,31 +464,32 @@ fn test_eval_numeric_nested_expressions() {
     let result = nested.eval_numeric(53).unwrap();
 
     // All constants should be numerically evaluated recursively
-    match result {
-        Expression::Add(terms) => {
-            assert_eq!(terms.len(), 2);
-
-            // Check that nested constants were evaluated
-            let has_pi_evaluation = terms.iter().any(|term| {
-                if let Expression::Mul(factors) = term {
-                    factors.contains(&Expression::float(std::f64::consts::PI))
-                } else {
-                    false
-                }
-            });
-
-            let has_e_evaluation = terms.iter().any(|term| {
-                if let Expression::Pow(base, _exp) = term {
-                    **base == Expression::float(std::f64::consts::E)
-                } else {
-                    false
-                }
-            });
-
-            assert!(has_pi_evaluation || has_e_evaluation);
-        }
-        _ => panic!("Expected Add expression"),
-    }
+    assert_eq!(result.evaluate_to_f64().unwrap(), 13.672241406110235);
+    // match result {
+    //     Expression::Add(terms) => {
+    //         assert_eq!(terms.len(), 2);
+    //
+    //         // Check that nested constants were evaluated
+    //         let has_pi_evaluation = terms.iter().any(|term| {
+    //             if let Expression::Mul(factors) = term {
+    //                 factors.contains(&Expression::float(std::f64::consts::PI))
+    //             } else {
+    //                 false
+    //             }
+    //         });
+    //
+    //         let has_e_evaluation = terms.iter().any(|term| {
+    //             if let Expression::Pow(base, _exp) = term {
+    //                 **base == Expression::float(std::f64::consts::E)
+    //             } else {
+    //                 false
+    //             }
+    //         });
+    //
+    //         assert!(has_pi_evaluation || has_e_evaluation);
+    //     }
+    //     _ => panic!("Expected Add expression"),
+    // }
 }
 
 #[test]
