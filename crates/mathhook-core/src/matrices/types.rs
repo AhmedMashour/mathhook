@@ -140,8 +140,8 @@ impl SymmetricMatrixData {
         if i >= self.size || j >= self.size {
             None // Out of bounds
         } else {
-            let (row, col) = if i <= j { (i, j) } else { (j, i) };
-            let index = row * (row - 1) / 2 + col;
+            let (row, col) = if i >= j { (i, j) } else { (j, i) };
+            let index = (row + 1)  * (row) / 2 + col;
             self.elements.get(index)
         }
     }

@@ -8,7 +8,7 @@
 //! - Special matrices (symmetric, orthogonal, etc.)
 
 use mathhook_core::matrices::eigenvalues::EigenOperations;
-use mathhook_core::matrices::{Matrix, MatrixDecomposition, MatrixOperations};
+use mathhook_core::matrices::{unified, Matrix, MatrixDecomposition, MatrixOperations};
 use mathhook_core::{expr, symbol, Expression, Number, Simplify};
 
 fn number_to_f64(n: &Number) -> f64 {
@@ -429,6 +429,25 @@ fn test_matrix_is_symmetric() {
 
     let non_symmetric = Matrix::from_arrays([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
     assert!(!non_symmetric.is_symmetric());
+}
+
+#[test]
+fn test_symmetric_matrix(){
+    let symmetric = unified::Matrix::symmetric(3, vec![
+        Expression::integer(1), // (0,0)
+        Expression::integer(2), Expression::integer(4), // (1,0), (1,1)
+        Expression::integer(3), Expression::integer(5), Expression::integer(6) // (2,0), (2,1), (2,2)
+    ]);
+    assert_eq!(symmetric.get_element(0, 0), Expression::integer(1));
+    assert_eq!(symmetric.get_element(0, 1), Expression::integer(2));
+    assert_eq!(symmetric.get_element(0, 2), Expression::integer(3));
+    assert_eq!(symmetric.get_element(1, 0), Expression::integer(2));
+    assert_eq!(symmetric.get_element(1, 1), Expression::integer(4));
+    assert_eq!(symmetric.get_element(1, 2), Expression::integer(5));
+    assert_eq!(symmetric.get_element(2, 0), Expression::integer(3));
+    assert_eq!(symmetric.get_element(2, 1), Expression::integer(5));
+    assert_eq!(symmetric.get_element(2, 2), Expression::integer(6));
+
 }
 
 #[test]
