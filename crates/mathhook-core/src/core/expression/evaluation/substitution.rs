@@ -191,20 +191,24 @@ impl Expression {
             Expression::Matrix(m) => {
                 if m.is_symmetric() {
                     let size = m.dimensions().0;
+                    let mut new_elements = Vec::with_capacity(size * size / 2 + size);
                     for i in 0..size {
                         for j in 0..i{
-                            m.get_element(i, j).substitute(substitutions);
+                            new_elements.push(m.get_element(i, j).substitute(substitutions));
                         }
                     }
-                    Expression::Matrix(m.clone())
+                    Expression::Matrix(Arc::new(crate::matrices::unified::Matrix::symmetric(size, new_elements)))
                 } else {
                     let (i_bound, j_bound) = m.dimensions();
+                    let mut rows = Vec::with_capacity(i_bound);
                     for i in 0..i_bound {
+                        let mut cols = Vec::with_capacity(j_bound);
                         for j in 0..j_bound {
-                            m.get_element(i, j).substitute(substitutions);
+                            cols.push(m.get_element(i, j).substitute(substitutions));
                         }
+                        rows.push(cols);
                     }
-                    Expression::Matrix(m.clone())
+                    Expression::Matrix(Arc::new(crate::matrices::unified::Matrix::dense(rows)))
                 }
             },
         }
