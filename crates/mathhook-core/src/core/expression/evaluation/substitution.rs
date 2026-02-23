@@ -188,7 +188,25 @@ impl Expression {
                 Expression::method_call(new_object, data.method_name.clone(), new_args)
             }
 
-            Expression::Matrix(_) => self.clone(),
+            Expression::Matrix(m) => {
+                if m.is_symmetric() {
+                    let size = m.dimensions().0;
+                    for i in 0..size {
+                        for j in 0..i{
+                            m.get_element(i, j).substitute(substitutions);
+                        }
+                    }
+                    Expression::Matrix(m.clone())
+                } else {
+                    let (i_bound, j_bound) = m.dimensions();
+                    for i in 0..i_bound {
+                        for j in 0..j_bound {
+                            m.get_element(i, j).substitute(substitutions);
+                        }
+                    }
+                    Expression::Matrix(m.clone())
+                }
+            },
         }
     }
 
