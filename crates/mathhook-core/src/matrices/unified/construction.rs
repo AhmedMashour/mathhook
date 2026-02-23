@@ -402,9 +402,9 @@ impl Matrix {
     /// use mathhook_core::Expression;
     ///
     /// let symmetric = Matrix::symmetric(3, vec![
-    ///     Expression::integer(1), Expression::integer(2), Expression::integer(3),
-    ///     Expression::integer(4), Expression::integer(5),
-    ///     Expression::integer(6)
+    ///     Expression::integer(1),
+    ///     Expression::integer(2), Expression::integer(3),
+    ///     Expression::integer(4), Expression::integer(5), Expression::integer(6)
     /// ]);
     /// ```
     pub fn symmetric(size: usize, elements: Vec<Expression>) -> Self {
