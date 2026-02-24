@@ -356,6 +356,44 @@ impl EvalNumeric for Expression {
                     }
                 }
 
+                // Compute numerically when both operands are numeric
+                match (&base_eval, &exp_eval) {
+                    (
+                        Expression::Number(Number::Float(b)),
+                        Expression::Number(Number::Integer(n)),
+                    ) => {
+                        if let Ok(exp_i32) = i32::try_from(*n) {
+                            let result = b.powi(exp_i32);
+                            if result.is_finite() {
+                                return Ok(Expression::float(result));
+                            }
+                        }
+                        let result = b.powf(*n as f64);
+                        if result.is_finite() {
+                            return Ok(Expression::float(result));
+                        }
+                    }
+                    (
+                        Expression::Number(Number::Float(b)),
+                        Expression::Number(Number::Float(e)),
+                    ) => {
+                        let result = b.powf(*e);
+                        if result.is_finite() {
+                            return Ok(Expression::float(result));
+                        }
+                    }
+                    (
+                        Expression::Number(Number::Integer(b)),
+                        Expression::Number(Number::Float(e)),
+                    ) => {
+                        let result = (*b as f64).powf(*e);
+                        if result.is_finite() {
+                            return Ok(Expression::float(result));
+                        }
+                    }
+                    _ => {}
+                }
+
                 Ok(Expression::pow(base_eval, exp_eval))
             }
 

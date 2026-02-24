@@ -159,7 +159,6 @@ fn test_eval_numeric_constant_pi() {
     let pi = Expression::pi();
     let result = pi.eval_numeric(53).unwrap();
 
-    // Should evaluate to float approximation of π
     assert_eq!(result, Expression::float(std::f64::consts::PI));
 }
 
@@ -168,7 +167,6 @@ fn test_eval_numeric_constant_e() {
     let e = Expression::e();
     let result = e.eval_numeric(53).unwrap();
 
-    // Should evaluate to float approximation of e
     assert_eq!(result, Expression::float(std::f64::consts::E));
 }
 
@@ -176,7 +174,7 @@ fn test_eval_numeric_constant_e() {
 fn test_eval_numeric_constant_i_remains_symbolic() {
     let i = Expression::i();
     let result = i.eval_numeric(53).unwrap();
-    assert_eq!(result, i); // Imaginary unit stays symbolic
+    assert_eq!(result, i);
 }
 
 #[test]
@@ -184,8 +182,7 @@ fn test_eval_numeric_add_numbers() {
     let expr = expr!((2 + 3));
     let result = expr.eval_numeric(53).unwrap();
 
-    // Should evaluate to 5
-    assert_eq!(result, expr!((2 + 3))); // Returns sum expression, not simplified
+    assert_eq!(result, expr!((2 + 3)));
 }
 
 #[test]
@@ -199,7 +196,6 @@ fn test_eval_numeric_add_with_symbols() {
 
     let result = expr.eval_numeric(53).unwrap();
 
-    // Symbols stay symbolic (no substitution at this level)
     assert_eq!(result, expr);
 }
 
@@ -208,7 +204,6 @@ fn test_eval_numeric_mul_numbers() {
     let expr = expr!((2 * 3));
     let result = expr.eval_numeric(53).unwrap();
 
-    // Should evaluate to 6
     assert_eq!(result, expr!((2 * 3)));
 }
 
@@ -217,7 +212,6 @@ fn test_eval_numeric_pow_positive_exponent() {
     let expr = expr!((2 ^ 3));
     let result = expr.eval_numeric(53).unwrap();
 
-    // Should evaluate to 8
     assert_eq!(result, expr!((2 ^ 3)));
 }
 
@@ -226,17 +220,14 @@ fn test_eval_numeric_pow_zero_base_positive_exp() {
     let expr = expr!((0 ^ 2));
     let result = expr.eval_numeric(53).unwrap();
 
-    // 0^2 = 0 (valid)
     assert_eq!(result, expr!((0 ^ 2)));
 }
 
 #[test]
 fn test_eval_numeric_pow_zero_base_negative_exp_errors() {
-    // expr! macro doesn't support negative numbers, use explicit API
     let expr = Expression::pow(Expression::integer(0), Expression::integer(-2));
     let result = expr.eval_numeric(53);
 
-    // 0^(-2) = 1/0 → DivisionByZero error
     assert!(matches!(result, Err(MathError::DivisionByZero)));
 }
 
@@ -246,7 +237,6 @@ fn test_eval_numeric_function_sin() {
     let expr = Expression::function("sin", vec![Expression::symbol(x)]);
     let result = expr.eval_numeric(53).unwrap();
 
-    // Function with symbolic argument stays symbolic
     assert_eq!(result, expr);
 }
 
@@ -255,7 +245,6 @@ fn test_eval_numeric_function_with_number() {
     let expr = Expression::function("sin", vec![Expression::integer(0)]);
     let result = expr.eval_numeric(53).unwrap();
 
-    // sin(0) should evaluate (delegated to function evaluator)
     assert_eq!(result, expr!(0));
 }
 
@@ -268,7 +257,6 @@ fn test_eval_numeric_matrix_with_numbers() {
 
     let result = matrix_expr.eval_numeric(53).unwrap();
 
-    // Elements should be evaluated (though numbers stay as-is)
     match result {
         Expression::Matrix(m) => {
             assert_eq!(m.dimensions(), (2, 2));
@@ -287,13 +275,11 @@ fn test_eval_numeric_matrix_with_constants() {
 
     let result = matrix_expr.eval_numeric(53).unwrap();
 
-    // Constants should be numerically evaluated
     match result {
         Expression::Matrix(m) => {
             let pi_elem = m.get_element(0, 0);
             let e_elem = m.get_element(0, 1);
 
-            // Compare at Expression level
             assert_eq!(pi_elem, Expression::float(std::f64::consts::PI));
             assert_eq!(e_elem, Expression::float(std::f64::consts::E));
         }
@@ -311,7 +297,6 @@ fn test_eval_numeric_set_with_numbers() {
 
     let result = set_expr.eval_numeric(53).unwrap();
 
-    // Elements should be evaluated
     match result {
         Expression::Set(elements) => {
             assert_eq!(elements.len(), 3);
@@ -329,12 +314,10 @@ fn test_eval_numeric_set_with_constants() {
 
     let result = set_expr.eval_numeric(53).unwrap();
 
-    // Constants should be numerically evaluated
     match result {
         Expression::Set(elements) => {
             assert_eq!(elements.len(), 2);
 
-            // Check if set contains evaluated constants
             assert!(elements.contains(&Expression::float(std::f64::consts::PI)));
             assert!(elements.contains(&Expression::float(std::f64::consts::E)));
         }
@@ -348,7 +331,6 @@ fn test_eval_numeric_complex_with_constants() {
 
     let result = complex_expr.eval_numeric(53).unwrap();
 
-    // Real and imaginary parts should be numerically evaluated
     match result {
         Expression::Complex(data) => {
             assert_eq!(data.real, Expression::float(std::f64::consts::PI));
@@ -360,16 +342,10 @@ fn test_eval_numeric_complex_with_constants() {
 
 #[test]
 fn test_eval_numeric_interval_with_constants() {
-    let interval_expr = Expression::interval(
-        Expression::pi(),
-        Expression::e(),
-        true,  // start_inclusive
-        false, // end_inclusive
-    );
+    let interval_expr = Expression::interval(Expression::pi(), Expression::e(), true, false);
 
     let result = interval_expr.eval_numeric(53).unwrap();
 
-    // Bounds should be numerically evaluated
     match result {
         Expression::Interval(data) => {
             assert_eq!(data.start, Expression::float(std::f64::consts::PI));
@@ -393,29 +369,25 @@ fn test_eval_numeric_piecewise_evaluates_expressions_not_conditions() {
     let piecewise_expr = Expression::piecewise(
         vec![
             (Expression::pi(), condition.clone()),
-            (Expression::e(), Expression::integer(1)), // Always true
+            (Expression::e(), Expression::integer(1)),
         ],
         Some(Expression::integer(0)),
     );
 
     let result = piecewise_expr.eval_numeric(53).unwrap();
 
-    // Expressions should be evaluated, conditions stay symbolic
     match result {
         Expression::Piecewise(data) => {
             assert_eq!(data.pieces.len(), 2);
 
-            // First piece: expression = π (evaluated), condition = x > 0 (symbolic)
             let (expr1, cond1) = &data.pieces[0];
             assert_eq!(expr1, &Expression::float(std::f64::consts::PI));
-            assert_eq!(cond1, &condition); // Condition unchanged
+            assert_eq!(cond1, &condition);
 
-            // Second piece: expression = e (evaluated), condition = 1 (unchanged)
             let (expr2, cond2) = &data.pieces[1];
             assert_eq!(expr2, &Expression::float(std::f64::consts::E));
             assert_eq!(cond2, &Expression::integer(1));
 
-            // Default: 0 (unchanged)
             assert_eq!(data.default, Some(Expression::integer(0)));
         }
         _ => panic!("Expected Piecewise expression"),
@@ -428,7 +400,6 @@ fn test_eval_numeric_relation_evaluates_both_sides() {
 
     let result = relation_expr.eval_numeric(53).unwrap();
 
-    // Both lhs and rhs should be numerically evaluated
     match result {
         Expression::Relation(data) => {
             assert_eq!(data.left, Expression::float(std::f64::consts::PI));
@@ -450,12 +421,13 @@ fn test_eval_numeric_calculus_remains_symbolic() {
 
     let result = derivative_expr.eval_numeric(53).unwrap();
 
-    // Calculus expressions stay symbolic
     assert_eq!(result, derivative_expr);
 }
 
 #[test]
 fn test_eval_numeric_nested_expressions() {
+    // 2*pi + e^2: all constants become floats, float^int is computed,
+    // and the add constructor folds all-float sums into a single float
     let nested = Expression::add(vec![
         Expression::mul(vec![Expression::integer(2), Expression::pi()]),
         Expression::pow(Expression::e(), Expression::integer(2)),
@@ -463,43 +435,125 @@ fn test_eval_numeric_nested_expressions() {
 
     let result = nested.eval_numeric(53).unwrap();
 
-    // All constants should be numerically evaluated recursively
+    // 2*PI + E^2
+    let expected = 2.0 * std::f64::consts::PI + std::f64::consts::E.powi(2);
+
     match result {
-        Expression::Add(terms) => {
-            assert_eq!(terms.len(), 2);
-
-            // Check that nested constants were evaluated
-            let has_pi_evaluation = terms.iter().any(|term| {
-                if let Expression::Mul(factors) = term {
-                    factors.contains(&Expression::float(std::f64::consts::PI))
-                } else {
-                    false
-                }
-            });
-
-            let has_e_evaluation = terms.iter().any(|term| {
-                if let Expression::Pow(base, _exp) = term {
-                    **base == Expression::float(std::f64::consts::E)
-                } else {
-                    false
-                }
-            });
-
-            assert!(has_pi_evaluation || has_e_evaluation);
+        Expression::Number(mathhook_core::Number::Float(f)) => {
+            assert!(
+                (f - expected).abs() < 1e-10,
+                "Expected {expected:.10}, got {f:.10}",
+            );
         }
-        _ => panic!("Expected Add expression"),
+        Expression::Add(ref terms) => {
+            let sum: f64 = terms
+                .iter()
+                .filter_map(|t| match t {
+                    Expression::Number(mathhook_core::Number::Float(f)) => Some(*f),
+                    _ => None,
+                })
+                .sum();
+            assert!(
+                (sum - expected).abs() < 1e-10,
+                "Expected sum {expected:.10}, got {sum:.10} from terms: {terms:?}",
+            );
+        }
+        _ => panic!("Expected fully-evaluated numeric result, got: {:?}", result),
     }
 }
 
 #[test]
+fn test_eval_numeric_float_pow_integer() {
+    // Direct test: float^integer should compute numerically
+    let base = Expression::float(2.5);
+    let exp = Expression::integer(3);
+    let pow_expr = Expression::pow(base, exp);
+
+    let result = pow_expr.eval_numeric(53).unwrap();
+
+    match result {
+        Expression::Number(mathhook_core::Number::Float(f)) => {
+            assert!(
+                (f - 15.625).abs() < 1e-10,
+                "Expected 2.5^3 = 15.625, got {f}",
+            );
+        }
+        _ => panic!("Expected float result for float^integer, got: {:?}", result),
+    }
+}
+
+#[test]
+fn test_eval_numeric_float_pow_float() {
+    let base = Expression::float(2.0);
+    let exp = Expression::float(0.5);
+    let pow_expr = Expression::pow(base, exp);
+
+    let result = pow_expr.eval_numeric(53).unwrap();
+
+    match result {
+        Expression::Number(mathhook_core::Number::Float(f)) => {
+            assert!(
+                (f - std::f64::consts::SQRT_2).abs() < 1e-10,
+                "Expected 2.0^0.5 = sqrt(2), got {f}",
+            );
+        }
+        _ => panic!("Expected float result for float^float, got: {:?}", result),
+    }
+}
+
+#[test]
+fn test_eval_numeric_int_pow_float() {
+    let base = Expression::integer(4);
+    let exp = Expression::float(0.5);
+    let pow_expr = Expression::pow(base, exp);
+
+    let result = pow_expr.eval_numeric(53).unwrap();
+
+    match result {
+        Expression::Number(mathhook_core::Number::Float(f)) => {
+            assert!((f - 2.0).abs() < 1e-10, "Expected 4^0.5 = 2.0, got {f}",);
+        }
+        _ => panic!("Expected float result for int^float, got: {:?}", result),
+    }
+}
+
+#[test]
+fn test_evaluate_to_f64_with_constants() {
+    let pi = Expression::pi();
+    let result = pi.evaluate_to_f64().unwrap();
+    assert!((result - std::f64::consts::PI).abs() < 1e-10);
+
+    let e = Expression::e();
+    let result = e.evaluate_to_f64().unwrap();
+    assert!((result - std::f64::consts::E).abs() < 1e-10);
+}
+
+#[test]
+fn test_evaluate_to_f64_pow_float_base() {
+    // The reported issue: float_base^2 should evaluate via evaluate_to_f64
+    let pow_expr = Expression::pow(Expression::float(2.5), Expression::integer(2));
+    let result = pow_expr.evaluate_to_f64().unwrap();
+    assert!((result - 6.25).abs() < 1e-10);
+}
+
+#[test]
+fn test_evaluate_to_f64_constant_pow() {
+    // e^2 should evaluate to a float via evaluate_to_f64
+    let pow_expr = Expression::pow(Expression::e(), Expression::integer(2));
+    let result = pow_expr.evaluate_to_f64().unwrap();
+    let expected = std::f64::consts::E.powi(2);
+    assert!(
+        (result - expected).abs() < 1e-10,
+        "Expected e^2 = {expected}, got {result}",
+    );
+}
+
+#[test]
 fn test_eval_numeric_precision_parameter_ignored() {
-    // Current implementation ignores precision parameter
-    // (uses f64 precision by default)
     let pi = Expression::pi();
 
     let result1 = pi.eval_numeric(53).unwrap();
     let result2 = pi.eval_numeric(100).unwrap();
 
-    // Results should be identical (precision not yet implemented)
     assert_eq!(result1, result2);
 }
