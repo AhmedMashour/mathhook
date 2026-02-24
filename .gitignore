@@ -41,6 +41,7 @@ __pycache__
 /crates/mathhook-python/*.pyi
 /crates/mathhook-node/index.js
 /crates/mathhook-node/index.d.ts
+/crates/mathhook-node/npm/*
 
 # Node.js platform packages (generated during build)
 /crates/mathhook-node/npm/

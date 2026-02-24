@@ -6,8 +6,8 @@ Add MathHook to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mathhook = "0.1"
-mathhook-core = "0.1"
+mathhook = "0.2.0"
+mathhook-core = "0.2.0"
 ```
 
 ---

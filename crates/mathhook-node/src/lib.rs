@@ -12,3 +12,6 @@ mod functions;
 // Public API re-exports
 pub use functions::*;
 pub use generated::JsExpression;
+
+// Re-export SymbolOrExpression for use by generated code
+pub use functions::SymbolOrExpression;

@@ -1,6 +1,7 @@
 //! Functions module for MathHook Node.js bindings
 //!
 //! This module was automatically extracted from lib.rs using syn-based refactoring.
+use crate::generated::symbol::JsSymbol;
 use crate::JsExpression;
 use mathhook_core::algebra::groebner::{GroebnerBasis, MonomialOrder};
 use mathhook_core::parser::config::ParserConfig;
@@ -65,6 +66,72 @@ impl FromNapiValue for ExpressionOrNumber {
         }
     }
 }
+
+/// A wrapper type that accepts Symbol or Expression (containing a symbol) from JavaScript.
+/// This enables seamless use of both `symbol("x")` (returns Expression) and `new Symbol("x")`
+/// in functions that need a Symbol.
+///
+/// Accepts:
+/// - `Symbol` object → use directly
+/// - `Expression` that is a symbol → extract the inner Symbol
+/// - `string` → create a Symbol from the string
+///
+/// # Examples (JavaScript)
+/// ```javascript
+/// const x = symbol("x");           // Returns Expression
+/// const y = new Symbol("y");       // Returns Symbol
+///
+/// // Both work with derivative:
+/// expr.derivative(x);  // Works - extracts Symbol from Expression
+/// expr.derivative(y);  // Works - uses Symbol directly
+/// ```
+pub struct SymbolOrExpression(pub Symbol);
+
+impl FromNapiValue for SymbolOrExpression {
+    unsafe fn from_napi_value(
+        env: napi::sys::napi_env,
+        value: napi::sys::napi_value,
+    ) -> Result<Self> {
+        // Get the type of the value
+        let mut value_type = 0;
+        napi::sys::napi_typeof(env, value, &mut value_type);
+
+        if value_type == napi::sys::ValueType::napi_string {
+            // String: create a Symbol from it
+            let s: String = String::from_napi_value(env, value)?;
+            Ok(SymbolOrExpression(Symbol::new(&s)))
+        } else if value_type == napi::sys::ValueType::napi_object {
+            // Object: try JsSymbol first, then JsExpression
+            if let Ok(sym_instance) = ClassInstance::<JsSymbol>::from_napi_value(env, value) {
+                return Ok(SymbolOrExpression(sym_instance.inner.clone()));
+            }
+
+            if let Ok(expr_instance) = ClassInstance::<JsExpression>::from_napi_value(env, value) {
+                // Try to extract Symbol from Expression
+                if let Some(sym) = expr_instance.inner.as_symbol() {
+                    return Ok(SymbolOrExpression(sym.clone()));
+                } else {
+                    return Err(Error::new(
+                        Status::InvalidArg,
+                        "Expression is not a symbol. Use symbol('x') or new Symbol('x')"
+                            .to_string(),
+                    ));
+                }
+            }
+
+            Err(Error::new(
+                Status::InvalidArg,
+                "Expected Symbol or Expression containing a symbol".to_string(),
+            ))
+        } else {
+            Err(Error::new(
+                Status::InvalidArg,
+                "Expected Symbol, Expression (containing symbol), or string".to_string(),
+            ))
+        }
+    }
+}
+
 /// Compute Gröbner basis for a system of polynomials
 ///
 /// A Gröbner basis is a special generating set for a polynomial ideal that

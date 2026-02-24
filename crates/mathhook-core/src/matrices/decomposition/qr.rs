@@ -55,17 +55,16 @@ impl Matrix {
         let mut r_elements = vec![vec![Expression::integer(0); cols]; cols];
 
         // Convert columns to vectors for processing
-        for j in 0..cols {
+        for (j, r_column) in r_elements.iter_mut().enumerate() {
             let mut column: Vec<Expression> = (0..rows).map(|i| self.get_element(i, j)).collect();
 
             // Orthogonalize against previous columns
-            for k in 0..j {
-                let dot_product = self.vector_dot(&column, &q_columns[k]);
-                r_elements[k][j] = dot_product.clone();
+            for (k, q_col) in q_columns.iter().enumerate() {
+                let dot_product = self.vector_dot(&column, q_col);
+                r_column[k] = dot_product.clone();
 
                 // column = column - dot_product * q_k
-                for elem in column.iter_mut().zip(&q_columns[k]) {
-                    let (col_elem, q_elem) = elem;
+                for (col_elem, q_elem) in column.iter_mut().zip(q_col) {
                     let old_val = col_elem.clone();
                     let subtract_val = Expression::mul(vec![dot_product.clone(), q_elem.clone()]);
                     *col_elem = Expression::add(vec![
@@ -82,7 +81,7 @@ impl Matrix {
                 return None; // Linearly dependent columns
             }
 
-            r_elements[j][j] = norm.clone();
+            r_column[j] = norm.clone();
 
             // Normalize column to get q_j
             let q_column: Vec<Expression> = column

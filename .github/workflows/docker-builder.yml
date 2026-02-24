@@ -6,7 +6,7 @@
 #   - Manual dispatch
 #
 # Usage:
-#   docker pull ghcr.io/ahmedmashour/mathhook-core/builder:latest
+#   docker pull ghcr.io/ahmedmashour/mathhook-builder:latest
 
 name: Docker Builder Image
 
@@ -30,7 +30,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/builder
+  IMAGE_NAME: ahmedmashour/mathhook-builder
 
 jobs:
   build-and-push:

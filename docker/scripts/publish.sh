@@ -100,13 +100,12 @@ fi
 log_info "Publishing to npm..."
 cd /build/crates/mathhook-node
 
-# Use npm config instead of .npmrc file for security
-export NPM_CONFIG_//registry.npmjs.org/:_authToken="$NPM_TOKEN"
+# Configure npm authentication
+npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
-# Create platform packages
-if ! npx napi create-npm-dirs --npm-dir npm 2>&1 | tee /tmp/napi_dirs.log; then
-    log_warn "napi create-npm-dirs failed, npm packages may already exist"
-fi
+# Prepare npm packages (creates dirs + copies .node files)
+log_info "Preparing npm packages..."
+npx napi prepublish -t npm
 
 # Publish platform packages
 for dir in npm/*/; do

@@ -73,16 +73,18 @@ impl Matrix {
         for i in 0..n {
             for j in 0..=i {
                 if i == j {
-                    // Diagonal element: L[i][i] = sqrt(A[i][i] - sum(L[i][k]^2 for k < i))
-                    let mut sum = Expression::integer(0);
-                    for k in 0..i {
-                        let l_ik = l_elements[i][k].clone();
-                        sum = Expression::add(vec![
-                            sum,
-                            Expression::pow(l_ik, Expression::integer(2)),
-                        ])
-                        .simplify();
-                    }
+                    // L[i][i] = sqrt(A[i][i] - sum(L[i][k]^2 for k < i))
+                    let sum =
+                        l_elements[i]
+                            .iter()
+                            .take(i)
+                            .fold(Expression::integer(0), |acc, l_ik| {
+                                Expression::add(vec![
+                                    acc,
+                                    Expression::pow(l_ik.clone(), Expression::integer(2)),
+                                ])
+                                .simplify()
+                            });
 
                     let diagonal_val = Expression::add(vec![
                         self.get_element(i, i),
@@ -92,14 +94,17 @@ impl Matrix {
 
                     l_elements[i][i] = Expression::pow(diagonal_val, Expression::rational(1, 2));
                 } else {
-                    // Lower triangular element: L[i][j] = (A[i][j] - sum(L[i][k]*L[j][k] for k < j)) / L[j][j]
-                    let mut sum = Expression::integer(0);
-                    for k in 0..j {
-                        let l_ik = l_elements[i][k].clone();
-                        let l_jk = l_elements[j][k].clone();
-                        sum = Expression::add(vec![sum, Expression::mul(vec![l_ik, l_jk])])
-                            .simplify();
-                    }
+                    // L[i][j] = (A[i][j] - sum(L[i][k]*L[j][k] for k < j)) / L[j][j]
+                    let sum = l_elements[i].iter().zip(l_elements[j].iter()).take(j).fold(
+                        Expression::integer(0),
+                        |acc, (l_ik, l_jk)| {
+                            Expression::add(vec![
+                                acc,
+                                Expression::mul(vec![l_ik.clone(), l_jk.clone()]),
+                            ])
+                            .simplify()
+                        },
+                    );
 
                     let numerator = Expression::add(vec![
                         self.get_element(i, j),

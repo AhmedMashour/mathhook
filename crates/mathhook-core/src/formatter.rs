@@ -11,20 +11,15 @@ pub use wolfram::WolframFormatter;
 use crate::core::Expression;
 use std::fmt;
 /// Mathematical language/format for expressions
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum MathLanguage {
+    #[default]
     LaTeX,
     Wolfram,
     Simple,
     Human,
     Json,
     Markdown,
-}
-
-impl Default for MathLanguage {
-    fn default() -> Self {
-        Self::LaTeX
-    }
 }
 
 impl MathLanguage {

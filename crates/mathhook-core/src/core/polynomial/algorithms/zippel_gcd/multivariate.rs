@@ -161,7 +161,7 @@ pub fn multivariate_gcd_zippel(
         let p = LARGE_PRIMES[prime_idx];
         prime_idx += 1;
 
-        if gamma != 0 && gamma.unsigned_abs() % p == 0 {
+        if gamma != 0 && gamma.unsigned_abs().is_multiple_of(p) {
             continue;
         }
 

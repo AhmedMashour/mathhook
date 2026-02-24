@@ -101,7 +101,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mathhook = "0.1"
+mathhook = "0.2.0"
 ```
 
 ### Python
@@ -359,7 +359,7 @@ If you use MathHook in academic work, please cite:
 
 ## Status
 
-MathHook is currently in **beta** (version 0.1.x). The API is stabilizing but may have breaking changes before 1.0.
+MathHook is currently in **beta** (version 0.2.x). The API is stabilizing but may have breaking changes before 1.0.
 
 ### Roadmap
 

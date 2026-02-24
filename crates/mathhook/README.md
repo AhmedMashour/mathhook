@@ -18,7 +18,7 @@ High-performance educational computer algebra system for Rust.
 
 ```toml
 [dependencies]
-mathhook = "0.1"
+mathhook = "0.2.0"
 ```
 
 ## Quick Start
