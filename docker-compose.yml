@@ -3,10 +3,13 @@
 
 services:
   builder:
-    image: ${MATHHOOK_BUILDER_IMAGE:-ghcr.io/ahmedmashour/mathhook-core/builder:latest}
+    image: ${MATHHOOK_BUILDER_IMAGE:-ghcr.io/ahmedmashour/mathhook-builder:latest}
     build:
       context: .
       dockerfile: docker/Dockerfile.builder
+      args:
+        WITH_MACOS_SDK: ${WITH_MACOS_SDK:-true}
+        WITH_WINDOWS_SDK: ${WITH_WINDOWS_SDK:-true}
     volumes:
       - .:/build
       - cargo-registry:/root/.cargo/registry
@@ -19,10 +22,11 @@ services:
       - RUSTFLAGS=-C link-arg=-fuse-ld=lld
     stdin_open: true
     tty: true
+    mem_limit: 8g
 
   build-python:
     extends: builder
-    command: /build/docker/scripts/build-python.sh
+    entrypoint: /build/docker/scripts/build-python.sh
 
   build-node:
     extends: builder

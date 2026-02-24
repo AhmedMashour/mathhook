@@ -15,14 +15,14 @@ Add MathHook to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mathhook-core = "0.1"
+mathhook-core = "0.2.0"
 ```
 
 For the high-level API with ergonomic macros:
 
 ```toml
 [dependencies]
-mathhook = "0.1"
+mathhook = "0.2.0"
 ```
 
 ### Verifying Installation
@@ -230,7 +230,7 @@ To explicitly enable/disable:
 
 ```toml
 [dependencies]
-mathhook-core = { version = "0.1", features = ["simd"] }
+mathhook-core = { version = "0.2.0" features = ["simd"] }
 ```
 
 ### Parallel Processing
@@ -239,7 +239,7 @@ For parallel bulk operations:
 
 ```toml
 [dependencies]
-mathhook-core = { version = "0.1", features = ["parallel"] }
+mathhook-core = { version = "0.2.0", features = ["parallel"] }
 ```
 
 ## Troubleshooting

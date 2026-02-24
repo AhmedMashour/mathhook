@@ -43,9 +43,9 @@ impl Matrix {
             }
 
             let pivot = augmented[i][i].clone();
-            for j in 0..(2 * n) {
-                augmented[i][j] = Expression::mul(vec![
-                    augmented[i][j].clone(),
+            for elem in augmented[i].iter_mut().take(2 * n) {
+                *elem = Expression::mul(vec![
+                    elem.clone(),
                     Expression::pow(pivot.clone(), Expression::integer(-1)),
                 ])
                 .simplify();
@@ -54,11 +54,11 @@ impl Matrix {
             for k in 0..n {
                 if k != i {
                     let factor = augmented[k][i].clone();
-                    for j in 0..(2 * n) {
-                        let subtract_term =
-                            Expression::mul(vec![factor.clone(), augmented[i][j].clone()]);
-                        augmented[k][j] = Expression::add(vec![
-                            augmented[k][j].clone(),
+                    let row_i: Vec<Expression> = augmented[i].iter().take(2 * n).cloned().collect();
+                    for (j, elem) in augmented[k].iter_mut().enumerate().take(2 * n) {
+                        let subtract_term = Expression::mul(vec![factor.clone(), row_i[j].clone()]);
+                        *elem = Expression::add(vec![
+                            elem.clone(),
                             Expression::mul(vec![Expression::integer(-1), subtract_term]),
                         ])
                         .simplify();

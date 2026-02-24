@@ -11,6 +11,19 @@ linker = "musl-gcc"
 linker = "aarch64-linux-gnu-gcc"
 rustflags = ["-C", "target-feature=-crt-static"]
 
+# macOS cross-compilation (via zig)
+[target.x86_64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-F/opt/MacOSX.sdk/System/Library/Frameworks",
+    "-C", "link-arg=-L/opt/MacOSX.sdk/usr/lib",
+]
+
+[target.aarch64-apple-darwin]
+rustflags = [
+    "-C", "link-arg=-F/opt/MacOSX.sdk/System/Library/Frameworks",
+    "-C", "link-arg=-L/opt/MacOSX.sdk/usr/lib",
+]
+
 [target.x86_64-pc-windows-msvc]
 linker = "lld-link"
 rustflags = [

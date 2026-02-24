@@ -178,7 +178,7 @@ fn test_explanation_for_commutative_scalar_equations_unchanged() {
 
 #[test]
 fn test_full_step_by_step_output_for_a_x_equals_b() {
-    let steps = vec![
+    let steps = [
         MessageBuilder::new(
             MessageCategory::NoncommutativeAlgebra,
             MessageType::LeftMultiplyInverse,

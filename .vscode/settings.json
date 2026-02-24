@@ -6,6 +6,7 @@
     "rust-analyzer.check.allTargets": true,
     "rust-analyzer.diagnostics.disabled": [],
     "rust-analyzer.check.command": "clippy",
+    "rust-analyzer.check.extraArgs": ["--", "-D", "warnings"],
     "sonarlint.connectedMode.project": {
         "connectionId": "ahmedmashour",
         "projectKey": "AhmedMashour_mathhook-core"

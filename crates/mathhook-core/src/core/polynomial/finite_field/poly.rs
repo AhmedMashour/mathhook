@@ -101,7 +101,7 @@ impl PolyZp {
     /// Create the constant polynomial c
     #[inline]
     pub fn constant(c: u64, modulus: u64) -> Self {
-        if c % modulus == 0 {
+        if c.is_multiple_of(modulus) {
             Self::zero(modulus)
         } else {
             Self {
@@ -121,7 +121,7 @@ impl PolyZp {
     /// Create the monic polynomial x - a
     #[inline]
     pub fn x_minus_a(a: u64, modulus: u64) -> Self {
-        let neg_a = if a % modulus == 0 {
+        let neg_a = if a.is_multiple_of(modulus) {
             0
         } else {
             modulus - (a % modulus)

@@ -7,7 +7,9 @@
         publish-all release release-patch release-minor release-major \
         shell clean clean-cache docker-pull docker-build docker-push
 
-BUILDER_IMAGE ?= ghcr.io/ahmedmashour/mathhook-core/builder:latest
+# Docker image name (used by docker-compose via MATHHOOK_BUILDER_IMAGE)
+BUILDER_IMAGE ?= ghcr.io/ahmedmashour/mathhook-builder:latest
+export MATHHOOK_BUILDER_IMAGE = $(BUILDER_IMAGE)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Help
@@ -66,10 +68,10 @@ build-rust: docker-ensure
 	docker compose run --rm build-rust
 
 build-python: docker-ensure generate-bindings-python
-	docker compose run --rm build-python
+	docker compose run --rm build-python $(if $(RESUME),--resume,)
 
 build-node: docker-ensure generate-bindings-node
-	docker compose run --rm build-node
+	docker compose run --rm build-node $(if $(RESUME),--resume,)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Test

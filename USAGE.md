@@ -20,7 +20,7 @@ Add MathHook to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mathhook-core = "0.1"
+mathhook-core = "0.2.0"
 ```
 
 Import the prelude for common operations:
