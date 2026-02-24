@@ -523,13 +523,18 @@ impl NodeEmitter {
                 rust_type,
                 ..
             } => {
-                if node_type.starts_with("Js") && node_type != "JsObject" {
+                if node_type == "JsSymbol" {
+                    // SymbolOrExpression wraps Symbol in .0
+                    format!("{}.0.clone()", name)
+                } else if node_type.starts_with("Js") && node_type != "JsObject" {
                     if self.is_simple_enum_type(rust_type) {
                         format!("{}.inner.clone().into()", name)
                     } else if is_owned {
-                        format!("{}.inner", name)
-                    } else {
+                        // Parameters are &JsX, so we must clone to get owned inner value
                         format!("{}.inner.clone()", name)
+                    } else {
+                        // Core wants a reference, just borrow inner
+                        format!("&{}.inner", name)
                     }
                 } else if Self::needs_integer_cast(rust_type) {
                     format!("{} as {}", name, rust_type)
@@ -544,6 +549,10 @@ impl NodeEmitter {
                     if rust_type == "str" || rust_type == "&str" =>
                 {
                     format!("{}.as_str()", name)
+                }
+                MappedType::Direct { node_type, .. } if node_type == "JsSymbol" => {
+                    // SymbolOrExpression wraps Symbol in .0
+                    format!("&{}.0", name)
                 }
                 MappedType::Direct { node_type, .. }
                     if node_type.starts_with("Js") && node_type != "JsObject" =>
@@ -573,48 +582,65 @@ impl NodeEmitter {
                 }
                 _ => format!("&{}", name),
             },
-            MappedType::Option { inner_type } => match &**inner_type {
-                MappedType::Direct {
-                    node_type,
-                    rust_type,
-                    ..
-                } if node_type.starts_with("Js") && node_type != "JsObject" => {
-                    if self.is_simple_enum_type(rust_type) {
-                        format!("{}.map(|v| v.inner.clone().into())", name)
-                    } else if is_owned {
-                        format!("{}.map(|v| v.inner)", name)
-                    } else {
-                        format!("{}.map(|v| v.inner.clone())", name)
-                    }
-                }
-                MappedType::Reference {
-                    inner_type: ref_inner,
-                    ..
-                } => match &**ref_inner {
-                    MappedType::Direct { node_type, .. }
-                        if node_type.starts_with("Js") && node_type != "JsObject" =>
-                    {
-                        format!("{}.as_ref().map(|v| &v.inner)", name)
-                    }
-                    _ => name.to_string(),
-                },
-                MappedType::Collected { item_type } => match &**item_type {
-                    MappedType::Direct { node_type, .. }
-                        if node_type.starts_with("Js") && node_type != "JsObject" =>
-                    {
-                        if is_owned {
-                            format!("{}.map(|v| v.into_iter().map(|x| x.inner).collect())", name)
+            MappedType::Option { inner_type } => {
+                match &**inner_type {
+                    MappedType::Direct {
+                        node_type,
+                        rust_type,
+                        ..
+                    } if node_type.starts_with("Js") && node_type != "JsObject" => {
+                        if self.is_simple_enum_type(rust_type) {
+                            format!("{}.map(|v| v.inner.clone().into())", name)
+                        } else if node_type == "JsSymbol" {
+                            // SymbolOrExpression wraps Symbol in .0
+                            format!("{}.as_ref().map(|v| v.0.clone())", name)
+                        } else if is_owned {
+                            // Option item is &JsX, must clone to get owned
+                            format!("{}.as_ref().map(|v| v.inner.clone())", name)
                         } else {
-                            format!(
-                                "{}.map(|v| v.into_iter().map(|x| x.inner.clone()).collect())",
-                                name
-                            )
+                            // Core wants reference
+                            format!("{}.as_ref().map(|v| &v.inner)", name)
                         }
                     }
+                    MappedType::Reference {
+                        inner_type: ref_inner,
+                        ..
+                    } => match &**ref_inner {
+                        MappedType::Direct { node_type, .. }
+                            if node_type.starts_with("Js") && node_type != "JsObject" =>
+                        {
+                            if node_type == "JsSymbol" {
+                                // SymbolOrExpression wraps Symbol in .0
+                                format!("{}.as_ref().map(|v| &v.0)", name)
+                            } else {
+                                format!("{}.as_ref().map(|v| &v.inner)", name)
+                            }
+                        }
+                        _ => name.to_string(),
+                    },
+                    MappedType::Collected { item_type } => match &**item_type {
+                        MappedType::Direct { node_type, .. }
+                            if node_type.starts_with("Js") && node_type != "JsObject" =>
+                        {
+                            if node_type == "JsSymbol" {
+                                // SymbolOrExpression wraps Symbol in .0
+                                format!("{}.as_ref().map(|v| v.iter().map(|x| x.0.clone()).collect())", name)
+                            } else if is_owned {
+                                // Vec items are &JsX, must clone
+                                format!("{}.as_ref().map(|v| v.iter().map(|x| x.inner.clone()).collect())", name)
+                            } else {
+                                // Core wants references
+                                format!(
+                                    "{}.as_ref().map(|v| v.iter().map(|x| &x.inner).collect())",
+                                    name
+                                )
+                            }
+                        }
+                        _ => name.to_string(),
+                    },
                     _ => name.to_string(),
-                },
-                _ => name.to_string(),
-            },
+                }
+            }
             MappedType::Collected { item_type } => {
                 match &**item_type {
                     MappedType::Direct {
@@ -624,13 +650,21 @@ impl NodeEmitter {
                     } if node_type.starts_with("Js") && node_type != "JsObject" => {
                         if self.is_simple_enum_type(rust_type) {
                             format!("{}.into_iter().map(|v| v.inner.clone().into()).collect::<Vec<_>>()", name)
+                        } else if node_type == "JsSymbol" {
+                            // SymbolOrExpression wraps Symbol in .0
+                            format!(
+                                "{}.into_iter().map(|v| v.0.clone()).collect::<Vec<_>>()",
+                                name
+                            )
                         } else if is_owned {
-                            format!("{}.into_iter().map(|v| v.inner).collect::<Vec<_>>()", name)
-                        } else {
+                            // Vec items are &JsX, must clone to get owned
                             format!(
                                 "{}.into_iter().map(|v| v.inner.clone()).collect::<Vec<_>>()",
                                 name
                             )
+                        } else {
+                            // Core wants references
+                            format!("{}.iter().map(|v| &v.inner).collect::<Vec<_>>()", name)
                         }
                     }
                     MappedType::Direct { rust_type, .. } if Self::needs_integer_cast(rust_type) => {
@@ -646,7 +680,12 @@ impl NodeEmitter {
                         MappedType::Direct { node_type, .. }
                             if node_type.starts_with("Js") && node_type != "JsObject" =>
                         {
-                            format!("{}.iter().map(|v| &v.inner).collect::<Vec<_>>()", name)
+                            if node_type == "JsSymbol" {
+                                // SymbolOrExpression wraps Symbol in .0
+                                format!("{}.iter().map(|v| &v.0).collect::<Vec<_>>()", name)
+                            } else {
+                                format!("{}.iter().map(|v| &v.inner).collect::<Vec<_>>()", name)
+                            }
                         }
                         _ => name.to_string(),
                     },
@@ -673,14 +712,12 @@ impl NodeEmitter {
                         )
                     }
                 } else if needs_value_conversion {
-                    if is_owned {
-                        format!("{}.into_iter().map(|(k, v)| (k, v.inner)).collect()", name)
-                    } else {
-                        format!(
-                            "{}.into_iter().map(|(k, v)| (k, v.inner.clone())).collect()",
-                            name
-                        )
-                    }
+                    // HashMap values are always accessed via shared reference during iteration,
+                    // so we must always clone when the value is a Js wrapper type
+                    format!(
+                        "{}.into_iter().map(|(k, v)| (k, v.inner.clone())).collect()",
+                        name
+                    )
                 } else if needs_key_conversion {
                     if is_owned {
                         format!("{}.into_iter().map(|(k, v)| (k.inner, v)).collect()", name)
@@ -809,6 +846,28 @@ impl NodeEmitter {
                         format!("t.{}", i)
                     }
                 }
+                MappedType::Reference {
+                    inner_type: ref_inner,
+                    ..
+                } => match &**ref_inner {
+                    MappedType::Direct {
+                        node_type,
+                        rust_type,
+                        ..
+                    } => {
+                        if node_type.starts_with("Js") && node_type != "JsObject" {
+                            // Tuple element is a reference, clone before wrapping
+                            format!("{} {{ inner: t.{}.clone() }}", node_type, i)
+                        } else if Self::needs_integer_cast(rust_type) {
+                            format!("*t.{} as i64", i)
+                        } else if rust_type == "str" || rust_type == "&str" {
+                            format!("t.{}.to_string()", i)
+                        } else {
+                            format!("t.{}.clone()", i)
+                        }
+                    }
+                    _ => format!("t.{}.clone()", i),
+                },
                 _ => format!("t.{}", i),
             })
             .collect();
@@ -881,6 +940,27 @@ impl NodeEmitter {
                         format!("t.{}", i)
                     }
                 }
+                MappedType::Reference {
+                    inner_type: ref_inner,
+                    ..
+                } => match &**ref_inner {
+                    MappedType::Direct {
+                        node_type,
+                        rust_type,
+                        ..
+                    } => {
+                        if node_type.starts_with("Js") && node_type != "JsObject" {
+                            format!("{} {{ inner: t.{}.clone() }}", node_type, i)
+                        } else if Self::needs_integer_cast(rust_type) {
+                            format!("*t.{} as i64", i)
+                        } else if rust_type == "str" || rust_type == "&str" {
+                            format!("t.{}.to_string()", i)
+                        } else {
+                            format!("t.{}.clone()", i)
+                        }
+                    }
+                    _ => format!("t.{}.clone()", i),
+                },
                 _ => format!("t.{}", i),
             })
             .collect();
@@ -1111,6 +1191,9 @@ impl NodeEmitter {
                     "i64".to_string()
                 } else if rust_type == "str" || rust_type == "&str" {
                     "String".to_string()
+                } else if node_type == "JsSymbol" {
+                    // Use SymbolOrExpression to accept both symbol() and new Symbol()
+                    "crate::SymbolOrExpression".to_string()
                 } else if node_type.starts_with("Js") && node_type != "JsObject" {
                     format!("&{}", node_type)
                 } else {
@@ -1478,11 +1561,13 @@ mod tests {
             node_type: "JsExpression".to_string(),
         };
 
+        // When core needs owned, clone from reference param
         let owned_result = emitter.unwrap_arg("expr", &wrapper_type, true);
-        assert_eq!(owned_result, "expr.inner");
+        assert_eq!(owned_result, "expr.inner.clone()");
 
+        // When core needs reference, borrow inner
         let borrowed_result = emitter.unwrap_arg("expr", &wrapper_type, false);
-        assert_eq!(borrowed_result, "expr.inner.clone()");
+        assert_eq!(borrowed_result, "&expr.inner");
     }
 
     #[test]

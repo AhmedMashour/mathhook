@@ -1,11 +1,12 @@
 # MathHook Security Scanning
 # Runs on schedule and on push to main
+# Uses pre-built Docker container for consistent scanning
 
 name: Security
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM UTC
+    - cron: '0 6 1 * *'  # Weekly on Monday at 6 AM UTC
   push:
     branches: [main, master]
   pull_request:
@@ -21,22 +22,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Rust dependency audit
+  # Rust dependency audit (cargo-audit is pre-installed in container)
   cargo-audit:
     name: Cargo Audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    container:
+      image: ghcr.io/ahmedmashour/mathhook-builder:latest
     permissions:
       contents: read
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - name: Setup Rust
-        uses: ./.github/actions/rust-setup
-
-      - name: Install cargo-audit
-        run: cargo install cargo-audit --locked
 
       - name: Run audit
         run: cargo audit --deny warnings
@@ -70,13 +67,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
-      - name: Build Docker image
-        run: docker build -f docker/Dockerfile.builder -t mathhook-builder:scan .
-
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2  # 0.28.0
         with:
-          image-ref: 'mathhook-builder:scan'
+          image-ref: 'ghcr.io/ahmedmashour/mathhook-builder:latest'
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
@@ -119,14 +113,13 @@ jobs:
     name: npm Audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    container:
+      image: ghcr.io/ahmedmashour/mathhook-builder:latest
     permissions:
       contents: read
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
-
-      - name: Setup Node.js
-        uses: ./.github/actions/node-setup
 
       - name: Run npm audit
         run: |

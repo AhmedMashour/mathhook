@@ -6,7 +6,7 @@
 #   macOS:   x86_64, aarch64 (via zig)
 #   Windows: x86_64-msvc (via xwin)
 
-FROM rust:1.83-slim-bookworm AS builder
+FROM rust:slim-bookworm AS builder
 
 # Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -17,7 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc-aarch64-linux-gnu \
     libc6-dev-arm64-cross \
     gcc-x86-64-linux-gnu \
-    musl-tools \
     musl-dev \
     # Build essentials
     pkg-config \
@@ -29,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     git \
     ca-certificates \
+    shellcheck \
+    jq \
     # Python
     python3 \
     python3-pip \
@@ -41,39 +42,52 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Node.js 20 LTS
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
+    && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Zig 0.13.0 (for macOS cross-compilation) with checksum verification
-ARG ZIG_VERSION=0.13.0
-ARG ZIG_SHA256=d45312e61ebcc48032b77bc4cf7fd6915c11fa16e4aad116b66c9468211230ea
-RUN curl -L "https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz" \
-    -o /tmp/zig.tar.xz \
-    && echo "${ZIG_SHA256}  /tmp/zig.tar.xz" | sha256sum -c - \
-    && tar -xJf /tmp/zig.tar.xz -C /usr/local \
-    && ln -s /usr/local/zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/zig \
-    && rm /tmp/zig.tar.xz
+# Install Zig (for macOS cross-compilation)
+# pip installs to /usr/local/lib/python*/dist-packages/ziglang/, symlink to PATH
+RUN pip3 install --break-system-packages ziglang \
+    && ln -sf $(python3 -c "import ziglang; print(ziglang.__file__.replace('__init__.py', 'zig'))") /usr/local/bin/zig
 
-# Install cargo-zigbuild for zig-based cross-compilation
-RUN cargo install cargo-zigbuild --locked
+# Optional: macOS SDK for cross-compilation (~1GB)
+ARG WITH_MACOS_SDK=true
+RUN if [ "$WITH_MACOS_SDK" = "true" ]; then \
+    curl -L https://github.com/joseluisq/macosx-sdks/releases/download/14.5/MacOSX14.5.sdk.tar.xz \
+    | tar -xJ -C /opt \
+    && ln -s /opt/MacOSX14.5.sdk /opt/MacOSX.sdk; \
+    fi
 
-# Install xwin for Windows MSVC SDK (takes ~5GB, cached in layer)
-# Pinned to 0.6.5 for Rust 1.83 compatibility (0.6.7+ requires edition2024)
-RUN cargo install xwin@0.6.5 --locked \
-    && xwin --accept-license splat --output /opt/xwin
+# Set macOS SDK environment (only used if SDK exists)
+ENV SDKROOT=/opt/MacOSX.sdk
+ENV MACOSX_DEPLOYMENT_TARGET=11.0
+
+
+# Install cargo tools
+RUN cargo install cargo-zigbuild cargo-audit --locked
+
+# Optional: xwin for Windows MSVC SDK (~5GB)
+ARG WITH_WINDOWS_SDK=true
+RUN if [ "$WITH_WINDOWS_SDK" = "true" ]; then \
+    cargo install xwin --locked \
+    && xwin --accept-license splat --output /opt/xwin; \
+    fi
 
 # Configure xwin environment for Windows builds
 ENV XWIN_ARCH=x86_64
 ENV XWIN_VARIANT=desktop
 ENV XWIN_SDK_PATH=/opt/xwin
 
-# Install maturin (Python wheel builder) - pinned for reproducibility
-RUN pip3 install --break-system-packages maturin==1.7.4 twine==5.1.1
+# Install maturin (Python wheel builder)
+RUN pip3 install --break-system-packages maturin twine
 
-# Install napi-rs CLI (Node.js native addon builder) - pinned for reproducibility
-RUN npm install -g @napi-rs/cli@3.0.0-alpha.63
+# Ensure pyo3 detects Python correctly for cross-compilation
+ENV PYO3_PYTHON=/usr/bin/python3
 
-# Add Rust targets
+# Install napi-rs CLI and TypeScript (Node.js native addon builder)
+RUN npm install -g @napi-rs/cli typescript
+
+# Add Rust targets and components
 RUN rustup target add \
     # Linux
     x86_64-unknown-linux-gnu \
@@ -84,7 +98,8 @@ RUN rustup target add \
     x86_64-apple-darwin \
     aarch64-apple-darwin \
     # Windows (cross-compile via xwin)
-    x86_64-pc-windows-msvc
+    x86_64-pc-windows-msvc \
+    && rustup component add clippy rustfmt
 
 # Configure cargo for cross-compilation
 RUN mkdir -p /root/.cargo
@@ -96,6 +111,8 @@ ENV CXX_x86_64_pc_windows_msvc=clang-cl
 ENV AR_x86_64_pc_windows_msvc=llvm-lib
 ENV INCLUDE="/opt/xwin/crt/include;/opt/xwin/sdk/include/ucrt;/opt/xwin/sdk/include/um;/opt/xwin/sdk/include/shared"
 ENV LIB="/opt/xwin/crt/lib/x86_64;/opt/xwin/sdk/lib/um/x86_64;/opt/xwin/sdk/lib/ucrt/x86_64"
+ENV CARGO_TARGET_X86_64_APPLE_DARWIN_RUSTFLAGS="-C link-arg=-F/opt/MacOSX.sdk/System/Library/Frameworks -C link-arg=-L/opt/MacOSX.sdk/usr/lib -C link-arg=-isysroot -C link-arg=/opt/MacOSX.sdk"
+ENV CARGO_TARGET_AARCH64_APPLE_DARWIN_RUSTFLAGS="-C link-arg=-F/opt/MacOSX.sdk/System/Library/Frameworks -C link-arg=-L/opt/MacOSX.sdk/usr/lib -C link-arg=-isysroot -C link-arg=/opt/MacOSX.sdk"
 
 WORKDIR /build
 

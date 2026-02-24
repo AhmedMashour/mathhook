@@ -579,18 +579,14 @@ impl SystemSolver {
                 let mut ratio_num: Option<i64> = None;
                 let mut ratio_den: Option<i64> = None;
 
-                for k in 0..int_rows[i].len() {
-                    if int_rows[i][k] != 0 || int_rows[j][k] != 0 {
-                        if int_rows[i][k] != 0 && int_rows[j][k] != 0 {
-                            ratio_num = Some(int_rows[j][k]);
-                            ratio_den = Some(int_rows[i][k]);
-                            break;
-                        } else if int_rows[i][k] == 0 && int_rows[j][k] != 0 {
-                            // Row j has a coefficient where row i has 0 → not proportional
-                            ratio_num = None;
+                for (row_i_val, row_j_val) in int_rows[i].iter().zip(int_rows[j].iter()) {
+                    if *row_i_val != 0 || *row_j_val != 0 {
+                        if *row_i_val != 0 && *row_j_val != 0 {
+                            ratio_num = Some(*row_j_val);
+                            ratio_den = Some(*row_i_val);
                             break;
                         } else {
-                            // Row i has coefficient, row j has 0 → not proportional
+                            // One is zero while other is not → not proportional
                             ratio_num = None;
                             break;
                         }
@@ -599,14 +595,10 @@ impl SystemSolver {
 
                 if let (Some(num), Some(den)) = (ratio_num, ratio_den) {
                     // Check if all coefficients follow the same ratio
-                    let mut all_proportional = true;
-                    for k in 0..int_rows[i].len() {
-                        // Check: row_j[k] * den == row_i[k] * num
-                        if int_rows[j][k] * den != int_rows[i][k] * num {
-                            all_proportional = false;
-                            break;
-                        }
-                    }
+                    let all_proportional = int_rows[i]
+                        .iter()
+                        .zip(int_rows[j].iter())
+                        .all(|(row_i_val, row_j_val)| row_j_val * den == row_i_val * num);
 
                     if all_proportional {
                         // Coefficient rows are proportional, check RHS

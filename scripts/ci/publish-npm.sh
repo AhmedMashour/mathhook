@@ -20,21 +20,8 @@ cd "$NODE_PKG_DIR"
 VERSION=$(get_npm_version package.json)
 log_info "Preparing npm packages for mathhook-node@$VERSION..."
 
-# Create platform package directories
-if ! npx napi create-npm-dirs --npm-dir npm 2>&1; then
-    log_warn "npm dirs creation failed (may already exist)"
-fi
-
-# Copy binaries to platform packages
-for node_file in *.node; do
-    if [[ -f "$node_file" ]]; then
-        platform=$(echo "$node_file" | sed 's/mathhook-node\.\(.*\)\.node/\1/')
-        if [[ -d "npm/$platform" ]]; then
-            cp "$node_file" "npm/$platform/"
-            log_info "Copied $node_file to npm/$platform/"
-        fi
-    fi
-done
+# Prepare npm packages (creates dirs + copies .node files)
+npx napi prepublish -t npm
 
 if [[ "$DRY_RUN" == "true" ]]; then
     log_info "DRY RUN: Would publish the following packages:"

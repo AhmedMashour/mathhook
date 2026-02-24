@@ -141,7 +141,7 @@ fn null_space(q: &[Vec<u64>], p: u64) -> FiniteFieldResult<Vec<Vec<u64>>> {
     for col in 0..n {
         let mut pivot_row = None;
         for r in row..n {
-            if matrix[r][col] % p != 0 {
+            if !matrix[r][col].is_multiple_of(p) {
                 pivot_row = Some(r);
                 break;
             }

@@ -112,8 +112,8 @@ MathHook is a Rust library. Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mathhook = "0.1"  # Check latest version
-mathhook-core = "0.1"
+mathhook = "0.2.0"  # Check latest version
+mathhook-core = "0.2.0"
 ```
 
 Import the necessary modules:
