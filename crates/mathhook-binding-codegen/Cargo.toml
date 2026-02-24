@@ -3,6 +3,7 @@ name = "mathhook-binding-codegen"
 version = "0.1.0"
 edition = "2021"
 description = "Code generator for MathHook Python/Node.js bindings"
+license.workspace = true
 publish = false  # Internal dev tool, not published to crates.io
 
 [dependencies]
