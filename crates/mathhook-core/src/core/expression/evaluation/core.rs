@@ -410,9 +410,37 @@ impl Expression {
                     })
                 }
             },
-            _ => Err(crate::MathError::NonNumericalResult {
-                expression: evaluated.clone(),
-            }),
+            Expression::Constant(ref c) => {
+                let val = c.to_f64();
+                if val.is_finite() {
+                    Ok(val)
+                } else if val.is_nan() {
+                    Err(crate::MathError::NonNumericalResult {
+                        expression: evaluated.clone(),
+                    })
+                } else {
+                    Ok(val)
+                }
+            }
+            _ => {
+                use crate::core::expression::eval_numeric::EvalNumeric;
+                let numeric = self.eval_numeric(53)?;
+                match numeric {
+                    Expression::Number(n) => match n {
+                        Number::Integer(i) => Ok(i as f64),
+                        Number::Float(f) => Ok(f),
+                        Number::BigInteger(bi) => Ok(bi.to_f64().unwrap_or(f64::INFINITY)),
+                        Number::Rational(r) => {
+                            r.to_f64().ok_or_else(|| crate::MathError::NumericOverflow {
+                                operation: "rational to f64 conversion".to_owned(),
+                            })
+                        }
+                    },
+                    _ => Err(crate::MathError::NonNumericalResult {
+                        expression: evaluated.clone(),
+                    }),
+                }
+            }
         }
     }
 }
